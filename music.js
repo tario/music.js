@@ -86,6 +86,17 @@ var commonExtension = function(obj) {
   obj.loop = function(times) {
     return MUSIC.Loop(this, times);
   };
+
+  obj.measure = function(totalDuration){
+    var original = this;
+    return commonExtension({
+      play: original.play.bind(original),
+      duration: function() {
+        return totalDuration;
+      }
+    });
+  };
+
   return obj;
 };
 

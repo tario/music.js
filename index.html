@@ -25,12 +25,16 @@
 
     var loop1 = seq1.loop(20);
 
-    var player = MUSIC.InstrumentSequence(instrument, 200);
+    var player = MUSIC.InstrumentSequence(instrument, 100);
 
     var seq = MUSIC
         .Sequence()
-        .n(player('AB  '), 800)
-        .loop(3);
+        .n(
+            [
+                player('ABCAABCAABCAABCA').measure(1600),
+                player('A---CCCCA---CCCC').measure(1600)
+            ])
+            .loop(10);
 
     window.seq = seq;
     window.playing = seq.play();
