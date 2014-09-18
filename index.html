@@ -20,12 +20,14 @@
              .n(instrument.note('G'), 100, 100);
 
          var seq2 = baseseq
-             .n(instrument.note('F'), 100, 100);
+             .n(instrument.note('C'), 100, 100);
 
     var seq = MUSIC
         .Sequence()
-        .n(seq1, 400, 0)
-        .n(seq2, 400, 400)
+        .n([
+            seq1,
+            seq2
+            ], 400, 400)
         .loop(3);
 
     window.seq = seq;

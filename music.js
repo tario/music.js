@@ -152,5 +152,24 @@ MUSIC.Sequence = function(notes) {
   });
 };
 
+var originalSequence = MUSIC.Sequence;
+MUSIC.Sequence = function(notes) {
+  var seq = originalSequence(notes);
+  var origN = seq.n;
+  seq.n = function(playable, duration, timespan) {
+    if (Array.isArray(playable)) {
+      var newseq = MUSIC.Sequence(notes); 
+      for (var i = 0; i<playable.length-1; i++) {
+        newseq.attachPlayable(playable[i], duration, 0);
+      }
+      newseq.attachPlayable(playable[i], duration, timespan);
+      return newseq;
+    } else {
+      return origN.bind(seq)(playable, duration, timespan);
+    }
+  };
+
+  return seq;
+};
 
 })();
