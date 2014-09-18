@@ -91,14 +91,38 @@ MUSIC.Sequence = function(notes) {
       }, duration: timespan});
     },
 
+    loop: function(times) {
+      var original = this;
+      var duration = this.duration();
+      times = times || Infinity;
+
+      return {
+        play: function() {
+          var playable = original.play();
+          var playAgain = function() {
+            playable = original.play();
+            times = times - 1;
+            if (times === 1) clearInterval(interval);
+          };
+
+          var interval = setInterval(playAgain, duration);
+
+          return {
+            stop: function() {
+              playable.stop();
+              clearInterval(interval);
+            }
+          };
+        }
+      };
+    },
+
     play: function() {
       var timeOuts = [];
       var currentDuration = 0;
       for (var i = 0; i < notes.length; i++) {
         var n = notes[i];
-        (function() {
-          timeOuts.push(setTimeout(n.f, currentDuration));
-        })();
+        timeOuts.push(setTimeout(n.f, currentDuration));
         currentDuration = currentDuration + n.duration;
       }
 
