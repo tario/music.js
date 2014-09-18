@@ -44,7 +44,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
 
 
 var frequency = function(notenum) {
-    return 293.66 * Math.pow(2, notenum/12);
+    return 36.7075 * Math.pow(2, notenum/12);
 };
 var noteToNumMap = {
   'C': 0, 
@@ -74,11 +74,14 @@ MUSIC.noteToNoteNum = function(noteName) {
   return notenum;
 };
 
-MUSIC.Instrument = function(soundFactory) {
+MUSIC.Instrument = function(soundFactory, defaultOctave) {
+  if (defaultOctave === undefined) defaultOctave = 3;
+
   this.note = function(noteName) {
 
     var notenum = MUSIC.noteToNoteNum(noteName); 
     if (notenum === undefined) return undefined;
+    notenum += defaultOctave*12;
 
     var freq = frequency(notenum);
     return {

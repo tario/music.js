@@ -7,36 +7,21 @@
 
     var audio = new window.webkitAudioContext();
     var osc = new MUSIC.SoundLib.Oscillator(audio, audio.destination, {type: 'square'});
-    var instrument = new MUSIC.Instrument(osc);
+    var instrument = new MUSIC.Instrument(osc, 2);
 
 
-
-     var baseseq = MUSIC
-         .Sequence()
-         .n(instrument.note('C').during(100), 100)
-         .n(instrument.note('E').during(100), 100);
-
-         var seq1 = baseseq
-             .n(instrument.note('G').during(100), 100);
-
-         var seq2 = baseseq
-             .n(instrument.note('C').during(100), 100);
-
-
-    var loop1 = seq1.loop(20);
-
-    var player = MUSIC.InstrumentSequence(instrument, 100);
+    var player = MUSIC.InstrumentSequence(instrument, 400);
 
     var seq = MUSIC
         .Sequence()
         .n(
             [
-                player('X Z Z X ', {X: 'A 1' , Z: 'A 2'}).loop(4).measure(1600),
-                player('C D C D ').loop(4).measure(1600)
+                player('& * & * ', {'*': 'F#2', '&': 'F 2'}).loop(4).measure(6400)
             ]);
 
     window.seq = seq;
     window.playing = seq.play();
+    window.instrument = instrument;
 
 })();
 
