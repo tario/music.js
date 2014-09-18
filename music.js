@@ -49,9 +49,10 @@ var frequency = function(notenum) {
 var noteToNum = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
 MUSIC.Instrument = function(soundFactory) {
   this.note = function(noteName) {
+    var freq = frequency(noteToNum[noteName]);
     return {
       play: function() {
-        var soundInstance = soundFactory.play().setFrequency(frequency(noteToNum[noteName]));
+        var soundInstance = soundFactory.play().setFrequency(freq);
         soundInstance.play();
         return {
           stop: function() {
