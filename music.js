@@ -63,6 +63,20 @@ MUSIC.Instrument = function(soundFactory) {
             soundInstance.stop();
           }
         }
+      },
+
+      during: function(duration) {
+        var original = this;
+        return {
+          play: function() {
+            var playable = original.play();
+            setTimeout(playable.stop.bind(playable), duration);
+
+            return original;
+          },
+
+          duration: function() { return duration; }
+        };
       }
     };
   };
@@ -108,14 +122,18 @@ MUSIC.Loop = function(playable, times) {
   });
 };
 
-MUSIC.Silence = {
-  play : function() {
-    return {
-      stop: function(){
+MUSIC.Silence = function(time) {
+  return {
+    play : function() {
+      return {
+        stop: function(){
 
+        }
       }
-    }
-  }
+    },
+
+    duration: function(){return time}
+  };
 };
 
 MUSIC.InstrumentSequence = function(instrument, beatTime) {
@@ -131,8 +149,8 @@ MUSIC.InstrumentSequence = function(instrument, beatTime) {
         accumulatedTime += beatTime;
       } else {
         if (lastNote) {
-          var note = instrument.note(lastNote);
-          seq.attachPlayable(note, accumulatedTime, accumulatedTime);
+          var note = instrument.note(lastNote).during(accumulatedTime);
+          seq.attachPlayable(note, accumulatedTime);
           accumulatedTime = 0;
         }
 
@@ -141,14 +159,14 @@ MUSIC.InstrumentSequence = function(instrument, beatTime) {
           accumulatedTime += beatTime;
           lastNote = noteName;
         } else {
-          seq.attachPlayable(MUSIC.Silence, beatTime, beatTime);
+          seq.attachPlayable(MUSIC.Silence(beatTime), beatTime);
         }
       }
     };
 
     if (accumulatedTime > 0) {
-      var note = instrument.note(lastNote);
-      seq.attachPlayable(note, accumulatedTime, accumulatedTime);
+      var note = instrument.note(lastNote).during(accumulatedTime);
+      seq.attachPlayable(note, accumulatedTime);
     }
 
     return seq;
@@ -159,9 +177,9 @@ MUSIC.Sequence = function(notes) {
   notes = notes ? notes.slice() : [];
 
   return commonExtension({
-    n: function(playable, duration, timespan) {
+    n: function(playable, timespan) {
       var seq = MUSIC.Sequence(notes);
-      seq.attachPlayable(playable, duration, timespan);
+      seq.attachPlayable(playable, timespan);
       return seq;
     },
 
@@ -175,11 +193,11 @@ MUSIC.Sequence = function(notes) {
       return totalDuration;
     },
 
-    attachPlayable: function(playableFactory, duration, timespan) {
+    attachPlayable: function(playableFactory, timespan) {
+      var duration = playableFactory.duration();
       if (timespan === undefined) timespan = duration;
       notes.push( {f: function() {
-        var playable = playableFactory.play();
-        setTimeout(playable.stop.bind(playable), duration);
+        playableFactory.play();
       }, duration: timespan});
     },
 
@@ -207,16 +225,16 @@ var originalSequence = MUSIC.Sequence;
 MUSIC.Sequence = function(notes) {
   var seq = originalSequence(notes);
   var origN = seq.n;
-  seq.n = function(playable, duration, timespan) {
+  seq.n = function(playable, timespan) {
     if (Array.isArray(playable)) {
       var newseq = MUSIC.Sequence(notes); 
       for (var i = 0; i<playable.length-1; i++) {
-        newseq.attachPlayable(playable[i], duration, 0);
+        newseq.attachPlayable(playable[i], 0);
       }
-      newseq.attachPlayable(playable[i], duration, timespan);
+      newseq.attachPlayable(playable[i], timespan);
       return newseq;
     } else {
-      return origN.bind(seq)(playable, duration, timespan);
+      return origN.bind(seq)(playable, timespan);
     }
   };
 

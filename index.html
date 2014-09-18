@@ -6,21 +6,21 @@
 
 
     var audio = new window.webkitAudioContext();
-    var osc = new MUSIC.SoundLib.Oscillator(audio, audio.destination, {type: 'sine'});
+    var osc = new MUSIC.SoundLib.Oscillator(audio, audio.destination, {type: 'square'});
     var instrument = new MUSIC.Instrument(osc);
 
 
 
      var baseseq = MUSIC
          .Sequence()
-         .n(instrument.note('C'), 100, 100)
-         .n(instrument.note('E'), 100, 100);
+         .n(instrument.note('C').during(100), 100)
+         .n(instrument.note('E').during(100), 100);
 
          var seq1 = baseseq
-             .n(instrument.note('G'), 100, 100);
+             .n(instrument.note('G').during(100), 100);
 
          var seq2 = baseseq
-             .n(instrument.note('C'), 100, 100);
+             .n(instrument.note('C').during(100), 100);
 
 
     var loop1 = seq1.loop(20);
@@ -29,7 +29,7 @@
 
     var seq = MUSIC
         .Sequence()
-        .n(player('A- B'),800, 800)
+        .n(player('AB  '), 800)
         .loop(3);
 
     window.seq = seq;
