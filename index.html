@@ -46,10 +46,11 @@
 
     var audio = new window.webkitAudioContext();
     var osc = new MUSIC.SoundLib.Oscillator(audio, audio.destination, {type: 'square'});
+    var instrument = new MUSIC.Instrument(osc);
 
     window.seq = MUSIC
      .Sequence()
-     .instrument(osc)
+     .instrument(instrument)
      .note('C' ,100)
      .note('D' ,100)
      .note('E' ,100)

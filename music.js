@@ -56,7 +56,7 @@ MUSIC.Instrument = function(soundFactory) {
         return {
           stop: function() {
             soundInstance.stop();
-          };
+          }
         }
       }
     };
@@ -84,7 +84,7 @@ MUSIC.Sequence = function(notes) {
     },
 
     attach: function(noteName, duration) {
-      notes.push( {noteName: noteName, duration: duration, freq: frequency(noteToNum[noteName])});
+      notes.push( {noteName: noteName, duration: duration});
     },
 
     play: function() {
@@ -99,9 +99,7 @@ MUSIC.Sequence = function(notes) {
         } else {
           (function(n, currentDuration) {
             setTimeout(function() {
-              var playingNote = currentInstrument.play();
-              playingNote.setFrequency(n.freq);
-              playingNote.play();
+              var playingNote = currentInstrument.note(n.noteName).play();
               setTimeout(playingNote.stop.bind(playingNote), n.duration);
             }, currentDuration);
           })(n, currentDuration);
