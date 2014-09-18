@@ -22,12 +22,14 @@
          var seq2 = baseseq
              .n(instrument.note('C'), 100, 100);
 
+
+    var loop1 = seq1.loop(20);
+
+    var player = MUSIC.InstrumentSequence(instrument, 200);
+
     var seq = MUSIC
         .Sequence()
-        .n([
-            seq1,
-            seq2
-            ], 400, 400)
+        .n(player('ABC.'),800)
         .loop(3);
 
     window.seq = seq;

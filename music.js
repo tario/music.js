@@ -49,7 +49,11 @@ var frequency = function(notenum) {
 var noteToNum = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
 MUSIC.Instrument = function(soundFactory) {
   this.note = function(noteName) {
-    var freq = frequency(noteToNum[noteName]);
+    var notenum;
+    notenum = noteToNum[noteName]
+    if (notenum === undefined) return undefined
+
+    var freq = frequency(notenum);
     return {
       play: function() {
         var soundInstance = soundFactory.play().setFrequency(freq);
@@ -102,6 +106,33 @@ MUSIC.Loop = function(playable, times) {
       };
     }
   });
+};
+
+MUSIC.Silence = {
+  play : function() {
+    return {
+      stop: function(){
+
+      }
+    }
+  }
+};
+
+MUSIC.InstrumentSequence = function(instrument, beatTime) {
+  return function(str) {
+    var seq = MUSIC.Sequence();
+    for (var i = 0; i < str.length; i++) {
+      var noteName = str.charAt(i);
+      var note = instrument.note(noteName);
+      if (note) {
+        seq.attachPlayable(note, beatTime, beatTime);
+      } else {
+        seq.attachPlayable(MUSIC.Silence, beatTime, beatTime);
+      }
+    };
+
+    return seq;
+  };
 };
 
 MUSIC.Sequence = function(notes) {
