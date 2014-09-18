@@ -121,15 +121,35 @@ MUSIC.Silence = {
 MUSIC.InstrumentSequence = function(instrument, beatTime) {
   return function(str) {
     var seq = MUSIC.Sequence();
+    var lastNote;
+    var accumulatedTime = 0;
+
     for (var i = 0; i < str.length; i++) {
       var noteName = str.charAt(i);
-      var note = instrument.note(noteName);
-      if (note) {
-        seq.attachPlayable(note, beatTime, beatTime);
+
+      if (noteName === "-") {
+        accumulatedTime += beatTime;
       } else {
-        seq.attachPlayable(MUSIC.Silence, beatTime, beatTime);
+        if (lastNote) {
+          var note = instrument.note(lastNote);
+          seq.attachPlayable(note, accumulatedTime, accumulatedTime);
+          accumulatedTime = 0;
+        }
+
+        var note = instrument.note(noteName);
+        if (note) {
+          accumulatedTime += beatTime;
+          lastNote = noteName;
+        } else {
+          seq.attachPlayable(MUSIC.Silence, beatTime, beatTime);
+        }
       }
     };
+
+    if (accumulatedTime > 0) {
+      var note = instrument.note(lastNote);
+      seq.attachPlayable(note, accumulatedTime, accumulatedTime);
+    }
 
     return seq;
   };
