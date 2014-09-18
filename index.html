@@ -24,8 +24,8 @@
 
     var seq = MUSIC
         .Sequence()
-        .n(seq1, 400)
-        .n(seq2, 400)
+        .n(seq1, 400, 0)
+        .n(seq2, 400, 400)
         .loop(3);
 
     window.seq = seq;

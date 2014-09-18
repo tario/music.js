@@ -72,7 +72,6 @@ var commonExtension = function(obj) {
 };
 
 MUSIC.Loop = function(playable, times) {
-  console.log(times);
   var original = playable;
   var duration = playable.duration();
 
@@ -126,7 +125,7 @@ MUSIC.Sequence = function(notes) {
     },
 
     attachPlayable: function(playableFactory, duration, timespan) {
-      timespan = timespan || duration;
+      if (timespan === undefined) timespan = duration;
       notes.push( {f: function() {
         var playable = playableFactory.play();
         setTimeout(playable.stop.bind(playable), duration);
