@@ -72,6 +72,17 @@ MUSIC.Sequence = function(notes) {
       seq.attachPlayable(playable, duration, timespan);
       return seq;
     },
+
+    duration: function() {
+      // compute total duration based on timespan
+      var totalDuration = 0;
+      for (var i = 0; i < notes.length; i++) {
+        totalDuration+= notes[i].duration;
+      };
+
+      return totalDuration;
+    },
+
     attachPlayable: function(playableFactory, duration, timespan) {
       timespan = timespan || duration;
       notes.push( {f: function() {
@@ -94,7 +105,7 @@ MUSIC.Sequence = function(notes) {
       return {
         stop: function() {
           for (var i = 0; i<timeOuts.length; i++) {
-            clearTimeout(timeOuts);
+            clearTimeout(timeOuts[i]);
           }
         }
       }
