@@ -64,10 +64,51 @@ MUSIC.Instrument = function(soundFactory) {
   };
 };
 
+var commonExtension = function(obj) {
+  obj.loop = function(times) {
+    return MUSIC.Loop(this, times);
+  };
+  return obj;
+};
+
+MUSIC.Loop = function(playable, times) {
+  console.log(times);
+  var original = playable;
+  var duration = playable.duration();
+
+  return commonExtension({
+    duration: function() {
+      return times * duration;
+    },
+
+    play: function() {
+      var counter = times;
+      var playable;
+      var playAgain = function() {
+        playable = original.play();
+        counter = counter - 1;
+        if (counter === 0) {
+          clearInterval(interval);
+        }
+      };
+
+      var interval = setInterval(playAgain, duration);
+      playAgain();
+
+      return {
+        stop: function() {
+          playable.stop();
+          clearInterval(interval);
+        }
+      };
+    }
+  });
+};
+
 MUSIC.Sequence = function(notes) {
   notes = notes || [];
 
-  return {
+  return commonExtension({
     n: function(playable, duration, timespan) {
       var seq = MUSIC.Sequence(notes);
       seq.attachPlayable(playable, duration, timespan);
@@ -92,32 +133,6 @@ MUSIC.Sequence = function(notes) {
       }, duration: timespan});
     },
 
-    loop: function(times) {
-      var original = this;
-      var duration = this.duration();
-      times = times || Infinity;
-
-      return {
-        play: function() {
-          var playable = original.play();
-          var playAgain = function() {
-            playable = original.play();
-            times = times - 1;
-            if (times === 1) clearInterval(interval);
-          };
-
-          var interval = setInterval(playAgain, duration);
-
-          return {
-            stop: function() {
-              playable.stop();
-              clearInterval(interval);
-            }
-          };
-        }
-      };
-    },
-
     play: function() {
       var timeOuts = [];
       var currentDuration = 0;
@@ -135,7 +150,7 @@ MUSIC.Sequence = function(notes) {
         }
       }
     }
-  };
+  });
 };
 
 

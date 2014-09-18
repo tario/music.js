@@ -19,8 +19,9 @@
     var seq = MUSIC
         .Sequence()
         .n(subseq, 400)
-        .loop(3);
+        .loop(2).loop(2);
 
+    window.seq = seq;
     window.playing = seq.play();
 
 })();
