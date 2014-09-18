@@ -1,0 +1,62 @@
+<head>
+<script src="music.js" ></script>
+<script>
+(function() {
+
+/*
+    var audio = new window.webkitAudioContext();
+    var oscillators = {};
+
+    function createOscillator(freq) {
+        var osc = audio.createOscillator();
+
+        osc.frequency.value = freq;
+        osc.type = "square";
+        osc.connect(audio.destination);
+        return osc;
+    };
+
+    var frequency = function(notenum) {
+        return 293.66 * Math.pow(2, notenum/12);
+    };
+
+    var keyCodeToNote = {90: 'C', 88: 'D',  67: 'E', 86: 'F', 66: 'G', 78: 'A', 77: 'B'};
+    var noteToNum = {C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11};
+    document.getElementById("pianito").onkeydown = function(e) {
+        var osc = oscillators[e.keyCode];
+        if (osc) return;
+
+        var note = keyCodeToNote[e.keyCode];
+        if (note == undefined) return;
+        var noteNum = noteToNum[note];
+        var freq = frequency(noteNum);
+        var osc = createOscillator(freq);
+
+        oscillators[e.keyCode] = osc;
+        osc.start(0);
+    };
+    document.getElementById("pianito").onkeyup = function(e) {
+        var osc = oscillators[e.keyCode];
+        if (!osc) return;
+        osc.stop(0);
+        osc.disconnect(audio.destination);
+
+        oscillators[e.keyCode] = undefined;
+    };*/
+
+    var audio = new window.webkitAudioContext();
+    var osc = new MUSIC.SoundLib.Oscillator(audio, audio.destination, {type: 'square'});
+
+    window.seq = MUSIC
+     .Sequence()
+     .instrument(osc)
+     .note('C' ,100)
+     .note('D' ,100)
+     .note('E' ,100)
+     .note('F' ,100)
+     .note('G' ,100);
+
+})();
+
+</script>
+</head>
