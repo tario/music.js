@@ -46,7 +46,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
 var frequency = function(notenum) {
     return 293.66 * Math.pow(2, notenum/12);
 };
-var noteToNum = {
+var noteToNumMap = {
   'C': 0, 
   'D': 2, 
   'E': 4, 
@@ -60,27 +60,25 @@ var noteToNum = {
   'F ': 5, 
   'G ': 7, 
   'A ': 9,
-  'B ': 11,
-  'C#': 1, 
-  'D#': 3, 
-  'E#': 5, 
-  'F#': 6, 
-  'G#': 8, 
-  'A#': 10, 
-  'B#': 12,
-  'Cb': -1, 
-  'Db': 1, 
-  'Eb': 3, 
-  'Fb': 4, 
-  'Gb': 6, 
-  'Ab': 8,
-  'Bb': 10
+  'B ': 11
 };
+
+MUSIC.noteToNoteNum = function(noteName) {
+  var notenum;
+
+  notenum = noteToNumMap[noteName.charAt(0)]
+  if (notenum === undefined) return undefined
+  if (noteName.charAt(1) === '#') notenum++;
+  if (noteName.charAt(1) === 'b') notenum--;
+  if (noteName.charAt(2) !== "") notenum += (12 * parseInt(noteName.charAt(2)));
+  return notenum;
+};
+
 MUSIC.Instrument = function(soundFactory) {
   this.note = function(noteName) {
-    var notenum;
-    notenum = noteToNum[noteName]
-    if (notenum === undefined) return undefined
+
+    var notenum = MUSIC.noteToNoteNum(noteName); 
+    if (notenum === undefined) return undefined;
 
     var freq = frequency(notenum);
     return {
@@ -177,10 +175,11 @@ MUSIC.Silence = function(time) {
 };
 
 MUSIC.InstrumentSequence = function(instrument, beatTime) {
-  return function(str) {
+  return function(str, aliases) {
     var seq = MUSIC.Sequence();
     var lastNote;
     var accumulatedTime = 0;
+    aliases = aliases || {};
 
     for (var i = 0; i < str.length; i+=2) {
       var noteName = str.charAt(i)+str.charAt(i+1);
@@ -198,8 +197,15 @@ MUSIC.InstrumentSequence = function(instrument, beatTime) {
         if (note) {
           accumulatedTime += beatTime;
           lastNote = noteName;
-        } else {
+        } else if (noteName === "  ") {
           seq.attachPlayable(MUSIC.Silence(beatTime), beatTime);
+        } else {
+          noteName = aliases[noteName] || aliases[noteName.charAt(0)];
+          note = instrument.note(noteName);
+          if (note) {
+            accumulatedTime += beatTime;
+            lastNote = noteName;
+          }
         }
       }
     };

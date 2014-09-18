@@ -31,10 +31,9 @@
         .Sequence()
         .n(
             [
-                player('A B C A A B C A A B C A A B C A ').measure(1600),
-                player('A#------C#C#C#C#--------C#C#C#C#').measure(1600)
-            ])
-            .loop(10);
+                player('X Z Z X ', {X: 'A 1' , Z: 'A 2'}).loop(4).measure(1600),
+                player('C D C D ').loop(4).measure(1600)
+            ]);
 
     window.seq = seq;
     window.playing = seq.play();
