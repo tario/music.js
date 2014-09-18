@@ -106,7 +106,7 @@ MUSIC.Loop = function(playable, times) {
 };
 
 MUSIC.Sequence = function(notes) {
-  notes = notes || [];
+  notes = notes ? notes.slice() : [];
 
   return commonExtension({
     n: function(playable, duration, timespan) {
