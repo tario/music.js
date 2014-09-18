@@ -48,14 +48,22 @@
     var osc = new MUSIC.SoundLib.Oscillator(audio, audio.destination, {type: 'square'});
     var instrument = new MUSIC.Instrument(osc);
 
-    window.seq = MUSIC
+/*    window.seq = MUSIC
      .Sequence()
      .instrument(instrument)
      .note('C' ,100)
      .note('D' ,100)
      .note('E' ,100)
      .note('F' ,100)
-     .note('G' ,100);
+     .note('G' ,100);*/
+
+     window.seq = MUSIC
+         .Sequence()
+         .n(instrument.note('C'), 100, 200)
+         .n(instrument.note('D'), 100, 200)
+         .n(instrument.note('E'), 100, 200)
+         .n(instrument.note('F'), 100, 200)
+         .n(instrument.note('G'), 100, 200);
 
 })();
 

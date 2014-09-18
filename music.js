@@ -67,43 +67,35 @@ MUSIC.Sequence = function(notes) {
   notes = notes || [];
 
   return {
-    instrument: function(i) {
+    n: function(playable, duration, timespan) {
       var seq = MUSIC.Sequence(notes);
-      seq.changeInstrument(i);
+      seq.attachPlayable(playable, duration, timespan);
       return seq;
     },
-
-    note: function(noteName, duration) {
-      var seq = MUSIC.Sequence(notes);
-      seq.attach(noteName, duration);
-      return seq;
-    },
-
-    changeInstrument: function(i) {
-      notes.push( {instrument: i});
-    },
-
-    attach: function(noteName, duration) {
-      notes.push( {noteName: noteName, duration: duration});
+    attachPlayable: function(playableFactory, duration, timespan) {
+      timespan = timespan || duration;
+      notes.push( {f: function() {
+        var playable = playableFactory.play();
+        setTimeout(playable.stop.bind(playable), duration);
+      }, duration: timespan});
     },
 
     play: function() {
-      var currentInstrument;
+      var timeOuts = [];
       var currentDuration = 0;
       for (var i = 0; i < notes.length; i++) {
         var n = notes[i];
-        if (n.instrument) {
-          (function(ins) {
-            setTimeout(function(){ currentInstrument = ins },currentDuration);
-          })(n.instrument);
-        } else {
-          (function(n, currentDuration) {
-            setTimeout(function() {
-              var playingNote = currentInstrument.note(n.noteName).play();
-              setTimeout(playingNote.stop.bind(playingNote), n.duration);
-            }, currentDuration);
-          })(n, currentDuration);
-          currentDuration = currentDuration + n.duration;
+        (function() {
+          timeOuts.push(setTimeout(n.f, currentDuration));
+        })();
+        currentDuration = currentDuration + n.duration;
+      }
+
+      return {
+        stop: function() {
+          for (var i = 0; i<timeOuts.length; i++) {
+            clearTimeout(timeOuts);
+          }
         }
       }
     }
