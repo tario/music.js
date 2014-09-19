@@ -6,22 +6,24 @@
 (function() {
 
     var music = new MUSIC.Context();
-    var att1 = new MUSIC.Effects.Attenuator(music, music.output(), function() {
-        return Math.sin(Date.now()*0.025 + Math.PI/2)*0.25+0.25;
-    });
 
-    var att2 = new MUSIC.Effects.Attenuator(music, music.output(), function() {
-        return Math.sin(Date.now()*0.025)*0.5+0.5;
-    });
+    var att1 = music.
+        attenuator(function() {
+            return Math.sin(Date.now()*0.025 + Math.PI/2)*0.25+0.25;
+        });
 
-    var osc1 = new MUSIC.SoundLib.Oscillator(music, att1.output(), {type: 'square'});
-    var osc2 = new MUSIC.SoundLib.Oscillator(music, music.output(), {type: 'sine'});
-    var osc3 = new MUSIC.SoundLib.Oscillator(music, att2.output(), {type: 'sawtooth'});
+    var att2 = music.
+        attenuator(function() {
+            return Math.sin(Date.now()*0.025)*0.5+0.5;
+        });
 
     var instrument = new MUSIC.MultiInstrument([
-        new MUSIC.Instrument(osc1, 3),
-        new MUSIC.Instrument(osc2, 5),
-        new MUSIC.Instrument(osc3, 3)
+        new MUSIC.Instrument(
+            att1.oscillator({type: 'square'}), 3),
+        new MUSIC.Instrument(
+            music.oscillator({type: 'sine'}), 5),
+        new MUSIC.Instrument(
+            att2.oscillator({type: 'sawtooth'}), 3)
     ]);
 
 

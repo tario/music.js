@@ -5,8 +5,19 @@ MUSIC.SoundLib = MUSIC.SoundLib || {};
 
 MUSIC.Effects = MUSIC.Effects || {};
 
-MUSIC.Effects.Attenuator = function(musicContext, next, factor) {
-  var audio = musicContext.audio;
+var pipeExtend = function(obj, audio, audioDestination) {
+  obj.oscillator = function(options) {
+    return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options)
+  };
+
+  obj.attenuator = function(fcn) {
+    return new MUSIC.Effects.Attenuator(audio, audioDestination, fcn);
+  };
+
+  return obj;
+};
+
+MUSIC.Effects.Attenuator = function(audio, next, factor) {
   var scriptNode = audio.createScriptProcessor(1024, 1, 1);
 
   scriptNode.onaudioprocess = function(audioProcessingEvent) {
@@ -30,6 +41,7 @@ MUSIC.Effects.Attenuator = function(musicContext, next, factor) {
   }
 
   scriptNode.connect(next);
+  pipeExtend(this, audio, scriptNode);
 
   this.output = function() {
     return scriptNode;
@@ -39,14 +51,11 @@ MUSIC.Effects.Attenuator = function(musicContext, next, factor) {
 MUSIC.Context = function() {
   var audio = new window.webkitAudioContext();
   this.audio = audio;
-  this.output = function() {
-    return audio.destination;
-  };
+
+  pipeExtend(this, audio, audio.destination);
 };
 
-MUSIC.SoundLib.Oscillator = function(musicContext, destination, options) {
-  var audio = musicContext.audio;
-
+MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
   options = options || {};
 
   this.play = function() {
