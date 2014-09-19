@@ -31,6 +31,20 @@ MUSIC.noteToNoteNum = function(noteName) {
   return notenum;
 };
 
+var during = function(duration) {
+        var original = this;
+        return {
+          play: function() {
+            var playable = original.play();
+            setTimeout(playable.stop.bind(playable), duration);
+
+            return original;
+          },
+
+          duration: function() { return duration; }
+        };
+      };
+
 MUSIC.Instrument = function(soundFactory, defaultOctave) {
   if (defaultOctave === undefined) defaultOctave = 3;
 
@@ -52,20 +66,32 @@ MUSIC.Instrument = function(soundFactory, defaultOctave) {
         }
       },
 
-      during: function(duration) {
-        var original = this;
-        return {
-          play: function() {
-            var playable = original.play();
-            setTimeout(playable.stop.bind(playable), duration);
-
-            return original;
-          },
-
-          duration: function() { return duration; }
-        };
-      }
+      during: during
     };
+  };
+};
+
+MUSIC.MultiIntrument = function(instrumentArray) {
+  var notePlay = function(note) { return note.play(); };
+  var noteStop = function(note) { return note.stop(); };
+
+  var MultiNote = function(noteArray) {
+    this.play = function() {
+      var notes = noteArray.map(notePlay);
+      return {
+        stop: function() {
+          notes.forEach(noteStop);
+        }
+      };
+    };
+
+    this.during = during;
+  };
+
+  this.note = function(noteName) {
+    return new MultiNote(instrumentArray.map(function(instrument){ 
+      return instrument.note(noteName);
+    }));
   };
 };
 

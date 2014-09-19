@@ -1,18 +1,28 @@
 <head>
 <script src="src/music.js" ></script>
 <script src="src/music/instruments.js" ></script>
+<p> Use ZXCVBNM keys for keyboard </p>
 <script>
 (function() {
 
-
-
     var music = new MUSIC.Context();
-    var att = new MUSIC.Effects.Attenuator(music, music.output(), function() {
-        return 0.2;
+    var att1 = new MUSIC.Effects.Attenuator(music, music.output(), function() {
+        return Math.sin(Date.now()*0.025 + Math.PI/2)*0.25+0.25;
     });
 
-    var osc = new MUSIC.SoundLib.Oscillator(music, att.output(), {type: 'square'});
-    var instrument = new MUSIC.Instrument(osc, 3);
+    var att2 = new MUSIC.Effects.Attenuator(music, music.output(), function() {
+        return Math.sin(Date.now()*0.025)*0.5+0.5;
+    });
+
+    var osc1 = new MUSIC.SoundLib.Oscillator(music, att1.output(), {type: 'square'});
+    var osc2 = new MUSIC.SoundLib.Oscillator(music, music.output(), {type: 'sine'});
+    var osc3 = new MUSIC.SoundLib.Oscillator(music, att2.output(), {type: 'sawtooth'});
+
+    var instrument = new MUSIC.MultiIntrument([
+        new MUSIC.Instrument(osc1, 3),
+        new MUSIC.Instrument(osc2, 5),
+        new MUSIC.Instrument(osc3, 3)
+    ]);
 
 
 /*    var player = MUSIC.InstrumentSequence(instrument, 200);
