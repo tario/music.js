@@ -41,7 +41,7 @@
         var n = notes[e.keyCode];
         if (n) return;
 
-        var note = instrument.note(keyCodeToNote[e.keyCode]);
+        var note = instrument.note(MUSIC.noteToNoteNum(keyCodeToNote[e.keyCode])+36);
         if (note == undefined) return;
         notes[e.keyCode] = note.play();
     };

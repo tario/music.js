@@ -40,8 +40,8 @@ var instrumentExtend = function(obj) {
 
   obj.stopDelay = function(ms) {
     return instrumentExtend({
-      note: function(noteName) {
-        return delayedNote(obj.note(noteName), ms);
+      note: function(noteNum) {
+        return delayedNote(obj.note(noteNum), ms);
       }
     });
   };
@@ -61,8 +61,8 @@ var instrumentExtend = function(obj) {
 
   obj.perNoteWrap = function(wrapper) {
     return instrumentExtend({
-      note: function(noteName) {
-        return wrapper(obj.note(noteName));
+      note: function(noteNum) {
+        return wrapper(obj.note(noteNum));
       }
     });
   };
@@ -97,14 +97,9 @@ var during = function(duration) {
 
 MUSIC.during = during;
 
-MUSIC.Instrument = function(soundFactory, defaultOctave) {
-  if (defaultOctave === undefined) defaultOctave = 3;
-
-  this.note = function(noteName) {
-
-    var notenum = MUSIC.noteToNoteNum(noteName); 
+MUSIC.Instrument = function(soundFactory) {
+  this.note = function(notenum) {
     if (notenum === undefined) return undefined;
-    notenum += defaultOctave*12;
 
     var freq = frequency(notenum);
     return {
@@ -143,9 +138,9 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     this.during = during;
   };
 
-  this.note = function(noteName) {
+  this.note = function(noteNum) {
     return new MultiNote(instrumentArray.map(function(instrument){ 
-      return instrument.note(noteName);
+      return instrument.note(noteNum);
     }));
   };
 };
