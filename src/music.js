@@ -8,6 +8,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options)
   };
 
+  obj.noise = function(noiseweight) {
+    return new MUSIC.Effects.Noise(audio, audioDestination, noiseweight)
+  };
+
   obj.attenuator = function(fcn) {
     return new MUSIC.Effects.Attenuator(audio, audioDestination, fcn);
   };

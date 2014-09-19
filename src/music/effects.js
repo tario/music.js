@@ -40,3 +40,8 @@ MUSIC.Effects.Attenuator = function(audio, next, factor) {
   });
 };
 
+MUSIC.Effects.Noise = function(audio, next, noiseweight) {
+  MUSIC.Effects.Formula.bind(this)(audio, next, function(input) {
+    return input * noiseweight * Math.random() + input * (1 - noiseweight);
+  });
+};

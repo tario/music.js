@@ -25,7 +25,12 @@
             music.oscillator({type: 'sine'}), 5),
         new MUSIC.Instrument(
             att2
-                .oscillator({type: 'sawtooth'}), 3)
+                .oscillator({type: 'sawtooth'}), 3),
+        new MUSIC.Instrument(
+            music
+                .noise(0.1)
+                .oscillator({type: 'sine'})
+                , 3)
     ]);
 
 
