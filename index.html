@@ -18,7 +18,7 @@
     var osc2 = new MUSIC.SoundLib.Oscillator(music, music.output(), {type: 'sine'});
     var osc3 = new MUSIC.SoundLib.Oscillator(music, att2.output(), {type: 'sawtooth'});
 
-    var instrument = new MUSIC.MultiIntrument([
+    var instrument = new MUSIC.MultiInstrument([
         new MUSIC.Instrument(osc1, 3),
         new MUSIC.Instrument(osc2, 5),
         new MUSIC.Instrument(osc3, 3)

@@ -71,7 +71,7 @@ MUSIC.Instrument = function(soundFactory, defaultOctave) {
   };
 };
 
-MUSIC.MultiIntrument = function(instrumentArray) {
+MUSIC.MultiInstrument = function(instrumentArray) {
   var notePlay = function(note) { return note.play(); };
   var noteStop = function(note) { return note.stop(); };
 
