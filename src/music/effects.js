@@ -27,6 +27,8 @@ MUSIC.Effects.Formula = function(audio, next, fcn) {
     scriptNode.connect(next);
   });
 
+  this._destination = scriptNode;
+  
   MUSIC.effectsPipeExtend(this, audio, scriptNode);
 
   this.output = function() {

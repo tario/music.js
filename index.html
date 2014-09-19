@@ -20,17 +20,12 @@
 
     var instrument = new MUSIC.MultiInstrument([
         new MUSIC.Instrument(
-            att1.oscillator({type: 'square'}), 3),
-        new MUSIC.Instrument(
-            music.oscillator({type: 'sine'}), 5),
-        new MUSIC.Instrument(
-            att2
-                .oscillator({type: 'sawtooth'}), 3),
-        new MUSIC.Instrument(
             music
-                .noise(0.1)
-                .oscillator({type: 'sine'})
-                , 3)
+                .noise(0.2)
+                .oscillator({type: 'square'}, function(dst) {
+                    return dst.attenuator(function(){return 1.0;});
+                }), 3)
+                    .stopDelay(500)
     ]);
 
 

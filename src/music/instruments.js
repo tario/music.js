@@ -20,6 +20,35 @@ var noteToNumMap = {
   'B ': 11
 };
 
+var instrumentExtend = function(obj) {
+  var delayedPlaying = function(originalPlaying, ms) {
+    return {
+      stop: function() {
+        setTimeout(originalPlaying.stop.bind(originalPlaying), ms);
+      } 
+    };
+  };
+
+  var delayedNote = function(originalNote, ms) {
+    return {
+      play: function() {
+        var originalPlaying = originalNote.play();
+        return delayedPlaying(originalPlaying, ms);
+      }
+    };
+  };
+
+  obj.stopDelay = function(ms) {
+    return {
+      note: function(noteName) {
+        return delayedNote(obj.note(noteName), ms);
+      }
+    };
+  };
+
+  return obj;
+};
+
 MUSIC.noteToNoteNum = function(noteName) {
   var notenum;
 
@@ -48,6 +77,7 @@ var during = function(duration) {
 MUSIC.Instrument = function(soundFactory, defaultOctave) {
   if (defaultOctave === undefined) defaultOctave = 3;
 
+
   this.note = function(noteName) {
 
     var notenum = MUSIC.noteToNoteNum(noteName); 
@@ -69,6 +99,8 @@ MUSIC.Instrument = function(soundFactory, defaultOctave) {
       during: during
     };
   };
+
+  instrumentExtend(this);
 };
 
 MUSIC.MultiInstrument = function(instrumentArray) {

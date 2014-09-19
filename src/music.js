@@ -4,12 +4,12 @@ MUSIC = {};
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
-  obj.oscillator = function(options) {
-    return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options)
+  obj.oscillator = function(options, nextProvider) {
+    return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options, nextProvider);
   };
 
   obj.noise = function(noiseweight) {
-    return new MUSIC.Effects.Noise(audio, audioDestination, noiseweight)
+    return new MUSIC.Effects.Noise(audio, audioDestination, noiseweight);
   };
 
   obj.attenuator = function(fcn) {
@@ -26,11 +26,16 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 MUSIC.Context = function() {
   var audio = new window.webkitAudioContext();
   this.audio = audio;
+  this.wrap = function(destination) {
+    var ret = {};
+    MUSIC.effectsPipeExtend(ret, audio, destination);
+    return ret;
+  };
 
   MUSIC.effectsPipeExtend(this, audio, audio.destination);
 };
 
-MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
+MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) {
   options = options || {};
 
   this.play = function() {
@@ -52,7 +57,11 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
 
           osc.type = options.type;
 
-          osc.connect(destination);
+          if (nextProvider) {
+            osc.connect(nextProvider(MUSIC.effectsPipeExtend({}, audio, destination))._destination);
+          } else {
+            osc.connect(destination);
+          }
           osc.start(0);
         }
 
