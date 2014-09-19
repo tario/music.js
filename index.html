@@ -18,14 +18,50 @@
             return Math.sin(Date.now()*0.025)*0.5+0.5;
         });
 
+    var wrapInstrumentNote = function(note) {
+        return {
+            play: function() {
+                var paramObject = {intensity:
+                    function() {
+                        if (this.stoppedTime) {
+                            var ret = 1.0 + (this.stoppedTime - Date.now())*0.005;
+                            if (ret < 0) ret = 0;
+                        } else {
+                            ret = 1.0;
+                        }
+                        return ret;
+                    }
+                };
+                paramObject.startedTime = Date.now();
+                var originalNote = note.play(paramObject);
+                return {
+                    stop: function() {
+                        paramObject.stoppedTime = Date.now();
+                        setTimeout(originalNote.stop.bind(originalNote), 500)
+                    }
+                };
+            },
+
+            during: MUSIC.during
+        };
+    };
+
+    var wrapInstrumentParam = function(instrument) {
+      return {
+        note: function(noteName) {
+          return wrapInstrumentNote(instrument.note(noteName));
+        }
+      };
+    };
+
     var instrument = new MUSIC.MultiInstrument([
         new MUSIC.Instrument(
             music
-                .noise(0.2)
-                .oscillator({type: 'square'}, function(dst) {
-                    return dst.attenuator(function(){return 1.0;});
+                .noise(0.9)
+                .oscillator({type: 'square'}, function(dst, param) {
+                    return dst.attenuator(function(){return param.intensity();});
                 }), 3)
-                    .stopDelay(500)
+                    .perNoteParam(wrapInstrumentParam)
     ]);
 
 

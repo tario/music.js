@@ -38,7 +38,7 @@ MUSIC.Context = function() {
 MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) {
   options = options || {};
 
-  this.play = function() {
+  this.play = function(param) {
     var osc;
     var frequency;
 
@@ -50,7 +50,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
         return this;
       },
 
-      play : function() {
+      play : function(param) {
         if (!osc) {
           osc = audio.createOscillator();
           osc.frequency.value = frequency;
@@ -58,7 +58,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
           osc.type = options.type;
 
           if (nextProvider) {
-            osc.connect(nextProvider(MUSIC.effectsPipeExtend({}, audio, destination))._destination);
+            osc.connect(nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param)._destination);
           } else {
             osc.connect(destination);
           }

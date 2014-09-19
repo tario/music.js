@@ -39,11 +39,28 @@ var instrumentExtend = function(obj) {
   };
 
   obj.stopDelay = function(ms) {
-    return {
+    return instrumentExtend({
       note: function(noteName) {
         return delayedNote(obj.note(noteName), ms);
       }
-    };
+    });
+  };
+
+  var parametrizedNote = function(note) {
+    return {
+      play: function() {
+        var paramObject = {};
+        var playing = note.play(paramObject);
+        return {
+          stop: playing.stop.bind(playing)
+        }
+      },
+      during: during
+    }
+  };
+
+  obj.perNoteParam = function(wrapper) {
+    return wrapper(obj);
   };
 
   return obj;
@@ -74,9 +91,10 @@ var during = function(duration) {
         };
       };
 
+MUSIC.during = during;
+
 MUSIC.Instrument = function(soundFactory, defaultOctave) {
   if (defaultOctave === undefined) defaultOctave = 3;
-
 
   this.note = function(noteName) {
 
@@ -86,9 +104,10 @@ MUSIC.Instrument = function(soundFactory, defaultOctave) {
 
     var freq = frequency(notenum);
     return {
-      play: function() {
-        var soundInstance = soundFactory.play().setFrequency(freq);
-        soundInstance.play();
+      play: function(param) {
+        var soundInstance = soundFactory.play(param).setFrequency(freq);
+        soundInstance.play(param);
+
         return {
           stop: function() {
             soundInstance.stop();
