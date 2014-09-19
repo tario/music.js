@@ -59,8 +59,12 @@ var instrumentExtend = function(obj) {
     }
   };
 
-  obj.perNoteParam = function(wrapper) {
-    return wrapper(obj);
+  obj.perNoteWrap = function(wrapper) {
+    return instrumentExtend({
+      note: function(noteName) {
+        return wrapper(obj.note(noteName));
+      }
+    });
   };
 
   return obj;
@@ -145,5 +149,46 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     }));
   };
 };
+
+MUSIC.NoteShaper = function(fcn, stopDelay) {
+  return function(note) {
+      return {
+          play: function() {
+              var paramObject = {intensity:
+                  function() {
+                    return fcn(this.startedTime, this.stoppedTime, Date.now());
+                  }
+              };
+              paramObject.startedTime = Date.now();
+              var originalNote = note.play(paramObject);
+              return {
+                  stop: function() {
+                      paramObject.stoppedTime = Date.now();
+                      setTimeout(originalNote.stop.bind(originalNote), stopDelay);
+                  }
+              };
+          },
+
+          during: MUSIC.during
+      };
+  };
+};
+
+MUSIC.FadeoutNoteShaper = function(options) {
+  options = options || {};
+  var max = options.max || 1.0;
+  var fadeoutSpeed = options.fadeoutSpeed || 0.005;
+
+  return MUSIC.NoteShaper(function(startedTime, stoppedTime, currentTime) {
+    if (stoppedTime) {
+        var ret = max + (stoppedTime - currentTime)*fadeoutSpeed;
+        if (ret < 0) ret = 0;
+    } else {
+        ret = max;
+    }
+    return ret;
+  }, max/fadeoutSpeed);
+};
+
 
 })();
