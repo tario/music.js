@@ -2,8 +2,53 @@ MUSIC = {};
 
 (function() {
 MUSIC.SoundLib = MUSIC.SoundLib || {};
-MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
+
+MUSIC.Effects = MUSIC.Effects || {};
+
+MUSIC.Effects.Attenuator = function(musicContext, next, factor) {
+  var audio = musicContext.audio;
+  var scriptNode = audio.createScriptProcessor(1024, 1, 1);
+
+  scriptNode.onaudioprocess = function(audioProcessingEvent) {
+    // The input buffer is the song we loaded earlier
+    var inputBuffer = audioProcessingEvent.inputBuffer;
+
+    // The output buffer contains the samples that will be modified and played
+    var outputBuffer = audioProcessingEvent.outputBuffer;
+
+    // Loop through the output channels (in this case there is only one)
+    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+      var inputData = inputBuffer.getChannelData(channel);
+      var outputData = outputBuffer.getChannelData(channel);
+
+      // Loop through the 4096 samples
+      for (var sample = 0; sample < inputBuffer.length; sample++) {
+        // make output equal to the same as the input
+        outputData[sample] = inputData[sample]*factor();
+      }
+    }
+  }
+
+  scriptNode.connect(next);
+
+  this.output = function() {
+    return scriptNode;
+  };
+};
+
+MUSIC.Context = function() {
+  var audio = new window.webkitAudioContext();
+  this.audio = audio;
+  this.output = function() {
+    return audio.destination;
+  };
+};
+
+MUSIC.SoundLib.Oscillator = function(musicContext, destination, options) {
+  var audio = musicContext.audio;
+
   options = options || {};
+
   this.play = function() {
     var osc;
     var frequency;
