@@ -1,6 +1,7 @@
 <head>
 <script src="src/music.js" ></script>
 <script src="src/music/instruments.js" ></script>
+<script src="src/music/effects.js" ></script>
 <p> Use ZXCVBNM keys for keyboard </p>
 <script>
 (function() {
@@ -23,7 +24,8 @@
         new MUSIC.Instrument(
             music.oscillator({type: 'sine'}), 5),
         new MUSIC.Instrument(
-            att2.oscillator({type: 'sawtooth'}), 3)
+            att2
+                .oscillator({type: 'sawtooth'}), 3)
     ]);
 
 

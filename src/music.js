@@ -3,9 +3,7 @@ MUSIC = {};
 (function() {
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 
-MUSIC.Effects = MUSIC.Effects || {};
-
-var pipeExtend = function(obj, audio, audioDestination) {
+MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
   obj.oscillator = function(options) {
     return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options)
   };
@@ -14,45 +12,18 @@ var pipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.Effects.Attenuator(audio, audioDestination, fcn);
   };
 
-  return obj;
-};
-
-MUSIC.Effects.Attenuator = function(audio, next, factor) {
-  var scriptNode = audio.createScriptProcessor(1024, 1, 1);
-
-  scriptNode.onaudioprocess = function(audioProcessingEvent) {
-    // The input buffer is the song we loaded earlier
-    var inputBuffer = audioProcessingEvent.inputBuffer;
-
-    // The output buffer contains the samples that will be modified and played
-    var outputBuffer = audioProcessingEvent.outputBuffer;
-
-    // Loop through the output channels (in this case there is only one)
-    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-      var inputData = inputBuffer.getChannelData(channel);
-      var outputData = outputBuffer.getChannelData(channel);
-
-      // Loop through the 4096 samples
-      for (var sample = 0; sample < inputBuffer.length; sample++) {
-        // make output equal to the same as the input
-        outputData[sample] = inputData[sample]*factor();
-      }
-    }
-  }
-
-  scriptNode.connect(next);
-  pipeExtend(this, audio, scriptNode);
-
-  this.output = function() {
-    return scriptNode;
+  obj.formula = function(fcn) {
+    return new MUSIC.Effects.Formula(audio, audioDestination, fcn);
   };
+
+  return obj;
 };
 
 MUSIC.Context = function() {
   var audio = new window.webkitAudioContext();
   this.audio = audio;
 
-  pipeExtend(this, audio, audio.destination);
+  MUSIC.effectsPipeExtend(this, audio, audio.destination);
 };
 
 MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
@@ -76,6 +47,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
           osc.frequency.value = frequency;
 
           osc.type = options.type;
+
           osc.connect(destination);
           osc.start(0);
         }
