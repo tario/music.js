@@ -67,6 +67,14 @@ var instrumentExtend = function(obj) {
     });
   };
 
+  obj.mapNote = function(fcn) {
+    return instrumentExtend({
+      note: function(noteNum) {
+        return obj.note(fcn(noteNum));
+      }
+    });
+  };
+
   return obj;
 };
 

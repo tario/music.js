@@ -7,16 +7,20 @@
 (function() {
 
     var music = new MUSIC.Context();
-    var instrument = new MUSIC.MultiInstrument([
+    var instrument = 
         new MUSIC.Instrument(
             music
                 .noise(0.3)
                 .oscillator({type: 'square'}, function(dst, param) {
                     return dst.attenuator(function(){return param.intensity();});
                 }), 3)
-                    .perNoteWrap(MUSIC.FadeoutNoteShaper({max: 1.0, fadeoutSpeed: 0.005}))
-    ]);
+                    .perNoteWrap(MUSIC.FadeoutNoteShaper({max: 1.0, fadeoutSpeed: 0.0025}));
+    
 
+    instrument = new MUSIC.MultiInstrument([
+            instrument,
+            instrument.mapNote(function(n) { return n + 12; })
+            ]);
 
 /*    var player = MUSIC.InstrumentSequence(instrument, 200);
     var playe2 = MUSIC.InstrumentSequence(instrument2, 200);
