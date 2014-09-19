@@ -1,0 +1,72 @@
+(function() {
+
+var frequency = function(notenum) {
+    return 36.7075 * Math.pow(2, notenum/12);
+};
+var noteToNumMap = {
+  'C': 0, 
+  'D': 2, 
+  'E': 4, 
+  'F': 5, 
+  'G': 7, 
+  'A': 9, 
+  'B': 11,
+  'C ': 0, 
+  'D ': 2, 
+  'E ': 4, 
+  'F ': 5, 
+  'G ': 7, 
+  'A ': 9,
+  'B ': 11
+};
+
+MUSIC.noteToNoteNum = function(noteName) {
+  var notenum;
+
+  notenum = noteToNumMap[noteName.charAt(0)]
+  if (notenum === undefined) return undefined
+  if (noteName.charAt(1) === '#') notenum++;
+  if (noteName.charAt(1) === 'b') notenum--;
+  if (noteName.charAt(2) !== "") notenum += (12 * parseInt(noteName.charAt(2)));
+  return notenum;
+};
+
+MUSIC.Instrument = function(soundFactory, defaultOctave) {
+  if (defaultOctave === undefined) defaultOctave = 3;
+
+  this.note = function(noteName) {
+
+    var notenum = MUSIC.noteToNoteNum(noteName); 
+    if (notenum === undefined) return undefined;
+    notenum += defaultOctave*12;
+
+    var freq = frequency(notenum);
+    return {
+      play: function() {
+        var soundInstance = soundFactory.play().setFrequency(freq);
+        soundInstance.play();
+        return {
+          stop: function() {
+            soundInstance.stop();
+          }
+        }
+      },
+
+      during: function(duration) {
+        var original = this;
+        return {
+          play: function() {
+            var playable = original.play();
+            setTimeout(playable.stop.bind(playable), duration);
+
+            return original;
+          },
+
+          duration: function() { return duration; }
+        };
+      }
+    };
+  };
+};
+
+})();
