@@ -25,6 +25,9 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 
 MUSIC.Context = function() {
   var audio = new window.webkitAudioContext();
+  var music = this;
+
+  this._destination = audio.destination;
   this.audio = audio;
   this.wrap = function(destination) {
     var ret = {};
@@ -32,7 +35,7 @@ MUSIC.Context = function() {
     return ret;
   };
 
-  MUSIC.effectsPipeExtend(this, audio, audio.destination);
+  MUSIC.effectsPipeExtend(this, audio, this);
 };
 
 MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) {
@@ -41,6 +44,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
   this.play = function(param) {
     var osc;
     var frequency;
+    var nextNode;
 
     return {
       setFrequency : function(newFreq) {
@@ -58,9 +62,11 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
           osc.type = options.type;
 
           if (nextProvider) {
-            osc.connect(nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param)._destination);
+            nextNode = nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param)._destination;
+            osc.connect(nextNode);
           } else {
-            osc.connect(destination);
+            nextNode = destination._destination;
+            osc.connect(nextNode);
           }
           osc.start(0);
         }
@@ -71,7 +77,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
       stop : function() {
         if (osc) {
           osc.stop(0);
-          osc.disconnect(destination);
+          osc.disconnect(destination._destination);
           osc = undefined;
         }
 

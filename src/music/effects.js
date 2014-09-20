@@ -24,12 +24,12 @@ MUSIC.Effects.Formula = function(audio, next, fcn) {
   }
 
   setTimeout(function() { // this hack prevents a bug in current version of chrome
-    scriptNode.connect(next);
+    scriptNode.connect(next._destination);
   });
 
   this._destination = scriptNode;
   
-  MUSIC.effectsPipeExtend(this, audio, scriptNode);
+  MUSIC.effectsPipeExtend(this, audio, this);
 
   this.output = function() {
     return scriptNode;
