@@ -45,6 +45,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
     var osc;
     var frequency;
     var nextNode;
+    var disposeNode;
 
     return {
       setFrequency : function(newFreq) {
@@ -56,17 +57,37 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
 
       play : function(param) {
         if (!osc) {
+          var audioDestination;
           osc = audio.createOscillator();
           osc.frequency.value = frequency;
 
           osc.type = options.type;
 
           if (nextProvider) {
-            nextNode = nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param)._destination;
-            osc.connect(nextNode);
+            nextNode = nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param);
+            audioDestination = nextNode._destination;
+            disposeNode = function() {
+              var x = nextNode;
+              osc.disconnect(audioDestination);
+
+              while (1) {
+                x.disconnect();
+                x = x.next();
+                if (x === destination) {
+                  break;
+                }
+              };
+              disposeNode = null;
+            };
+            osc.connect(audioDestination);
           } else {
-            nextNode = destination._destination;
-            osc.connect(nextNode);
+            nextNode = destination;
+            audioDestination = nextNode._destination;
+            disposeNode = function() {
+              osc.disconnect(audioDestination);
+              disposeNode = null;
+            };
+            osc.connect(audioDestination);
           }
           osc.start(0);
         }
@@ -77,7 +98,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
       stop : function() {
         if (osc) {
           osc.stop(0);
-          osc.disconnect(destination._destination);
+          disposeNode();
           osc = undefined;
         }
 

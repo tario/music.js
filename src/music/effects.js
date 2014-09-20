@@ -31,6 +31,14 @@ MUSIC.Effects.Formula = function(audio, next, fcn) {
   
   MUSIC.effectsPipeExtend(this, audio, this);
 
+  this.next = function() {
+    return next;
+  };
+
+  this.disconnect = function() {
+    scriptNode.disconnect(next._destination);
+  };
+
   this.output = function() {
     return scriptNode;
   };
