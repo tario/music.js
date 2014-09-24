@@ -144,6 +144,9 @@ MUSIC.MultiInstrument = function(instrumentArray) {
       return instrument.note(noteNum);
     }));
   };
+
+  instrumentExtend(this);
+
 };
 
 var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -177,7 +180,6 @@ function _base64ToArrayBuffer(base64) {
       var noteName = noteNumToNoteName(i);
       var data = sounds[noteName];
       var encoded = data.split(",")[1];
-      var decoded = atob(encoded);
 
       audio.decodeAudioData(_base64ToArrayBuffer(encoded), function(buffer) {
         noteAudio[index] = buffer;
@@ -206,6 +208,9 @@ function _base64ToArrayBuffer(base64) {
       }
     };
   };
+
+  instrumentExtend(this);
+
 };
 
 MUSIC.NoteShaper = function(fcn, stopDelay) {

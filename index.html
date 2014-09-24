@@ -3,6 +3,8 @@
 <script src="src/music/instruments.js" ></script>
 <script src="src/music/effects.js" ></script>
 <script src="src/soundfont/accordion-ogg.js" ></script>
+<script src="src/soundfont/acoustic_grand_piano-ogg.js" ></script>
+
 <p> Use ZXCVBNM keys for keyboard </p>
 <script>
 (function() {
@@ -26,14 +28,15 @@
 */
 
     var sfInstrument = music
-                        .noise(1.0)
-                        .soundfont(MIDI.Soundfont.accordion);
+                        .attenuator(function(){ return 5.0; })
+                        .soundfont(MIDI.Soundfont.acoustic_grand_piano)
+                        .mapNote(function(x){return x + 24;});
 
     instrument = new MUSIC.MultiInstrument([
             oscInstrument,
             sfInstrument
             ]);
-    instrument = sfInstrument;
+    instrument = oscInstrument;
 /*    var player = MUSIC.InstrumentSequence(instrument, 200);
     var playe2 = MUSIC.InstrumentSequence(instrument2, 200);
 */
