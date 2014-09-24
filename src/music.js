@@ -8,8 +8,8 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options, nextProvider);
   };
 
-  obj.noise = function(noiseweight) {
-    return new MUSIC.Effects.Noise(audio, audioDestination, noiseweight);
+  obj.noise = function() {
+    return new MUSIC.SoundLib.Noise(audio, audioDestination);
   };
 
   obj.attenuator = function(fcn) {
@@ -40,6 +40,21 @@ MUSIC.Context = function() {
   };
 
   MUSIC.effectsPipeExtend(this, audio, this);
+};
+
+MUSIC.SoundLib.Noise = function(audio, nextProvider) {
+  this.play = function(param) {
+    var audioDestination;
+    var noiseGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function() {
+      return Math.random();
+    });
+
+    return {
+      stop: function() {
+        noiseGenerator.disconnect(nextProvider._destination);
+      }
+    }
+  };
 };
 
 MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) {

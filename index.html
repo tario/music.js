@@ -10,16 +10,15 @@
 (function() {
 
     var music = new MUSIC.Context();
+
+
+    var snd = {
+        freq: function(frequency) {
+            return music.noise();
+        }
+    };
     var oscInstrument = 
-        new MUSIC.Instrument(
-            music
-                .attenuator(function(){return 0.1;})
-                .noise(0.3)
-                .oscillator({type: 'square'}, function(dst, param) {
-                    return dst.attenuator(function(){return param.intensity();});
-                }), 3)
-                    .perNoteWrap(MUSIC.FadeoutNoteShaper({max: 1.0, fadeoutSpeed: 0.0025}));
-    
+       new MUSIC.Instrument(snd);
 
 /*    instrument = new MUSIC.MultiInstrument([
             instrument,
