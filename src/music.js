@@ -20,6 +20,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.Effects.Formula(audio, audioDestination, fcn);
   };
 
+  obj.soundfont = function(param) {
+    return new MUSIC.SoundfontInstrument(param, audio, audioDestination);
+  };
+
   return obj;
 };
 

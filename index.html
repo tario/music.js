@@ -2,14 +2,16 @@
 <script src="src/music.js" ></script>
 <script src="src/music/instruments.js" ></script>
 <script src="src/music/effects.js" ></script>
+<script src="src/soundfont/accordion-ogg.js" ></script>
 <p> Use ZXCVBNM keys for keyboard </p>
 <script>
 (function() {
 
     var music = new MUSIC.Context();
-    var instrument = 
+    var oscInstrument = 
         new MUSIC.Instrument(
             music
+                .attenuator(function(){return 0.1;})
                 .noise(0.3)
                 .oscillator({type: 'square'}, function(dst, param) {
                     return dst.attenuator(function(){return param.intensity();});
@@ -17,11 +19,21 @@
                     .perNoteWrap(MUSIC.FadeoutNoteShaper({max: 1.0, fadeoutSpeed: 0.0025}));
     
 
-    instrument = new MUSIC.MultiInstrument([
+/*    instrument = new MUSIC.MultiInstrument([
             instrument,
             instrument.mapNote(function(n) { return n + 12; })
             ]);
+*/
 
+    var sfInstrument = music
+                        .noise(1.0)
+                        .soundfont(MIDI.Soundfont.accordion);
+
+    instrument = new MUSIC.MultiInstrument([
+            oscInstrument,
+            sfInstrument
+            ]);
+    instrument = sfInstrument;
 /*    var player = MUSIC.InstrumentSequence(instrument, 200);
     var playe2 = MUSIC.InstrumentSequence(instrument2, 200);
 */

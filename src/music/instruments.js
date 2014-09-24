@@ -1,7 +1,7 @@
 (function() {
 
 var frequency = function(notenum) {
-    return 36.7075 * Math.pow(2, notenum/12);
+    return 65.40639132514966 * Math.pow(2, notenum/12);
 };
 var noteToNumMap = {
   'C': 0, 
@@ -10,14 +10,7 @@ var noteToNumMap = {
   'F': 5, 
   'G': 7, 
   'A': 9, 
-  'B': 11,
-  'C ': 0, 
-  'D ': 2, 
-  'E ': 4, 
-  'F ': 5, 
-  'G ': 7, 
-  'A ': 9,
-  'B ': 11
+  'B': 11
 };
 
 var instrumentExtend = function(obj) {
@@ -150,6 +143,68 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     return new MultiNote(instrumentArray.map(function(instrument){ 
       return instrument.note(noteNum);
     }));
+  };
+};
+
+var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+var noteNumToNoteName = function(noteNum) {
+  var noteName = NOTES[noteNum % 12];
+  var octaveNum = (Math.floor(noteNum / 12 + 1));
+
+  return noteName + octaveNum;
+};
+
+
+MUSIC.SoundfontInstrument = function(sounds, audio, audioDestination) {
+
+  var noteAudio = [];
+
+function _base64ToArrayBuffer(base64) {
+    var binary_string =  window.atob(base64);
+    var len = binary_string.length;
+    var bytes = new Uint8Array( len );
+    for (var i = 0; i < len; i++)        {
+        var ascii = binary_string.charCodeAt(i);
+        bytes[i] = ascii;
+    }
+    return bytes.buffer;
+};
+
+  for (var i = 0; i<72; i++) {
+    (function() {
+      var index = i;
+      var xmlhttp=new XMLHttpRequest();
+      var noteName = noteNumToNoteName(i);
+      var data = sounds[noteName];
+      var encoded = data.split(",")[1];
+      var decoded = atob(encoded);
+
+      audio.decodeAudioData(_base64ToArrayBuffer(encoded), function(buffer) {
+        noteAudio[index] = buffer;
+      }, function(err) {
+        console.error("error " + err + " loading " + index);
+      });
+
+    })();
+  };
+
+  this.note = function(notenum) {
+    console.log(noteNumToNoteName(notenum));
+    var source = audio.createBufferSource();
+    return {
+      play: function() {
+        var source = audio.createBufferSource();
+        source.buffer = noteAudio[notenum];
+        source.connect(audioDestination._destination);
+        source.start(0);
+        return {
+          stop: function() {
+            source.stop(0);
+            source.disconnect(audioDestination._destination);
+          }
+        };
+      }
+    };
   };
 };
 
