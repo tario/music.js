@@ -14,28 +14,25 @@
 
     var snd = {
         freq: function(frequency) {
-            return music.noise();
+            return music
+                    .lowpass(frequency)
+                    .noise();
         }
     };
     var oscInstrument = 
        new MUSIC.Instrument(snd);
 
-/*    instrument = new MUSIC.MultiInstrument([
-            instrument,
-            instrument.mapNote(function(n) { return n + 12; })
-            ]);
-*/
 
     var sfInstrument = music
                         .attenuator(function(){ return 5.0; })
                         .soundfont(MIDI.Soundfont.acoustic_grand_piano)
-                        .mapNote(function(x){return x + 24;});
+                        .mapNote(function(x){return x;});
 
     instrument = new MUSIC.MultiInstrument([
             oscInstrument,
             sfInstrument
             ]);
-    instrument = oscInstrument;
+    instrument = sfInstrument;
 /*    var player = MUSIC.InstrumentSequence(instrument, 200);
     var playe2 = MUSIC.InstrumentSequence(instrument2, 200);
 */

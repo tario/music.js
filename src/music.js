@@ -24,6 +24,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.SoundfontInstrument(param, audio, audioDestination);
   };
 
+  obj.lowpass = function(freq) {
+    return new MUSIC.Effects.LowPass(audio, audioDestination, freq);
+  };
+
   return obj;
 };
 

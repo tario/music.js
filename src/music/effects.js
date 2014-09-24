@@ -49,3 +49,28 @@ MUSIC.Effects.Attenuator = function(audio, next, factor) {
     return input * factor();
   });
 };
+
+MUSIC.Effects.LowPass = function(audio, next, freq, gain) {
+  var biquadFilter = audio.createBiquadFilter();
+
+  biquadFilter.type = "lowpass";
+  biquadFilter.frequency.value = freq;
+  biquadFilter.gain.value = gain || 25;
+
+  this._destination = biquadFilter;
+
+  setTimeout(function() { // this hack prevents a bug in current version of chrome
+    biquadFilter.connect(next._destination);
+  });
+
+  MUSIC.effectsPipeExtend(this, audio, this);
+
+  this.next = function() {
+    return next;
+  };
+
+  this.disconnect = function(){
+    biquadFilter.disconnect(next._destination);
+  };
+};
+
