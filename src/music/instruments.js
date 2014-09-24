@@ -105,9 +105,7 @@ MUSIC.Instrument = function(soundFactory) {
     var freq = frequency(notenum);
     return {
       play: function(param) {
-        var soundInstance = soundFactory.play(param).setFrequency(freq);
-        soundInstance.play(param);
-
+        var soundInstance = soundFactory.freq(freq).play(param);
         return {
           stop: function() {
             soundInstance.stop();

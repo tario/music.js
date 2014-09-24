@@ -45,69 +45,57 @@ MUSIC.Context = function() {
 MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) {
   options = options || {};
 
-  this.play = function(param) {
+  this.freq = function(newFreq) {
     var osc;
-    var frequency;
+    var frequency = newFreq;
     var nextNode;
     var disposeNode;
 
     return {
-      setFrequency : function(newFreq) {
-        frequency = newFreq;
-        if (osc) osc.frequency.value = frequency;
-
-        return this;
-      },
-
       play : function(param) {
-        if (!osc) {
-          var audioDestination;
-          osc = audio.createOscillator();
-          osc.frequency.value = frequency;
+        var audioDestination;
+        osc = audio.createOscillator();
+        osc.frequency.value = frequency;
 
-          osc.type = options.type;
+        osc.type = options.type;
 
-          if (nextProvider) {
-            nextNode = nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param);
-            audioDestination = nextNode._destination;
-            disposeNode = function() {
-              var x = nextNode;
-              osc.disconnect(audioDestination);
+        if (nextProvider) {
+          nextNode = nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param);
+          audioDestination = nextNode._destination;
+          disposeNode = function() {
+            var x = nextNode;
+            osc.disconnect(audioDestination);
 
-              while (1) {
-                x.disconnect();
-                x = x.next();
-                if (x === destination) {
-                  break;
-                }
-              };
-              disposeNode = null;
+            while (1) {
+              x.disconnect();
+              x = x.next();
+              if (x === destination) {
+                break;
+              }
             };
-            osc.connect(audioDestination);
-          } else {
-            nextNode = destination;
-            audioDestination = nextNode._destination;
-            disposeNode = function() {
-              osc.disconnect(audioDestination);
-              disposeNode = null;
-            };
-            osc.connect(audioDestination);
+            disposeNode = null;
+          };
+          osc.connect(audioDestination);
+        } else {
+          nextNode = destination;
+          audioDestination = nextNode._destination;
+          disposeNode = function() {
+            osc.disconnect(audioDestination);
+            disposeNode = null;
+          };
+          osc.connect(audioDestination);
+        }
+        osc.start(0);
+
+        return {
+          stop : function() {
+            osc.stop(0);
+            disposeNode();
+            osc = undefined;
           }
-          osc.start(0);
-        }
-
-        return this;
-      },
-
-      stop : function() {
-        if (osc) {
-          osc.stop(0);
-          disposeNode();
-          osc = undefined;
-        }
-
-        return this;
+        };
       }
+
     }
   };
 };
