@@ -28,6 +28,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.Effects.LowPass(audio, audioDestination, freq);
   };
 
+  obj.gain = function(value) {
+    return new MUSIC.Effects.Gain(audio, audioDestination, value);
+  };
+
   return obj;
 };
 

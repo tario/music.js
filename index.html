@@ -10,29 +10,21 @@
 (function() {
 
     var music = new MUSIC.Context();
+    var instrument = 
+        new MUSIC.Instrument(
+            music
+                .oscillator({type: 'square'}, function(dst, param) {
+                    return dst.gain(1.0);
+                }), 2);
 
 
-    var snd = {
-        freq: function(frequency) {
-            return music
-                    .lowpass(frequency)
-                    .noise();
-        }
-    };
-    var oscInstrument = 
-       new MUSIC.Instrument(snd);
-
-
-    var sfInstrument = music
-                        .attenuator(function(){ return 5.0; })
-                        .soundfont(MIDI.Soundfont.acoustic_grand_piano)
-                        .mapNote(function(x){return x;});
+        //            .perNoteWrap(MUSIC.FadeoutNoteShaper({max: 1.0, fadeoutSpeed: 0.0025}));
+    
 
     instrument = new MUSIC.MultiInstrument([
-            oscInstrument,
-            sfInstrument
+            instrument,
+            instrument.mapNote(function(n) { return n + 12; })
             ]);
-    instrument = sfInstrument;
 /*    var player = MUSIC.InstrumentSequence(instrument, 200);
     var playe2 = MUSIC.InstrumentSequence(instrument2, 200);
 */

@@ -74,3 +74,24 @@ MUSIC.Effects.LowPass = function(audio, next, freq, gain) {
   };
 };
 
+MUSIC.Effects.Gain = function(audio, next, value) {
+  var gainNode = audio.createGain();
+  gainNode.gain.value = value;
+
+  this._destination = gainNode;
+  setTimeout(function() { // this hack prevents a bug in current version of chrome
+    gainNode.connect(next._destination);
+  });
+
+  this.next = function() {
+    return next;
+  };
+
+  this.disconnect = function() {
+    gainNode.disconnect(next._destination);
+  };
+
+  this.output = function() {
+    return gainNode;
+  };  
+};
