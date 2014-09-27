@@ -1,5 +1,27 @@
 MUSIC.Effects = MUSIC.Effects || {};
 
+MUSIC.Effects.WebAudioNodeWrapper = function (audio, audioNode, next) {
+
+  this._destination = audioNode;
+  setTimeout(function() { // this hack prevents a bug in current version of chrome
+    audioNode.connect(next._destination);
+  });
+
+  this.next = function() {
+    return next;
+  };
+
+  this.disconnect = function() {
+    audioNode.disconnect(next._destination);
+  };
+
+  this.output = function() {
+    return audioNode;
+  };  
+
+  MUSIC.effectsPipeExtend(this, audio, this);
+};
+
 MUSIC.Effects.Formula = function(audio, next, fcn) {
   var scriptNode = audio.createScriptProcessor(1024, 1, 1);
 
@@ -57,41 +79,11 @@ MUSIC.Effects.LowPass = function(audio, next, freq, gain) {
   biquadFilter.frequency.value = freq;
   biquadFilter.gain.value = gain || 25;
 
-  this._destination = biquadFilter;
-
-  setTimeout(function() { // this hack prevents a bug in current version of chrome
-    biquadFilter.connect(next._destination);
-  });
-
-  MUSIC.effectsPipeExtend(this, audio, this);
-
-  this.next = function() {
-    return next;
-  };
-
-  this.disconnect = function(){
-    biquadFilter.disconnect(next._destination);
-  };
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, biquadFilter, next);
 };
 
 MUSIC.Effects.Gain = function(audio, next, value) {
   var gainNode = audio.createGain();
   gainNode.gain.value = value;
-
-  this._destination = gainNode;
-  setTimeout(function() { // this hack prevents a bug in current version of chrome
-    gainNode.connect(next._destination);
-  });
-
-  this.next = function() {
-    return next;
-  };
-
-  this.disconnect = function() {
-    gainNode.disconnect(next._destination);
-  };
-
-  this.output = function() {
-    return gainNode;
-  };  
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, gainNode, next);
 };

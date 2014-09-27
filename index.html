@@ -13,6 +13,7 @@
     var instrument = 
         new MUSIC.Instrument(
             music
+                .lowpass(300)
                 .oscillator({type: 'square'}, function(dst, param) {
                     return dst.gain(1.0);
                 }), 2);
