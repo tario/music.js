@@ -211,20 +211,21 @@ function _base64ToArrayBuffer(base64) {
 
 };
 
-MUSIC.NoteShaper = function(fcn, stopDelay) {
+MUSIC.StopEvent = function(stopDelay) {
+  stopDelay = stopDelay * 1000;
   return function(note) {
       return {
           play: function() {
-              var paramObject = {intensity:
-                  function() {
-                    return fcn(this.startedTime, this.stoppedTime, Date.now());
-                  }
+              var paramObject = {
+                  onplay: function() {},
+                  onstop: function() {}
               };
-              paramObject.startedTime = Date.now();
+
               var originalNote = note.play(paramObject);
+              paramObject.onplay();
               return {
                   stop: function() {
-                      paramObject.stoppedTime = Date.now();
+                      paramObject.onstop();
                       setTimeout(originalNote.stop.bind(originalNote), stopDelay);
                   }
               };
@@ -234,22 +235,5 @@ MUSIC.NoteShaper = function(fcn, stopDelay) {
       };
   };
 };
-
-MUSIC.FadeoutNoteShaper = function(options) {
-  options = options || {};
-  var max = options.max || 1.0;
-  var fadeoutSpeed = options.fadeoutSpeed || 0.005;
-
-  return MUSIC.NoteShaper(function(startedTime, stoppedTime, currentTime) {
-    if (stoppedTime) {
-        var ret = max + (stoppedTime - currentTime)*fadeoutSpeed;
-        if (ret < 0) ret = 0;
-    } else {
-        ret = max;
-    }
-    return ret;
-  }, max/fadeoutSpeed);
-};
-
 
 })();

@@ -17,7 +17,11 @@ MUSIC.Effects.WebAudioNodeWrapper = function (audio, audioNode, next) {
 
   this.output = function() {
     return audioNode;
-  };  
+  };
+
+  this.setParam = function(paramName, value) {
+    value.apply(audio.currentTime, audioNode[paramName]);
+  };
 
   MUSIC.effectsPipeExtend(this, audio, this);
 };
@@ -86,4 +90,24 @@ MUSIC.Effects.Gain = function(audio, next, value) {
   var gainNode = audio.createGain();
   gainNode.gain.value = value;
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, gainNode, next);
+};
+
+MUSIC.Curve = {};
+var during = function(array) {
+  return function(time) {
+    return { 
+      apply: function(currentTime, audioParam) {
+        audioParam.setValueCurveAtTime(array, currentTime, time);
+      }
+    };
+  };
+};
+
+MUSIC.Curve.Ramp = function(initValue, endValue, n) {
+  var array = new Float32Array(n);
+  for (var i = 0; i < n; i++ ) {
+    array[i] = (initValue + (endValue - initValue) * i / n);
+  };
+
+  this.during = during(array);
 };

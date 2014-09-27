@@ -10,16 +10,21 @@
 (function() {
 
     var music = new MUSIC.Context();
+    var startCurve = new MUSIC.Curve.Ramp(0, 1.0, 100).during(0.4);
+    var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.4);
     var instrument = 
         new MUSIC.Instrument(
             music
                 .lowpass(300)
                 .oscillator({type: 'square'}, function(dst, param) {
-                    return dst.gain(1.0);
-                }), 2);
-
-
-        //            .perNoteWrap(MUSIC.FadeoutNoteShaper({max: 1.0, fadeoutSpeed: 0.0025}));
+                    var gainNode = dst.gain(1.0);
+                    /// gainNode.setParam('gain', startCurve); // optional
+                    param.onstop = function() {
+                        gainNode.setParam('gain', stopCurve);
+                    };
+                    return gainNode;
+                }), 2)
+                    .perNoteWrap(MUSIC.StopEvent(0.4));
     
 
     instrument = new MUSIC.MultiInstrument([
