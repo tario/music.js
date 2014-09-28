@@ -32,6 +32,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.Effects.Gain(audio, audioDestination, value);
   };
 
+  obj.delay = function(value) {
+    return new MUSIC.Effects.Delay(audio, audioDestination, value);
+  };
+
   return obj;
 };
 

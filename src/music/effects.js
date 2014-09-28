@@ -92,6 +92,12 @@ MUSIC.Effects.Gain = function(audio, next, value) {
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, gainNode, next);
 };
 
+MUSIC.Effects.Delay = function(audio, next, value) {
+  var delayNode = audio.createDelay(60);
+  delayNode.delayTime.value = value;
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, delayNode, next);
+};
+
 MUSIC.Curve = {};
 var during = function(array) {
   return function(time) {
