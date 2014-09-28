@@ -36,6 +36,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.Effects.Delay(audio, audioDestination, value);
   };
 
+  obj.reverb = function(value) {
+    return new MUSIC.Effects.Reverb(audio, audioDestination, value);
+  };
+
   return obj;
 };
 

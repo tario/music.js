@@ -16,6 +16,8 @@
         new MUSIC.Instrument(
             music
                 .lowpass(300)
+                .reverb({delay: 0.1, gain: 0.7})
+                .gain(0.5)
                 .oscillator({type: 'square'}, function(dst, param) {
                     var gainNode = dst.gain(1.0);
                     /// gainNode.setParam('gain', startCurve); // optional

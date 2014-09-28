@@ -98,6 +98,54 @@ MUSIC.Effects.Delay = function(audio, next, value) {
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, delayNode, next);
 };
 
+MUSIC.Effects.Reverb = function(audio, next, options) {
+  var delayNode = audio.createDelay(60);
+  delayNode.delayTime.value = options.delay || 0.02;
+
+  var channelMergerNode = audio.createChannelMerger(2);
+
+  var gainNode = audio.createGain();
+  gainNode.gain.value = 1.0;
+
+  var att = audio.createGain();
+  att.gain.value = options.gain || 0.2;
+
+  setTimeout(function() {
+    gainNode.connect(channelMergerNode);
+    gainNode.connect(delayNode);
+    delayNode.connect(channelMergerNode);
+    channelMergerNode.connect(next._destination);
+    channelMergerNode.connect(att);
+    att.connect(delayNode);
+  });
+
+  this._destination = gainNode;
+
+
+  this.next = function() {
+    return next;
+  };
+
+  this.disconnect = function() {
+    gainNode.disconnect(channelMergerNode);
+    gainNode.disconnect(delayNode);
+    delayNode.disconnect(channelMergerNode);
+    channelMergerNode.disconnect(next._destination);
+    channelMergerNode.disconnect(att);
+    att.disconnect(delayNode);
+  };
+
+  this.output = function() {
+    return audioNode;
+  };
+
+  this.setParam = function(paramName, value) {
+    value.apply(audio.currentTime, audioNode[paramName]);
+  };
+
+  MUSIC.effectsPipeExtend(this, audio, this);
+};
+
 MUSIC.Curve = {};
 var during = function(array) {
   return function(time) {
