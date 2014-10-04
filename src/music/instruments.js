@@ -229,8 +229,7 @@ function _base64ToArrayBuffer(base64) {
 
 };
 
-MUSIC.StopEvent = function(stopDelay) {
-  stopDelay = stopDelay * 1000;
+MUSIC.StopEvent = function() {
   return function(note) {
       return {
           play: function() {
@@ -244,7 +243,7 @@ MUSIC.StopEvent = function(stopDelay) {
               return {
                   stop: function() {
                       paramObject.onstop();
-                      setTimeout(originalNote.stop.bind(originalNote), stopDelay);
+                      originalNote.stop();
                   }
               };
           },

@@ -15,8 +15,8 @@
 
     // creates an effects pipeline
     var effects = music
-                .gain(0.2) // attenuate the sound to 20%
-                .reverb({delay: 0.07, gain: 0.5}); // apply reverb effect
+                .gain(0.2)
+                .reverb({delay: 0.07, gain: 0.5}); // apply reverb effect                
 
     // creates a soundGenerator to generate sound from frequency
     // appended to the effects pipeline
@@ -36,7 +36,8 @@
     var instrument = 
         new MUSIC.Instrument(soundGenerator)
                     .mapNote(function(n) { return n + 36; })
-                    .perNoteWrap(MUSIC.StopEvent(0.4));
+                    .stopDelay(400)
+                    .perNoteWrap(MUSIC.StopEvent());
     
 
     var player = MUSIC.InstrumentSequence(instrument, 200);
