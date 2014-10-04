@@ -303,12 +303,13 @@ MUSIC.Sequence = function(notes) {
       notes.push( {f: function() {
         playableFactory.play();
       }, duration: timespan, relativeTime: currentDuration});
-      currentDuration = currentDuration + duration;
+      currentDuration = currentDuration + timespan;
     },
 
     play: function() {
       var timeOuts = [];
       var currentDuration = 0;
+      var currentNotes = notes.slice();
 
       var startTime = window.performance.now();
       var checkEvents = function() {
@@ -317,7 +318,7 @@ MUSIC.Sequence = function(notes) {
         var offset;
 
         while (1) {
-          nextEvent = notes.shift();
+          nextEvent = currentNotes.shift();
           if (nextEvent === undefined) {
             clearInterval(intervalHandler);
             break;
@@ -330,12 +331,6 @@ MUSIC.Sequence = function(notes) {
       };
       checkEvents();
       var intervalHandler = setInterval(checkEvents, 500);
-
-/*      for (var i = 0; i < notes.length; i++) {
-        var n = notes[i];
-        timeOuts.push(setTimeout(n.f, currentDuration));
-        currentDuration = currentDuration + n.duration;
-      }*/
 
       return {
         stop: function() {

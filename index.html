@@ -46,24 +46,24 @@
 
     var percussion = new MUSIC.PatchInstrument({
         'C': music.sound("src/sound/Kick 1.wav"),
-        'D': music.sound("src/sound/Effect 1.wav"),
-        'E': music.sound("src/sound/Snare 1.wav"),
+        'D': music.lowpass(1000).sound("src/sound/Effect 1.wav"),
+        'E': music.reverb({delay: 0.07, gain: 0.5}).sound("src/sound/Snare 1.wav"),
     }, 0);
     
     instrument = percussion;
 
-    setTimeout(function() {
+
     player = MUSIC.InstrumentSequence(instrument, 200);
     var seq = MUSIC
         .Sequence()
         .n(
                 [
-                    player('C-C-C-C-'),
-                    player('C-C-C-C-')
-                ]);
+                    player('C-C---C-'),
+                    player('------E-')
+                ]).loop(10);
 
-    seq.play();
-    }, 1000);
+        window.seq = seq;
+
 
 
     var notes = {};
@@ -73,7 +73,7 @@
         var n = notes[e.keyCode];
         if (n) return;
 
-        var note = instrument.note(MUSIC.noteToNoteNum(keyCodeToNote[e.keyCode])+36);
+        var note = instrument.note(MUSIC.noteToNoteNum(keyCodeToNote[e.keyCode]));
         if (note == undefined) return;
         notes[e.keyCode] = note.play();
     };
