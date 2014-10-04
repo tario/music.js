@@ -24,8 +24,8 @@ var instrumentExtend = function(obj) {
 
   var delayedNote = function(originalNote, ms) {
     return {
-      play: function() {
-        var originalPlaying = originalNote.play();
+      play: function(param) {
+        var originalPlaying = originalNote.play(param);
         return delayedPlaying(originalPlaying, ms);
       }
     };
