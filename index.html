@@ -15,24 +15,19 @@
     var instrument = 
         new MUSIC.Instrument(
             music
-                .lowpass(300)
-                .reverb({delay: 0.1, gain: 0.7})
-                .gain(0.5)
-                .oscillator({type: 'square'}, function(dst, param) {
+                .audioNodeFactory(function(dst, param) {
                     var gainNode = dst.gain(1.0);
                     /// gainNode.setParam('gain', startCurve); // optional
                     param.onstop = function() {
                         gainNode.setParam('gain', stopCurve);
                     };
                     return gainNode;
-                }), 2)
+                })
+                .oscillator({type: 'square'}), 4)
+                    .mapNote(function(n) { return n + 36; })
                     .perNoteWrap(MUSIC.StopEvent(0.4));
     
 
-    instrument = new MUSIC.MultiInstrument([
-            instrument,
-            instrument.mapNote(function(n) { return n + 12; })
-            ]);
     var player = MUSIC.InstrumentSequence(instrument, 200);
 
 /*
@@ -42,7 +37,7 @@
                 player('A-B-C-D-').measure(1600));
 
 
-    window.playing = seq.play();*/
+    window.playing = seq.play();
 
     var percussion = new MUSIC.PatchInstrument({
         'C': music.sound("src/sound/Kick 1.wav"),
@@ -64,7 +59,7 @@
 
         window.seq = seq;
 
-
+*/
 
     var notes = {};
     var keyCodeToNote = {90: 'C', 88: 'D',  67: 'E', 86: 'F', 66: 'G', 78: 'A', 77: 'B'};

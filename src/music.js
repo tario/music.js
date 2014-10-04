@@ -4,8 +4,8 @@ MUSIC = {};
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
-  obj.oscillator = function(options, nextProvider) {
-    return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options, nextProvider);
+  obj.oscillator = function(options) {
+    return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options);
   };
 
   obj.noise = function() {
@@ -38,6 +38,32 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 
   obj.reverb = function(value) {
     return new MUSIC.Effects.Reverb(audio, audioDestination, value);
+  };
+
+  obj.audioNodeFactory = function(fcn) {
+    var newObj = {
+      getNext: function(param) {
+        var nextNode = fcn(obj, param);
+        return {
+          _destination: nextNode._destination,
+          dispose: function() {
+            var x = nextNode;
+            while (1) {
+              x.disconnect();
+            console.log("DISPOSE"); console.log(x);
+              x = x.next();
+              if (x === obj) {
+                break;
+              }
+            };
+            disposeNode = null;            
+          }
+        };
+      }
+    };
+    MUSIC.effectsPipeExtend(newObj, audio, newObj);
+
+    return newObj;
   };
 
   obj.sound = function(path) {
@@ -74,6 +100,15 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     };
   };
 
+  if (!obj.getNext) {
+    obj.getNext = function() {
+      return {
+        _destination: obj._destination,
+        dispose: function() {
+        }
+      };
+    };
+  };
 
   return obj;
 };
@@ -108,7 +143,7 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
   };
 };
 
-MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) {
+MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
   options = options || {};
 
   this.freq = function(newFreq) {
@@ -125,39 +160,19 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options, nextProvider) 
 
         osc.type = options.type;
 
-        if (nextProvider) {
-          nextNode = nextProvider(MUSIC.effectsPipeExtend({}, audio, destination), param);
-          audioDestination = nextNode._destination;
-          disposeNode = function() {
-            var x = nextNode;
-            osc.disconnect(audioDestination);
-
-            while (1) {
-              x.disconnect();
-              x = x.next();
-              if (x === destination) {
-                break;
-              }
-            };
-            disposeNode = null;
-          };
-          osc.connect(audioDestination);
-        } else {
-          nextNode = destination;
-          audioDestination = nextNode._destination;
-          disposeNode = function() {
-            osc.disconnect(audioDestination);
-            disposeNode = null;
-          };
-          osc.connect(audioDestination);
-        }
+        nextNode = destination.getNext(param);
+        audioDestination = nextNode._destination;
+        disposeNode = function() {
+          osc.disconnect(audioDestination);
+          nextNode.dispose();
+        };
+        osc.connect(audioDestination);
         osc.start(0);
 
         return {
           stop : function() {
             osc.stop(0);
             disposeNode();
-            osc = undefined;
           }
         };
       }
