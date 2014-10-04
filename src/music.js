@@ -243,6 +243,7 @@ MUSIC.InstrumentSequence = function(instrument, beatTime) {
 
 MUSIC.Sequence = function(notes) {
   notes = notes ? notes.slice() : [];
+  var currentDuration = 0;
 
   return commonExtension({
     n: function(playable, timespan) {
@@ -266,23 +267,49 @@ MUSIC.Sequence = function(notes) {
       if (timespan === undefined) timespan = duration;
       notes.push( {f: function() {
         playableFactory.play();
-      }, duration: timespan});
+      }, duration: timespan, relativeTime: currentDuration});
+      currentDuration = currentDuration + duration;
     },
 
     play: function() {
       var timeOuts = [];
       var currentDuration = 0;
-      for (var i = 0; i < notes.length; i++) {
+
+      var startTime = window.performance.now();
+      var checkEvents = function() {
+        var nextEvent;
+        var realRelativeCurrentTime = window.performance.now() - startTime;
+        var offset;
+
+        while (1) {
+          nextEvent = notes.shift();
+          if (nextEvent === undefined) {
+            clearInterval(intervalHandler);
+            break;
+          }
+          offset = nextEvent.relativeTime - realRelativeCurrentTime;
+          setTimeout(nextEvent.f, offset);
+          if (offset > 1000) break;
+        };
+
+        console.log("x");
+      };
+      checkEvents();
+      var intervalHandler = setInterval(checkEvents, 500);
+
+/*      for (var i = 0; i < notes.length; i++) {
         var n = notes[i];
         timeOuts.push(setTimeout(n.f, currentDuration));
         currentDuration = currentDuration + n.duration;
-      }
+      }*/
 
       return {
         stop: function() {
           for (var i = 0; i<timeOuts.length; i++) {
             clearTimeout(timeOuts[i]);
           }
+
+          clearInterval(intervalHandler);
         }
       }
     }
