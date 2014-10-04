@@ -292,7 +292,6 @@ MUSIC.Sequence = function(notes) {
           if (offset > 1000) break;
         };
 
-        console.log("x");
       };
       checkEvents();
       var intervalHandler = setInterval(checkEvents, 500);
