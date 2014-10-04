@@ -40,6 +40,41 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.Effects.Reverb(audio, audioDestination, value);
   };
 
+  obj.sound = function(path) {
+    var request = new XMLHttpRequest();
+    request.open("GET", path, true);
+    request.responseType = "arraybuffer";
+    var audioBuffer;
+
+    request.onerror = function(err) {
+      console.error(err);
+    };
+
+    request.onload = function(e) {
+      audio.decodeAudioData(request.response, function (buffer) {
+        audioBuffer = buffer;
+      });
+    };
+
+    request.send();
+    return {
+      play: function() {
+        var bufferSource = audio.createBufferSource();
+        bufferSource.buffer = audioBuffer;
+        bufferSource.connect(audioDestination._destination);
+        bufferSource.start(audio.currentTime);
+
+        return {
+          stop: function() {
+            bufferSource.stop();
+            bufferSource.disconnect(audioDestination._destination);
+          }
+        };
+      }
+    };
+  };
+
+
   return obj;
 };
 

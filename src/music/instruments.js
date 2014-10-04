@@ -155,6 +155,24 @@ var noteNumToNoteName = function(noteNum) {
   return noteName + octaveNum;
 };
 
+MUSIC.PatchInstrument = function(notes, octave) {
+  var noteNum;
+  var sounds = [];
+
+  for (var noteName in notes) {
+    noteNum = MUSIC.noteToNoteNum(noteName) + octave * 12;
+    sounds[noteNum] = notes[noteName];
+  };
+
+  this.note = function(noteNum) {
+    var s = sounds[noteNum];
+    if (!s) return s;
+    return {
+      play: s.play,
+      during: during
+    };
+  };
+};
 
 MUSIC.SoundfontInstrument = function(sounds, audio, audioDestination) {
 
