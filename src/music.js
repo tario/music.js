@@ -4,6 +4,7 @@ MUSIC = {};
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
+
   obj.oscillator = function(options) {
     return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options);
   };
@@ -12,32 +13,15 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.SoundLib.Noise(audio, audioDestination);
   };
 
-  obj.attenuator = function(fcn) {
-    return new MUSIC.Effects.Attenuator(audio, audioDestination, fcn);
-  };
-
-  obj.formula = function(fcn) {
-    return new MUSIC.Effects.Formula(audio, audioDestination, fcn);
-  };
+  MUSIC.Effects.forEach(function(sfxName, sfxFunction) {
+    var method = function(argument) {
+      return new sfxFunction(audio, audioDestination, argument);
+    };
+    obj[sfxName] = method;
+  });
 
   obj.soundfont = function(param) {
     return new MUSIC.SoundfontInstrument(param, audio, audioDestination);
-  };
-
-  obj.lowpass = function(freq) {
-    return new MUSIC.Effects.LowPass(audio, audioDestination, freq);
-  };
-
-  obj.gain = function(value) {
-    return new MUSIC.Effects.Gain(audio, audioDestination, value);
-  };
-
-  obj.delay = function(value) {
-    return new MUSIC.Effects.Delay(audio, audioDestination, value);
-  };
-
-  obj.reverb = function(value) {
-    return new MUSIC.Effects.Reverb(audio, audioDestination, value);
   };
 
   obj.audioNodeFactory = function(fcn) {

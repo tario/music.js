@@ -1,5 +1,16 @@
 MUSIC.Effects = MUSIC.Effects || {};
 
+var effectsObject = {};
+MUSIC.Effects.register = function(effectName, fcn) {
+  effectsObject[effectName] = fcn;
+};
+
+MUSIC.Effects.forEach = function(cb) {
+  for (var sfx in effectsObject) {
+    cb(sfx, effectsObject[sfx]);
+  }
+};
+
 MUSIC.Effects.WebAudioNodeWrapper = function (audio, audioNode, next) {
 
   this._destination = audioNode;
@@ -68,37 +79,38 @@ MUSIC.Effects.Formula = function(audio, next, fcn) {
   this.output = function() {
     return scriptNode;
   };
-};
+}
 
-MUSIC.Effects.Attenuator = function(audio, next, factor) {
+MUSIC.Effects.register("formula", MUSIC.Effects.Formula);
+MUSIC.Effects.register("attenuator", function(audio, next, factor) {
   MUSIC.Effects.Formula.bind(this)(audio, next, function(input) {
     return input * factor();
   });
-};
+});
 
-MUSIC.Effects.LowPass = function(audio, next, freq, gain) {
+MUSIC.Effects.register("lowpass", function(audio, next, freq) {
   var biquadFilter = audio.createBiquadFilter();
 
   biquadFilter.type = "lowpass";
   biquadFilter.frequency.value = freq;
-  biquadFilter.gain.value = gain || 25;
+  biquadFilter.gain.value = 25;
 
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, biquadFilter, next);
-};
+});
 
-MUSIC.Effects.Gain = function(audio, next, value) {
+MUSIC.Effects.register("gain", function(audio, next, value) {
   var gainNode = audio.createGain();
   gainNode.gain.value = value;
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, gainNode, next);
-};
+});
 
-MUSIC.Effects.Delay = function(audio, next, value) {
+MUSIC.Effects.register("delay", function(audio, next, value) {
   var delayNode = audio.createDelay(60);
   delayNode.delayTime.value = value;
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, delayNode, next);
-};
+});
 
-MUSIC.Effects.Reverb = function(audio, next, options) {
+MUSIC.Effects.register("reverb", function(audio, next, options) {
   var delayNode = audio.createDelay(60);
   delayNode.delayTime.value = options.delay || 0.02;
 
@@ -144,7 +156,7 @@ MUSIC.Effects.Reverb = function(audio, next, options) {
   };
 
   MUSIC.effectsPipeExtend(this, audio, this);
-};
+});
 
 MUSIC.Curve = {};
 var during = function(array) {
