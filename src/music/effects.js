@@ -88,15 +88,23 @@ MUSIC.Effects.register("attenuator", function(audio, next, factor) {
   });
 });
 
-MUSIC.Effects.register("lowpass", function(audio, next, freq) {
+MUSIC.Effects.BiQuad = function(audio, next, options) {
   var biquadFilter = audio.createBiquadFilter();
 
-  biquadFilter.type = "lowpass";
-  biquadFilter.frequency.value = freq;
-  biquadFilter.gain.value = 25;
+  biquadFilter.type = options.type;
+  biquadFilter.frequency.value = options.frequency;
+  if (options.Q) biquadFilter.Q.value = options.Q;
+  if (options.gain) biquadFilter.gain.value = options.gain;
 
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, biquadFilter, next);
-});
+};
+MUSIC.Effects.register("biquad", MUSIC.Effects.BiQuad);
+["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"]
+  .forEach(function(filterName) {
+    MUSIC.Effects.register(filterName, function(audio, next, options) {
+      MUSIC.Effects.BiQuad.bind(this)(audio, next, {type: filterName, frequency: options.frequency});
+    });
+  });
 
 MUSIC.Effects.register("gain", function(audio, next, value) {
   var gainNode = audio.createGain();
