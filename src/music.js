@@ -199,37 +199,22 @@ var commonExtension = function(obj) {
   return obj;
 };
 
+var displaceNote = function(ammount) {
+  return function(n) {
+    return {f: n.f, duration: n.duration, relativeTime: n.relativeTime + ammount};
+  };
+};
+
 MUSIC.Loop = function(playable, times) {
   var original = playable;
   var duration = playable.duration();
 
-  return commonExtension({
-    duration: function() {
-      return times * duration;
-    },
+  var newNotes = [];
+  for (var i=0; i<times; i++) {
+    newNotes = newNotes.concat(original._notes.map(displaceNote(duration*i)));
+  }
 
-    play: function() {
-      var counter = times;
-      var playable;
-      var playAgain = function() {
-        playable = original.play();
-        counter = counter - 1;
-        if (counter === 0) {
-          clearInterval(interval);
-        }
-      };
-
-      var interval = setInterval(playAgain, duration);
-      playAgain();
-
-      return {
-        stop: function() {
-          playable.stop();
-          clearInterval(interval);
-        }
-      };
-    }
-  });
+  return MUSIC.Sequence(newNotes);
 };
 
 MUSIC.Silence = function(time) {
@@ -296,6 +281,7 @@ MUSIC.Sequence = function(notes) {
   var currentDuration = 0;
 
   return commonExtension({
+    _notes: notes, 
     n: function(playable, timespan) {
       var seq = MUSIC.Sequence(notes);
       seq.attachPlayable(playable, timespan);
