@@ -308,7 +308,6 @@ MUSIC.Sequence = function(notes) {
     },
 
     play: function() {
-      var timeOuts = [];
       var currentDuration = 0;
       var currentNotes = notes.slice();
 
@@ -335,10 +334,6 @@ MUSIC.Sequence = function(notes) {
 
       return {
         stop: function() {
-          for (var i = 0; i<timeOuts.length; i++) {
-            clearTimeout(timeOuts[i]);
-          }
-
           clearInterval(intervalHandler);
         }
       }
