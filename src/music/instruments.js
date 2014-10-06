@@ -39,19 +39,6 @@ var instrumentExtend = function(obj) {
     });
   };
 
-  var parametrizedNote = function(note) {
-    return {
-      play: function() {
-        var paramObject = {};
-        var playing = note.play(paramObject);
-        return {
-          stop: playing.stop.bind(playing)
-        }
-      },
-      during: during
-    }
-  };
-
   obj.perNoteWrap = function(wrapper) {
     return instrumentExtend({
       note: function(noteNum) {
