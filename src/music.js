@@ -34,7 +34,6 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
             var x = nextNode;
             while (1) {
               x.disconnect();
-            console.log("DISPOSE"); console.log(x);
               x = x.next();
               if (x === obj) {
                 break;
