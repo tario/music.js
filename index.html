@@ -38,7 +38,7 @@
                     .stopDelay(400)
                     .perNoteWrap(MUSIC.StopEvent());
     
-
+/*
     var player = MUSIC.InstrumentSequence(instrument, 200);
 
 
@@ -50,12 +50,15 @@
 
     window.playing = seq.play();
 
+*/
 
-/*
     var percussion = new MUSIC.PatchInstrument({
         'C': music.sound("src/sound/Kick 1.wav"),
         'D': music.highpass({frequency: 400}).sound("src/sound/Effect 1.wav"),
-        'E': music.reverb({delay: 0.07, gain: 0.5}).sound("src/sound/Snare 1.wav"),
+        'E': music
+                .reverb({delay: 0.07, gain: 0.5})
+                .sound("src/sound/Snare 1.wav")
+                .stopDelay(1000)
     }, 0);
     
     instrument = percussion;
@@ -71,7 +74,7 @@
                 ]).loop(10);
 
         window.seq = seq;
-*/
+
 
 
     var notes = {};

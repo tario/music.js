@@ -37,6 +37,22 @@ MUSIC.playablePipeExtend = function(obj) {
     });
   };
 
+  obj.stopDelay = function(delay) {
+    var original = this;
+    return MUSIC.playablePipeExtend(
+      {
+        play: function(param) {
+          var playing = original.play(param);
+          return {
+            stop: function() {
+              setTimeout(playing.stop.bind(playing), delay);
+            }
+          };
+        }
+      }
+    );
+  };
+
   return obj;
 };
 
@@ -78,7 +94,7 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     };
 
     request.send();
-    return {
+    return MUSIC.playablePipeExtend({
       play: function() {
         var bufferSource = audio.createBufferSource();
         bufferSource.buffer = audioBuffer;
@@ -92,7 +108,7 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
           }
         };
       }
-    };
+    });
   };
 
   if (!obj.getNext) {
