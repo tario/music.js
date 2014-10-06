@@ -22,15 +22,14 @@
     // appended to the effects pipeline
     var soundGenerator = 
                 effects
-                    .audioNodeFactory(function(dst, param) { // implement separated efects for each note play
+                    .oscillator({type: 'square', effects: function(dst, param) { // implement separated efects for each note play
                         var gainNode = dst.gain(1.0);
                         /// gainNode.setParam('gain', startCurve); // optional
                         param.onstop = function() {
                             gainNode.setParam('gain', stopCurve);
                         };
                         return gainNode;
-                    })
-                    .oscillator({type: 'square'});
+                    }});
 
     // create instrument from sound generator
     var instrument = 

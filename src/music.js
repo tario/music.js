@@ -3,6 +3,25 @@ MUSIC = {};
 (function() {
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 
+var getTemporalPipeline = function(effectsFcn, next, param) {
+  var nextNode = effectsFcn(next, param);
+  return {
+    _destination: nextNode._destination,
+    dispose: function() {
+      var x = nextNode;
+      while (1) {
+        x.disconnect();
+        x = x.next();
+        if (x === next) {
+          break;
+        }
+      };
+      disposeNode = null;
+    }
+  };
+
+};
+
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 
   obj.oscillator = function(options) {
@@ -22,31 +41,6 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 
   obj.soundfont = function(param) {
     return new MUSIC.SoundfontInstrument(param, audio, audioDestination);
-  };
-
-  obj.audioNodeFactory = function(fcn) {
-    var newObj = {
-      getNext: function(param) {
-        var nextNode = fcn(obj, param);
-        return {
-          _destination: nextNode._destination,
-          dispose: function() {
-            var x = nextNode;
-            while (1) {
-              x.disconnect();
-              x = x.next();
-              if (x === obj) {
-                break;
-              }
-            };
-            disposeNode = null;            
-          }
-        };
-      }
-    };
-    MUSIC.effectsPipeExtend(newObj, audio, newObj);
-
-    return newObj;
   };
 
   obj.sound = function(path) {
@@ -128,6 +122,7 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
 
 MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
   options = options || {};
+  var effects = options.effects;
 
   this.freq = function(newFreq) {
     var osc;
@@ -140,10 +135,13 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
         var audioDestination;
         osc = audio.createOscillator();
         osc.frequency.value = frequency;
-
         osc.type = options.type;
 
-        nextNode = destination.getNext(param);
+        nextNode = destination;
+        if (effects) {
+          nextNode = getTemporalPipeline(effects, nextNode, param);
+        }
+
         audioDestination = nextNode._destination;
         disposeNode = function() {
           osc.disconnect(audioDestination);
