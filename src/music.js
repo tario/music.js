@@ -22,6 +22,24 @@ var getTemporalPipeline = function(effectsFcn, next, param) {
 
 };
 
+MUSIC.playablePipeExtend = function(obj) {
+  obj.during = function(duration) {
+    var original = this;
+    return MUSIC.playablePipeExtend({
+      play: function() {
+        var playable = original.play();
+        setTimeout(playable.stop.bind(playable), duration);
+
+        return original;
+      },
+
+      duration: function() { return duration; }
+    });
+  };
+
+  return obj;
+};
+
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 
   obj.oscillator = function(options) {

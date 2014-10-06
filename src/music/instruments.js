@@ -69,28 +69,12 @@ MUSIC.noteToNoteNum = function(noteName) {
   return notenum;
 };
 
-var during = function(duration) {
-        var original = this;
-        return {
-          play: function() {
-            var playable = original.play();
-            setTimeout(playable.stop.bind(playable), duration);
-
-            return original;
-          },
-
-          duration: function() { return duration; }
-        };
-      };
-
-MUSIC.during = during;
-
 MUSIC.Instrument = function(soundFactory) {
   this.note = function(notenum) {
     if (notenum === undefined) return undefined;
 
     var freq = frequency(notenum);
-    return {
+    return MUSIC.playablePipeExtend({
       play: function(param) {
         var soundInstance = soundFactory.freq(freq).play(param);
         return {
@@ -98,10 +82,8 @@ MUSIC.Instrument = function(soundFactory) {
             soundInstance.stop();
           }
         }
-      },
-
-      during: during
-    };
+      }
+    });
   };
 
   instrumentExtend(this);
@@ -119,15 +101,13 @@ MUSIC.MultiInstrument = function(instrumentArray) {
           notes.forEach(noteStop);
         }
       };
-    };
-
-    this.during = during;
+    }
   };
 
   this.note = function(noteNum) {
-    return new MultiNote(instrumentArray.map(function(instrument){ 
+    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray.map(function(instrument){ 
       return instrument.note(noteNum);
-    }));
+    })));
   };
 
   instrumentExtend(this);
@@ -154,10 +134,9 @@ MUSIC.PatchInstrument = function(notes, octave) {
   this.note = function(noteNum) {
     var s = sounds[noteNum];
     if (!s) return s;
-    return {
-      play: s.play,
-      during: during
-    };
+    return MUSIC.playablePipeExtend({
+      play: s.play
+    });
   };
 };
 
@@ -218,7 +197,7 @@ function _base64ToArrayBuffer(base64) {
 
 MUSIC.StopEvent = function() {
   return function(note) {
-      return {
+      return MUSIC.playablePipeExtend({
           play: function() {
               var paramObject = {
                   onplay: function() {},
@@ -233,10 +212,8 @@ MUSIC.StopEvent = function() {
                       originalNote.stop();
                   }
               };
-          },
-
-          during: MUSIC.during
-      };
+          }
+      });
   };
 };
 
