@@ -9,7 +9,7 @@ musicShowCaseApp.controller("MainController", function($scope, $http) {
         mode: 'javascript'
     };
 
-	$http.get("/defaultCode.js").then(function(r) {
+	$http.get("defaultCode.js").then(function(r) {
 		$scope.code = r.data;
 		eval($scope.code);
 	});
