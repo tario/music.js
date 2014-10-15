@@ -1,11 +1,18 @@
 <head>
 <script src="lib/angular.min.js"></script>
+
+<script src="lib/codemirror.js"></script>
+<script src="lib/codemirror/mode/javascript.js"></script>
+<script src="lib/angular/ui-codemirror.js"></script>
+
 <script src="site/controllers.js"></script>
 <script src="src/music.js"></script>
 <script src="src/music/instruments.js"></script>
 <script src="src/music/effects.js"></script>
 <script src="src/soundfont/accordion-ogg.js"></script>
 <script src="src/soundfont/acoustic_grand_piano-ogg.js"></script>
+
+<link rel="stylesheet" href="css/codemirror.css">
 
 <p> Use ZXCVBNM keys for keyboard </p>
 <script>
@@ -33,14 +40,17 @@
         n.stop();
     };
 
-
 })();
 
 </script>
 </head>
-<body ng-app="MusicShowCaseApp">
+<body>
+
+<div ng-app="MusicShowCaseApp">
     <div ng-controller="MainController">
-        <textarea ng-model="code"></textarea>
+
+        <textarea ui-codemirror="editorOptions" ng-model="code"></textarea>
         <input type="button" value="Run" ng-click="run()"></input>
     </div>
+</div>
 </body>
