@@ -1,4 +1,3 @@
-var music = new MUSIC.Context();
 var startCurve = new MUSIC.Curve.Ramp(0, 1.0, 100).during(0.4);
 var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.4);
 
