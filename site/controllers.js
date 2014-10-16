@@ -9,14 +9,27 @@ musicShowCaseApp.controller("MainController", function($scope, $http) {
         mode: 'javascript'
     };
 
+    var run = function(code) { // TODO extract to service
+		try {
+		    eval(code);
+		   	$scope.codeError = null;
+		} catch (e) {
+			$scope.codeError = e.stack;
+		}
+		$scope.$digest();
+    };
+
 	$http.get("defaultCode.js").then(function(r) {
 		$scope.code = r.data;
-		eval($scope.code);
 	});
 
-	$scope.run = function() {
-		eval($scope.code);
-	};
+	var timeoutHandle = undefined;
+	$scope.$watch('code', function() {
+		clearTimeout(timeoutHandle);
+		timeoutHandle = setTimeout(function() {
+			run($scope.code);
+		}, 500);
+	});
 });
 
 

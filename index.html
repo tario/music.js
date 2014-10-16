@@ -13,6 +13,7 @@
 <script src="src/soundfont/acoustic_grand_piano-ogg.js"></script>
 
 <link rel="stylesheet" href="css/codemirror.css">
+<link rel="stylesheet" href="css/main.css">
 
 <p> Use ZXCVBNM keys for keyboard </p>
 <script>
@@ -48,9 +49,8 @@
 
 <div ng-app="MusicShowCaseApp">
     <div ng-controller="MainController">
-
         <textarea ui-codemirror="editorOptions" ng-model="code"></textarea>
-        <input type="button" value="Run" ng-click="run()"></input>
+        <b class="code-error">{{codeError}}</b>
     </div>
 </div>
 </body>
