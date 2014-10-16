@@ -3,8 +3,8 @@ var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.4);
 
 // creates an effects pipeline
 var effects = music
-            .gain(0.2)
-            .reverb({delay: 0.07, gain: 0.5}); // apply reverb effect                
+            .gain(0.2);
+            //.reverb({delay: 0.07, gain: 0.5}); // apply reverb effect                
 
 // creates a soundGenerator to generate sound from frequency
 // appended to the effects pipeline
@@ -44,13 +44,13 @@ var percussion = new MUSIC.PatchInstrument({
     'C': music.sound("src/sound/Kick 1.wav"),
     'D': music.highpass({frequency: 400}).sound("src/sound/Effect 1.wav"),
     'E': music
-            .reverb({delay: 0.07, gain: 0.5})
+            //.reverb({delay: 0.07, gain: 0.5})
             .sound("src/sound/Snare 1.wav")
             .stopDelay(1000)
 }, 0);
 
 window.instrument = percussion;
-
+/*
 
 player = MUSIC.InstrumentSequence(instrument, 200);
 var seq = MUSIC
@@ -62,3 +62,4 @@ var seq = MUSIC
             ]).loop(10);
 
     window.seq = seq;
+*/

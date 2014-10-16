@@ -11,7 +11,7 @@ MUSIC.Effects.forEach = function(cb) {
   }
 };
 
-MUSIC.Effects.WebAudioNodeWrapper = function (audio, audioNode, next) {
+MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
 
   this._destination = audioNode;
   setTimeout(function() { // this hack prevents a bug in current version of chrome
@@ -26,19 +26,22 @@ MUSIC.Effects.WebAudioNodeWrapper = function (audio, audioNode, next) {
     audioNode.disconnect(next._destination);
   };
 
+  this.dispose = this.disconnect;
+  music.registerDisposable(this);
+
   this.output = function() {
     return audioNode;
   };
 
   this.setParam = function(paramName, value) {
-    value.apply(audio.currentTime, audioNode[paramName]);
+    value.apply(music.audio.currentTime, audioNode[paramName]);
   };
 
-  MUSIC.effectsPipeExtend(this, audio, this);
+  MUSIC.effectsPipeExtend(this, music, this);
 };
 
-MUSIC.Effects.Formula = function(audio, next, fcn) {
-  var scriptNode = audio.createScriptProcessor(1024, 1, 1);
+MUSIC.Effects.Formula = function(music, next, fcn) {
+  var scriptNode = music.audio.createScriptProcessor(1024, 1, 1);
 
   scriptNode.onaudioprocess = function(audioProcessingEvent) {
     // The input buffer is the song we loaded earlier
@@ -66,7 +69,7 @@ MUSIC.Effects.Formula = function(audio, next, fcn) {
 
   this._destination = scriptNode;
   
-  MUSIC.effectsPipeExtend(this, audio, this);
+  MUSIC.effectsPipeExtend(this, music, this);
 
   this.next = function() {
     return next;
@@ -76,58 +79,61 @@ MUSIC.Effects.Formula = function(audio, next, fcn) {
     scriptNode.disconnect(next._destination);
   };
 
+  this.dispose = this.disconnect;
+  music.registerDisposable(this);  
+
   this.output = function() {
     return scriptNode;
   };
 }
 
 MUSIC.Effects.register("formula", MUSIC.Effects.Formula);
-MUSIC.Effects.register("attenuator", function(audio, next, factor) {
-  MUSIC.Effects.Formula.bind(this)(audio, next, function(input) {
+MUSIC.Effects.register("attenuator", function(music, next, factor) {
+  MUSIC.Effects.Formula.bind(this)(music, next, function(input) {
     return input * factor();
   });
 });
 
-MUSIC.Effects.BiQuad = function(audio, next, options) {
-  var biquadFilter = audio.createBiquadFilter();
+MUSIC.Effects.BiQuad = function(music, next, options) {
+  var biquadFilter = music.audio.createBiquadFilter();
 
   biquadFilter.type = options.type;
   biquadFilter.frequency.value = options.frequency;
   if (options.Q) biquadFilter.Q.value = options.Q;
   if (options.gain) biquadFilter.gain.value = options.gain;
 
-  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, biquadFilter, next);
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, biquadFilter, next);
 };
 MUSIC.Effects.register("biquad", MUSIC.Effects.BiQuad);
 ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"]
   .forEach(function(filterName) {
-    MUSIC.Effects.register(filterName, function(audio, next, options) {
-      MUSIC.Effects.BiQuad.bind(this)(audio, next, {type: filterName, frequency: options.frequency});
+    MUSIC.Effects.register(filterName, function(music, next, options) {
+      MUSIC.Effects.BiQuad.bind(this)(music, next, {type: filterName, frequency: options.frequency});
     });
   });
 
-MUSIC.Effects.register("gain", function(audio, next, value) {
-  var gainNode = audio.createGain();
+MUSIC.Effects.register("gain", function(music, next, value) {
+  var gainNode = music.audio.createGain();
   gainNode.gain.value = value;
-  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, gainNode, next);
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, gainNode, next);
 });
 
-MUSIC.Effects.register("delay", function(audio, next, value) {
-  var delayNode = audio.createDelay(60);
+MUSIC.Effects.register("delay", function(music, next, value) {
+  var delayNode = music.audio.createDelay(60);
   delayNode.delayTime.value = value;
-  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(audio, delayNode, next);
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, delayNode, next);
 });
 
-MUSIC.Effects.register("reverb", function(audio, next, options) {
-  var delayNode = audio.createDelay(60);
+MUSIC.Effects.register("reverb", function(music, next, options) {
+  var delayNode = music.audio.createDelay(60);
   delayNode.delayTime.value = options.delay || 0.02;
 
-  var channelMergerNode = audio.createChannelMerger(2);
+  var channelMergerNode = music.audio.createChannelMerger(2);
 
-  var gainNode = audio.createGain();
+  var gainNode = music.audio.createGain();
   gainNode.gain.value = 1.0;
 
-  var att = audio.createGain();
+  var att = music.audio.createGain();
   att.gain.value = options.gain || 0.2;
 
   setTimeout(function() {
@@ -155,15 +161,18 @@ MUSIC.Effects.register("reverb", function(audio, next, options) {
     att.disconnect(delayNode);
   };
 
+  this.dispose = this.disconnect;
+  music.registerDisposable(this);    
+
   this.output = function() {
     return audioNode;
   };
 
   this.setParam = function(paramName, value) {
-    value.apply(audio.currentTime, audioNode[paramName]);
+    value.apply(music.audio.currentTime, audioNode[paramName]);
   };
 
-  MUSIC.effectsPipeExtend(this, audio, this);
+  MUSIC.effectsPipeExtend(this, music, this);
 });
 
 MUSIC.Curve = {};

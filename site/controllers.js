@@ -1,7 +1,7 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror']);
 
 musicShowCaseApp.controller("MainController", function($scope, $http) {
-	var music = new MUSIC.Context();
+	var music;
  	
  	$scope.editorOptions = {
         lineWrapping : true,
@@ -10,6 +10,11 @@ musicShowCaseApp.controller("MainController", function($scope, $http) {
     };
 
     var run = function(code) { // TODO extract to service
+    	if (music) {
+    		music.dispose();
+    	}
+
+    	music = new MUSIC.Context();
 		try {
 		    eval(code);
 		   	$scope.codeError = null;
@@ -30,6 +35,7 @@ musicShowCaseApp.controller("MainController", function($scope, $http) {
 			run($scope.code);
 		}, 500);
 	});
+
 });
 
 

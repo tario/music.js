@@ -88,7 +88,7 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     };
 
     request.onload = function(e) {
-      audio.decodeAudioData(request.response, function (buffer) {
+      audio.audio.decodeAudioData(request.response, function (buffer) {
         audioBuffer = buffer;
       });
     };
@@ -96,7 +96,7 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     request.send();
     return MUSIC.playablePipeExtend({
       play: function() {
-        var bufferSource = audio.createBufferSource();
+        var bufferSource = audio.audio.createBufferSource();
         bufferSource.buffer = audioBuffer;
         bufferSource.connect(audioDestination._destination);
         bufferSource.start(audio.currentTime);
@@ -124,19 +124,30 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
   return obj;
 };
 
+var audioContext = new window.webkitAudioContext()
 MUSIC.Context = function() {
-  var audio = new window.webkitAudioContext();
+  var audio = audioContext;
   var music = this;
 
   this._destination = audio.destination;
   this.audio = audio;
   this.wrap = function(destination) {
     var ret = {};
-    MUSIC.effectsPipeExtend(ret, audio, destination);
+    MUSIC.effectsPipeExtend(ret, music, destination);
     return ret;
   };
 
-  MUSIC.effectsPipeExtend(this, audio, this);
+  var disposable = [];
+  this.dispose = function() {
+    for (var i=0; i<disposable.length; i++) {
+      var obj = disposable[i];
+      obj.dispose();
+    }
+  };
+
+  this.registerDisposable = disposable.push.bind(disposable);
+
+  MUSIC.effectsPipeExtend(this, music, this);
 };
 
 MUSIC.SoundLib.Noise = function(audio, nextProvider) {
@@ -154,7 +165,7 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
   };
 };
 
-MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
+MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   options = options || {};
   var effects = options.effects;
 
@@ -167,7 +178,7 @@ MUSIC.SoundLib.Oscillator = function(audio, destination, options) {
     return {
       play : function(param) {
         var audioDestination;
-        osc = audio.createOscillator();
+        osc = music.audio.createOscillator();
         osc.frequency.value = frequency;
         osc.type = options.type;
 
