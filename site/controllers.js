@@ -1,41 +1,37 @@
-var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror']);
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("MainController", function($scope, $http) {
-	var music;
- 	
- 	$scope.editorOptions = {
+musicShowCaseApp.controller("MainController", function($scope, $http, MusicContext) {
+  var music;
+
+  $scope.editorOptions = {
         lineWrapping : true,
         lineNumbers: true,
         mode: 'javascript'
     };
 
     var run = function(code) { // TODO extract to service
-    	if (music) {
-    		music.dispose();
-    	}
-
-    	music = new MUSIC.Context();
-		try {
-		    eval(code);
-		   	$scope.codeError = null;
-		} catch (e) {
-			$scope.codeError = e.stack;
-		}
-		$scope.$digest();
+      var results = MusicContext.run(code);
+      if (results.error) {
+        $scope.codeError = results.error;
+      } else {
+        $scope.codeError = null;
+      }
+      $scope.$digest();
     };
 
-	$http.get("defaultCode.js").then(function(r) {
-		$scope.code = r.data;
-	});
+  $http.get("defaultCode.js").then(function(r) {
+    $scope.code = r.data;
+  });
 
-	var timeoutHandle = undefined;
-	$scope.$watch('code', function() {
-		clearTimeout(timeoutHandle);
-		timeoutHandle = setTimeout(function() {
-			run($scope.code);
-		}, 500);
-	});
+  var timeoutHandle = undefined;
+  $scope.$watch('code', function() {
+    clearTimeout(timeoutHandle);
+    timeoutHandle = setTimeout(function() {
+      run($scope.code);
+    }, 500);
+  });
 
 });
+
 
 
