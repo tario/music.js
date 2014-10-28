@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("MainController", function($scope, $http, MusicContext) {
+musicShowCaseApp.controller("MainController", function($scope, MusicContext, CodeRepository) {
   var music;
 
   $scope.editorOptions = {
@@ -9,7 +9,7 @@ musicShowCaseApp.controller("MainController", function($scope, $http, MusicConte
         mode: 'javascript'
     };
 
-    var run = function(code) { // TODO extract to service
+    var run = function(code) {
       var results = MusicContext.run(code);
       if (results.error) {
         $scope.codeError = results.error;
@@ -19,8 +19,8 @@ musicShowCaseApp.controller("MainController", function($scope, $http, MusicConte
       $scope.$digest();
     };
 
-  $http.get("defaultCode.js").then(function(r) {
-    $scope.code = r.data;
+  CodeRepository.getDefault().then(function(code) {
+    $scope.code = code;
   });
 
   var timeoutHandle = undefined;

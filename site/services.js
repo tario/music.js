@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror']);
-angular.module("MusicShowCaseApp").service("MusicContext", function() {
+musicShowCaseApp.service("MusicContext", function() {
   var music;
   return {
     run: function(code) {
@@ -18,3 +18,12 @@ angular.module("MusicShowCaseApp").service("MusicContext", function() {
   };
 });
 
+musicShowCaseApp.service("CodeRepository", function($http) {
+  return {
+    getDefault: function() {
+      return $http.get("defaultCode.js").then(function(r) {
+        return r.data;
+      });
+    }
+  };
+});
