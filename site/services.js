@@ -12,7 +12,7 @@ angular.module("MusicShowCaseApp").service("MusicContext", function() {
         eval(code);
         return {};
       } catch(e) {
-        return {error: e};
+        return {error: e.toString()};
       }
     }
   };
