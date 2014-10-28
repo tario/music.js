@@ -1,0 +1,5 @@
+[
+  {"name": "Square wave oscillator", "uri": "examples/oscillator.js"},
+  {"name": "Sound patch (percussion)", "uri": "examples/percussion.js"},
+  {"name": "Sound font (piano)", "uri": "examples/piano.js"}
+]

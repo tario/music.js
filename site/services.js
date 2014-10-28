@@ -45,10 +45,13 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 
         keyDown: function(keyCode) {
           var n = notes[keyCode];
+          var noteName;
           if (n) return;
 
+          noteName = keyCodeToNote[keyCode];
+          
           // depends on music.js
-          var note = instrument.instrument.note(MUSIC.noteToNoteNum(keyCodeToNote[keyCode]));
+          var note = instrument.instrument.note(MUSIC.noteToNoteNum(noteName));
           if (note == undefined) return;
           notes[keyCode] = note.play();
         }
@@ -58,10 +61,22 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 });
 
 
-musicShowCaseApp.service("CodeRepository", function($http) {
+musicShowCaseApp.service("CodeRepository", function($http, $q) {
   return {
     getDefault: function() {
       return $http.get("defaultCode.js").then(function(r) {
+        return r.data;
+      });
+    },
+
+    getExample: function(uri) {
+      return $http.get(uri).then(function(r) {
+        return r.data;
+      });
+    },
+
+    getExampleList: function() {
+      return $http.get("exampleList.json").then(function(r) {
         return r.data;
       });
     }

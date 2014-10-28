@@ -154,7 +154,8 @@ function _base64ToArrayBuffer(base64) {
     }
     return bytes.buffer;
 };
-
+  audio = audio.audio
+  
   for (var i = 0; i<72; i++) {
     (function() {
       var index = i;

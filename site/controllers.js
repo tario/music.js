@@ -25,6 +25,17 @@ musicShowCaseApp.controller("MainController", function($scope, MusicContext, Cod
                                               // see https://github.com/angular-ui/ui-codemirror/issues/30
   });
 
+  CodeRepository.getExampleList().then(function(examples) {
+    $scope.examples = examples;
+  });
+
+  $scope.switchTo = function(ex) {
+    CodeRepository.getExample(ex.uri).then(function(code) {
+      $scope.code = code.replace(/\r\n/g, "\n"); // workaround for ui-codemirror bug
+                                                // see https://github.com/angular-ui/ui-codemirror/issues/30
+    });
+  };
+
   var timeoutHandle = undefined;
   $scope.$watch('code', function() {
     clearTimeout(timeoutHandle);

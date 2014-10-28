@@ -21,14 +21,27 @@
 
 <div ng-app="MusicShowCaseApp">
     <div ng-controller="MainController">
-        <textarea ui-codemirror="editorOptions" ng-model="code"></textarea>
-        <b class="code-error">{{codeError}}</b>
+        <table>
+            <tr>
+                <td class="indexsection">
+                    <li class="examplelist">
+                        <ul ng-repeat="example in examples" ng-click="switchTo(example)">
+                            {{example.name}}
+                        </ul>
+                    </li>
+                </td>
+                <td class="editorsection">
+                    <textarea ui-codemirror="editorOptions" ng-model="code"></textarea>
+                    <b class="code-error">{{codeError}}</b>
 
-        <p> Use ZXCVBNM keys for keyboard </p>
-        <div ng-repeat="instrument in instruments">
-            <p>{{instrument.name}}</p>
-            <input ng-keyup="instrument.keyUp($event.keyCode)" ng-keydown="instrument.keyDown($event.keyCode)" placeholder="click here to use instrument" type="text"/>
-        </div>
+                    <p> Use ZXCVBNM keys for keyboard </p>
+                    <div ng-repeat="instrument in instruments">
+                        <p>{{instrument.name}}</p>
+                        <input ng-keyup="instrument.keyUp($event.keyCode)" ng-keydown="instrument.keyDown($event.keyCode)" placeholder="click here to use instrument" type="text"/>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
 </body>

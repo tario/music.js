@@ -2,3 +2,26 @@
 	color: red;
 	white-space: pre;
 }
+
+li.examplelist {
+  list-style-type: none;
+}
+
+li.examplelist ul:hover{
+  background-color: #ccf;
+}
+
+
+table .indexsection {
+  width: 15%
+}
+
+table td {
+  vertical-align: top;
+  border: 1px solid black;
+}
+
+table {
+  width: 100%;
+
+};

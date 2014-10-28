@@ -145,6 +145,8 @@ MUSIC.Context = function() {
     }
   };
 
+  this.audio = audio;
+
   this.registerDisposable = disposable.push.bind(disposable);
 
   MUSIC.effectsPipeExtend(this, music, this);
