@@ -192,7 +192,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         audioDestination = nextNode._destination;
         disposeNode = function() {
           osc.disconnect(audioDestination);
-          nextNode.dispose();
+          if (effects) nextNode.dispose();
         };
         osc.connect(audioDestination);
         osc.start(0);
