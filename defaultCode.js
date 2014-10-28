@@ -26,6 +26,8 @@ var instrument =
                 .stopDelay(400)
                 .perNoteWrap(MUSIC.StopEvent());
 
+instruments.add("Square Oscillator with Reverb", instrument);
+
 /*
 var player = MUSIC.InstrumentSequence(instrument, 200);
 
@@ -49,7 +51,8 @@ var percussion = new MUSIC.PatchInstrument({
             .stopDelay(1000)
 }, 0);
 
-window.instrument = percussion;
+instruments.add("Percussion patch", percussion);
+
 /*
 
 player = MUSIC.InstrumentSequence(instrument, 200);

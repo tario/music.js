@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("MainController", function($scope, MusicContext, CodeRepository) {
+musicShowCaseApp.controller("MainController", function($scope, MusicContext, CodeRepository, KeyboardFactory) {
   var music;
 
   $scope.editorOptions = {
@@ -14,6 +14,7 @@ musicShowCaseApp.controller("MainController", function($scope, MusicContext, Cod
       if (results.error) {
         $scope.codeError = results.error;
       } else {
+        $scope.instruments = results.instruments.map(KeyboardFactory.keyboard);
         $scope.codeError = null;
       }
       $scope.$digest();

@@ -16,35 +16,6 @@
 <link rel="stylesheet" href="css/codemirror.css">
 <link rel="stylesheet" href="css/main.css">
 
-<p> Use ZXCVBNM keys for keyboard </p>
-<script>
-
-(function() {
-
-    var notes = {};
-    var keyCodeToNote = {
-            90: 'C', 83: 'C#', 88: 'D',  68: 'D#', 67: 'E',
-            86: 'F', 71: 'F#', 66: 'G', 72: 'G#', 78: 'A', 
-            74: 'A#', 77: 'B'};
-
-    window.onkeydown = function(e) {
-        var n = notes[e.keyCode];
-        if (n) return;
-
-        var note = instrument.note(MUSIC.noteToNoteNum(keyCodeToNote[e.keyCode]));
-        if (note == undefined) return;
-        notes[e.keyCode] = note.play();
-    };
-    window.onkeyup = function(e) {
-        var n = notes[e.keyCode];
-        if (!n) return;
-        notes[e.keyCode] = undefined;
-        n.stop();
-    };
-
-})();
-
-</script>
 </head>
 <body>
 
@@ -52,6 +23,12 @@
     <div ng-controller="MainController">
         <textarea ui-codemirror="editorOptions" ng-model="code"></textarea>
         <b class="code-error">{{codeError}}</b>
+
+        <p> Use ZXCVBNM keys for keyboard </p>
+        <div ng-repeat="instrument in instruments">
+            <p>{{instrument.name}}</p>
+            <input ng-keyup="instrument.keyUp($event.keyCode)" ng-keydown="instrument.keyDown($event.keyCode)" placeholder="click here to use instrument" type="text"/>
+        </div>
     </div>
 </div>
 </body>
