@@ -170,42 +170,42 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
 MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   options = options || {};
   var effects = options.effects;
+  var frequency = options.frequency;
 
-  this.freq = function(newFreq) {
+  this.play = function(param) {
     var osc;
-    var frequency = newFreq;
     var nextNode;
     var disposeNode;
+    var audioDestination;
+
+    osc = music.audio.createOscillator();
+    osc.frequency.value = frequency;
+    osc.type = options.type;
+
+    nextNode = destination;
+    if (effects) {
+      nextNode = getTemporalPipeline(effects, nextNode, param);
+    }
+
+    audioDestination = nextNode._destination;
+    disposeNode = function() {
+      osc.disconnect(audioDestination);
+      if (effects) nextNode.dispose();
+    };
+    osc.connect(audioDestination);
+    osc.start(0);
 
     return {
-      play : function(param) {
-        var audioDestination;
-        osc = music.audio.createOscillator();
-        osc.frequency.value = frequency;
-        osc.type = options.type;
-
-        nextNode = destination;
-        if (effects) {
-          nextNode = getTemporalPipeline(effects, nextNode, param);
-        }
-
-        audioDestination = nextNode._destination;
-        disposeNode = function() {
-          osc.disconnect(audioDestination);
-          if (effects) nextNode.dispose();
-        };
-        osc.connect(audioDestination);
-        osc.start(0);
-
-        return {
-          stop : function() {
-            osc.stop(0);
-            disposeNode();
-          }
-        };
+      stop : function() {
+        osc.stop(0);
+        disposeNode();
       }
+    };
+  }
 
-    }
+  this.freq = function(newFreq) {
+    var newoptions = {type: options.type, effects: effects, frequency: newFreq};
+    return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
 };
 
