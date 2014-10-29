@@ -63,12 +63,6 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 
 musicShowCaseApp.service("CodeRepository", function($http, $q) {
   return {
-    getDefault: function() {
-      return $http.get("defaultCode.js").then(function(r) {
-        return r.data;
-      });
-    },
-
     getExample: function(uri) {
       return $http.get(uri).then(function(r) {
         return r.data;

@@ -200,14 +200,9 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     osc.type = options.type;
 
     nextNode = destination;
-    if (effects) {
-      nextNode = getTemporalPipeline(effects, nextNode, param);
-    }
-
     audioDestination = nextNode._destination;
     disposeNode = function() {
       osc.disconnect(audioDestination);
-      if (effects) nextNode.dispose();
     };
     osc.connect(audioDestination);
     osc.start(0);
@@ -221,7 +216,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   }
 
   this.freq = function(newFreq) {
-    var newoptions = {type: options.type, effects: effects, frequency: newFreq};
+    var newoptions = {type: options.type, frequency: newFreq};
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
 

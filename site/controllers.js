@@ -20,11 +20,6 @@ musicShowCaseApp.controller("MainController", function($scope, MusicContext, Cod
       $scope.$digest();
     };
 
-  CodeRepository.getDefault().then(function(code) {
-    $scope.code = code.replace(/\r\n/g, "\n"); // workaround for ui-codemirror bug
-                                              // see https://github.com/angular-ui/ui-codemirror/issues/30
-  });
-
   CodeRepository.getExampleList().then(function(examples) {
     $scope.examples = examples;
   });
