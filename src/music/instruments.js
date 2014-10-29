@@ -174,7 +174,6 @@ function _base64ToArrayBuffer(base64) {
   };
 
   this.note = function(notenum) {
-    console.log(noteNumToNoteName(notenum));
     var source = audio.createBufferSource();
     return {
       play: function() {
