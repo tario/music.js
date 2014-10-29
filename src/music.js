@@ -53,6 +53,23 @@ MUSIC.playablePipeExtend = function(obj) {
     );
   };
 
+  obj.onStop = function(fcn) {
+    var original = this;
+    return MUSIC.playablePipeExtend(
+      {
+        play: function(param) {
+          var playing = original.play(param);
+          return {
+            stop: function() {
+              playing.stop();
+              fcn(param);
+            }
+          };
+        }
+      }
+    );
+  };
+
   return obj;
 };
 
@@ -207,6 +224,8 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     var newoptions = {type: options.type, effects: effects, frequency: newFreq};
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
+
+  MUSIC.playablePipeExtend(this);
 };
 
 var commonExtension = function(obj) {
