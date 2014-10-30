@@ -42,6 +42,8 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
 
 MUSIC.Effects.Formula = function(music, next, fcn) {
   var scriptNode = music.audio.createScriptProcessor(1024, 1, 1);
+  var iteration = 0;
+  var sampleRate = music.audio.sampleRate;
 
   scriptNode.onaudioprocess = function(audioProcessingEvent) {
     // The input buffer is the song we loaded earlier
@@ -58,9 +60,11 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
       // Loop through the 4096 samples
       for (var sample = 0; sample < inputBuffer.length; sample++) {
         // make output equal to the same as the input
-        outputData[sample] = fcn(inputData[sample]);
+        outputData[sample] = fcn(inputData[sample], (inputBuffer.length * iteration + sample) / sampleRate);
       }
     }
+
+    iteration++;
   }
 
   setTimeout(function() { // this hack prevents a bug in current version of chrome

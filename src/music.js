@@ -83,6 +83,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.SoundLib.Noise(audio, audioDestination);
   };
 
+  obj.formulaGenerator = function(fcn) {
+    return new MUSIC.SoundLib.FormulaGenerator(audio, audioDestination, fcn);
+  };
+
   MUSIC.Effects.forEach(function(sfxName, sfxFunction) {
     var method = function(argument) {
       return new sfxFunction(audio, audioDestination, argument);
@@ -167,6 +171,21 @@ MUSIC.Context = function() {
   this.registerDisposable = disposable.push.bind(disposable);
 
   MUSIC.effectsPipeExtend(this, music, this);
+};
+
+MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {
+  this.play = function(param) {
+    var audioDestination;
+    var formulaGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function(input, t) {
+      return fcn(t);
+    });
+
+    return {
+      stop: function() {
+        formulaGenerator.disconnect(nextProvider._destination);
+      }
+    }
+  };
 };
 
 MUSIC.SoundLib.Noise = function(audio, nextProvider) {
