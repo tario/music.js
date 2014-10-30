@@ -4,5 +4,6 @@
   {"name": "Sound font (piano)", "uri": "examples/piano.js"},
   {"name": "Multi Instrument, octave chord", "uri": "examples/octavechord.js"},
   {"name": "Sound wave oscillator with stop curve", "uri": "examples/oscillatorStopCurve.js"},
-  {"name": "Custom sine wave oscillator", "uri": "examples/formula.js"}
+  {"name": "Custom sine wave oscillator", "uri": "examples/formula.js"},
+  {"name": "Custom sine wave oscillator 2", "uri": "examples/periodicFormulaGenerator.js"}
 ]

@@ -87,6 +87,11 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     return new MUSIC.SoundLib.FormulaGenerator(audio, audioDestination, fcn);
   };
 
+  obj.periodicFormulaGenerator = function(fcn, options) {
+    return new MUSIC.SoundLib.PeriodicFormulaGenerator(audio, audioDestination, fcn, options);
+  };
+
+
   MUSIC.Effects.forEach(function(sfxName, sfxFunction) {
     var method = function(argument) {
       return new sfxFunction(audio, audioDestination, argument);
@@ -178,6 +183,24 @@ MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {
     var audioDestination;
     var formulaGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function(input, t) {
       return fcn(t);
+    });
+
+    return {
+      stop: function() {
+        formulaGenerator.disconnect(nextProvider._destination);
+      }
+    }
+  };
+};
+
+MUSIC.SoundLib.PeriodicFormulaGenerator = function(audio, nextProvider, fcn, options) {
+  this.play = function(param) {
+    var audioDestination;
+    var frequency = options.frequency;
+    var period = 1.0 / frequency;
+
+    var formulaGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function(input, t) {
+      return fcn((t % period) / period);
     });
 
     return {
