@@ -128,7 +128,7 @@ MUSIC.Effects.register("delay", function(music, next, value) {
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, delayNode, next);
 });
 
-MUSIC.Effects.register("reverb", function(music, next, options) {
+MUSIC.Effects.register("echo", function(music, next, options) {
   var delayNode = music.audio.createDelay(60);
   delayNode.delayTime.value = options.delay || 0.02;
 
