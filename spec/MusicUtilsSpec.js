@@ -10,7 +10,9 @@ describe("Music.Utils", function() {
       };
     };
 
-    var s = scaleTest("C major", 0);
-    s(0, 0, 0);
+    var s = scaleTest("C major", 0); // [0|2|4][5|7|9|11] think of piano keys for all scales
+    [0,2,4,5,7,9,11].forEach(function(semitone, index) {
+      s(0, index, semitone);
+    });
   });
 });
