@@ -18,6 +18,10 @@ describe("Music.Utils", function() {
           s(x*12, index+7, semitone + (x+1)*12);
           s(x*12, index+14, semitone + (x+2)*12);
         });
+
+        [2,4,5,7,9,11,12].forEach(function(semitone, index) {
+          s(x*12+2, index, semitone + x*12);
+        });
       });
     }
   });
