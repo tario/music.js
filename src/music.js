@@ -292,13 +292,37 @@ var displaceNote = function(ammount) {
 MUSIC.Loop = function(playable, times) {
   var original = playable;
   var duration = playable.duration();
+  return {
+    play: function() {
+      var lastPlay;
+      var startTime = window.performance.now();
+      var lastTime = startTime;
+      var currentIteration = 0;
 
-  var newNotes = [];
-  for (var i=0; i<times; i++) {
-    newNotes = newNotes.concat(original._notes.map(displaceNote(duration*i)));
-  }
+      lastPlay = playable.play();
 
-  return MUSIC.Sequence(newNotes);
+      var nextIteration = function() {
+        var now = window.performance.now();
+        if (now - startTime > currentIteration * duration) { // ms
+          setTimeout(function(){
+              lastPlay = playable.play();
+          }, (currentIteration+1) * duration - now)
+          currentIteration++;
+          if (currentIteration == times-1) {
+            clearInterval(inter);
+          }
+        }
+      };
+
+      var inter = setInterval(nextIteration, duration);
+      return {
+        stop: function() {
+          clearInterval(inter)
+          if (lastPlay) lastPlay.stop();
+        }
+      };
+    }
+  };
 };
 
 MUSIC.Silence = function(time) {
@@ -322,38 +346,48 @@ MUSIC.InstrumentSequence = function(instrument, beatTime) {
     var accumulatedTime = 0;
     aliases = aliases || {};
 
-    for (var i = 0; i < str.length; i+=2) {
-      var noteName = str.charAt(i)+str.charAt(i+1);
+    if (str instanceof Array) {
+      for (var i = 0; i < str.length; i++) {
+        var value = str[i];
+        var note = instrument.note(value.num).during(value.time * beatTime);
+        seq.attachPlayable(note, value.time * beatTime);
+        accumulatedTime += value.time * beatTime;
+      }
+    } else {
 
-      if (noteName === "--") {
-        accumulatedTime += beatTime;
-      } else {
-        if (lastNote) {
-          var note = instrument.note(MUSIC.noteToNoteNum(lastNote)).during(accumulatedTime);
-          seq.attachPlayable(note, accumulatedTime);
-          accumulatedTime = 0;
-        }
+      for (var i = 0; i < str.length; i+=2) {
+        var noteName = str.charAt(i)+str.charAt(i+1);
 
-        var note = instrument.note(MUSIC.noteToNoteNum(noteName));
-        if (note) {
+        if (noteName === "--") {
           accumulatedTime += beatTime;
-          lastNote = noteName;
-        } else if (noteName === "  ") {
-          seq.attachPlayable(MUSIC.Silence(beatTime), beatTime);
         } else {
-          noteName = aliases[noteName] || aliases[noteName.charAt(0)];
-          note = instrument.note(MUSIC.noteToNoteNum(noteName));
+          if (lastNote) {
+            var note = instrument.note(MUSIC.noteToNoteNum(lastNote)).during(accumulatedTime);
+            seq.attachPlayable(note, accumulatedTime);
+            accumulatedTime = 0;
+          }
+
+          var note = instrument.note(MUSIC.noteToNoteNum(noteName));
           if (note) {
             accumulatedTime += beatTime;
             lastNote = noteName;
+          } else if (noteName === "  ") {
+            seq.attachPlayable(MUSIC.Silence(beatTime), beatTime);
+          } else {
+            noteName = aliases[noteName] || aliases[noteName.charAt(0)];
+            note = instrument.note(MUSIC.noteToNoteNum(noteName));
+            if (note) {
+              accumulatedTime += beatTime;
+              lastNote = noteName;
+            }
           }
         }
-      }
-    };
+      };
 
-    if (accumulatedTime > 0) {
-      var note = instrument.note(MUSIC.noteToNoteNum(lastNote)).during(accumulatedTime);
-      seq.attachPlayable(note, accumulatedTime);
+      if (accumulatedTime > 0) {
+        var note = instrument.note(MUSIC.noteToNoteNum(lastNote)).during(accumulatedTime);
+        seq.attachPlayable(note, accumulatedTime);
+      }
     }
 
     return seq;
@@ -394,7 +428,6 @@ MUSIC.Sequence = function(notes) {
     play: function() {
       var currentDuration = 0;
       var currentNotes = notes.slice();
-
       var startTime = window.performance.now();
       var checkEvents = function() {
         var nextEvent;
