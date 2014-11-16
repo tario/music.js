@@ -11,8 +11,12 @@ describe("Music.Utils", function() {
     };
 
     var cmajor = scaleTest("C major", 0); // [0|2|4][5|7|9|11] think of piano keys for all scales
+    var dmajor = scaleTest("D major", 2); // [0|2|4][5|7|9|11] think of piano keys for all scales
+    var emajor = scaleTest("E major", 4); // [0|2|4][5|7|9|11] think of piano keys for all scales
     var multiScaleTest = function(semitone1, noteNum, semitoneResult) {
       cmajor(semitone1, noteNum, semitoneResult);
+      dmajor(semitone1+2, noteNum, semitoneResult+2);
+      emajor(semitone1+4, noteNum, semitoneResult+4);
     };
 
     for (var x = 0; x<4; x++) {
