@@ -10,17 +10,21 @@ describe("Music.Utils", function() {
       };
     };
 
-    var s = scaleTest("C major", 0); // [0|2|4][5|7|9|11] think of piano keys for all scales
+    var cmajor = scaleTest("C major", 0); // [0|2|4][5|7|9|11] think of piano keys for all scales
+    var multiScaleTest = function(semitone1, noteNum, semitoneResult) {
+      cmajor(semitone1, noteNum, semitoneResult);
+    };
+
     for (var x = 0; x<4; x++) {
       describe("Octave " + x, function() {
         [0,2,4,5,7,9,11].forEach(function(semitone, index) {
-          s(x*12, index, semitone + x*12);
-          s(x*12, index+7, semitone + (x+1)*12);
-          s(x*12, index+14, semitone + (x+2)*12);
+          multiScaleTest(x*12, index, semitone + x*12);
+          multiScaleTest(x*12, index+7, semitone + (x+1)*12);
+          multiScaleTest(x*12, index+14, semitone + (x+2)*12);
         });
 
         [2,4,5,7,9,11,12].forEach(function(semitone, index) {
-          s(x*12+2, index, semitone + x*12);
+          multiScaleTest(x*12+2, index, semitone + x*12);
         });
       });
     }
