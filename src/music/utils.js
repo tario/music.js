@@ -13,7 +13,7 @@ MUSIC.Utils.Scale = function(base) {
       9: 11,
       11: 12
     };
-  } else {
+  } else if (base == 2) {
     nextNoteHash = {
       2: 4,
       4: 6,
@@ -22,6 +22,16 @@ MUSIC.Utils.Scale = function(base) {
       9: 11,
       11: 13,
       1: 14
+    };
+  } else if (base == 4) {
+    nextNoteHash = {
+      4: 6,
+      6: 8,
+      8: 9,
+      9: 11,
+      11: 13,
+      1: 15,
+      3: 16
     };
   };
 
