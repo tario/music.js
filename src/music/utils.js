@@ -3,37 +3,15 @@ MUSIC.Utils = MUSIC.Utils || {};
 MUSIC.Utils.Scale = function(base) {
   var nextNoteHash;
 
-  if (base == 0) {
-    nextNoteHash = {
-      0: 2,
-      2: 4,
-      4: 5,
-      5: 7,
-      7: 9,
-      9: 11,
-      11: 12
-    };
-  } else if (base == 2) {
-    nextNoteHash = {
-      2: 4,
-      4: 6,
-      6: 7,
-      7: 9,
-      9: 11,
-      11: 13,
-      1: 2
-    };
-  } else if (base == 4) {
-    nextNoteHash = {
-      4: 6,
-      6: 8,
-      8: 9,
-      9: 11,
-      11: 13,
-      1: 3,
-      3: 4
-    };
-  };
+  nextNoteHash = {};
+  var v = [0,2,4,5,7,9,11,12];
+
+  for (var i=0; i<v.length-1; i++) {
+    var value = base+v[i+1];
+    var key = (base+v[i]) % 12;
+    if (value - key > 11) value-=12;
+    nextNoteHash[key] = value;
+  }
 
   return {
     add: function(notenum, notes) {
