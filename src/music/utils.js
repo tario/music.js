@@ -30,8 +30,8 @@ MUSIC.Utils.Scale = function(base) {
       8: 9,
       9: 11,
       11: 13,
-      1: 15,
-      3: 16
+      1: 3,
+      3: 4
     };
   };
 
@@ -46,6 +46,10 @@ MUSIC.Utils.Scale = function(base) {
       ret = notenum - noteNumOctave*12;
       while (notes > 0) {
         ret = nextNoteHash[ret];
+        if (ret > 11) {
+          ret -= 12;
+          octaveAdd++;
+        }
         notes--;
       }
       return ret + noteNumOctave*12 + octaveAdd*12;
