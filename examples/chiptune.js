@@ -43,22 +43,42 @@ arpeggiator = {
   }
 };
 
-var effects2 = music.lowpass({frequency: 400});
+var snare1effects = music.lowpass({frequency: 400});
+var snare2effects = music.lowpass({frequency: 600});
+var snare3effects = music.lowpass({frequency: 800});
+var hieffects = music.lowpass({frequency: 600});
 var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.1);
 
-var noiseInstrument = { // noise instrument to simulate kick
-  note: function() {
-    var gainNode = effects2.gain(1.0);
-    return gainNode
-            .noise()
-            .onStop(function(){gainNode.dispose(); }) // dispose gain node
-            .stopDelay(100)
-            .onStop(function(){ gainNode.setParam('gain', stopCurve); }); // set gain curve
-            ;
+var noiseWithStopCurve = function(baseGainNode) {
+      return baseGainNode
+              .noise()
+              .onStop(function(){baseGainNode.dispose(); }) // dispose gain node
+              .stopDelay(100)
+              .onStop(function(){ baseGainNode .setParam('gain', stopCurve); }); // set gain curve
+};
+
+var rythmSounds = {
+  note: function(n) {
+    // noise instrument to simulate kick
+    if (n % 12 === 0 || n % 12 === 2 || n % 12 === 4) {
+      if (n % 12 === 0) {
+        return noiseWithStopCurve(snare1effects.gain(1.0));
+      } else if (n % 12 === 0) {
+        return noiseWithStopCurve(snare2effects.gain(1.0));
+      } else {
+        return noiseWithStopCurve(snare3effects.gain(1.0));
+      }
+    } else if (n % 12 === 5) {
+      var gainNode = hieffects.gain(1.0); // todo, apply drop off effect
+      return gainNode.oscillator({type: 'sine', frequency: 1260})
+              .onStop(function(){ gainNode.dispose(); }) // dispose gain node
+              .stopDelay(100)
+              .onStop(function(){ gainNode .setParam('gain', stopCurve); }); // set gain curve      
+    }
   }
 };
 
 instruments.add("Oscillator SIN+SQ+SAW", instrument);
 instruments.add("Arpeggiator", arpeggiator);
-instruments.add("Noise", noiseInstrument);
+instruments.add("Rythm Sounds", rythmSounds);
 
