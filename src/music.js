@@ -224,6 +224,8 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
       }
     }
   };
+
+  MUSIC.playablePipeExtend(this);
 };
 
 MUSIC.SoundLib.Oscillator = function(music, destination, options) {

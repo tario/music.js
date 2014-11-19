@@ -43,5 +43,22 @@ arpeggiator = {
   }
 };
 
+var effects2 = music.lowpass({frequency: 400});
+var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.1);
+
+var noiseInstrument = { // noise instrument to simulate kick
+  note: function() {
+    var gainNode = effects2.gain(1.0);
+    return gainNode
+            .noise()
+            .onStop(function(){gainNode.dispose(); }) // dispose gain node
+            .stopDelay(100)
+            .onStop(function(){ gainNode.setParam('gain', stopCurve); }); // set gain curve
+            ;
+  }
+};
+
 instruments.add("Oscillator SIN+SQ+SAW", instrument);
 instruments.add("Arpeggiator", arpeggiator);
+instruments.add("Noise", noiseInstrument);
+
