@@ -70,8 +70,8 @@ var rythmSounds = {
         return noiseWithStopCurve(snare3effects.gain(1.0));
       }
     } else if (n % 12 === 5) {
-      var gainNode = hieffects.gain(1.0); // todo, apply drop off effect
-      return gainNode.oscillator({type: 'sine', frequency: stopC})
+      var gainNode = hieffects.gain(1.0);
+      return gainNode.oscillator({type: 'sine', frequency: stopC /* Apply dropoff effect using a curve for frequency parameter*/})
               .onStop(function(){ gainNode.dispose(); }) // dispose gain node
               .stopDelay(100)
               .onStop(function(){ gainNode .setParam('gain', stopCurve); }); // set gain curve      
