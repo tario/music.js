@@ -1,17 +1,13 @@
 // create the sound generator
-var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.4);
-
 var soundGenerator = {
   freq: function(fr) {
-    var gainNode = music
-              .gain(1.0);
-
-    return gainNode
-            .oscillator({type: 'square', frequency: fr})
-            .onStop(function(){gainNode.dispose(); }) // dispose gain node
-            .stopDelay(400)
-            .onStop(function(){ gainNode.setParam('gain', stopCurve); }); // set gain curve
-
+    return music.
+            stopCurve({
+              node: function(node) {
+                return node.oscillator({type: 'square', frequency: fr});
+              }, 
+              duration: 0.3
+            });
   }
 };
 

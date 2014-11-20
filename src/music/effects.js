@@ -198,3 +198,21 @@ MUSIC.Curve.Ramp = function(initValue, endValue, n) {
 
   this.during = during(array);
 };
+
+
+MUSIC.Effects.register("stopCurve", function(music, next, options) {
+  options = options || {};
+  var samples = options.samples || 100;
+  var duration = options.duration || 0.4;
+  var nextNodeFcn = options.node;
+  var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, samples).during(duration);
+  var gainNode = next
+              .gain(1.0);
+  
+  return nextNodeFcn(gainNode)
+    .onStop(function(){ gainNode.dispose(); }) // dispose gain node
+    .stopDelay(duration * 1000)
+    .onStop(function(){ gainNode.setParam('gain', stopCurve); }); // set gain curve
+
+});
+

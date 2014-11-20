@@ -47,34 +47,28 @@ var snare1effects = music.gain(1.4).lowpass({frequency: 1000});
 var snare2effects = music.lowpass({frequency: 2000});
 var snare3effects = music.gain(0.7);
 var hieffects = music.lowpass({frequency: 600});
-var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.1);
-
-var noiseWithStopCurve = function(baseGainNode) {
-      return baseGainNode
-              .noise()
-              .onStop(function(){baseGainNode.dispose(); }) // dispose gain node
-              .stopDelay(100)
-              .onStop(function(){ baseGainNode .setParam('gain', stopCurve); }); // set gain curve
-};
-
 var stopC = new MUSIC.Curve.Ramp(1260, 1260/2, 100).during(0.1);
+var noiseCurveParams = {node: function(x){return x.noise()}, duration: 0.1};
 var rythmSounds = {
   note: function(n) {
     // noise instrument to simulate kick
     if (n % 12 === 0 || n % 12 === 2 || n % 12 === 4) {
       if (n % 12 === 0) {
-        return noiseWithStopCurve(snare1effects.gain(1.0));
+        return snare1effects.stopCurve(noiseCurveParams);
       } else if (n % 12 === 2) {
-        return noiseWithStopCurve(snare2effects.gain(1.0));
+        return snare2effects.stopCurve(noiseCurveParams);
       } else {
-        return noiseWithStopCurve(snare3effects.gain(1.0));
+        return snare3effects.stopCurve(noiseCurveParams);
       }
     } else if (n % 12 === 5) {
       var gainNode = hieffects.gain(1.0);
-      return gainNode.oscillator({type: 'sine', frequency: stopC /* Apply dropoff effect using a curve for frequency parameter*/})
-              .onStop(function(){ gainNode.dispose(); }) // dispose gain node
-              .stopDelay(100)
-              .onStop(function(){ gainNode .setParam('gain', stopCurve); }); // set gain curve      
+      return hieffects.stopCurve({
+        node: function(nnode) {
+          /* Apply dropoff effect using a curve for frequency parameter*/
+          return nnode.oscillator({type: 'sine', frequency: stopC})
+        },
+        duration: 0.1
+      });
     }
   }
 };
