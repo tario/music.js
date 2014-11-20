@@ -61,7 +61,6 @@ var rythmSounds = {
         return snare3effects.stopCurve(noiseCurveParams);
       }
     } else if (n % 12 === 5) {
-      var gainNode = hieffects.gain(1.0);
       return hieffects.stopCurve({
         node: function(nnode) {
           /* Apply dropoff effect using a curve for frequency parameter*/
