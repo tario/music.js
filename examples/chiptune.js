@@ -57,6 +57,7 @@ var noiseWithStopCurve = function(baseGainNode) {
               .onStop(function(){ baseGainNode .setParam('gain', stopCurve); }); // set gain curve
 };
 
+var stopC = new MUSIC.Curve.Ramp(1260, 1260/2, 100).during(0.1);
 var rythmSounds = {
   note: function(n) {
     // noise instrument to simulate kick
@@ -70,7 +71,7 @@ var rythmSounds = {
       }
     } else if (n % 12 === 5) {
       var gainNode = hieffects.gain(1.0); // todo, apply drop off effect
-      return gainNode.oscillator({type: 'sine', frequency: 1260})
+      return gainNode.oscillator({type: 'sine', frequency: stopC})
               .onStop(function(){ gainNode.dispose(); }) // dispose gain node
               .stopDelay(100)
               .onStop(function(){ gainNode .setParam('gain', stopCurve); }); // set gain curve      

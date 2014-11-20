@@ -240,7 +240,13 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     var audioDestination;
 
     osc = music.audio.createOscillator();
-    osc.frequency.value = frequency;
+
+    if (frequency.apply) {
+      frequency.apply(music.audio.currentTime, osc.frequency);
+    } else {
+      osc.frequency.value = frequency;
+    }
+
     osc.type = options.type;
 
     nextNode = destination;
