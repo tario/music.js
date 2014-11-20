@@ -43,9 +43,9 @@ arpeggiator = {
   }
 };
 
-var snare1effects = music.lowpass({frequency: 400});
-var snare2effects = music.lowpass({frequency: 600});
-var snare3effects = music.lowpass({frequency: 800});
+var snare1effects = music.gain(1.4).lowpass({frequency: 1000});
+var snare2effects = music.lowpass({frequency: 2000});
+var snare3effects = music.gain(0.7);
 var hieffects = music.lowpass({frequency: 600});
 var stopCurve = new MUSIC.Curve.Ramp(1.0, 0.0, 100).during(0.1);
 
@@ -64,7 +64,7 @@ var rythmSounds = {
     if (n % 12 === 0 || n % 12 === 2 || n % 12 === 4) {
       if (n % 12 === 0) {
         return noiseWithStopCurve(snare1effects.gain(1.0));
-      } else if (n % 12 === 0) {
+      } else if (n % 12 === 2) {
         return noiseWithStopCurve(snare2effects.gain(1.0));
       } else {
         return noiseWithStopCurve(snare3effects.gain(1.0));
