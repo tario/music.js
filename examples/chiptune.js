@@ -34,11 +34,9 @@ arpeggiator = {
   note: function(n) {
     return iseq([
       {num: n, time: 1},
-      {num: cmajorscale.add(n,1), time: 1},
       {num: cmajorscale.add(n,2), time: 1},
-      {num: cmajorscale.add(n,3), time: 1},
       {num: cmajorscale.add(n,4), time: 1},
-      {num: cmajorscale.add(n,5), time: 1}
+      {num: cmajorscale.add(n,6), time: 1}
     ]).loop();
   }
 };
