@@ -54,11 +54,11 @@ var rythmSounds = {
     // noise instrument to simulate kick
     if (n % 12 === 0 || n % 12 === 2 || n % 12 === 4) {
       if (n % 12 === 0) {
-        return snare1effects.stopCurve(noiseCurveParams);
+        return snare1effects.stopCurve(noiseCurveParams).during(100);
       } else if (n % 12 === 2) {
-        return snare2effects.stopCurve(noiseCurveParams);
+        return snare2effects.stopCurve(noiseCurveParams).during(100);
       } else {
-        return snare3effects.stopCurve(noiseCurveParams);
+        return snare3effects.stopCurve(noiseCurveParams).during(100);
       }
     } else if (n % 12 === 5) {
       return hieffects.stopCurve({
@@ -67,7 +67,7 @@ var rythmSounds = {
           return nnode.oscillator({type: 'sine', frequency: stopC})
         },
         duration: 0.1
-      });
+      }).during(100);
     }
   }
 };

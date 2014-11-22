@@ -27,10 +27,16 @@ MUSIC.playablePipeExtend = function(obj) {
     var original = this;
     return MUSIC.playablePipeExtend({
       play: function() {
+        var stopped = false;
         var playable = original.play();
-        setTimeout(playable.stop.bind(playable), duration);
-
-        return original;
+        var wrapper = {
+          stop: function() {
+            if (!stopped) playable.stop();
+            stopped = true;
+          }
+        };
+        setTimeout(wrapper.stop, duration);
+        return wrapper;
       },
 
       duration: function() { return duration; }
