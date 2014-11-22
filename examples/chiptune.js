@@ -48,6 +48,7 @@ var snare2effects = music.lowpass({frequency: 2000});
 var snare3effects = music.gain(0.7);
 var hieffects = music.lowpass({frequency: 600});
 var stopC = new MUSIC.Curve.Ramp(1260, 1260/2, 100).during(0.1);
+var stopLp = new MUSIC.Curve.Ramp(2000, 800, 100).during(0.2);
 var noiseCurveParams = {node: function(x){return x.noise()}, duration: 0.1};
 var rythmSounds = {
   note: function(n) {
@@ -68,6 +69,19 @@ var rythmSounds = {
         },
         duration: 0.1
       }).during(100);
+    } else if (n % 12 === 7) {
+      return music.stopCurve({
+        node: function(nnode) {
+          // TODO isolate this effect on effect library
+          var lp = nnode.lowpass({frequency: stopLp});
+          return lp
+                  .noise()
+                  .onStop(function() {
+                    lp.dispose();
+                  });
+        },
+        duration: 0.1
+      }).during(200);
     }
   }
 };

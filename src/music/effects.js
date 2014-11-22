@@ -102,7 +102,13 @@ MUSIC.Effects.BiQuad = function(music, next, options) {
   var biquadFilter = music.audio.createBiquadFilter();
 
   biquadFilter.type = options.type;
-  biquadFilter.frequency.value = options.frequency;
+
+  if (options.frequency.apply) {
+    options.frequency.apply(music.audio.currentTime, biquadFilter.frequency);
+  } else {
+    biquadFilter.frequency.value = options.frequency;
+  }
+
   if (options.Q) biquadFilter.Q.value = options.Q;
   if (options.gain) biquadFilter.gain.value = options.gain;
 
