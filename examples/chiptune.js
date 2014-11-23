@@ -46,8 +46,8 @@ var snare2effects = music.lowpass({frequency: 2000});
 var snare3effects = music.gain(0.7);
 var hieffects = music.lowpass({frequency: 600});
 var stopC = new MUSIC.Curve.Ramp(1260, 1260/2, 100).during(0.1);
-var stopLp = new MUSIC.Curve.Ramp(2000, 800, 100).during(0.2);
-var noiseCurveParams = {node: function(x){return x.noise()}, duration: 0.1};
+var stopLp = new MUSIC.Curve.Ramp(2000, 800, 100).during(0.4);
+var noiseCurveParams = {node: function(x){return x.noise()}, duration: 0.2};
 var rythmSounds = {
   note: function(n) {
     // noise instrument to simulate kick
@@ -78,7 +78,7 @@ var rythmSounds = {
                     lp.dispose();
                   });
         },
-        duration: 0.1
+        duration: 0.4
       }).during(200);
     }
   }
