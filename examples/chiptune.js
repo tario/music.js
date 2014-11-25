@@ -1,4 +1,6 @@
-var effects = music.gain(0.5).echo({gain: 0.5, delay: 0.1});
+var effects = music
+                  .gain(0.5)
+                  .T("reverb", {room:0.95, damp:0.1, mix:0.75});
 
 var g1 = effects.gain(0.3);
 var g2 = effects.gain(0.3);

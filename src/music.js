@@ -79,6 +79,53 @@ MUSIC.playablePipeExtend = function(obj) {
   return obj;
 };
 
+MUSIC.T = function(args, audio, audioDestination) {
+  var timbreNode = T.apply(null, args);
+
+  var scriptNode = audio.audio.createScriptProcessor(1024, 1, 1);
+  scriptNode.onaudioprocess = function(audioProcessingEvent) {
+    // The input buffer is the song we loaded earlier
+    var inputBuffer = audioProcessingEvent.inputBuffer;
+
+    // The output buffer contains the samples that will be modified and played
+    var outputBuffer = audioProcessingEvent.outputBuffer;
+
+    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+      var inputData = inputBuffer.getChannelData(channel);
+      var outputData = outputBuffer.getChannelData(channel);
+
+      // Loop through the 4096 samples
+      for (var sample = 0; sample < inputBuffer.length; sample++) {
+        // copy inputData to outputData as is
+        outputData[sample] = inputData[sample];
+      }
+    }
+
+
+  };
+
+  setTimeout(function() { // this hack prevents a bug in current version of chrome
+    scriptNode.connect(audioDestination._destination);
+  });
+
+  ret = {
+    output: function() {
+      return scriptNode;
+    },
+    disconnect: function() {
+      scriptNode.disconnect(audioDestination._destination);
+    },
+    next: function() {
+      return audioDestination;
+    },
+    _destination: scriptNode
+  };
+
+  MUSIC.effectsPipeExtend(ret, audio, ret);
+  return ret;
+
+};
+
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
 
   obj.oscillator = function(options) {
@@ -104,6 +151,10 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
     };
     obj[sfxName] = method;
   });
+
+  obj.T = function() {
+    return MUSIC.T(arguments, audio, audioDestination);
+  };
 
   obj.soundfont = function(param) {
     return new MUSIC.SoundfontInstrument(param, audio, audioDestination);
