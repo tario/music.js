@@ -197,6 +197,8 @@ MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {
       }
     }
   };
+
+  MUSIC.playablePipeExtend(this);
 };
 
 MUSIC.SoundLib.PeriodicFormulaGenerator = function(audio, nextProvider, fcn, options) {
@@ -215,6 +217,8 @@ MUSIC.SoundLib.PeriodicFormulaGenerator = function(audio, nextProvider, fcn, opt
       }
     }
   };
+
+  MUSIC.playablePipeExtend(this);
 };
 
 MUSIC.SoundLib.Noise = function(audio, nextProvider) {
