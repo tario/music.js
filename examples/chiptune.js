@@ -1,6 +1,6 @@
 var effects = music
                   .gain(0.5)
-                  .T("reverb", {room:0.95, damp:0.1, mix:0.75});
+                  .T("reverb", {room:0.35, damp:0.1, mix:0.75});
 
 var g1 = effects.gain(0.3);
 var g2 = effects.gain(0.3);

@@ -79,51 +79,40 @@ MUSIC.playablePipeExtend = function(obj) {
   return obj;
 };
 
-MUSIC.T = function(args, audio, audioDestination) {
-  var timbreNode = T.apply(null, args);
+MUSIC.T = function(args, music, audioDestination) {
+  var api = T("WebAudioAPI:recv", music.audio /* audioContext */);
+  var context = api.context;
+  var gainNode = context.createGain(1.0);
 
-  var scriptNode = audio.audio.createScriptProcessor(1024, 1, 1);
-  scriptNode.onaudioprocess = function(audioProcessingEvent) {
-    // The input buffer is the song we loaded earlier
-    var inputBuffer = audioProcessingEvent.inputBuffer;
+  api.recv(gainNode);
+  setTimeout(function() { // this hack prevents a bug in current version of chrome
+    gainNode.connect(audioDestination._destination);
+  });
 
-    // The output buffer contains the samples that will be modified and played
-    var outputBuffer = audioProcessingEvent.outputBuffer;
-
-    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-      var inputData = inputBuffer.getChannelData(channel);
-      var outputData = outputBuffer.getChannelData(channel);
-
-      // Loop through the 4096 samples
-      for (var sample = 0; sample < inputBuffer.length; sample++) {
-        // copy inputData to outputData as is
-        outputData[sample] = inputData[sample];
-      }
-    }
-
-
+  var Targuments = [];
+  for (var i=0; i<args.length; i++) {
+    Targuments.push(args[i]);
   };
 
-  setTimeout(function() { // this hack prevents a bug in current version of chrome
-    scriptNode.connect(audioDestination._destination);
-  });
+  Targuments.push(api);
+  var synth = T.apply(null, Targuments);// ("reverb", {room:0.95, damp:0.1, mix:0.75}, api);
+  var send = T("WebAudioAPI:send", synth, music.audio /* audioContext */).send(audioDestination._destination);
 
   ret = {
     output: function() {
-      return scriptNode;
+      return gainNode;
     },
     disconnect: function() {
-      scriptNode.disconnect(audioDestination._destination);
+      gainNode.disconnect(audioDestination._destination);
     },
     next: function() {
       return audioDestination;
     },
-    _destination: scriptNode
+    _destination: gainNode
   };
 
-  MUSIC.effectsPipeExtend(ret, audio, ret);
+  MUSIC.effectsPipeExtend(ret, music, ret);
   return ret;
-
 };
 
 MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
