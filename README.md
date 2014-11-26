@@ -3,8 +3,7 @@ music.js
 
 Javascript library to make music
 
-Goals of the project
-====================
+## Goals of the project ##
 
 The goal of music.js is to cover all the layers needed between HTML5 Web Audio API provided by browsers and fully usable music composition application similar to known ones like FL Studio
 
@@ -34,22 +33,19 @@ Music.js will cover:
   - Composed effects, for example *stopCurve* or *echo* effects
   - Effects imported from other libraries, for example *reverb* effect from Timbre.js 
 
-Installation
-============
+## Installation ##
 
 Sorry, for the moment there is no stable or single-file downloadable version for use. The status of this project is proof of concept
 
 But, you can test the software at http://tario.github.io/music.js/ through examples. If you need to run it on your computer (e.g. to modify the code, etc...) the only thing you need to do is cloning the repo and host the static files (apache, iis, http-server from node.js, whatever), there is no server-side component needed to run music.js
 
 
-Browser Compatibility
-=====================
+## Browser Compatibility ##
 
 For the moment this proof of concept library was only tested on Chrome latests versions (39), so, may or not may work in others browsers then chrome. If you found compatibility errors you can report it if you want, but cross-browser compatibility is not the priority for now
 
 
-Contents of repository
-======================
+## Contents of repository ##
 
 For convenience, the repository is organized toward the static website showing the examples (this could change in the future), being the components of music.js in and directory. Also, there is no single-file downloadable version of music.js yet
 
@@ -61,8 +57,7 @@ For convenience, the repository is organized toward the static website showing t
 - lib: all external libraries needed for the site and music.js including Angular.js and plugins, codemirror, timbre.js and jazmine.js for tests
 
 
-Contribution
-============
+## Contribution ##
 
 Any kind of contribution is welcome on this project, but, since this is proof of concept I need certain things before others:
 - Testing of features (find missing features, for example, you can't set change curves for frequences of custom oscillators)
