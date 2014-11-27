@@ -171,7 +171,7 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
         var bufferSource = audio.audio.createBufferSource();
         bufferSource.buffer = audioBuffer;
         bufferSource.connect(audioDestination._destination);
-        bufferSource.start(audio.currentTime);
+        bufferSource.start(audio.audio.currentTime);
 
         return {
           stop: function() {
