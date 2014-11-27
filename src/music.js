@@ -196,7 +196,7 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
   return obj;
 };
 
-var audioContext = new window.webkitAudioContext()
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 MUSIC.Context = function() {
   var audio = audioContext;
   var music = this;
