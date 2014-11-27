@@ -185,7 +185,10 @@ MUSIC.Effects.register("echo", function(music, next, options) {
   MUSIC.effectsPipeExtend(this, music, this);
 });
 
-MUSIC.Curve = {};
+MUSIC.Curve = function(array) {
+  this.during = during(array);
+};
+
 var during = function(array) {
   return function(time) {
     return { 
@@ -204,6 +207,15 @@ MUSIC.Curve.Ramp = function(initValue, endValue, n) {
 
   this.during = during(array);
 };
+
+MUSIC.Curve.Formula = function(fcn, n) {
+  var array = new Float32Array(n);
+  for (var i = 0; i < n; i++ ) {
+    array[i] = fcn(i / n);
+  };
+
+  this.during = during(array);
+}
 
 
 MUSIC.Effects.register("stopCurve", function(music, next, options) {
