@@ -141,6 +141,19 @@ describe("Music.Utils", function() {
 
         expect(firstEvent).toHaveBeenCalled();
       });
+
+      it("should call setTimeout", function() {
+        var fakeClock = new FakeClock();
+        var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+        var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+        var firstEvent = jasmine.createSpy("mockFirstEventFcn");
+        fSeq.push({t:0, f: function(){}});
+
+        fSeq.start();
+
+        expect(fakeSetTimeout).toHaveBeenCalled();
+      });      
     });
   });
 });
