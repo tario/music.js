@@ -92,6 +92,25 @@ describe("Music.Utils", function() {
       });
     });
 
+      [0,4,10,1000].forEach(function(x){
+        it("should report precise timing (" + x + ") at desired interval, relative to 12345", function(){
+          var fakeTimer = new FakeTimer();
+          var firstCall = true;
+          fakeTimer.fakeTime = 12345;
+          var fakeSetInterval = function(fcn, interval) {
+            fakeTimer.fakeTime = 12345+x;
+            fcn();
+          };
+
+          var fakeClearInterval = function(hndl) {};
+
+          var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn.bind(fakeTimer), fakeSetInterval, fakeClearInterval, 1000);
+          var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
+          clock.start(timeReportFcn);
+          expect(timeReportFcn).toHaveBeenCalled();
+          expect(timeReportFcn).toHaveBeenCalledWith(x);
+        });
+      });
 
   });
 
