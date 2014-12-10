@@ -164,7 +164,21 @@ describe("Music.Utils", function() {
         fSeq.start();
 
         expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 0);
-      });       
+      });
+
+      describe("when event occurs at 100", function() {
+        it("should call setTimeout with 100", function() {
+          var fakeClock = new FakeClock();
+          var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+          var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+          fSeq.push({t:100, f: function(){}});
+
+          fSeq.start();
+
+          expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
+        });
+      });
     });
   });
 });
