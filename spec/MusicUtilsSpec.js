@@ -120,7 +120,7 @@ describe("Music.Utils", function() {
     describe("a single event at beginning", function() {
       var FakeClock = function() {
         this.start = function(fcn) {
-          fcn(0);
+          this.fcn = fcn;
           return {
             stop: function(){}
           };
@@ -139,6 +139,9 @@ describe("Music.Utils", function() {
 
         fSeq.start();
 
+        // simulate clock signal
+        fakeClock.fcn(0);
+
         expect(firstEvent).toHaveBeenCalled();
       });
 
@@ -150,6 +153,9 @@ describe("Music.Utils", function() {
         fSeq.push({t:0, f: function(){}});
 
         fSeq.start();
+
+        // simulate clock signal
+        fakeClock.fcn(0);
 
         expect(fakeSetTimeout).toHaveBeenCalled();
       });
@@ -163,6 +169,9 @@ describe("Music.Utils", function() {
 
         fSeq.start();
 
+        // simulate clock signal
+        fakeClock.fcn(0);
+
         expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 0);
       });
 
@@ -175,6 +184,9 @@ describe("Music.Utils", function() {
           fSeq.push({t:100, f: function(){}});
 
           fSeq.start();
+
+          // simulate clock signal
+          fakeClock.fcn(0);
 
           expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
         });
