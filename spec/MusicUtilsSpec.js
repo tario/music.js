@@ -211,6 +211,43 @@ describe("Music.Utils", function() {
         });
 
       });
+
+      describe("when event occurs at 100 and second event occurs at 200", function() {
+        describe("when clock sends clock signal with 0", function() {
+          it("should call setTimeout with 100", function() {
+            var fakeClock = new FakeClock();
+            var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+            var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+            fSeq.push({t:100, f: function(){}});
+            fSeq.push({t:200, f: function(){}});
+
+            fSeq.start();
+
+            // simulate clock signal
+            fakeClock.fcn(0);
+
+            expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
+          });
+
+          it("should call setTimeout once and then setTimeout with 200", function() {
+            var fakeClock = new FakeClock();
+            var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+            var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+            fSeq.push({t:100, f: function(){}});
+            fSeq.push({t:200, f: function(){}});
+
+            fSeq.start();
+
+            // simulate clock signal
+            fakeClock.fcn(0);
+
+            expect(fakeSetTimeout).toHaveBeenCalled();
+            expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 200);
+          });
+        });
+      });
     });
   });
 });
