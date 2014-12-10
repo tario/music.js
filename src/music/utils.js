@@ -45,7 +45,7 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
 MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
   var array = [];
   var start = function() {
-    array[0].f();
+    setTimeout(array[0].f, 0);
   };
 
   var push = array.push.bind(array);
