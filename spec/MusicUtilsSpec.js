@@ -47,6 +47,7 @@ describe("Music.Utils", function() {
 
       it("should report precise timing (" + x + ") at desired interval", function(){
         var fakeTimer = new FakeTimer();
+        fakeTimer.fakeTime = 0;
         var fakeSetInterval = function(fcn, interval) {
           fakeTimer.fakeTime = x;
           fcn();
@@ -57,6 +58,7 @@ describe("Music.Utils", function() {
         var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn.bind(fakeTimer), fakeSetInterval, fakeClearInterval, 1000);
         var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
         clock.start(timeReportFcn);
+        expect(timeReportFcn).toHaveBeenCalled();
         expect(timeReportFcn).toHaveBeenCalledWith(x);
       });
 
