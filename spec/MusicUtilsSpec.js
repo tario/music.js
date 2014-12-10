@@ -42,21 +42,24 @@ describe("Music.Utils", function() {
       }
     };
 
-    it("should report precise timing at desired interval", function(){
-      var fakeTimer = new FakeTimer();
-      var fakeSetInterval = function(fcn, interval) {
-        fakeTimer.fakeTime = 0;
-        fcn();
-      };
+    [0,4,10,1000].forEach(function(x){
 
-      var fakeClearInterval = function(hndl) {};
+      it("should report precise timing (" + x + ") at desired interval", function(){
+        var fakeTimer = new FakeTimer();
+        var fakeSetInterval = function(fcn, interval) {
+          fakeTimer.fakeTime = x;
+          fcn();
+        };
 
-      var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn.bind(fakeTimer), fakeSetInterval, fakeClearInterval, 1000);
-      var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
-      clock.start(timeReportFcn);
-      expect(timeReportFcn).toHaveBeenCalledWith(0);
+        var fakeClearInterval = function(hndl) {};
+
+        var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn.bind(fakeTimer), fakeSetInterval, fakeClearInterval, 1000);
+        var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
+        clock.start(timeReportFcn);
+        expect(timeReportFcn).toHaveBeenCalledWith(x);
+      });
+
     });
-
 
   });
 
