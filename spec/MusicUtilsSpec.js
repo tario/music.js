@@ -74,6 +74,22 @@ describe("Music.Utils", function() {
       expect(fakeClearInterval).toHaveBeenCalled();
     });    
 
+    [0,4,32,100,51].forEach(function(handl) {
+      it("should clearInterval if stopped with same handle returned by setInterval (" + handl + ")", function(){
+        var fakeTimer = function() {
+          return 0;
+        };
+
+        var fakeClearInterval = jasmine.createSpy("mockClearInterval");
+        var fakeSetInterval = function(){ return handl };
+        var clock = MUSIC.Utils.Clock(fakeTimer, fakeSetInterval, fakeClearInterval, 1000);
+        var clockInstance = clock.start(function(){});
+        clockInstance.stop();
+        expect(fakeClearInterval).toHaveBeenCalledWith(handl);
+      });
+    });
+
+
   });
 
 });
