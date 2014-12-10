@@ -176,20 +176,40 @@ describe("Music.Utils", function() {
       });
 
       describe("when event occurs at 100", function() {
-        it("should call setTimeout with 100", function() {
-          var fakeClock = new FakeClock();
-          var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+        describe("when clock sends clock signal with 0", function() {
+          it("should call setTimeout with 100", function() {
+            var fakeClock = new FakeClock();
+            var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
 
-          var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
-          fSeq.push({t:100, f: function(){}});
+            var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+            fSeq.push({t:100, f: function(){}});
 
-          fSeq.start();
+            fSeq.start();
 
-          // simulate clock signal
-          fakeClock.fcn(0);
+            // simulate clock signal
+            fakeClock.fcn(0);
 
-          expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
+            expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
+          });
         });
+
+        describe("when clock sends clock signal with 25", function() {
+          it("should call setTimeout with 75", function() {
+            var fakeClock = new FakeClock();
+            var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+            var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+            fSeq.push({t:100, f: function(){}});
+
+            fSeq.start();
+
+            // simulate clock signal
+            fakeClock.fcn(25);
+
+            expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), 75);
+          });
+        });
+
       });
     });
   });
