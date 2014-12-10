@@ -41,4 +41,19 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
   };
 };
 
+MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
+  var array = [];
+  var start = function() {
+    array[0].f();
+  };
+
+  var push = array.push.bind(array);
+
+  return {
+    start: start,
+    push: push
+  };
+};
+
+
 })();
