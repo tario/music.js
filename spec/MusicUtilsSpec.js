@@ -61,6 +61,19 @@ describe("Music.Utils", function() {
 
     });
 
+    it("should clearInterval if stopped", function(){
+      var fakeTimer = function() {
+        return 0;
+      };
+
+      var fakeClearInterval = jasmine.createSpy("mockClearInterval");
+      var fakeSetInterval = function(){};
+      var clock = MUSIC.Utils.Clock(fakeTimer, fakeSetInterval, fakeClearInterval, 1000);
+      var clockInstance = clock.start(function(){});
+      clockInstance.stop();
+      expect(fakeClearInterval).toHaveBeenCalled();
+    });    
+
   });
 
 });

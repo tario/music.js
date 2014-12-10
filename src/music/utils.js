@@ -28,6 +28,12 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
       var t = preciseTimer();
       fcn(t);
     }, interval);
+
+    return {
+      stop: function() {
+        clearInterval();
+      }
+    }
   };
 
   return {
