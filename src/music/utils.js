@@ -46,7 +46,9 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
   var array = [];
   var start = function() {
     clock.start(function(t) {
-      setTimeout(array[0].f, array[0].t - t);
+      for (var i=0; i<array.length; i++) {
+        setTimeout(array[i].f, array[i].t - t);
+      }
     });
   };
 
