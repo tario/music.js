@@ -147,7 +147,6 @@ describe("Music.Utils", function() {
         var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
 
         var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
-        var firstEvent = jasmine.createSpy("mockFirstEventFcn");
         fSeq.push({t:0, f: function(){}});
 
         fSeq.start();
