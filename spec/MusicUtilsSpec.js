@@ -34,6 +34,7 @@ describe("Music.Utils", function() {
     }
   });
 
+  // Clock calls repeatly a function reporting the precise time
   describe("Clock", function() {
     // Clock need two things to work: a setInterval and a precise timer function
     var FakeTimer = function() {
@@ -92,4 +93,32 @@ describe("Music.Utils", function() {
 
   });
 
+  // calls functions of an array at precise times using a clock
+  describe("FunctionSeq", function() {
+    describe("a single event at beginning", function() {
+      var FakeClock = function() {
+        this.start = function(fcn) {
+          fcn(0);
+          return {
+            stop: function(){}
+          };
+        }
+      };
+
+      it("should be called when got clock signal", function() {
+        var fakeClock = new FakeClock();
+        var fakeSetTimeout = function(fcn, timeout){
+          fcn();
+        };
+
+        var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+        var firstEvent = jasmine.createSpy("mockFirstEventFcn");
+        fSeq.push({t:0, f: firstEvent});
+
+        fSeq.start();
+
+        expect(firstEvent).toHaveBeenCalled();
+      });
+    });
+  });
 });
