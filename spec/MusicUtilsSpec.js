@@ -33,4 +33,31 @@ describe("Music.Utils", function() {
       });
     }
   });
+
+  describe("Clock", function() {
+    // Clock need two things to work: a setInterval and a precise timer function
+    var FakeTimer = function() {
+      this.timeFcn = function() {
+        return this.fakeTime;
+      }
+    };
+
+    it("should report precise timing at desired interval", function(){
+      var fakeTimer = new FakeTimer();
+      var fakeSetInterval = function(fcn, interval) {
+        fakeTimer.fakeTime = 0;
+        fcn();
+      };
+
+      var fakeClearInterval = function(hndl) {};
+
+      var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn, fakeSetInterval, fakeClearInterval, 1000);
+      var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
+      clock.start(timeReportFcn);
+      expect(timeReportFcn).toHaveBeenCalledWith(0);
+    });
+
+
+  });
+
 });
