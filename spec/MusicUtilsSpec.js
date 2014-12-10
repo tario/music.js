@@ -51,7 +51,7 @@ describe("Music.Utils", function() {
 
       var fakeClearInterval = function(hndl) {};
 
-      var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn, fakeSetInterval, fakeClearInterval, 1000);
+      var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn.bind(fakeTimer), fakeSetInterval, fakeClearInterval, 1000);
       var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
       clock.start(timeReportFcn);
       expect(timeReportFcn).toHaveBeenCalledWith(0);

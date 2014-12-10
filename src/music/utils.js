@@ -22,4 +22,17 @@ MUSIC.Utils.Scale = function(base) {
   };
 };
 
+MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval) {
+  var start = function(fcn) {
+    setInterval(function(){
+      var t = preciseTimer();
+      fcn(t);
+    }, interval);
+  };
+
+  return {
+    start: start
+  };
+};
+
 })();
