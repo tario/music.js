@@ -117,16 +117,16 @@ describe("Music.Utils", function() {
 
   // calls functions of an array at precise times using a clock
   describe("FunctionSeq", function() {
-    describe("a single event at beginning", function() {
-      var FakeClock = function() {
-        this.start = function(fcn) {
-          this.fcn = fcn;
-          return {
-            stop: function(){}
-          };
-        }
-      };
+    var FakeClock = function() {
+      this.start = function(fcn) {
+        this.fcn = fcn;
+        return {
+          stop: function(){}
+        };
+      }
+    };    
 
+    describe("when there is a single event at beginning", function() {
       it("should be called when got clock signal", function() {
         var fakeClock = new FakeClock();
         var fakeSetTimeout = function(fcn, timeout){
@@ -229,7 +229,10 @@ describe("Music.Utils", function() {
         });
         
       });
+    });
 
+
+    describe("when there is two events", function() {
       describe("when event occurs at 100 and second event occurs at 200", function() {
         describe("when clock sends clock signal with 0", function() {
           it("should call setTimeout with 100", function() {
