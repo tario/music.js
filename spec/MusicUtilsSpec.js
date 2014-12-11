@@ -210,6 +210,24 @@ describe("Music.Utils", function() {
           });
         });
 
+        describe("when clock sends TWO clock signal with 0", function() {
+          it("should NOT call setTimeout two times", function() {
+            var fakeClock = new FakeClock();
+            var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+            var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+            fSeq.push({t:100, f: function(){}});
+
+            fSeq.start();
+
+            // simulate TWO clock signal
+            fakeClock.fcn(0);
+            fakeClock.fcn(0);
+            
+            expect(fakeSetTimeout.calls.count()).toEqual(1);
+          });
+        });
+        
       });
 
       describe("when event occurs at 100 and second event occurs at 200", function() {
