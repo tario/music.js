@@ -44,12 +44,26 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
 
 MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
   var array = [];
+
   var start = function() {
     clock.start(function(t) {
-      for (var i=0; i<array.length; i++) {
-        if (array[i].t - t < 1000 && array[i].t - t >= 0) setTimeout(array[i].f, array[i].t - t);
-      }
-      array = [];
+      var callingCriteria = function(element) {
+        return element.t - t < 1000 && element.t - t >= 0;
+      };
+
+      var schedule = function(event) {
+        setTimeout(event.f, event.t - t);
+      };
+
+      var notCallingCriteria = function(element) {
+        return !(element.t - t < 1000 && element.t - t >= 0);
+      };
+
+      var callingEvents = array.filter(callingCriteria);
+      var notCallingEvents = array.filter(notCallingCriteria);
+
+      callingEvents.forEach(schedule);
+      array = notCallingEvents;
     });
   };
 
