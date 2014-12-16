@@ -81,6 +81,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
     return {
       stop: function(){
         clearTimeout(lastHandler);
+        clearTimeout(lastHandler);
         clockHandler.stop();
         stopped = true;
       }
