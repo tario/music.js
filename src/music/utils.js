@@ -48,7 +48,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
   var start = function() {
     var array = eventsArray.slice(0);
     var stopped;
-    clock.start(function(t) {
+    var clockHandler = clock.start(function(t) {
       if (stopped) return;
 
       var callingCriteria = function(element) {
@@ -78,6 +78,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
 
     return {
       stop: function(){
+        clockHandler.stop();
         stopped = true;
       }
     };
