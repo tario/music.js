@@ -149,20 +149,25 @@ describe("Music.Utils", function() {
         });
       });
 
-      describe("when call stop before clock signal", function() {
+      describe("when call stop after clock signal", function() {
         var fakeClock;
-        var fakeSetTimeout;
+        var fakeSetTimeout, fakeClearTimeout;
         var fSeq;
         var handle;
 
         beforeEach(function(){
           fakeClock = new FakeClock();
-          fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+          fakeSetTimeout = function(f,t){
+            return 44;
+          };
+          fakeClearTimeout = jasmine.createSpy("mockSetTimeout");
 
-          fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
-          fSeq.push({t:0, f: function(){}});
+          fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout, fakeClearTimeout);
+          fSeq.push({t:100, f: function(){}});
 
           handle = fSeq.start();
+          
+          fakeClock.fcn(0);
           handle.stop();
         });
 
@@ -170,6 +175,13 @@ describe("Music.Utils", function() {
           expect(fakeClock.stopCalled).toEqual(true);
         });
 
+        it("should call clearTimeout", function() {
+          expect(fakeClearTimeout).toHaveBeenCalled();
+        });
+
+        it("should call clearTimeout with the same handler", function() {
+          expect(fakeClearTimeout).toHaveBeenCalledWith(44);
+        });
       });
 
       it("should be called when got clock signal", function() {
