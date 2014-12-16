@@ -1,0 +1,2 @@
+describe("Music.NoteSequence", function() {
+});
