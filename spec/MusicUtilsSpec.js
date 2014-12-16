@@ -228,6 +228,50 @@ describe("Music.Utils", function() {
           });
         });
         
+        describe("when maxDelta is limited to 1000", function() {
+          [0, 100, 1000, 2000].forEach(function(signalTime) {
+            describe("when clock signal " + signalTime, function() {
+              [50, 150, 1500, 2500, 10000].forEach(function(t) {
+                describe("when clock signal " + signalTime, function() {
+                  if (t >= signalTime && t < signalTime + 1000) {
+                    it("should call setTimeout", function() {
+                      var fakeClock = new FakeClock();
+                      var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+                      var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+                      fSeq.push({t:t, f: function(){}});
+
+                      fSeq.start({maxDelta: 1000});
+
+                      // simulate clock signal
+                      fakeClock.fcn(signalTime);
+
+                      expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), t-signalTime);
+                    });
+
+                  } else {
+                    it("should NOT call setTimeout", function() {
+                      var fakeClock = new FakeClock();
+                      var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+                      var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+                      fSeq.push({t:t, f: function(){}});
+
+                      fSeq.start({maxDelta: 1000});
+
+                      // simulate clock signal
+                      fakeClock.fcn(signalTime);
+
+                      expect(fakeSetTimeout).not.toHaveBeenCalled();
+                    });
+                  }
+                });
+              });
+
+            });
+
+          });
+        });
       });
     });
 
