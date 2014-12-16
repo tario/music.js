@@ -42,7 +42,7 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
   };
 };
 
-MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
+MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   var eventsArray = [];
 
   var start = function() {
@@ -78,6 +78,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
 
     return {
       stop: function(){
+        clearTimeout();
         clockHandler.stop();
         stopped = true;
       }
