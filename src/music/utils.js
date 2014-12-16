@@ -47,7 +47,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
 
   var start = function() {
     var array = eventsArray.slice(0);
-    var lastHandler;
+    var timeoutHandlers = [];
 
     var clockHandler = clock.start(function(t) {
       var callingCriteria = function(element) {
@@ -55,7 +55,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
       };
 
       var schedule = function(event) {
-        lastHandler = setTimeout(event.f, event.t - t);
+        timeoutHandlers.push(setTimeout(event.f, event.t - t));
       };
 
       var nextElement;
@@ -77,8 +77,8 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
 
     return {
       stop: function(){
-        for (var i=0; i<eventsArray.length;i++){
-          clearTimeout(lastHandler);
+        for (var i=0; i<timeoutHandlers.length;i++){
+          clearTimeout(timeoutHandlers[i]);
         };
         clockHandler.stop();
       }
