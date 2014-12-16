@@ -148,6 +148,21 @@ describe("Music.Utils", function() {
         });
       });
 
+      describe("when call stop before clock signal", function() {
+        it("should NOT call setTimeout", function() {
+          var fakeClock = new FakeClock();
+          var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+          var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+          fSeq.push({t:0, f: function(){}});
+          var handle = fSeq.start(); // this will replace the callback on fakeclock
+          handle.stop();
+          fakeClock.fcn(0);
+
+          expect(fakeSetTimeout).not.toHaveBeenCalled();
+        });
+      });
+
       it("should be called when got clock signal", function() {
         var fakeClock = new FakeClock();
         var fakeSetTimeout = function(fcn, timeout){
