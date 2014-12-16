@@ -376,6 +376,45 @@ describe("Music.Utils", function() {
 
     describe("when there is two events", function() {
       describe("when event occurs at 100 and second event occurs at 200", function() {
+        describe("when call stop after clock signal", function() {
+          var fakeClock;
+          var fakeSetTimeout, fakeClearTimeout;
+          var fSeq;
+          var handle;
+
+          beforeEach(function(){
+            var currentHandler = 44;
+
+            fakeClock = new FakeClock();
+            fakeSetTimeout = function(f,t){
+              currentHandler++;
+              return currentHandler;
+            };
+            fakeClearTimeout = jasmine.createSpy("mockClearTimeout");
+
+            fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout, fakeClearTimeout);
+            fSeq.push({t:100, f: function(){}});
+            fSeq.push({t:200, f: function(){}});
+
+            handle = fSeq.start();
+            
+            fakeClock.fcn(0);
+            handle.stop();
+          });
+
+          it("should call stop on clock", function() {
+            expect(fakeClock.stopCalled).toEqual(true);
+          });
+
+          it("should call clearTimeout", function() {
+            expect(fakeClearTimeout).toHaveBeenCalled();
+          });
+
+          it("should call clearTimeout two times (one for each event)", function() {
+            expect(fakeClearTimeout.calls.count()).toEqual(2);
+          });
+        });
+
         describe("when clock sends clock signal with 0", function() {
           it("should call setTimeout with 100", function() {
             var fakeClock = new FakeClock();
