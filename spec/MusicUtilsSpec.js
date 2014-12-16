@@ -154,12 +154,10 @@ describe("Music.Utils", function() {
         var fakeSetTimeout, fakeClearTimeout;
         var fSeq;
         var handle;
+        var innerFakeTimeout;
 
-        beforeEach(function(){
+        var setupFunSeq = function() {
           fakeClock = new FakeClock();
-          fakeSetTimeout = function(f,t){
-            return 44;
-          };
           fakeClearTimeout = jasmine.createSpy("mockSetTimeout");
 
           fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout, fakeClearTimeout);
@@ -169,23 +167,52 @@ describe("Music.Utils", function() {
           
           fakeClock.fcn(0);
           handle.stop();
+        };
+
+        describe("when event doesn't ocurrs (not called by setTimeout)", function() {
+          beforeEach(function(){
+            fakeSetTimeout = function(f,t){
+              return 44;
+            };
+          });
+          beforeEach(setupFunSeq);
+
+          it("should call stop on clock", function() {
+            expect(fakeClock.stopCalled).toEqual(true);
+          });
+
+          it("should call clearTimeout", function() {
+            expect(fakeClearTimeout).toHaveBeenCalled();
+          });
+
+          it("should call clearTimeout with the same handler", function() {
+            expect(fakeClearTimeout).toHaveBeenCalledWith(44);
+          });
+
+          it("should call clearTimeout ONLY ONE time (one for each event)", function() {
+            expect(fakeClearTimeout.calls.count()).toEqual(1);
+          });
         });
 
-        it("should call stop on clock", function() {
-          expect(fakeClock.stopCalled).toEqual(true);
-        });
 
-        it("should call clearTimeout", function() {
-          expect(fakeClearTimeout).toHaveBeenCalled();
-        });
+        describe("when event DOES ocurrs (called by setTimeout)", function() {
+          beforeEach(function(){
+            fakeSetTimeout = function(f,t){
+              f();
+              return 44;
+            };
+          });
+          beforeEach(setupFunSeq);
 
-        it("should call clearTimeout with the same handler", function() {
-          expect(fakeClearTimeout).toHaveBeenCalledWith(44);
-        });
+          it("should call stop on clock", function() {
+            expect(fakeClock.stopCalled).toEqual(true);
+          });
 
-        it("should call clearTimeout ONLY ONE time (one for each event)", function() {
-          expect(fakeClearTimeout.calls.count()).toEqual(1);
-        });        
+          it("should NOT call clearTimeout", function() {
+            expect(fakeClearTimeout).not.toHaveBeenCalled();
+          });
+      
+        });
       });
 
       it("should be called when got clock signal", function() {
