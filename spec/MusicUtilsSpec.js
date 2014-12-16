@@ -127,6 +127,27 @@ describe("Music.Utils", function() {
     };    
 
     describe("when there is a single event at beginning", function() {
+      describe("when function seq is called twice", function() {
+        it("should behaves the same way", function() {
+          var fakeClock = new FakeClock();
+          var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+          var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+          fSeq.push({t:0, f: function(){}});
+          fSeq.start();
+
+          // simulate clock signal
+          fakeClock.fcn(0);
+
+          fSeq.start(); // this will replace the callback on fakeclock
+
+          // simulate clock signal
+          fakeClock.fcn(0);
+
+          expect(fakeSetTimeout.calls.count()).toEqual(2);
+        });
+      });
+
       it("should be called when got clock signal", function() {
         var fakeClock = new FakeClock();
         var fakeSetTimeout = function(fcn, timeout){
@@ -151,7 +172,6 @@ describe("Music.Utils", function() {
 
         var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
         fSeq.push({t:0, f: function(){}});
-
         fSeq.start();
 
         // simulate clock signal
