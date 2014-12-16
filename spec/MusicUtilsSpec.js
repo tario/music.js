@@ -118,10 +118,11 @@ describe("Music.Utils", function() {
   // calls functions of an array at precise times using a clock
   describe("FunctionSeq", function() {
     var FakeClock = function() {
+      var self = this;
       this.start = function(fcn) {
         this.fcn = fcn;
         return {
-          stop: function(){}
+          stop: function(){self.stopCalled = true;}
         };
       }
     };    
@@ -149,18 +150,31 @@ describe("Music.Utils", function() {
       });
 
       describe("when call stop before clock signal", function() {
-        it("should NOT call setTimeout", function() {
-          var fakeClock = new FakeClock();
-          var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+        var fakeClock;
+        var fakeSetTimeout;
+        var fSeq;
+        var handle;
 
-          var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+        beforeEach(function(){
+          fakeClock = new FakeClock();
+          fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+          fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
           fSeq.push({t:0, f: function(){}});
-          var handle = fSeq.start(); // this will replace the callback on fakeclock
+
+          handle = fSeq.start();
           handle.stop();
           fakeClock.fcn(0);
+        });
 
+        it("should NOT call setTimeout", function() {
           expect(fakeSetTimeout).not.toHaveBeenCalled();
         });
+
+        it("should call stop on clock", function() {
+          expect(fakeClock.stopCalled).toEqual(true);
+        });
+
       });
 
       it("should be called when got clock signal", function() {
