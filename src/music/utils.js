@@ -47,12 +47,9 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
 
   var start = function() {
     var array = eventsArray.slice(0);
-    var stopped;
     var lastHandler;
 
     var clockHandler = clock.start(function(t) {
-      if (stopped) return;
-
       var callingCriteria = function(element) {
         return element.t - t < 1000 && element.t - t >= 0;
       };
@@ -84,7 +81,6 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
           clearTimeout(lastHandler);
         };
         clockHandler.stop();
-        stopped = true;
       }
     };
   };
