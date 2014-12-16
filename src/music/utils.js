@@ -55,15 +55,21 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
         setTimeout(event.f, event.t - t);
       };
 
-      var notCallingCriteria = function(element) {
-        return !(element.t - t < 1000 && element.t - t >= 0);
-      };
+      var nextElement;
 
-      var callingEvents = array.filter(callingCriteria);
-      var notCallingEvents = array.filter(notCallingCriteria);
-
-      callingEvents.forEach(schedule);
-      array = notCallingEvents;
+      while(1) {
+        if (array.length > 0) {
+          nextElement = array[0];
+          if (callingCriteria(nextElement)) {
+            schedule(nextElement);
+            array.shift(); // remove first element
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
     });
   };
 
