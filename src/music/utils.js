@@ -80,8 +80,9 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
 
     return {
       stop: function(){
-        clearTimeout(lastHandler);
-        clearTimeout(lastHandler);
+        for (var i=0; i<eventsArray.length;i++){
+          clearTimeout(lastHandler);
+        };
         clockHandler.stop();
         stopped = true;
       }
