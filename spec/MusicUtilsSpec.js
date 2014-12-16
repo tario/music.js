@@ -164,11 +164,6 @@ describe("Music.Utils", function() {
 
           handle = fSeq.start();
           handle.stop();
-          fakeClock.fcn(0);
-        });
-
-        it("should NOT call setTimeout", function() {
-          expect(fakeSetTimeout).not.toHaveBeenCalled();
         });
 
         it("should call stop on clock", function() {
