@@ -417,6 +417,14 @@ describe("Music.Utils", function() {
           it("should call clearTimeout two times (one for each event)", function() {
             expect(fakeClearTimeout.calls.count()).toEqual(2);
           });
+
+          it("should call clearTimeout first time with 44", function() {
+            expect(fakeClearTimeout.calls.argsFor(0)[0]).toEqual(45);
+          });
+
+          it("should call clearTimeout second time with 45", function() {
+            expect(fakeClearTimeout.calls.argsFor(1)[0]).toEqual(46);
+          });
         });
 
         describe("when clock sends clock signal with 0", function() {
