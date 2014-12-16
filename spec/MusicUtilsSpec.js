@@ -232,7 +232,7 @@ describe("Music.Utils", function() {
           [0, 100, 1000, 2000].forEach(function(signalTime) {
             describe("when clock signal " + signalTime, function() {
               [50, 150, 1500, 2500, 10000].forEach(function(t) {
-                describe("when clock signal " + signalTime, function() {
+                describe("when event time is " + t, function() {
                   if (t >= signalTime && t < signalTime + 1000) {
                     it("should call setTimeout", function() {
                       var fakeClock = new FakeClock();
@@ -265,6 +265,48 @@ describe("Music.Utils", function() {
                       expect(fakeSetTimeout).not.toHaveBeenCalled();
                     });
                   }
+
+                  var anotherSignalTime = signalTime + 1000;
+                  describe("when clock signal " + anotherSignalTime + " after that", function() {
+                    var fakeClock;
+                    var fakeSetTimeout;
+                    var fSeq;
+
+                    beforeEach(function() {
+                      fakeClock = new FakeClock();
+                      fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
+
+                      fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+                      fSeq.push({t:t, f: function(){}});
+
+                      fSeq.start({maxDelta: 1000});
+                      // simulate clock signal
+                      fakeClock.fcn(signalTime);
+                      fakeClock.fcn(anotherSignalTime);
+                    });
+
+                    if (t >= signalTime && t < signalTime + 1000) {
+                      it("should call setTimeout only ONE time", function() {
+                        expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), t-signalTime);
+                        expect(fakeSetTimeout.calls.count()).toEqual(1);
+                      });
+                    } else {
+                      if (t >= anotherSignalTime && t < anotherSignalTime + 1000) {
+                        it("should call setTimeout ony ONE time", function() {
+                          expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), t-anotherSignalTime);
+                          expect(fakeSetTimeout.calls.count()).toEqual(1);
+                        });
+
+                      } else {
+                        it("should NOT call setTimeout", function() {
+                          expect(fakeSetTimeout).not.toHaveBeenCalled();
+                        });
+                      }                      
+                    }
+
+                  });
+
+
                 });
               });
 
