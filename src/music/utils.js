@@ -45,6 +45,12 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
 MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   var eventsArray = [];
 
+  var reject = function(x) {
+    return function(y) {
+      return x!=y;
+    };
+  };
+
   var start = function() {
     var array = eventsArray.slice(0);
     var timeoutHandlers = [];
@@ -55,7 +61,11 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
       };
 
       var schedule = function(event) {
-        timeoutHandlers.push(setTimeout(event.f, event.t - t));
+        var timeoutHandler = setTimeout(function(){
+          timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
+          event.f();
+        }, event.t - t);
+        timeoutHandlers.push(timeoutHandler);
       };
 
       var nextElement;

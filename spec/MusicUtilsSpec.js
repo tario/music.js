@@ -158,7 +158,7 @@ describe("Music.Utils", function() {
 
         var setupFunSeq = function() {
           fakeClock = new FakeClock();
-          fakeClearTimeout = jasmine.createSpy("mockSetTimeout");
+          fakeClearTimeout = jasmine.createSpy("mockClearTimeout");
 
           fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout, fakeClearTimeout);
           fSeq.push({t:100, f: function(){}});
@@ -166,6 +166,9 @@ describe("Music.Utils", function() {
           handle = fSeq.start();
           
           fakeClock.fcn(0);
+        };
+
+        var handleStop = function(){
           handle.stop();
         };
 
@@ -176,6 +179,7 @@ describe("Music.Utils", function() {
             };
           });
           beforeEach(setupFunSeq);
+          beforeEach(handleStop);
 
           it("should call stop on clock", function() {
             expect(fakeClock.stopCalled).toEqual(true);
@@ -196,13 +200,19 @@ describe("Music.Utils", function() {
 
 
         describe("when event DOES ocurrs (called by setTimeout)", function() {
+          var setTimeoutFcn;
+
           beforeEach(function(){
             fakeSetTimeout = function(f,t){
-              f();
+              setTimeoutFcn = f;
               return 44;
             };
           });
           beforeEach(setupFunSeq);
+          beforeEach(function(){
+            setTimeoutFcn();
+          });
+          beforeEach(handleStop);
 
           it("should call stop on clock", function() {
             expect(fakeClock.stopCalled).toEqual(true);
