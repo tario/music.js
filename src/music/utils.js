@@ -43,9 +43,10 @@ MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval)
 };
 
 MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
-  var array = [];
+  var eventsArray = [];
 
   var start = function() {
+    var array = eventsArray.slice(0);
     clock.start(function(t) {
       var callingCriteria = function(element) {
         return element.t - t < 1000 && element.t - t >= 0;
@@ -73,7 +74,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout) {
     });
   };
 
-  var push = array.push.bind(array);
+  var push = eventsArray.push.bind(eventsArray);
 
   return {
     start: start,
