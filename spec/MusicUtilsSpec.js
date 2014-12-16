@@ -182,6 +182,10 @@ describe("Music.Utils", function() {
         it("should call clearTimeout with the same handler", function() {
           expect(fakeClearTimeout).toHaveBeenCalledWith(44);
         });
+
+        it("should call clearTimeout ONLY ONE time (one for each event)", function() {
+          expect(fakeClearTimeout.calls.count()).toEqual(1);
+        });        
       });
 
       it("should be called when got clock signal", function() {
