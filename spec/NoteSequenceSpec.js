@@ -46,6 +46,11 @@ describe("Music.NoteSequence", function() {
         fakeFunSeq.push.calls.argsFor(0)[0].f();
         expect(fakeInstrument.note).toHaveBeenCalled();
       });
+
+      it("should output to funseq start calling function to call instrument note with notenum 0", function(){
+        fakeFunSeq.push.calls.argsFor(0)[0].f();
+        expect(fakeInstrument.note).toHaveBeenCalledWith(0);
+      });
     });
   });
 });
