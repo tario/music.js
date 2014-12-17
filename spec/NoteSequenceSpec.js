@@ -1,13 +1,20 @@
 describe("Music.NoteSequence", function() {
   var fakeFunSeq;
   var fakeInstrument;
+  var fakeInstrumentSpy;
+
   beforeEach(function() {
     fakeFunSeq = {};
     fakeFunSeq.start = jasmine.createSpy("FunSeq.start");
     fakeFunSeq.push = jasmine.createSpy("FunSeq.start");
 
-    fakeInstrument = {};
-    fakeInstrument.note = jasmine.createSpy("instrument.note");
+    fakeInstrument = {
+      note: function() {
+        return {play:function(){}};
+      }
+    };
+
+    spyOn(fakeInstrument, "note").and.callThrough();
   });
 
   it("should allow create NoteSequence for FunctionSequence and instrument", function(){
