@@ -7,7 +7,7 @@ describe("Music.NoteSequence", function() {
     fakeFunSeq.push = jasmine.createSpy("FunSeq.start");
 
     fakeInstrument = {};
-    fakeInstrument = jasmine.createSpy("instrument.note");
+    fakeInstrument.note = jasmine.createSpy("instrument.note");
   });
 
   it("should allow create NoteSequence for FunctionSequence and instrument", function(){
@@ -32,6 +32,14 @@ describe("Music.NoteSequence", function() {
 
       it("should output to funseq end event at 100", function(){
         expect(fakeFunSeq.push.calls.argsFor(1)[0].t).toEqual(100);
+      });
+
+      it("should output to funseq start event a function", function(){
+        expect(fakeFunSeq.push.calls.argsFor(0)[0].f).toEqual(jasmine.any(Function));
+      });
+
+      it("should output to funseq end event a function", function(){
+        expect(fakeFunSeq.push.calls.argsFor(1)[0].f).toEqual(jasmine.any(Function));
       });
     });
   });
