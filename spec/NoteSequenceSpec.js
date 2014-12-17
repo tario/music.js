@@ -30,7 +30,7 @@ describe("Music.NoteSequence", function() {
 
     var testSingleNote = function(noteNum, startTime, duration) {
 
-      describe("when added a note at 0 with duration 100", function() {
+      describe("when added a note ("+noteNum+") at 0 with duration " + duration, function() {
         beforeEach(function(){
           noteSeq.push([noteNum,0,duration]); // noteNum, startTime, duration
         });
@@ -39,7 +39,7 @@ describe("Music.NoteSequence", function() {
           expect(fakeFunSeq.push.calls.argsFor(0)[0].t).toEqual(0);
         });
 
-        it("should output to funseq end event at 100", function(){
+        it("should output to funseq end event at " + duration, function(){
           expect(fakeFunSeq.push.calls.argsFor(1)[0].t).toEqual(duration);
         });
 
@@ -51,12 +51,12 @@ describe("Music.NoteSequence", function() {
           expect(fakeFunSeq.push.calls.argsFor(1)[0].f).toEqual(jasmine.any(Function));
         });
 
-        it("should output to funseq start calling function to call instrument note", function(){
+        it("should output to funseq start calling function to call instrument.note", function(){
           fakeFunSeq.push.calls.argsFor(0)[0].f();
           expect(fakeInstrument.note).toHaveBeenCalled();
         });
 
-        it("should output to funseq start calling function to call instrument note with notenum 0", function(){
+        it("should output to funseq start calling function to call instrument.note with notenum " + noteNum, function(){
           fakeFunSeq.push.calls.argsFor(0)[0].f();
           expect(fakeInstrument.note).toHaveBeenCalledWith(noteNum);
         });
