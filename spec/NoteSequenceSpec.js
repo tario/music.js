@@ -41,6 +41,11 @@ describe("Music.NoteSequence", function() {
       it("should output to funseq end event a function", function(){
         expect(fakeFunSeq.push.calls.argsFor(1)[0].f).toEqual(jasmine.any(Function));
       });
+
+      it("should output to funseq start calling function to call instrument note", function(){
+        fakeFunSeq.push.calls.argsFor(0)[0].f();
+        expect(fakeInstrument.note).toHaveBeenCalled();
+      });
     });
   });
 });
