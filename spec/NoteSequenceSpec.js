@@ -12,6 +12,7 @@ describe("Music.NoteSequence", function() {
 
   it("should allow create NoteSequence for FunctionSequence and instrument", function(){
     var seq = new MUSIC.NoteSequence(fakeFunSeq, fakeInstrument);
+    expect(seq.push).toEqual(jasmine.any(Function));
   })
 
   describe("when instantiated", function() {
