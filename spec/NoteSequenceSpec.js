@@ -32,7 +32,7 @@ describe("Music.NoteSequence", function() {
 
       describe("when added a note at 0 with duration 100", function() {
         beforeEach(function(){
-          noteSeq.push([noteNum,0,100]); // noteNum, startTime, duration
+          noteSeq.push([noteNum,0,duration]); // noteNum, startTime, duration
         });
 
         it("should output to funseq start event at 0", function(){
@@ -40,7 +40,7 @@ describe("Music.NoteSequence", function() {
         });
 
         it("should output to funseq end event at 100", function(){
-          expect(fakeFunSeq.push.calls.argsFor(1)[0].t).toEqual(100);
+          expect(fakeFunSeq.push.calls.argsFor(1)[0].t).toEqual(duration);
         });
 
         it("should output to funseq start event a function", function(){
@@ -101,7 +101,9 @@ describe("Music.NoteSequence", function() {
     };
 
     [0,1,2,3,4,5,12,30].forEach(function(noteNum) {
-      testSingleNote(noteNum,0,100);
+      [10,100,200,321,94].forEach(function(duration) {
+        testSingleNote(noteNum,0,duration);
+      });
     });
   });
 });
