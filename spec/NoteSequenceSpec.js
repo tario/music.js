@@ -30,17 +30,19 @@ describe("Music.NoteSequence", function() {
 
     var testSingleNote = function(noteNum, startTime, duration) {
 
-      describe("when added a note ("+noteNum+") at 0 with duration " + duration, function() {
+      describe("when added a note ("+noteNum+") at " + startTime + " with duration " + duration, function() {
         beforeEach(function(){
-          noteSeq.push([noteNum,0,duration]); // noteNum, startTime, duration
+          noteSeq.push([noteNum,startTime,duration]); // noteNum, startTime, duration
         });
 
-        it("should output to funseq start event at 0", function(){
-          expect(fakeFunSeq.push.calls.argsFor(0)[0].t).toEqual(0);
+        var endTime = startTime + duration;
+
+        it("should output to funseq start event at " + startTime, function(){
+          expect(fakeFunSeq.push.calls.argsFor(0)[0].t).toEqual(startTime);
         });
 
-        it("should output to funseq end event at " + duration, function(){
-          expect(fakeFunSeq.push.calls.argsFor(1)[0].t).toEqual(duration);
+        it("should output to funseq end event at " + endTime, function(){
+          expect(fakeFunSeq.push.calls.argsFor(1)[0].t).toEqual(endTime);
         });
 
         it("should output to funseq start event a function", function(){
@@ -102,7 +104,9 @@ describe("Music.NoteSequence", function() {
 
     [0,1,2,3,4,5,12,30].forEach(function(noteNum) {
       [10,100,200,321,94].forEach(function(duration) {
-        testSingleNote(noteNum,0,duration);
+        [10,100,200,3000, 5411, 10000, 1000000].forEach(function(startTime) {
+          testSingleNote(noteNum,startTime,duration);
+        });
       });
     });
   });
