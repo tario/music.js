@@ -51,6 +51,21 @@ describe("Music.NoteSequence", function() {
         fakeFunSeq.push.calls.argsFor(0)[0].f();
         expect(fakeInstrument.note).toHaveBeenCalledWith(0);
       });
+
+      describe("when end event is called",function() {
+        var playable = {
+          play: jasmine.createSpy("instrument.note().play")
+        };
+        beforeEach(function() {
+          fakeInstrument.note = function() {
+            return playable;
+          };
+        });
+        it("should output to funseq start calling function to call play on object returned by instrument.note", function(){
+          fakeFunSeq.push.calls.argsFor(0)[0].f();
+          expect(playable.play).toHaveBeenCalled();
+        });
+      });
     });
   });
 });
