@@ -225,22 +225,39 @@ describe("Music.Utils", function() {
         });
       });
 
-      it("should be called when got clock signal", function() {
-        var fakeClock = new FakeClock();
-        var fakeSetTimeout = function(fcn, timeout){
-          fcn();
-        };
+      describe("when got clock signal", function() {
+        var fakeClock;
+        var fakeSetTimeout;
+        var fSeq;
+        var firstEvent;
 
-        var fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
-        var firstEvent = jasmine.createSpy("mockFirstEventFcn");
-        fSeq.push({t:0, f: firstEvent});
+        beforeEach(function(){
+          fakeClock = new FakeClock();
+          fakeSetTimeout = function(fcn, timeout){
+            fcn();
+          };
 
-        fSeq.start();
+          fSeq = MUSIC.Utils.FunctionSeq(fakeClock, fakeSetTimeout);
+          firstEvent = jasmine.createSpy("mockFirstEventFcn");
+          fSeq.push({t:0, f: firstEvent});
+        });
 
-        // simulate clock signal
-        fakeClock.fcn(0);
+        describe("when set start parameter to 4", function() {
+          beforeEach(function() {
+            fSeq.start(4);
+            // simulate clock signal
+            fakeClock.fcn(0);
+          });
 
-        expect(firstEvent).toHaveBeenCalled();
+          it("should call function", function() {
+            expect(firstEvent).toHaveBeenCalled();
+          });
+
+          it("should call function with number parameter 4", function() {
+            expect(firstEvent).toHaveBeenCalledWith(4);
+          });
+        });
+
       });
 
       it("should call setTimeout", function() {
