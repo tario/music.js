@@ -242,22 +242,29 @@ describe("Music.Utils", function() {
           fSeq.push({t:0, f: firstEvent});
         });
 
-        describe("when set start parameter to 4", function() {
-          beforeEach(function() {
-            fSeq.start(4);
-            // simulate clock signal
-            fakeClock.fcn(0);
-          });
+        var testParameter = function(parameter) {
+          var type = typeof parameter;
+          describe("when set start parameter to " + parameter + "(" + type + ")", function() {
+            beforeEach(function() {
+              fSeq.start(parameter);
+              // simulate clock signal
+              fakeClock.fcn(0);
+            });
 
-          it("should call function", function() {
-            expect(firstEvent).toHaveBeenCalled();
-          });
+            it("should call function", function() {
+              expect(firstEvent).toHaveBeenCalled();
+            });
 
-          it("should call function with number parameter 4", function() {
-            expect(firstEvent).toHaveBeenCalledWith(4);
+            it("should call function with " + type + " parameter " + parameter, function() {
+              expect(firstEvent).toHaveBeenCalledWith(parameter);
+            });
           });
-        });
+        };
 
+        [0,4,5,100,1000,
+        "a","b","c","test",
+        function(){},
+        {a:1, b:2}].forEach(testParameter);
       });
 
       it("should call setTimeout", function() {
