@@ -18,14 +18,14 @@ describe("Music.NoteSequence", function() {
   });
 
   it("should allow create NoteSequence for FunctionSequence and instrument", function(){
-    var seq = new MUSIC.NoteSequence(fakeFunSeq, fakeInstrument);
+    var seq = new MUSIC.NoteSequence(fakeFunSeq);
     expect(seq.push).toEqual(jasmine.any(Function));
   })
 
   describe("when instantiated", function() {
     var noteseq;
     beforeEach(function() {
-      noteSeq = new MUSIC.NoteSequence(fakeFunSeq, fakeInstrument);
+      noteSeq = new MUSIC.NoteSequence(fakeFunSeq);
     });
 
     var testSingleNote = function(noteNum, startTime, duration) {
@@ -54,12 +54,12 @@ describe("Music.NoteSequence", function() {
         });
 
         it("should output to funseq start calling function to call instrument.note", function(){
-          fakeFunSeq.push.calls.argsFor(0)[0].f();
+          fakeFunSeq.push.calls.argsFor(0)[0].f(MUSIC.NoteSequence.context(fakeInstrument));
           expect(fakeInstrument.note).toHaveBeenCalled();
         });
 
         it("should output to funseq start calling function to call instrument.note with notenum " + noteNum, function(){
-          fakeFunSeq.push.calls.argsFor(0)[0].f();
+          fakeFunSeq.push.calls.argsFor(0)[0].f(MUSIC.NoteSequence.context(fakeInstrument));
           expect(fakeInstrument.note).toHaveBeenCalledWith(noteNum);
         });
 
@@ -73,7 +73,7 @@ describe("Music.NoteSequence", function() {
             };
           });
           it("should output to funseq start calling function to call play on object returned by instrument.note", function(){
-            fakeFunSeq.push.calls.argsFor(0)[0].f();
+            fakeFunSeq.push.calls.argsFor(0)[0].f(MUSIC.NoteSequence.context(fakeInstrument));
             expect(playable.play).toHaveBeenCalled();
           });
         });
@@ -91,11 +91,11 @@ describe("Music.NoteSequence", function() {
             fakeInstrument.note = function() {
               return playable;
             };
-            fakeFunSeq.push.calls.argsFor(0)[0].f();
+            fakeFunSeq.push.calls.argsFor(0)[0].f(MUSIC.NoteSequence.context(fakeInstrument));
           });
 
           it("should output to funseq end calling function to call stop on object returned by instrument.note(...).play", function(){
-            fakeFunSeq.push.calls.argsFor(1)[0].f();
+            fakeFunSeq.push.calls.argsFor(1)[0].f(MUSIC.NoteSequence.context(fakeInstrument));
             expect(playing.stop).toHaveBeenCalled();
           });
         });
