@@ -63,7 +63,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
       var schedule = function(event) {
         var timeoutHandler = setTimeout(function(){
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
-          event.f();
+          event.f(4);
         }, event.t - t);
         timeoutHandlers.push(timeoutHandler);
       };
