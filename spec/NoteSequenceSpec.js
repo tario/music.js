@@ -61,6 +61,18 @@ describe("Music.NoteSequence", function() {
           expect(fakeFunSeq.start).toHaveBeenCalled();
         });
 
+        it("should call funseq.start with NoteSequence context (Object)", function() {
+          expect(fakeFunSeq.start.calls.argsFor(0)[0]).toEqual(jasmine.any(Object));
+        });
+
+        it("should call funseq.start with NoteSequence context (should have instrument)", function() {
+          expect(fakeFunSeq.start.calls.argsFor(0)[0].instrument).toEqual(jasmine.any(Object));
+        });
+
+        it("should call funseq.start with NoteSequence context (instrument should have note function-method)", function() {
+          expect(fakeFunSeq.start.calls.argsFor(0)[0].instrument.note).toEqual(jasmine.any(Function));
+        });
+
         describe("when called stop", function(){
           beforeEach(function() {
             playing.stop();
