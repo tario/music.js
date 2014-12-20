@@ -2,11 +2,20 @@ describe("Music.NoteSequence", function() {
   var fakeFunSeq;
   var fakeInstrument;
   var fakeInstrumentSpy;
+  var runningFunSeq;
 
   beforeEach(function() {
-    fakeFunSeq = {};
-    fakeFunSeq.start = jasmine.createSpy("FunSeq.start");
-    fakeFunSeq.push = jasmine.createSpy("FunSeq.start");
+    fakeFunSeq = {start: function() {
+      var fakeRunningFunSeq = {
+        stop: jasmine.createSpy("runningFunSeqStop")
+      };
+
+      runningFunSeq = fakeRunningFunSeq;
+      return fakeRunningFunSeq;
+    }, push: function() {}};
+
+    spyOn(fakeFunSeq, "start").and.callThrough();
+    spyOn(fakeFunSeq, "push").and.callThrough();
 
     fakeInstrument = {
       note: function() {
@@ -46,6 +55,20 @@ describe("Music.NoteSequence", function() {
 
         it("should be stoppable", function() {
           expect(playing.stop).toEqual(jasmine.any(Function));
+        });
+
+        it("should call funseq.start", function() {
+          expect(fakeFunSeq.start).toHaveBeenCalled();
+        });
+
+        describe("when called stop", function(){
+          beforeEach(function() {
+            playing.stop();
+          });
+
+          it("should call funseq.start(...).stop", function() {
+            expect(runningFunSeq.stop).toHaveBeenCalled();
+          });
         });
       });
 
