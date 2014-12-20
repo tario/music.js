@@ -8,13 +8,15 @@ MUSIC.NoteSequence.Playable = function(noteseq) {
   this._noteseq = noteseq;
 };
 MUSIC.NoteSequence.Playable.prototype.play = function() {
-  return new MUSIC.NoteSequence.Playing(this._noteseq);
+  this._runningFunSeq = this._noteseq._funseq.start();
+  return new MUSIC.NoteSequence.Playing(this._runningFunSeq);
 };
 
-MUSIC.NoteSequence.Playing = function(noteseq) {
-  this._noteseq = noteseq;
+MUSIC.NoteSequence.Playing = function(runningFunSeq) {
+  this._runningFunSeq = runningFunSeq;
 };
 MUSIC.NoteSequence.Playing.prototype.stop = function() {
+  this._runningFunSeq.stop();
 };
 
 MUSIC.NoteSequence.prototype.push = function(array){
