@@ -28,6 +28,29 @@ describe("Music.NoteSequence", function() {
       noteSeq = new MUSIC.NoteSequence(fakeFunSeq);
     });
 
+    describe("when called makePlayable", function() {
+      var playable;
+      beforeEach(function() {
+        playable = noteSeq.makePlayable(fakeInstrument);
+      });
+
+      it("should be playable", function() {
+        expect(playable.play).toEqual(jasmine.any(Function));
+      });
+
+      describe("when called play", function(){
+        var playing;
+        beforeEach(function() {
+          playing = playable.play();
+        });
+
+        it("should be stoppable", function() {
+          expect(playing.stop).toEqual(jasmine.any(Function));
+        });
+      });
+
+    });
+
     var testSingleNote = function(noteNum, startTime, duration) {
 
       describe("when added a note ("+noteNum+") at " + startTime + " with duration " + duration, function() {
