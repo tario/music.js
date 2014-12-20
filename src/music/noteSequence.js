@@ -13,6 +13,18 @@ MUSIC.NoteSequence = function(funseq) {
       playing.stop();
     }});
   };
+
+  this.makePlayable = function() {
+    return {
+      play: function() {
+        return {
+          stop: function() {
+
+          }
+        };
+      }
+    };
+  };
 };
 
 MUSIC.NoteSequence.context = function(instrument) {
