@@ -5,6 +5,25 @@ describe("Music.NoteSequence", function() {
   var runningFunSeq;
 
   beforeEach(function() {
+    jasmine.addMatchers({
+      toBeNoteSequenceContext: function(util, customEqualityTesters) {
+        return {
+          compare: function(actual, expected) {
+            if (typeof actual !== "object")
+              return {pass: false, message: actual + " is not an object"};
+
+            if (!actual.instrument)
+              return {pass: false, message: actual + " doesn't have instrument attribute"};
+
+            if (typeof actual.instrument.note !== "function")
+              return {pass: false, message: actual + " instrument doesn't respond to .note()"};
+
+            return {pass: true};
+          }
+        };
+      }
+    });
+
     fakeFunSeq = {start: function() {
       var fakeRunningFunSeq = {
         stop: jasmine.createSpy("runningFunSeqStop")
@@ -61,16 +80,8 @@ describe("Music.NoteSequence", function() {
           expect(fakeFunSeq.start).toHaveBeenCalled();
         });
 
-        it("should call funseq.start with NoteSequence context (Object)", function() {
-          expect(fakeFunSeq.start.calls.argsFor(0)[0]).toEqual(jasmine.any(Object));
-        });
-
-        it("should call funseq.start with NoteSequence context (should have instrument)", function() {
-          expect(fakeFunSeq.start.calls.argsFor(0)[0].instrument).toEqual(jasmine.any(Object));
-        });
-
-        it("should call funseq.start with NoteSequence context (instrument should have note function-method)", function() {
-          expect(fakeFunSeq.start.calls.argsFor(0)[0].instrument.note).toEqual(jasmine.any(Function));
+        it("should call funseq.start with NoteSequence context", function() {
+          expect(fakeFunSeq.start.calls.argsFor(0)[0]).toBeNoteSequenceContext();
         });
 
         describe("when called stop", function(){
