@@ -187,6 +187,14 @@ describe("Music.NoteSequence", function() {
         });
 
         describe("when end event is called",function() {
+          it("should NOT raise an exception", function(){
+            expect(function() {
+              fakeFunSeq.push.calls.argsFor(1)[0].f(baseContext);
+            }).not.toThrow();
+          });          
+        });
+
+        describe("when end event is called after start event",function() {
           var playing = {
             stop: jasmine.createSpy("instrument.note(...).stop")
           };
