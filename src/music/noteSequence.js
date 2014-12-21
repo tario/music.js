@@ -10,13 +10,15 @@ MUSIC.NoteSequence.Playable = function(noteseq, context) {
 };
 MUSIC.NoteSequence.Playable.prototype.play = function() {
   this._runningFunSeq = this._noteseq._funseq.start(this._context);
-  return new MUSIC.NoteSequence.Playing(this._runningFunSeq);
+  return new MUSIC.NoteSequence.Playing(this._runningFunSeq, this._context);
 };
 
-MUSIC.NoteSequence.Playing = function(runningFunSeq) {
+MUSIC.NoteSequence.Playing = function(runningFunSeq, ctx) {
   this._runningFunSeq = runningFunSeq;
+  this._context = ctx;
 };
 MUSIC.NoteSequence.Playing.prototype.stop = function() {
+  if (this._context.playing) this._context.playing.stop();
   this._runningFunSeq.stop();
 };
 
