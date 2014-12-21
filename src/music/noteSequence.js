@@ -31,7 +31,7 @@ MUSIC.NoteSequence.prototype.push = function(array){
     ctx.playing = ctx.instrument.note(noteNum).play()
   }});
   this._funseq.push({t:startTime + duration, f: function(ctx){
-    ctx.playing.stop();
+    if (ctx.playing) ctx.playing.stop();
   }});
 };
 
