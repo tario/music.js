@@ -93,6 +93,42 @@ describe("Music.NoteSequence", function() {
             expect(runningFunSeq.stop).toHaveBeenCalled();
           });
         });
+
+        describe("when added one note to funseq", function() {
+          beforeEach(function(){
+            noteSeq.push([12,0,100]); // noteNum, startTime, duration
+            baseContext = MUSIC.NoteSequence.context(fakeInstrument);
+          });
+
+          describe("when called stop after first note",function() {
+            var notePlaying
+            var notePlayable;
+            var playing;
+
+            beforeEach(function() {
+              playable = new MUSIC.NoteSequence.Playable(noteSeq, baseContext)
+              fakeInstrument.note = function() {
+                return notePlayable;
+              };
+              
+              notePlayable = {
+                play: function() { return notePlaying; }
+              };
+              notePlaying = {
+                stop: jasmine.createSpy("instrument.note(...).stop")
+              };
+
+              playing = playable.play();
+              fakeFunSeq.push.calls.argsFor(0)[0].f(baseContext);
+            });
+
+            it("should output to funseq end calling function to call stop on object returned by instrument.note(...).play", function(){
+              playing.stop();
+              expect(notePlaying.stop).toHaveBeenCalled();
+            });          
+          });
+        });
+
       });
 
     });
