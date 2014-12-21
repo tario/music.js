@@ -4,11 +4,12 @@ MUSIC.NoteSequence = function(funseq) {
   this._funseq = funseq;
 };
 
-MUSIC.NoteSequence.Playable = function(noteseq) {
+MUSIC.NoteSequence.Playable = function(noteseq, context) {
   this._noteseq = noteseq;
+  this._context = context;
 };
 MUSIC.NoteSequence.Playable.prototype.play = function() {
-  this._runningFunSeq = this._noteseq._funseq.start();
+  this._runningFunSeq = this._noteseq._funseq.start(this._context);
   return new MUSIC.NoteSequence.Playing(this._runningFunSeq);
 };
 
@@ -32,8 +33,8 @@ MUSIC.NoteSequence.prototype.push = function(array){
   }});
 };
 
-MUSIC.NoteSequence.prototype.makePlayable = function() {
-  return new MUSIC.NoteSequence.Playable(this);
+MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
+  return new MUSIC.NoteSequence.Playable(this, MUSIC.NoteSequence.context(instrument));
 };
 
 MUSIC.NoteSequence.context = function(instrument) {
