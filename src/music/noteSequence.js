@@ -26,10 +26,10 @@ MUSIC.NoteSequence.prototype.push = function(array){
   var startTime = array[1];
   var duration = array[2];
   this._funseq.push({t:startTime, f: function(ctx){
-    playing = ctx.instrument.note(noteNum).play()
+    ctx.playing = ctx.instrument.note(noteNum).play()
   }});
-  this._funseq.push({t:startTime + duration, f: function(){
-    playing.stop();
+  this._funseq.push({t:startTime + duration, f: function(ctx){
+    ctx.playing.stop();
   }});
 };
 
