@@ -168,6 +168,85 @@ describe("Music.NoteSequence", function() {
             expect(playing.stop).toHaveBeenCalled();
           });
         });
+
+        describe("when using two contexts", function() {
+          var ctx1;
+          var ctx2;
+          var i;
+          var note1;
+          var playableNote;
+          var playing1;
+          var playing2;
+
+          beforeEach(function() {
+            fakeInstrument = {
+              note: function() {
+                i++;
+                return playableNote[i];
+              }
+            };
+
+            ctx1 = MUSIC.NoteSequence.context(fakeInstrument);
+            ctx2 = MUSIC.NoteSequence.context(fakeInstrument);
+            i = -1;
+            playing1 = {
+              stop: jasmine.createSpy("note1.stop")
+            };
+            playing2 = {
+              stop: jasmine.createSpy("note2.stop")
+            };
+
+            note1 = {
+              play: function(){
+                return playing1;
+              }
+            };
+            note2 = {
+              play: function(){
+                return playing2;
+              }
+            };
+            playableNote = [ note1, note2 ];
+
+          });
+
+          describe("when calling two starting functions", function() {
+            beforeEach(function() {
+              fakeFunSeq.push.calls.argsFor(0)[0].f(ctx1);
+              fakeFunSeq.push.calls.argsFor(0)[0].f(ctx2);
+            });
+
+            describe("when calling end function for context 1", function() {
+              beforeEach(function() {
+                fakeFunSeq.push.calls.argsFor(1)[0].f(ctx1);
+              });
+
+              it("should call stop for playing1 returned from note1.play", function() {
+                expect(playing1.stop).toHaveBeenCalled();
+              });
+
+              it("should NOT call stop for playing2 returned from note1.play", function() {
+                expect(playing2.stop).not.toHaveBeenCalled();
+              });
+            });
+
+            describe("when calling end function for context 2", function() {
+              beforeEach(function() {
+                fakeFunSeq.push.calls.argsFor(1)[0].f(ctx2);
+              });
+
+              it("should NOT call stop for playing1 returned from note1.play", function() {
+                expect(playing1.stop).not.toHaveBeenCalled();
+              });
+
+              it("should call stop for playing2 returned from note1.play", function() {
+                expect(playing2.stop).toHaveBeenCalled();
+              });
+            });
+          });
+
+        });
+
       });
     };
 
