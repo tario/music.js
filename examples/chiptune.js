@@ -30,16 +30,15 @@ var instrument = new MUSIC.MultiInstrument([
   new MUSIC.Instrument(sawSoundGenerator)
 ]).mapNote(function(n){ return n+24} /* add one octave to sound */);
 
-var iseq = MUSIC.InstrumentSequence(instrument, 50);
 var cmajorscale = MUSIC.Utils.Scale(0);
 arpeggiator = {
   note: function(n) {
-    return iseq([
-      {num: n, time: 1},
-      {num: cmajorscale.add(n,2), time: 1},
-      {num: cmajorscale.add(n,4), time: 1},
-      {num: cmajorscale.add(n,6), time: 1}
-    ]).loop();
+    var noteSeq = new MUSIC.NoteSequence();
+    noteSeq.push([n, 0, 100]);
+    noteSeq.push([cmajorscale.add(n,2), 100, 100]);
+    noteSeq.push([cmajorscale.add(n,4), 200, 100]);
+    noteSeq.push([cmajorscale.add(n,6), 300, 100]);
+    return noteSeq.makePlayable(instrument).loop();
   }
 };
 
