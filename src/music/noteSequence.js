@@ -13,6 +13,7 @@ MUSIC.NoteSequence = function(funseq) {
 
   this._funseq = funseq;
   this._totalduration = 0;
+  this._noteid = 0;
 };
 
 MUSIC.NoteSequence.Playable = function(noteseq, context, duration) {
@@ -41,18 +42,24 @@ MUSIC.NoteSequence.Playing = function(runningFunSeq, ctx) {
 MUSIC.NoteSequence.Playing.prototype.stop = function() {
   if (this._context.playing) this._context.playing.stop();
   this._runningFunSeq.stop();
+  this._context.stop();
 };
 
 MUSIC.NoteSequence.prototype.push = function(array){
-  var playing;
   var noteNum = array[0];
   var startTime = array[1];
   var duration = array[2];
+
+  this._noteid++;
+  var mynoteid = this._noteid;
+
   this._funseq.push({t:startTime, f: function(ctx){
-    ctx.playing = ctx.instrument.note(noteNum).play()
+    var playing;
+    playing = ctx.instrument.note(noteNum);
+    ctx.setPlaying(mynoteid, playing);
   }});
   this._funseq.push({t:startTime + duration, f: function(ctx){
-    if (ctx.playing) ctx.playing.stop();
+    ctx.unsetPlaying(mynoteid);
   }});
 
   if (startTime + duration > this._totalduration) this._totalduration = startTime + duration;
@@ -63,8 +70,29 @@ MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
 };
 
 MUSIC.NoteSequence.context = function(instrument) {
+  var playingNotes = [];
+  var setPlaying = function(noteid, p) {
+    playingNotes[noteid] = p.play();
+  };
+  var unsetPlaying = function(noteid) {
+    var playing = playingNotes[noteid]; 
+    if (playing) {
+      playing.stop();
+      playingNotes[noteid] = undefined;
+    }
+  };
+
+  var stop = function() {
+    for (var i = 0; i<playingNotes.length; i++) {
+      if(playingNotes[i]) playingNotes[i].stop();
+    }
+  };
+
   return {
-    instrument: instrument
+    setPlaying: setPlaying,
+    unsetPlaying: unsetPlaying,
+    instrument: instrument,
+    stop: stop
   };
 };
 
