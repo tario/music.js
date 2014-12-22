@@ -25,6 +25,7 @@ MUSIC.Utils.Scale = function(base) {
 MUSIC.Utils.Clock = function(preciseTimer, setInterval, clearInterval, interval) {
   var start = function(fcn) {
     var startTime = preciseTimer();
+    fcn(0);
     var hndl = setInterval(function(){
       var t = preciseTimer();
       fcn(t - startTime);
