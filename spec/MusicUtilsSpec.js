@@ -43,6 +43,21 @@ describe("Music.Utils", function() {
       }
     };
 
+    it("should report time zero at start", function(){
+      var fakeTimer = new FakeTimer();
+      fakeTimer.fakeTime = 0;
+      var fakeSetInterval = function(fcn, interval) {
+      };
+
+      var fakeClearInterval = function(hndl) {};
+      var clock = MUSIC.Utils.Clock(fakeTimer.timeFcn.bind(fakeTimer), fakeSetInterval, fakeClearInterval, 1000);
+      var timeReportFcn = jasmine.createSpy("mockTimeReportFcn"); 
+      clock.start(timeReportFcn);
+
+      expect(timeReportFcn).toHaveBeenCalled();
+      expect(timeReportFcn).toHaveBeenCalledWith(0);
+    });
+
     [0,4,10,1000].forEach(function(x){
 
       it("should report precise timing (" + x + ") at desired interval", function(){
