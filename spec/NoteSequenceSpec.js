@@ -106,7 +106,8 @@ describe("Music.NoteSequence", function() {
             var playing;
 
             beforeEach(function() {
-              playable = new MUSIC.NoteSequence.Playable(noteSeq, baseContext)
+              playable = new MUSIC.NoteSequence.Playable(noteSeq, baseContext);
+
               fakeInstrument.note = function() {
                 return notePlayable;
               };
@@ -129,6 +130,99 @@ describe("Music.NoteSequence", function() {
           });
         });
 
+        describe("when added two simultaneous notes to funseq", function() {
+          var playing12, playing14;
+          var playableNoteSeq;
+          beforeEach(function(){
+            playing12 = {
+              stop: jasmine.createSpy("note(12).play().stop()")
+            };
+            playing14 = {
+              stop: jasmine.createSpy("note(14).play().stop()")
+            };
+            var play12 = {
+              play: function() { return playing12; }
+            };
+            var play14 = {
+              play: function() { return playing14; }
+            };
+            fakeInstrument = {
+              note: function(n) {
+                if (n===12) return play12;
+                if (n===14) return play14;
+              }
+            };
+            noteSeq.push([12,0,100]); // noteNum, startTime, duration
+            noteSeq.push([14,0,100]); // noteNum, startTime, duration
+            playableNoteSeq = noteSeq.makePlayable(fakeInstrument);
+            baseContext = playableNoteSeq._context;
+          });
+
+          describe("when called start event on both", function() {
+            beforeEach(function() {
+              fakeFunSeq.push.calls.argsFor(0)[0].f(baseContext);
+              fakeFunSeq.push.calls.argsFor(2)[0].f(baseContext);
+            });
+
+            describe("when called stop on noteseq", function() {
+              beforeEach(function() {
+                playableNoteSeq.play().stop();
+              });
+
+              it("should stop first playing note", function() {
+                expect(playing12.stop).toHaveBeenCalled();
+              });
+
+              it("should stop second playing note", function() {
+                expect(playing14.stop).toHaveBeenCalled();
+              });              
+            });
+
+            describe("when called end event of first", function() {
+              beforeEach(function() {
+                fakeFunSeq.push.calls.argsFor(1)[0].f(baseContext);
+              });
+
+              it("should stop first playing note", function() {
+                expect(playing12.stop).toHaveBeenCalled();
+              });
+
+              it("should NOT stop second playing note", function() {
+                expect(playing14.stop).not.toHaveBeenCalled();
+              });
+            });
+
+            describe("when called end event of second", function() {
+              beforeEach(function() {
+                fakeFunSeq.push.calls.argsFor(3)[0].f(baseContext);
+              });
+
+              it("should NOT stop first playing note", function() {
+                expect(playing12.stop).not.toHaveBeenCalled();
+              });
+
+              it("should stop second playing note", function() {
+                expect(playing14.stop).toHaveBeenCalled();
+              });
+            });
+
+            describe("when called end event of both", function() {
+              beforeEach(function() {
+                fakeFunSeq.push.calls.argsFor(1)[0].f(baseContext);
+                fakeFunSeq.push.calls.argsFor(3)[0].f(baseContext);
+              });
+
+              it("should stop first playing note", function() {
+                expect(playing12.stop).toHaveBeenCalled();
+              });
+
+              it("should stop second playing note", function() {
+                expect(playing14.stop).toHaveBeenCalled();
+              });
+            });
+          });
+
+        });
       });
 
     });
