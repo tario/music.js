@@ -53,16 +53,14 @@ describe("Music.SequenceParser", function() {
     });
 
     describe("when string with " + i + " spaces and C note is parsed", function() {
-      (function() {
-        var index = i;
-        beforeEach(function(){
-          MUSIC.SequenceParser.parse(Array(index+1).join(" ") + "C", noteSeq);
-        });
+      var index = i;
+      beforeEach(function(){
+        MUSIC.SequenceParser.parse(Array(index+1).join(" ") + "C", noteSeq);
+      });
 
-        it("should empty a note at time " + index, function() {
-          expect(noteSeq.push).toHaveBeenCalledWith([0,index,1]);       
-        });
-      })();
+      it("should empty a note at time " + index, function() {
+        expect(noteSeq.push).toHaveBeenCalledWith([0,index,1]);       
+      });
     });
   };
 
