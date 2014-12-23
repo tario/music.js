@@ -17,6 +17,17 @@ describe("Music.SequenceParser", function() {
     };
   });
 
+  describe("when empty string is parsed", function() {
+    beforeEach(function(){
+      MUSIC.SequenceParser.parse("", noteSeq);
+    });
+
+    it("should NOT empty any note to noteSeq", function(){
+      expect(noteSeq.push).not.toHaveBeenCalled();
+    });
+  });
+
+
   for (var note in notes) {
     describe("when parsed note '" + note + "'", function() {
       beforeEach(function(){
