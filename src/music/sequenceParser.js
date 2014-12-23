@@ -11,6 +11,7 @@ var notes = {
 };
 
 MUSIC.SequenceParser.parse = function(input, noteSeq) {
+  if (input === "") return;
   noteSeq.push(notes[input],0,1);
 };
 
