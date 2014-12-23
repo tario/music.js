@@ -11,12 +11,18 @@ var notes = {
 };
 
 MUSIC.SequenceParser.parse = function(input, noteSeq) {
-  var firstNote;
+  var currentNote;
+  var currentCharacter;
   if (input === "") return;
 
   firstNote = input[0];
-  if (firstNote === " ") return;
-  noteSeq.push(notes[firstNote],0,1);
+  for (var i=0; i<input.length; i++) {
+    currentCharacter = input[i];
+    currentNote = notes[currentCharacter];
+    if (currentNote!==undefined) {
+      noteSeq.push([currentNote,i,1]);
+    }
+  }
 };
 
 })();
