@@ -37,6 +37,19 @@ describe("Music.SequenceParser", function() {
 
       it("should NOT empty any note to noteSeq", pushNotShouldBeCalled);
     });
+
+    describe("when string with " + i + " spaces and C note is parsed", function() {
+      (function() {
+        var index = i;
+        beforeEach(function(){
+          MUSIC.SequenceParser.parse(Array(index+1).join(" ") + "C", noteSeq);
+        });
+
+        it("should empty a note at time " + index, function() {
+          expect(noteSeq.push).toHaveBeenCalledWith([0,index,1]);       
+        });
+      })();
+    });
   };
 
 
@@ -51,7 +64,7 @@ describe("Music.SequenceParser", function() {
       });
 
       it("should call push on noteSeq with note on semitone " + notes[note], function(){
-        expect(noteSeq.push).toHaveBeenCalledWith(notes[note],0,1);
+        expect(noteSeq.push).toHaveBeenCalledWith([notes[note],0,1]);
       });
 
       it("should call push on noteSeq ONLY one time", function(){
