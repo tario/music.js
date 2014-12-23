@@ -17,15 +17,27 @@ describe("Music.SequenceParser", function() {
     };
   });
 
+  var pushNotShouldBeCalled =  function(){
+    expect(noteSeq.push).not.toHaveBeenCalled();
+  };
+
   describe("when empty string is parsed", function() {
     beforeEach(function(){
       MUSIC.SequenceParser.parse("", noteSeq);
     });
 
-    it("should NOT empty any note to noteSeq", function(){
-      expect(noteSeq.push).not.toHaveBeenCalled();
-    });
+    it("should NOT empty any note to noteSeq", pushNotShouldBeCalled);
   });
+
+  for (var i = 1; i < 10; i++) {
+    describe("when string with " + i + " spaces is parsed", function() {
+      beforeEach(function(){
+        MUSIC.SequenceParser.parse(Array(i+1).join(" "), noteSeq);
+      });
+
+      it("should NOT empty any note to noteSeq", pushNotShouldBeCalled);
+    });
+  };
 
 
   for (var note in notes) {
