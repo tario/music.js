@@ -69,16 +69,17 @@ describe("Music.SequenceParser", function() {
 
   for (var note in notes) {
     describe("when parsed note '" + note + "'", function() {
+      var noteString = note;
       beforeEach(function(){
-        MUSIC.SequenceParser.parse(note, noteSeq);
+        MUSIC.SequenceParser.parse(noteString, noteSeq);
       });
 
       it("should call push on noteSeq", function(){
         expect(noteSeq.push).toHaveBeenCalled();
       });
 
-      it("should call push on noteSeq with note on semitone " + notes[note], function(){
-        expect(noteSeq.push).toHaveBeenCalledWith([notes[note],0,1]);
+      it("should call push on noteSeq with note on semitone " + notes[noteString], function(){
+        expect(noteSeq.push).toHaveBeenCalledWith([notes[noteString],0,noteString.length]);
       });
 
       it("should call push on noteSeq ONLY one time", function(){
