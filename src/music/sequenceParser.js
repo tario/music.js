@@ -24,18 +24,38 @@ var notes = {
   "B#": 12
 };
 
+var isNoteStart = function(chr) {
+  return "CDEFGAB".indexOf(chr) !== -1;
+};
+
+var noteSplit = function(str) {
+  var ret = [];
+  var lastNote = "";
+  for (var i = 0; i < str.length; i++) {
+    if (isNoteStart(str[i])) {
+      if (lastNote !== "") ret.push(lastNote);
+      lastNote = "";
+    }
+    lastNote += str[i];
+  }
+  if (lastNote !== "") ret.push(lastNote);
+  return ret;
+};
+
 MUSIC.SequenceParser.parse = function(input, noteSeq) {
   var currentNote;
   var currentCharacter;
   if (input === "") return;
 
-  firstNote = input[0];
-  for (var i=0; i<input.length; i++) {
-    currentCharacter = input.slice(i);
-    currentNote = notes[currentCharacter];
-    if (currentNote!==undefined) {
-      noteSeq.push([currentNote,i,currentCharacter.length]);
-    }
+  var noteArray = noteSplit(input);
+  var currentTime = 0;
+  for (var i=0; i<noteArray.length; i++) {
+    var currentNoteStr = noteArray[i];
+    var currentNote = notes[currentNoteStr];
+    if (currentNote !== undefined){
+      noteSeq.push([currentNote, currentTime, currentNoteStr.length])
+    };
+    currentTime += currentNoteStr.length;
   }
 };
 
