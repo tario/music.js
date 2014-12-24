@@ -36,6 +36,12 @@ var noteSplit = function(str) {
       if (lastNote !== "") ret.push(lastNote);
       lastNote = "";
     }
+
+    if (str[i] === " ") {
+      if (lastNote !== "") ret.push(lastNote);
+      lastNote = "";
+    }
+
     lastNote += str[i];
   }
   if (lastNote !== "") ret.push(lastNote);
