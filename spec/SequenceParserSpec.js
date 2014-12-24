@@ -86,48 +86,54 @@ describe("Music.SequenceParser", function() {
     });
 
     for (var note2 in notes) {
-      describe("when parsed string '" + note + " " + note2 + "'", function() {
-        var noteString = note+" "+note2;
-        var strNote1 = note;
-        var strNote2 = note2;
+      var silenceCharacterTest = function(chr) {
+        describe("when parsed string '" + note + chr + note2 + "'", function() {
+          var noteString = note+chr+note2;
+          var strNote1 = note;
+          var strNote2 = note2;
 
-        beforeEach(function(){
-          MUSIC.SequenceParser.parse(noteString, noteSeq);
+          beforeEach(function(){
+            MUSIC.SequenceParser.parse(noteString, noteSeq);
+          });
+
+          it("should call push on noteSeq", function(){
+            expect(noteSeq.push).toHaveBeenCalled();
+          });
+
+          it("should call push on noteSeq two times", function(){
+            expect(noteSeq.push.calls.count()).toEqual(2);
+          });
+
+          it("should call noteSeq.push first time with notenum " + notes[strNote1], function(){
+            expect(noteSeq.push.calls.argsFor(0)[0][0]).toEqual(notes[strNote1]);
+          });
+
+          it("should call noteSeq.push first time with startTime 0", function(){
+            expect(noteSeq.push.calls.argsFor(0)[0][1]).toEqual(0);
+          });
+
+          it("should call noteSeq.push first time with duration " + note.length, function(){
+            expect(noteSeq.push.calls.argsFor(0)[0][2]).toEqual(strNote1.length);
+          });
+
+          it("should call noteSeq.push second time with notenum " + notes[strNote2], function(){
+            expect(noteSeq.push.calls.argsFor(1)[0][0]).toEqual(notes[strNote2]);
+          });
+
+          it("should call noteSeq.push second time with startTime " + (note.length+1), function(){
+            expect(noteSeq.push.calls.argsFor(1)[0][1]).toEqual(strNote1.length+1);
+          });
+
+          it("should call noteSeq.push second time with duration " + note2.length, function(){
+            expect(noteSeq.push.calls.argsFor(1)[0][2]).toEqual(strNote2.length);
+          });
+
         });
+      };
 
-        it("should call push on noteSeq", function(){
-          expect(noteSeq.push).toHaveBeenCalled();
-        });
+      silenceCharacterTest(" ");
+      silenceCharacterTest(".");
 
-        it("should call push on noteSeq two times", function(){
-          expect(noteSeq.push.calls.count()).toEqual(2);
-        });
-
-        it("should call noteSeq.push first time with notenum " + notes[strNote1], function(){
-          expect(noteSeq.push.calls.argsFor(0)[0][0]).toEqual(notes[strNote1]);
-        });
-
-        it("should call noteSeq.push first time with startTime 0", function(){
-          expect(noteSeq.push.calls.argsFor(0)[0][1]).toEqual(0);
-        });
-
-        it("should call noteSeq.push first time with duration " + note.length, function(){
-          expect(noteSeq.push.calls.argsFor(0)[0][2]).toEqual(strNote1.length);
-        });
-
-        it("should call noteSeq.push second time with notenum " + notes[strNote2], function(){
-          expect(noteSeq.push.calls.argsFor(1)[0][0]).toEqual(notes[strNote2]);
-        });
-
-        it("should call noteSeq.push second time with startTime " + (note.length+1), function(){
-          expect(noteSeq.push.calls.argsFor(1)[0][1]).toEqual(strNote1.length+1);
-        });
-
-        it("should call noteSeq.push second time with duration " + note2.length, function(){
-          expect(noteSeq.push.calls.argsFor(1)[0][2]).toEqual(strNote2.length);
-        });
-
-      });
 
       describe("when parsed string '" + note + note2 + "'", function() {
         var noteString = note+note2;
