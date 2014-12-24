@@ -37,7 +37,7 @@ var noteSplit = function(str) {
       lastNote = "";
     }
 
-    if (str[i] === " ") {
+    if (str[i] === " " || str[i] === ".") {
       if (lastNote !== "") ret.push(lastNote);
       lastNote = "";
     }
