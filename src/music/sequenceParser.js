@@ -57,11 +57,15 @@ MUSIC.SequenceParser.parse = function(input, noteSeq) {
   var currentTime = 0;
   for (var i=0; i<noteArray.length; i++) {
     var currentNoteStr = noteArray[i];
+    var noteDuration = currentNoteStr.length;
+    var equalIndex = currentNoteStr.indexOf("=");
+    if (equalIndex != -1) currentNoteStr = currentNoteStr.slice(0, equalIndex);
+
     var currentNote = notes[currentNoteStr];
     if (currentNote !== undefined){
-      noteSeq.push([currentNote, currentTime, currentNoteStr.length])
+      noteSeq.push([currentNote, currentTime, noteDuration])
     };
-    currentTime += currentNoteStr.length;
+    currentTime += noteDuration;
   }
 };
 
