@@ -66,7 +66,31 @@ describe("Music.SequenceParser", function() {
 
 
   for (var note in notes) {
-    describe("when parsed sring '" + note + "===.'", function() {
+    for (var octaveNum = 0; octaveNum < 3; octaveNum++) {
+      describe("when parsed string '" + note + octaveNum + "'", function() {
+        var str = note + octaveNum;
+        var duration = str.length;
+        var notenum = notes[note] + octaveNum*12;
+
+        beforeEach(function(){
+          MUSIC.SequenceParser.parse(str, noteSeq);
+        });
+
+        it("should call push on noteSeq", function(){
+          expect(noteSeq.push).toHaveBeenCalled();
+        });
+
+        it("should call push on noteSeq ONLY one time", function(){
+          expect(noteSeq.push.calls.count()).toEqual(1);
+        });
+
+        it("should call push on noteSeq with note on semitone " + notenum + " and duration " + duration, function(){
+          expect(noteSeq.push).toHaveBeenCalledWith([notenum,0,duration]);
+        });
+      });
+    };
+
+    describe("when parsed string '" + note + "===.'", function() {
       var str = note + "===.";
       var duration = str.length - 1;
       var notenum = notes[note];
