@@ -61,9 +61,17 @@ MUSIC.SequenceParser.parse = function(input, noteSeq) {
     var equalIndex = currentNoteStr.indexOf("=");
     if (equalIndex != -1) currentNoteStr = currentNoteStr.slice(0, equalIndex);
 
+    var lastChar = currentNoteStr.slice(-1);
+    var octave = parseInt(lastChar);
+    if (isNaN(octave)) {
+      octave = 0;
+    } else {
+      currentNoteStr = currentNoteStr.slice(0, currentNoteStr.length-1);
+    }
+
     var currentNote = notes[currentNoteStr];
     if (currentNote !== undefined){
-      noteSeq.push([currentNote, currentTime, noteDuration])
+      noteSeq.push([currentNote + octave*12, currentTime, noteDuration])
     };
     currentTime += noteDuration;
   }
