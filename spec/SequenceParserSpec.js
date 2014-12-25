@@ -64,37 +64,8 @@ describe("Music.SequenceParser", function() {
     });
   };
 
-
-  for (var note in notes) {
-    for (var octaveNum = 0; octaveNum < 3; octaveNum++) {
-      describe("when parsed string '" + note + octaveNum + "'", function() {
-        var str = note + octaveNum;
-        var duration = str.length;
-        var notenum = notes[note] + octaveNum*12;
-
-        beforeEach(function(){
-          MUSIC.SequenceParser.parse(str, noteSeq);
-        });
-
-        it("should call push on noteSeq", function(){
-          expect(noteSeq.push).toHaveBeenCalled();
-        });
-
-        it("should call push on noteSeq ONLY one time", function(){
-          expect(noteSeq.push.calls.count()).toEqual(1);
-        });
-
-        it("should call push on noteSeq with note on semitone " + notenum + " and duration " + duration, function(){
-          expect(noteSeq.push).toHaveBeenCalledWith([notenum,0,duration]);
-        });
-      });
-    };
-
-    describe("when parsed string '" + note + "===.'", function() {
-      var str = note + "===.";
-      var duration = str.length - 1;
-      var notenum = notes[note];
-
+  var testSingleNote = function(str, expectedDuration, expectedNoteNum) {
+    describe("when parsed string '" + str + "'", function() {
       beforeEach(function(){
         MUSIC.SequenceParser.parse(str, noteSeq);
       });
@@ -107,28 +78,20 @@ describe("Music.SequenceParser", function() {
         expect(noteSeq.push.calls.count()).toEqual(1);
       });
 
-      it("should call push on noteSeq with note on semitone " + notenum + " and duration " + duration, function(){
-        expect(noteSeq.push).toHaveBeenCalledWith([notenum,0,duration]);
-      });
+      it("should call push on noteSeq with note on semitone " + expectedNoteNum + " and duration " + expectedDuration, function(){
+        expect(noteSeq.push).toHaveBeenCalledWith([expectedNoteNum,0,expectedDuration]);
+      });      
     });
-    describe("when parsed note '" + note + "'", function() {
-      var noteString = note;
-      beforeEach(function(){
-        MUSIC.SequenceParser.parse(noteString, noteSeq);
-      });
+  };
 
-      it("should call push on noteSeq", function(){
-        expect(noteSeq.push).toHaveBeenCalled();
-      });
 
-      it("should call push on noteSeq with note on semitone " + notes[noteString], function(){
-        expect(noteSeq.push).toHaveBeenCalledWith([notes[noteString],0,noteString.length]);
-      });
+  for (var note in notes) {
+    for (var octaveNum = 0; octaveNum < 3; octaveNum++) {
+      testSingleNote(note + octaveNum, note.length + 1, notes[note] + octaveNum*12);
+    };
 
-      it("should call push on noteSeq ONLY one time", function(){
-        expect(noteSeq.push.calls.count()).toEqual(1);
-      });
-    });
+    testSingleNote(note, note.length, notes[note]);
+    testSingleNote(note + "===.", note.length + 3, notes[note]);
 
     for (var note2 in notes) {
       var silenceCharacterTest = function(chr) {
