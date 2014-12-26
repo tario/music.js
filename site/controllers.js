@@ -15,6 +15,7 @@ musicShowCaseApp.controller("MainController", function($scope, MusicContext, Cod
         $scope.codeError = results.error;
       } else {
         $scope.instruments = results.instruments.map(KeyboardFactory.keyboard);
+        $scope.playables = results.playables;
         $scope.codeError = null;
       }
       $scope.$digest();

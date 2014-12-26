@@ -5,11 +5,20 @@ musicShowCaseApp.service("MusicContext", function() {
   return {
     run: function(code) {
       var instrumentsArray = [];
+      var playablesArray = [];
+
       var instruments = {
         add: function(name, inst) {
           instrumentsArray.push({name: name, instrument: inst});
         }
       };
+
+      var playables = {
+        add: function(name, playable) {
+          playablesArray.push({name: name, playable: playable});
+        }
+      };
+
       if (music) {
         music.dispose();
       }
@@ -17,7 +26,7 @@ musicShowCaseApp.service("MusicContext", function() {
 
       try {
         eval(code);
-        return {instruments: instrumentsArray};
+        return {instruments: instrumentsArray, playables: playablesArray};
       } catch(e) {
         return {error: e.toString()};
       }

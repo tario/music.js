@@ -46,6 +46,9 @@
                         <p>{{instrument.name}}</p>
                         <input ng-keyup="instrument.keyUp($event.keyCode)" ng-keydown="instrument.keyDown($event.keyCode)" placeholder="click here to use instrument" type="text"/>
                     </div>
+                    <div ng-repeat="playable in playables">
+                        <button ng-click="playable.playable.play()">{{playable.name}}<div>
+                    <div>
                 </td>
             </tr>
         </table>

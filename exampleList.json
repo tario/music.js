@@ -7,5 +7,6 @@
   {"name": "Sound wave oscillator with stop curve", "uri": "examples/oscillatorStopCurve.js"},
   {"name": "Custom sine wave oscillator", "uri": "examples/formula.js"},
   {"name": "Custom sine wave oscillator 2", "uri": "examples/periodicFormulaGenerator.js"},
-  {"name": "Chiptune Set", "uri": "examples/chiptune.js"}
+  {"name": "Chiptune Set", "uri": "examples/chiptune.js"},
+  {"name": "Astro Robo Sasa lvl 1 music", "uri": "examples/astroRoboSasa.js"}
 ]

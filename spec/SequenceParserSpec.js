@@ -18,7 +18,7 @@ describe("Music.SequenceParser", function() {
     "G#": 8,
     "Ab": 8,
     "A": 9,
-    "A#": 9,
+    "A#": 10,
     "Bb": 10,
     "B": 11,
     "B#": 12
