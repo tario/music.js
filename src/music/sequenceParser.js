@@ -48,10 +48,12 @@ var noteSplit = function(str) {
   return ret;
 };
 
+var pipeReplace = new RegExp("\\|", "g");
 MUSIC.SequenceParser.parse = function(input, noteSeq) {
   var currentNote;
   var currentCharacter;
   if (input === "") return;
+  input = input.replace(pipeReplace, "");
 
   var noteArray = noteSplit(input);
   var currentTime = 0;
