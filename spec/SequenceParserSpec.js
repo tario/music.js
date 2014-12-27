@@ -187,4 +187,39 @@ describe("Music.SequenceParser", function() {
       });
     }
   };
+
+  var theSame = function(first, second, numNotes) {
+    var noteseq1;
+    var noteseq2;
+    beforeEach(function(){
+      noteSeq1 = {
+        push: jasmine.createSpy("noteSeq.push")
+      };
+      noteSeq2 = {
+        push: jasmine.createSpy("noteSeq.push")
+      };
+      MUSIC.SequenceParser.parse(first, noteSeq1);
+      MUSIC.SequenceParser.parse(second, noteSeq2);
+    });
+
+    describe("when parsed '" + first + "' and '" + second + "'", function() {
+      for (var i = 0; i < numNotes; i++) {
+        (function(){
+          var index = i;
+          it("should output the same note number " + index, function() {
+            expect(noteSeq1.push.calls.argsFor(index)[0]).toEqual(noteSeq2.push.calls.argsFor(index)[0]);
+          });
+        })();
+      }
+    });
+  };
+
+  describe("when there is pipes among notes" , function() {
+    theSame("AAAA", "AA|AA", 4);
+    theSame("AC", "|AC|", 2);
+    theSame("ABCD", "ABCD|", 4);
+    theSame("D#", "||||D#", 1);
+    theSame("D#3", "||D#3||", 1);
+    theSame("A=D#3", "A=||D#3||", 2);
+  });
 });
