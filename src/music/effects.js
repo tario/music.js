@@ -1,10 +1,6 @@
 MUSIC.Effects = MUSIC.Effects || {};
 
 var effectsObject = {};
-MUSIC.Effects.register = function(effectName, fcn) {
-  effectsObject[effectName] = fcn;
-};
-
 MUSIC.Effects.forEach = function(cb) {
   for (var sfx in effectsObject) {
     cb(sfx, effectsObject[sfx]);
@@ -37,8 +33,9 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
     value.apply(music.audio.currentTime, audioNode[paramName]);
   };
 
-  MUSIC.effectsPipeExtend(this, music, this);
+  MUSIC.EffectsPipeline.bind(this)(music, this);
 };
+MUSIC.Effects.WebAudioNodeWrapper.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
 MUSIC.Effects.Formula = function(music, next, fcn) {
   var scriptNode = music.audio.createScriptProcessor(1024, 1, 1);
@@ -73,7 +70,7 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
 
   this._destination = scriptNode;
   
-  MUSIC.effectsPipeExtend(this, music, this);
+  MUSIC.EffectsPipeline.bind(this)(music, this);
 
   this.next = function() {
     return next;
@@ -90,6 +87,8 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
     return scriptNode;
   };
 }
+MUSIC.Effects.Formula.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
+
 
 MUSIC.Effects.register("formula", MUSIC.Effects.Formula);
 MUSIC.Effects.register("attenuator", function(music, next, factor) {
@@ -114,18 +113,20 @@ MUSIC.Effects.BiQuad = function(music, next, options) {
 
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, biquadFilter, next);
 };
+MUSIC.Effects.BiQuad.prototype = Object.create(MUSIC.Effects.WebAudioNodeWrapper.prototype);
+
 MUSIC.Effects.register("biquad", MUSIC.Effects.BiQuad);
 ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"]
   .forEach(function(filterName) {
     MUSIC.Effects.register(filterName, function(music, next, options) {
-      MUSIC.Effects.BiQuad.bind(this)(music, next, {type: filterName, frequency: options.frequency});
+      return new MUSIC.Effects.BiQuad(music, next, {type: filterName, frequency: options.frequency});
     });
   });
 
 MUSIC.Effects.register("gain", function(music, next, value) {
   var gainNode = music.audio.createGain();
   gainNode.gain.value = value;
-  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, gainNode, next);
+  return new MUSIC.Effects.WebAudioNodeWrapper(music, gainNode, next);
 });
 
 MUSIC.Effects.register("delay", function(music, next, value) {
@@ -134,7 +135,7 @@ MUSIC.Effects.register("delay", function(music, next, value) {
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, delayNode, next);
 });
 
-MUSIC.Effects.register("echo", function(music, next, options) {
+var Echo = function(music, next, options) {
   var delayNode = music.audio.createDelay(60);
   delayNode.delayTime.value = options.delay || 0.02;
 
@@ -182,7 +183,12 @@ MUSIC.Effects.register("echo", function(music, next, options) {
     value.apply(music.audio.currentTime, audioNode[paramName]);
   };
 
-  MUSIC.effectsPipeExtend(this, music, this);
+  MUSIC.EffectsPipeline.bind(this)(music, this);
+};
+Echo.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
+
+MUSIC.Effects.register("echo", function(music, next, options) {
+  return new Echo(music, next, options);
 });
 
 MUSIC.Curve = function(array) {
@@ -216,7 +222,6 @@ MUSIC.Curve.Formula = function(fcn, n) {
 
   this.during = during(array);
 }
-
 
 MUSIC.Effects.register("stopCurve", function(music, next, options) {
   options = options || {};

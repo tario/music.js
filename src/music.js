@@ -2,6 +2,7 @@ MUSIC = {};
 
 (function() {
 MUSIC.SoundLib = MUSIC.SoundLib || {};
+MUSIC.Effects = MUSIC.Effects || {};
 
 var getTemporalPipeline = function(effectsFcn, next, param) {
   var nextNode = effectsFcn(next, param);
@@ -79,77 +80,24 @@ MUSIC.playablePipeExtend = function(obj) {
   return obj;
 };
 
-MUSIC.T = function(args, music, audioDestination) {
-  var api = T("WebAudioAPI:recv", music.audio /* audioContext */);
-  var context = api.context;
-  var gainNode = context.createGain(1.0);
-
-  api.recv(gainNode);
-  setTimeout(function() { // this hack prevents a bug in current version of chrome
-    gainNode.connect(audioDestination._destination);
-  });
-
-  var Targuments = [];
-  for (var i=0; i<args.length; i++) {
-    Targuments.push(args[i]);
-  };
-
-  Targuments.push(api);
-  var synth = T.apply(null, Targuments);// ("reverb", {room:0.95, damp:0.1, mix:0.75}, api);
-  var send = T("WebAudioAPI:send", synth, music.audio /* audioContext */).send(audioDestination._destination);
-
-  ret = {
-    output: function() {
-      return gainNode;
-    },
-    disconnect: function() {
-      gainNode.disconnect(audioDestination._destination);
-    },
-    next: function() {
-      return audioDestination;
-    },
-    _destination: gainNode
-  };
-
-  MUSIC.effectsPipeExtend(ret, music, ret);
-  return ret;
+MUSIC.EffectsPipeline = function(audio, audioDestination) {
+  this._audio = audio;
+  this._audioDestination = audioDestination;
 };
 
-MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
+MUSIC.EffectsPipeline.prototype = {
+  oscillator: function(options) {
+    return new MUSIC.SoundLib.Oscillator(this._audio, this._audioDestination, options);
+  },
 
-  obj.oscillator = function(options) {
-    return new MUSIC.SoundLib.Oscillator(audio, audioDestination, options);
-  };
+  soundfont: function(param) {
+    return new MUSIC.SoundfontInstrument(param, this._audio, this._audioDestination);
+  },
 
-  obj.noise = function() {
-    return new MUSIC.SoundLib.Noise(audio, audioDestination);
-  };
+  sound: function(path) {
+    var audio = this._audio;
+    var audioDestination = this._audioDestination;
 
-  obj.formulaGenerator = function(fcn) {
-    return new MUSIC.SoundLib.FormulaGenerator(audio, audioDestination, fcn);
-  };
-
-  obj.periodicFormulaGenerator = function(fcn, options) {
-    return new MUSIC.SoundLib.PeriodicFormulaGenerator(audio, audioDestination, fcn, options);
-  };
-
-
-  MUSIC.Effects.forEach(function(sfxName, sfxFunction) {
-    var method = function(argument) {
-      return new sfxFunction(audio, audioDestination, argument);
-    };
-    obj[sfxName] = method;
-  });
-
-  obj.T = function() {
-    return MUSIC.T(arguments, audio, audioDestination);
-  };
-
-  obj.soundfont = function(param) {
-    return new MUSIC.SoundfontInstrument(param, audio, audioDestination);
-  };
-
-  obj.sound = function(path) {
     var request = new XMLHttpRequest();
     request.open("GET", path, true);
     request.responseType = "arraybuffer";
@@ -181,19 +129,66 @@ MUSIC.effectsPipeExtend = function(obj, audio, audioDestination) {
         };
       }
     });
+  },
+  
+  formulaGenerator: function(fcn) {
+    return new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn);
+  },
+
+  periodicFormulaGenerator: function(fcn, options) {
+    return new MUSIC.SoundLib.PeriodicFormulaGenerator(this._audio, this._audioDestination, fcn, options);
+  },
+
+  T: function() {
+    return new MUSIC.T(arguments, this._audio, this._audioDestination);
+  },
+
+  noise: function() {
+    return new MUSIC.SoundLib.Noise(this._audio, this._audioDestination);
+  }
+};
+
+
+MUSIC.T = function(args, music, audioDestination) {
+  var api = T("WebAudioAPI:recv", music.audio /* audioContext */);
+  var context = api.context;
+  var gainNode = context.createGain(1.0);
+
+  api.recv(gainNode);
+  setTimeout(function() { // this hack prevents a bug in current version of chrome
+    gainNode.connect(audioDestination._destination);
+  });
+
+  var Targuments = [];
+  for (var i=0; i<args.length; i++) {
+    Targuments.push(args[i]);
   };
 
-  if (!obj.getNext) {
-    obj.getNext = function() {
-      return {
-        _destination: obj._destination,
-        dispose: function() {
-        }
-      };
-    };
+  Targuments.push(api);
+  var synth = T.apply(null, Targuments);// ("reverb", {room:0.95, damp:0.1, mix:0.75}, api);
+  var send = T("WebAudioAPI:send", synth, music.audio /* audioContext */).send(audioDestination._destination);
+
+  this.output = function() {
+    return gainNode;
+  }; 
+
+  this.disconnect =  function() {
+    gainNode.disconnect(audioDestination._destination);
   };
 
-  return obj;
+  this._destination = gainNode;
+  this.next = function() {
+    return audioDestination;
+  };
+
+  MUSIC.EffectsPipeline.bind(this)(music, this);
+};
+MUSIC.T.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
+
+MUSIC.Effects.register = function(effectName, fcn) {
+  MUSIC.EffectsPipeline.prototype[effectName] = function(value) {
+    return fcn(this._audio, this._audioDestination, value);
+  };
 };
 
 var audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -203,11 +198,6 @@ MUSIC.Context = function() {
 
   this._destination = audio.destination;
   this.audio = audio;
-  this.wrap = function(destination) {
-    var ret = {};
-    MUSIC.effectsPipeExtend(ret, music, destination);
-    return ret;
-  };
 
   var disposable = [];
   this.dispose = function() {
@@ -220,9 +210,9 @@ MUSIC.Context = function() {
   this.audio = audio;
 
   this.registerDisposable = disposable.push.bind(disposable);
-
-  MUSIC.effectsPipeExtend(this, music, this);
+  MUSIC.EffectsPipeline.bind(this)(music, this);
 };
+MUSIC.Context.prototype = new MUSIC.EffectsPipeline();
 
 MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {
   this.play = function(param) {
