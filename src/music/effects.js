@@ -132,7 +132,7 @@ MUSIC.Effects.register("gain", function(music, next, value) {
 MUSIC.Effects.register("delay", function(music, next, value) {
   var delayNode = music.audio.createDelay(60);
   delayNode.delayTime.value = value;
-  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, delayNode, next);
+  return new MUSIC.Effects.WebAudioNodeWrapper(music, delayNode, next);
 });
 
 var Echo = function(music, next, options) {
