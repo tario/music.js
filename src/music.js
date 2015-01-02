@@ -135,10 +135,6 @@ MUSIC.EffectsPipeline.prototype = {
     return new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn);
   },
 
-  periodicFormulaGenerator: function(fcn, options) {
-    return new MUSIC.SoundLib.PeriodicFormulaGenerator(this._audio, this._audioDestination, fcn, options);
-  },
-
   T: function() {
     return new MUSIC.T(arguments, this._audio, this._audioDestination);
   },
@@ -241,26 +237,6 @@ MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {
   MUSIC.playablePipeExtend(this);
 };
 
-MUSIC.SoundLib.PeriodicFormulaGenerator = function(audio, nextProvider, fcn, options) {
-  this.play = function(param) {
-    var audioDestination;
-    var frequency = options.frequency;
-    var period = 1.0 / frequency;
-
-    var formulaGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function(input, t) {
-      return fcn((t % period) / period);
-    });
-
-    return {
-      stop: function() {
-        formulaGenerator.disconnect(nextProvider._destination);
-      }
-    }
-  };
-
-  MUSIC.playablePipeExtend(this);
-};
-
 MUSIC.SoundLib.Noise = function(audio, nextProvider) {
   this.play = function(param) {
     var audioDestination;
@@ -283,40 +259,58 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   var effects = options.effects;
   var frequency = options.frequency;
 
-  this.play = function(param) {
-    var osc;
-    var nextNode;
-    var disposeNode;
-    var audioDestination;
+  if (!options.f) {
+    this.play = function(param) {
+      var osc;
+      var nextNode;
+      var disposeNode;
+      var audioDestination;
 
-    osc = music.audio.createOscillator();
+      osc = music.audio.createOscillator();
 
-    if (frequency.apply) {
-      frequency.apply(music.audio.currentTime, osc.frequency);
-    } else {
-      osc.frequency.value = frequency;
+      if (frequency.apply) {
+        frequency.apply(music.audio.currentTime, osc.frequency);
+      } else {
+        osc.frequency.value = frequency;
+      }
+
+      osc.type = options.type;
+
+      nextNode = destination;
+      audioDestination = nextNode._destination;
+      disposeNode = function() {
+        osc.disconnect(audioDestination);
+      };
+      osc.connect(audioDestination);
+      osc.start(0);
+
+      return {
+        stop : function() {
+          osc.stop(0);
+          disposeNode();
+        }
+      };
     }
+  } else {
+    this.play = function(param) {
+      var frequency = options.frequency;
+      var period = 1.0 / frequency;
+      var fcn = options.f;
 
-    osc.type = options.type;
+      var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
+        return fcn((t % period) / period);
+      });
 
-    nextNode = destination;
-    audioDestination = nextNode._destination;
-    disposeNode = function() {
-      osc.disconnect(audioDestination);
-    };
-    osc.connect(audioDestination);
-    osc.start(0);
-
-    return {
-      stop : function() {
-        osc.stop(0);
-        disposeNode();
+      return {
+        stop: function() {
+          formulaGenerator.disconnect(destination._destination);
+        }
       }
     };
   }
 
   this.freq = function(newFreq) {
-    var newoptions = {type: options.type, frequency: newFreq};
+    var newoptions = {type: options.type, f: options.f, frequency: newFreq};
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
 
