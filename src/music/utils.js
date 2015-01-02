@@ -112,8 +112,16 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
     clearInterval,
     500);
   funseq = MUSIC.Utils.FunctionSeq(clock, setTimeout, clearTimeout);
-  funseq.push({f: fcn, t: ms});
-  funseq.start();
+
+  var runningFunSeq;
+
+  funseq.push({f: function() {
+    if (runningFunSeq) {
+      runningFunSeq.stop();
+    }
+    fcn();
+  }, t: ms});
+  runningFunSeq = funseq.start();
 };
 
 
