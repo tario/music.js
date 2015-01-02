@@ -33,6 +33,7 @@ MUSIC.Song = function(input, patterns, options){
   var getFromPatterns = fromPatterns(patterns);
 
   this._funseq = funseq;
+  this._duration = totalMeasures * measure;
 
   for (var j = 0; j < totalMeasures; j++) {
     (function() {
@@ -55,6 +56,9 @@ MUSIC.Song = function(input, patterns, options){
   };
 };
 
+MUSIC.Song.prototype.duration = function() {
+  return this._duration;
+};
 
 MUSIC.Song.prototype.play = function() {
   this._funseq.start();
