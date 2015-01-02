@@ -5,6 +5,7 @@
 <script src="lib/codemirror/mode/javascript.js"></script>
 <script src="lib/angular/ui-codemirror.js"></script>
 <script src="lib/timbre.js"></script>
+<script src="lib/recorder/recorder.js"></script>
 <script src="lib/webaudioapi.js"></script>
 <script src="site/services.js"></script>
 <script src="site/controllers.js"></script>
@@ -48,6 +49,7 @@
                     </div>
                     <div ng-repeat="playable in playables">
                         <button ng-click="playable.playable.play()">{{playable.name}}<div>
+                        <button ng-if="playable.recordable" ng-click="playable.recordable.record()">RECORD</button>
                     <div>
                 </td>
             </tr>

@@ -2,6 +2,34 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror']);
 musicShowCaseApp.service("MusicContext", function() {
   var music;
 
+  var Recordable = function(music, playable, name) {
+    this._playable = playable;
+    this._music = music;
+    this._name = name;
+  };
+
+  Recordable.prototype.record = function() {
+    var playable = this._playable;
+    var recording = music.record();
+    var recordFileName = this._name;
+    var playing = playable.play();
+
+    MUSIC.Utils.FunctionSeq.preciseTimeout(function(){
+      recording.stop();
+      recording.exportWAV(function(blob) {
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+
+        var url  = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = recordFileName + ".wav";
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+    }, playable.duration());
+  };
+
   return {
     run: function(code) {
       var instrumentsArray = [];
@@ -15,7 +43,7 @@ musicShowCaseApp.service("MusicContext", function() {
 
       var playables = {
         add: function(name, playable) {
-          playablesArray.push({name: name, playable: playable});
+          playablesArray.push({name: name, playable: playable, recordable: new Recordable(music, playable, name)});
         }
       };
 

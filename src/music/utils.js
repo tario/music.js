@@ -104,5 +104,17 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   };
 };
 
+MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
+  var funseq;
+  clock = MUSIC.Utils.Clock(
+    window.performance.now.bind(window.performance),
+    setInterval,
+    clearInterval,
+    500);
+  funseq = MUSIC.Utils.FunctionSeq(clock, setTimeout, clearTimeout);
+  funseq.push({f: fcn, t: ms});
+  funseq.start();
+};
+
 
 })();

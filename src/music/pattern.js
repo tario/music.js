@@ -4,15 +4,24 @@ var playingStop = function(playing) { playing.stop(); };
 
 MUSIC.MultiPlayable = function(playableArray) {
   this._playableArray = playableArray;
+
+  MUSIC.playablePipeExtend(this);
 };
 
 MUSIC.MultiPlayable.prototype.play = function() {
   var playingArray = this._playableArray.map(playablePlay);
+
   return {
     stop: function() {
       playingArray.forEach(playingStop);
     }
   };
+};
+
+var higher = function(a,b){ return a > b ? a : b; };
+var getDuration = function(playable) { return playable.duration(); };
+MUSIC.MultiPlayable.prototype.duration = function() {
+  return this._playableArray.map(getDuration).reduce(higher, 0);
 };
 
 MUSIC.ChangeTimeWrapper = function(noteseq, extensionTime) {

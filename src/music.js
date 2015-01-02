@@ -195,8 +195,11 @@ var audioContext = new (window.AudioContext || window.webkitAudioContext)();
 MUSIC.Context = function() {
   var audio = audioContext;
   var music = this;
+  var gainNode = audio.createGain();
+  gainNode.gain.value = 1.0; 
+  gainNode.connect(audio.destination);
 
-  this._destination = audio.destination;
+  this._destination = gainNode;
   this.audio = audio;
 
   var disposable = [];
@@ -205,6 +208,13 @@ MUSIC.Context = function() {
       var obj = disposable[i];
       obj.dispose();
     }
+  };
+
+  this.record = function() {
+    var rec = new Recorder(gainNode, {workerPath: "lib/recorder/recorderWorker.js"});
+
+    rec.record();
+    return rec;
   };
 
   this.audio = audio;

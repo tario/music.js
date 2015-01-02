@@ -33,6 +33,13 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
     value.apply(music.audio.currentTime, audioNode[paramName]);
   };
 
+  this.record = function() {
+    var rec = new Recorder(audioNode, {workerPath: "lib/recorder/recorderWorker.js"});
+
+    rec.record();
+    return rec;
+  };
+
   MUSIC.EffectsPipeline.bind(this)(music, this);
 };
 MUSIC.Effects.WebAudioNodeWrapper.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
