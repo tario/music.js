@@ -290,15 +290,27 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   var effects = options.effects;
   var frequency = options.frequency;
 
+  this.freq = function(newFreq) {
+    var newoptions = {type: options.type, wave: options.wave, f: options.f, frequency: newFreq};
+    return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
+  };
+
   if (options.f) {
     this.play = function(param) {
       var frequency = options.frequency;
       var period = 1.0 / frequency;
+      var wtPosition = options.wtPosition || 0;
       var fcn = options.f;
 
-      var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
-        return fcn((t % period) / period);
-      });
+      if (wtPosition.apply) {
+        var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
+          return fcn(((wtPosition.at(t) + t) % period) / period);
+        });
+      } else {
+        var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
+          return fcn(((wtPosition + t) % period) / period);
+        });
+      }
 
       return {
         stop: function() {
@@ -341,11 +353,6 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       };
     };
   }
-
-  this.freq = function(newFreq) {
-    var newoptions = {type: options.type, wave: options.wave, f: options.f, frequency: newFreq};
-    return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
-  };
 
   MUSIC.playablePipeExtend(this);
 };
