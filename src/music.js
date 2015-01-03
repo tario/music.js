@@ -188,12 +188,15 @@ MUSIC.Effects.register = function(effectName, fcn) {
 };
 
 var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-MUSIC.Context = function() {
+MUSIC.Context = function(options) {
   var audio = audioContext;
   var music = this;
   var gainNode = audio.createGain();
+  options = options || {};
+
   gainNode.gain.value = 1.0; 
-  gainNode.connect(audio.destination);
+  
+  if (!options.nooutput) gainNode.connect(audio.destination);
 
   this._destination = gainNode;
   this.audio = audio;
@@ -254,12 +257,58 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
   MUSIC.playablePipeExtend(this);
 };
 
+MUSIC.SoundLib.Wave = function(path, period) {
+
+  var music = new MUSIC.Context({nooutput: true});
+  var sound = music.sound(path);
+  var sampleCount = period * music.audio.sampleRate / 1000;
+  var dataArray = [];
+
+  // fix race condition using callbacks
+  setTimeout(function() {
+    var recording = music.record();
+    sound.play();
+
+    setTimeout(function(){
+      recording.stop();
+      recording.getBuffer(function(data) {
+        var originalDataArray = data[0];
+        for (var i=0; i<sampleCount; i++) {
+          dataArray.push(originalDataArray[i]);
+        }
+      });
+    }, period+100);
+  }, 500);
+
+  this.f = function(t) {
+    return dataArray[Math.floor(t*sampleCount)];
+  };  
+};
+
 MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   options = options || {};
   var effects = options.effects;
   var frequency = options.frequency;
 
-  if (!options.f) {
+  if (options.f) {
+    this.play = function(param) {
+      var frequency = options.frequency;
+      var period = 1.0 / frequency;
+      var fcn = options.f;
+
+      var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
+        return fcn((t % period) / period);
+      });
+
+      return {
+        stop: function() {
+          formulaGenerator.disconnect(destination._destination);
+        }
+      }
+    };    
+  } else if (options.wave) {
+    MUSIC.SoundLib.Oscillator.bind(this)(music, destination, {f: options.wave.f, frequency: options.frequency});
+  } else {
     this.play = function(param) {
       var osc;
       var nextNode;
@@ -290,27 +339,11 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
           disposeNode();
         }
       };
-    }
-  } else {
-    this.play = function(param) {
-      var frequency = options.frequency;
-      var period = 1.0 / frequency;
-      var fcn = options.f;
-
-      var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
-        return fcn((t % period) / period);
-      });
-
-      return {
-        stop: function() {
-          formulaGenerator.disconnect(destination._destination);
-        }
-      }
     };
   }
 
   this.freq = function(newFreq) {
-    var newoptions = {type: options.type, f: options.f, frequency: newFreq};
+    var newoptions = {type: options.type, wave: options.wave, f: options.f, frequency: newFreq};
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
 

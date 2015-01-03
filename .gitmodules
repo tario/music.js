@@ -1,3 +1,6 @@
 [submodule "lib/recorder"]
 	path = lib/recorder
 	url = https://github.com/mattdiamond/Recorderjs.git
+[submodule "lib/wav"]
+	path = lib/wav
+	url = https://github.com/ffdead/wav.js.git
