@@ -227,14 +227,27 @@ describe("Music.Utils", function() {
           beforeEach(function(){
             setTimeoutFcn();
           });
-          beforeEach(handleStop);
 
-          it("should call stop on clock", function() {
-            expect(fakeClock.stopCalled).toEqual(true);
+          describe("when funseq.stop() is NOT explicitly called", function() {
+            it("should call stop on clock", function() {
+              expect(fakeClock.stopCalled).toEqual(true);
+            });
+
+            it("should NOT call clearTimeout", function() {
+              expect(fakeClearTimeout).not.toHaveBeenCalled();
+            });
           });
 
-          it("should NOT call clearTimeout", function() {
-            expect(fakeClearTimeout).not.toHaveBeenCalled();
+          describe("when funseq.stop() is explicitly called", function() {
+            beforeEach(handleStop);
+
+            it("should call stop on clock", function() {
+              expect(fakeClock.stopCalled).toEqual(true);
+            });
+
+            it("should NOT call clearTimeout", function() {
+              expect(fakeClearTimeout).not.toHaveBeenCalled();
+            });
           });
       
         });
