@@ -55,6 +55,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   var start = function(parameter) {
     var array = eventsArray.slice(0);
     var timeoutHandlers = [];
+    var eventCount = array.length;
 
     var clockHandler = clock.start(function(t) {
       var callingCriteria = function(element) {
@@ -65,6 +66,8 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
         var timeoutHandler = setTimeout(function(){
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
           event.f(parameter);
+          eventCount--;
+          if (eventCount === 0) clockHandler.stop();
         }, event.t - t);
         timeoutHandlers.push(timeoutHandler);
       };
