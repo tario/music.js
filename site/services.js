@@ -88,7 +88,7 @@ musicShowCaseApp.service("KeyboardFactory", function() {
           noteName = keyCodeToNote[keyCode];
           
           // depends on music.js
-          var note = instrument.instrument.note(MUSIC.noteToNoteNum(noteName));
+          var note = instrument.instrument.note(MUSIC.noteToNoteNum(noteName)+36);
           if (note == undefined) return;
           notes[keyCode] = note.play();
         }

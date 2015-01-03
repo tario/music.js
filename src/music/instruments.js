@@ -1,7 +1,7 @@
 (function() {
 
 var frequency = function(notenum) {
-    return 65.40639132514966 * Math.pow(2, notenum/12);
+    return 16.35 * Math.pow(2, notenum/12);
 };
 var noteToNumMap = {
   'C': 0, 
@@ -88,6 +88,7 @@ MUSIC.Instrument = function(soundFactory) {
 
   instrumentExtend(this);
 };
+MUSIC.Instrument.frequency = frequency;
 
 MUSIC.MultiInstrument = function(instrumentArray) {
   var notePlay = function(note) { return note.play(); };

@@ -18,8 +18,9 @@ var squareWave = function(volume){
 };
 
 // create the instrument from sound generator
-var instrument = squareWave(1.0).mapNote(function(n){return n-12;});
-var bass = squareWave(0.7).mapNote(function(n){return n-12;});
+var octaveUp = function(n){return n+12;};
+var instrument = squareWave(1.0).mapNote(octaveUp);
+var bass = squareWave(0.7).mapNote(octaveUp);
 
 
 var melody1 = MUSIC.Pattern([
