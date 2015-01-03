@@ -202,33 +202,37 @@ MUSIC.Curve = function(array) {
   this.during = during(array);
 };
 
-var during = function(array) {
+var during = function(fcn, n) {
   return function(time) {
+    if (!n) {
+      n=Math.floor(time*100)+1;
+    }
+
+    var array = new Float32Array(n);
+    for (var i = 0; i < n; i++ ) {
+      array[i] = fcn(i / n);
+    };
+
     return { 
       apply: function(currentTime, audioParam) {
         audioParam.setValueCurveAtTime(array, currentTime, time);
+      },
+
+      at: function(t) {
+        return fcn(t/time);
       }
     };
   };
 };
 
-MUSIC.Curve.Ramp = function(initValue, endValue, n) {
-  var array = new Float32Array(n);
-  for (var i = 0; i < n; i++ ) {
-    array[i] = (initValue + (endValue - initValue) * i / n);
-  };
-
-  this.during = during(array);
-};
 
 MUSIC.Curve.Formula = function(fcn, n) {
-  var array = new Float32Array(n);
-  for (var i = 0; i < n; i++ ) {
-    array[i] = fcn(i / n);
-  };
-
-  this.during = during(array);
+  this.during = during(fcn, n);
 }
+
+MUSIC.Curve.Ramp = function(initValue, endValue, n) {
+  MUSIC.Curve.Formula.bind(this)(function(t){return initValue + (endValue - initValue)*t;}, n);
+};
 
 MUSIC.Effects.register("stopCurve", function(music, next, options) {
   options = options || {};
