@@ -81,7 +81,6 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
             break;
           }
         } else {
-          clockHandler.stop();
           break;
         }
       }
