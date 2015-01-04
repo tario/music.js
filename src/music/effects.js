@@ -97,7 +97,10 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
 MUSIC.Effects.Formula.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
 
-MUSIC.Effects.register("formula", MUSIC.Effects.Formula);
+MUSIC.Effects.register("formula", function(music, next, fcn) {
+  return new MUSIC.Effects.Formula(music, next, fcn)
+});
+
 MUSIC.Effects.register("attenuator", function(music, next, factor) {
   MUSIC.Effects.Formula.bind(this)(music, next, function(input) {
     return input * factor();

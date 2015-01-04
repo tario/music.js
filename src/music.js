@@ -319,7 +319,9 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       }
     };    
   } else if (options.wave) {
-    MUSIC.SoundLib.Oscillator.bind(this)(music, destination, {f: options.wave.f, frequency: options.frequency});
+    var newOptions = Object.create(options);
+    newOptions.f = options.wave.f;
+    MUSIC.SoundLib.Oscillator.bind(this)(music, destination, newOptions);
   } else {
     this.play = function(param) {
       var osc;
