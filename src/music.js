@@ -261,7 +261,7 @@ MUSIC.SoundLib.Wave = function(path, period) {
 
   var music = new MUSIC.Context({nooutput: true});
   var sound = music.sound(path);
-  var sampleCount = period * music.audio.sampleRate / 1000;
+  var sampleCount = Math.floor(period * music.audio.sampleRate / 1000);
   var dataArray = [];
 
   // fix race condition using callbacks
@@ -281,7 +281,9 @@ MUSIC.SoundLib.Wave = function(path, period) {
   }, 500);
 
   this.f = function(t) {
-    return dataArray[Math.floor(t*sampleCount)];
+    if (t<0)return 0;
+    var value1 = dataArray[Math.floor(t*sampleCount)];
+    return value1;
   };  
 };
 
@@ -302,13 +304,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       var wtPosition = options.wtPosition || 0;
       var fcn = options.f;
 
-      if (wtPosition.apply) {
+      if (wtPosition.at) {
         var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
-          return fcn(((wtPosition.at(t) + t) % period) / period);
+          var ta = ((wtPosition.at(t) + t) % period) / period;
+          if (ta < 0) ta++;
+          return fcn(ta);
         });
       } else {
         var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
-          return fcn(((wtPosition + t) % period) / period);
+          var ta = ((wtPosition + t) % period) / period;
+          if (ta < 0) ta++;
+          return fcn(ta);
         });
       }
 
