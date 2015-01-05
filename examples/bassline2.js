@@ -1,17 +1,17 @@
 // create the sound generator
 var bitCrusher = function(t) {
-  return Math.floor(t);
+  return Math.floor(t*4)/4;
 };
 var sfx = music.gain(4.0).formula(bitCrusher);
 var distort = sfx.T("efx.dist", {pre:-60, post:18, freq:2400});
 
 var pi = Math.PI;
 var sineCurve = new MUSIC.Curve.Formula(function(t){
-  return 0.03*Math.sin(60*t);
+  return 0.03*Math.sin(120*t);
 }).during(4);
 
 var sineCurve2 = new MUSIC.Curve.Formula(function(t){
-  return 600+530*Math.sin(60*t);
+  return 600+530*Math.sin(120*t);
 }).during(4);
 
 var heavyWaveForm = function(t) {
@@ -22,9 +22,14 @@ var createHeavyBass = function(sfxBase, lpFrequency, wtPosition) {
   var soundGenerator = {
     freq: function(fr){
 
-      var lp = sfxBase.lowpass({frequency: lpFrequency});
-      return lp.oscillator({f: heavyWaveForm, frequency: fr, wtPosition: wtPosition}).onStop(function(){
-        lp.dispose();
+      return sfxBase.stopCurve({
+        node: function(node){
+          var lp = node.lowpass({frequency: lpFrequency});
+          return lp.oscillator({f: heavyWaveForm, frequency: fr, wtPosition: wtPosition}).onStop(function(){
+            lp.dispose();
+          });
+        },
+        duration:0.4
       });
     }
   };
@@ -35,9 +40,9 @@ var decrescendo = new MUSIC.Curve.Formula(function(t){
   return 0.2*Math.sin(2*t)*Math.exp(-t);
 }).during(2);
 // add instrument to show on UI
-instruments.add("Monster bassline simple wave", createHeavyBass(sfx, 800, 0));
-instruments.add("Monster bassline distort", createHeavyBass(distort, 800, 0));
-instruments.add("Monster bassline lowpass, wt vibrato", createHeavyBass(sfx, sineCurve2, sineCurve));
-instruments.add("Monster bassline wt vibrato", createHeavyBass(sfx, 800, sineCurve));
-instruments.add("Monster bassline lp vibrato", createHeavyBass(sfx, sineCurve2, 0));
-instruments.add("Monster bassline distort + decrescendo", createHeavyBass(distort, 800, decrescendo));
+instruments.add("Heavy bass. simple wave", createHeavyBass(sfx, 800, 0));
+instruments.add("Heavy bass. distort", createHeavyBass(distort, 800, 0));
+instruments.add("Heavy bass. lowpass, wt vibrato", createHeavyBass(sfx, sineCurve2, sineCurve));
+instruments.add("Heavy bass. wt vibrato", createHeavyBass(sfx, 800, sineCurve));
+instruments.add("Heavy bass. lp vibrato", createHeavyBass(sfx, sineCurve2, 0));
+instruments.add("Heavy bass. distort + decrescendo", createHeavyBass(distort, 800, decrescendo));
