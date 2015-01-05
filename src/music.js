@@ -168,15 +168,19 @@ MUSIC.T = function(args, music, audioDestination) {
     return gainNode;
   }; 
 
-  this.disconnect =  function() {
+  this.disconnect = function() {
     gainNode.disconnect(audioDestination._destination);
+    api.cancel();
   };
+
+  this.dispose = this.disconnect;
 
   this._destination = gainNode;
   this.next = function() {
     return audioDestination;
   };
 
+  music.registerDisposable(this);  
   MUSIC.EffectsPipeline.bind(this)(music, this);
 };
 MUSIC.T.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
