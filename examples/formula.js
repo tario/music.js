@@ -12,9 +12,5 @@ var soundGenerator = {
   }
 };
 
-// create the instrument from sound generator
-var instrument = 
-    new MUSIC.Instrument(soundGenerator)
-                .mapNote(function(n) { return n + 36; });
 // add instrument to show on UI
-instruments.add("Custom sine wave oscillator", instrument);
+instruments.add("Custom sine wave oscillator", soundGenerator);

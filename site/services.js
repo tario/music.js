@@ -37,7 +37,7 @@ musicShowCaseApp.service("MusicContext", function() {
 
       var instruments = {
         add: function(name, inst) {
-          instrumentsArray.push({name: name, instrument: inst});
+          instrumentsArray.push({name: name, instrument: MUSIC.Types.cast("instrument", inst)});
         }
       };
 

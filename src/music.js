@@ -3,6 +3,8 @@ MUSIC = {};
 (function() {
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 MUSIC.Effects = MUSIC.Effects || {};
+MUSIC.Types = new TypeCast();
+
 
 var getTemporalPipeline = function(effectsFcn, next, param) {
   var nextNode = effectsFcn(next, param);

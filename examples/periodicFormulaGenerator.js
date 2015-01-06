@@ -28,15 +28,5 @@ var sawWaveSoundGenerator = {
   }
 };
 
-// create the instrument from sound generator
-var instrument = 
-    new MUSIC.Instrument(sineWaveSoundGenerator)
-                .mapNote(function(n) { return n + 36; });
-// add instrument to show on UI
-instruments.add("Custom sine wave oscillator", instrument);
-
-instrument = 
-    new MUSIC.Instrument(sawWaveSoundGenerator)
-                .mapNote(function(n) { return n + 36; });
-
-instruments.add("Custom saw wave oscillator", instrument);
+instruments.add("Custom sine wave oscillator", sineWaveSoundGenerator);
+instruments.add("Custom saw wave oscillator", sawWaveSoundGenerator);

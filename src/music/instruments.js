@@ -196,6 +196,43 @@ function _base64ToArrayBuffer(base64) {
 
 };
 
+MUSIC.Types.register("instrument", function(instrument) {
+  if (instrument.note) return instrument;
+});
+
+MUSIC.Types.register("instrument", function(soundGenerator) {
+  if (soundGenerator.freq) {
+    return new MUSIC.Instrument(soundGenerator);
+  }
+});
+
+MUSIC.Types.register("instrument", function(playable) {
+  if (playable.play) {
+    return {
+      note: function(){
+        return playable;
+      }
+    };
+  }
+});
+
+MUSIC.Types.register("instrument", function(fcn) {
+  if (typeof fcn === "function") {
+    return {
+      note: function(n) {
+        fcn(n);
+      }
+    };
+  }
+});
+
+MUSIC.Types.register("instrument", function(array) {
+  if (array instanceof Array) {
+    return new MUSIC.MultiInstrument(array);
+  }
+});
+
+
 MUSIC.StopEvent = function() {
   return function(note) {
       return MUSIC.playablePipeExtend({
