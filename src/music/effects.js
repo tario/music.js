@@ -205,6 +205,34 @@ MUSIC.Curve = function(array) {
   this.during = during(array);
 };
 
+MUSIC.Curve.concat = function(c1, time1, c2, time2, n) {
+  var time = time1 + time2;
+  if (!n) {
+    n=Math.floor(time*100)+1;
+  }
+
+  var at = function(t) {
+    if (t < time1){
+      return c1.at(t); 
+    } else {
+      return c2.at(t-time1);
+    }
+  };
+
+  var array = new Float32Array(n);
+  for (var i = 0; i < n; i++ ) {
+    array[i] = at(time * (i / n));
+  };
+
+  return {
+    apply: function(currentTime, audioParam) {
+      audioParam.setValueCurveAtTime(array, currentTime, time)
+    },
+
+    at: at
+  };
+};
+
 var during = function(fcn, n) {
   return function(time) {
     if (!n) {
@@ -236,6 +264,32 @@ MUSIC.Curve.Formula = function(fcn, n) {
 MUSIC.Curve.Ramp = function(initValue, endValue, n) {
   MUSIC.Curve.Formula.bind(this)(function(t){return initValue + (endValue - initValue)*t;}, n);
 };
+
+MUSIC.Effects.register("ADSR", function(music, next, options) {
+  options = options || {};
+  var samples = options.samples || 100;
+  var attackTime = options.attackTime || 0.1;
+  var decayTime = options.decayTime || 0.1;
+  var sustainLevel = options.sustainLevel || 0.8;
+  var releaseTime = options.releaseTime || 0.1;
+
+  var nextNodeFcn = options.node;
+  var releaseCurve = new MUSIC.Curve.Ramp(sustainLevel, 0.0, samples).during(releaseTime);
+  var attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
+  var decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
+  var startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+
+  var gainNode = next
+              .gain(sustainLevel);
+
+  gainNode.setParam('gain', startCurve);
+  
+  return nextNodeFcn(gainNode)
+    .onStop(function(){ gainNode.dispose(); }) // dispose gain node
+    .stopDelay(releaseTime * 1000)
+    .onStop(function(){ gainNode.setParam('gain', releaseCurve); }); // set gain curve
+
+});
 
 MUSIC.Effects.register("stopCurve", function(music, next, options) {
   options = options || {};
