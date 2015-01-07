@@ -219,8 +219,8 @@ MUSIC.Curve.concat = function(c1, time1, c2, time2, n) {
     }
   };
 
-  var array = new Float32Array(n);
-  for (var i = 0; i < n; i++ ) {
+  var array = new Float32Array(n+1);
+  for (var i = 0; i < n+1; i++ ) {
     array[i] = at(time * (i / n));
   };
 
@@ -239,8 +239,8 @@ var during = function(fcn, n) {
       n=Math.floor(time*100)+1;
     }
 
-    var array = new Float32Array(n);
-    for (var i = 0; i < n; i++ ) {
+    var array = new Float32Array(n+1);
+    for (var i = 0; i < n+1; i++ ) {
       array[i] = fcn(i / n);
     };
 
@@ -268,13 +268,17 @@ MUSIC.Curve.Ramp = function(initValue, endValue, n) {
 MUSIC.Effects.register("ADSR", function(music, next, options) {
   options = options || {};
   var samples = options.samples || 100;
-  var attackTime = options.attackTime || 0.1;
-  var decayTime = options.decayTime || 0.1;
-  var sustainLevel = options.sustainLevel || 0.8;
-  var releaseTime = options.releaseTime || 0.1;
+  var attackTime = options.attackTime;
+  var decayTime = options.decayTime;
+  var sustainLevel = options.sustainLevel;
+  var releaseTime = options.releaseTime;
+
+  if (attackTime === undefined) attackTime = 0.1;
+  if (decayTime === undefined) decayTime = 0.1;
+  if (sustainLevel === undefined) sustainLevel = 0.8;
+  if (releaseTime === undefined) releaseTime = 0.1;
 
   var nextNodeFcn = options.node;
-  var releaseCurve = new MUSIC.Curve.Ramp(sustainLevel, 0.0, samples).during(releaseTime);
   var attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
   var decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
   var startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
@@ -287,7 +291,11 @@ MUSIC.Effects.register("ADSR", function(music, next, options) {
   return nextNodeFcn(gainNode)
     .onStop(function(){ gainNode.dispose(); }) // dispose gain node
     .stopDelay(releaseTime * 1000)
-    .onStop(function(){ gainNode.setParam('gain', releaseCurve); }); // set gain curve
+    .onStop(function(){ 
+      var currentLevel = gainNode._destination.gain.value;
+      var releaseCurve = new MUSIC.Curve.Ramp(currentLevel, 0.0, samples).during(releaseTime)
+      gainNode.setParam('gain', releaseCurve); 
+    }); // set gain curve
 
 });
 
