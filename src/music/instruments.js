@@ -123,13 +123,14 @@ var noteNumToNoteName = function(noteNum) {
   return noteName + octaveNum;
 };
 
-MUSIC.PatchInstrument = function(notes, octave) {
+MUSIC.PatchInstrument = function(notes) {
   var noteNum;
   var sounds = [];
 
   for (var noteName in notes) {
-    noteNum = MUSIC.noteToNoteNum(noteName) + octave * 12;
-    sounds[noteNum] = notes[noteName];
+    var playable = MUSIC.Types.cast("playable", notes[noteName]);
+    noteNum = MUSIC.noteToNoteNum(noteName);
+    sounds[noteNum] = playable;
   };
 
   this.note = function(noteNum) {
@@ -216,11 +217,17 @@ MUSIC.Types.register("instrument", function(playable) {
   }
 });
 
+var nullPlay = {
+  play: function(){
+    return {stop: function(){}};
+  }
+};
+
 MUSIC.Types.register("instrument", function(fcn) {
   if (typeof fcn === "function") {
     return {
       note: function(n) {
-        fcn(n);
+        return fcn(n) || nullPlay;
       }
     };
   }
@@ -232,6 +239,11 @@ MUSIC.Types.register("instrument", function(array) {
   }
 });
 
+MUSIC.Types.register("instrument", function(plainObject) {
+  if (typeof plainObject === "object" && plainObject.constructor === Object) {
+    return new MUSIC.PatchInstrument(plainObject)
+  }
+});
 
 MUSIC.StopEvent = function() {
   return function(note) {

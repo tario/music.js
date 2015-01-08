@@ -82,6 +82,20 @@ MUSIC.playablePipeExtend = function(obj) {
   return obj;
 };
 
+MUSIC.Types.register("playable", function(playable) {
+  if (playable.play) {
+    return playable;
+  }
+});
+
+MUSIC.Types.register("playable", function(fcn) {
+  if (typeof fcn === "function") {
+    return {
+      play: fcn
+    };
+  }
+});
+
 MUSIC.EffectsPipeline = function(audio, audioDestination) {
   this._audio = audio;
   this._audioDestination = audioDestination;
