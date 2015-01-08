@@ -319,22 +319,46 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
   if (options.f) {
     this.play = function(param) {
-      var frequency = options.frequency;
-      var period = 1.0 / frequency;
       var wtPosition = options.wtPosition || 0;
       var fcn = options.f;
+      var ta = 0;
+      var frequency;
+      var optionsFrequency = options.frequency;
+
+      if (optionsFrequency.at) {
+        frequency = optionsFrequency.at.bind(optionsFrequency);
+      } else {
+        frequency = function(t){ return optionsFrequency };
+      }
+      var deltatime = 0;
+      var lastTime = 0;
+      var tb;
 
       if (wtPosition.at) {
         var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
-          var ta = ((wtPosition.at(t) + t) % period) / period;
-          if (ta < 0) ta++;
-          return fcn(ta);
+          deltatime = t - lastTime;
+          ta += deltatime * frequency(t);
+          ta = ta % 1;
+
+          tb = ta + wtPosition.at(t);
+          tb = tb % 1;
+
+          if (tb < 0) tb++;
+          lastTime = t;
+          return fcn(tb);
         });
       } else {
         var formulaGenerator = new MUSIC.Effects.Formula(music, destination, function(input, t) {
-          var ta = ((wtPosition + t) % period) / period;
-          if (ta < 0) ta++;
-          return fcn(ta);
+          deltatime = t - lastTime;
+          ta += deltatime * frequency(t);
+          ta = ta % 1;
+
+          tb = ta + wtPosition;
+          tb = tb % 1;
+
+          if (tb < 0) tb++;
+          lastTime = t;
+          return fcn(tb);
         });
       }
 
