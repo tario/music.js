@@ -40,7 +40,7 @@ MUSIC.Pattern = function(input, options) {
 
   playableArray = input.map(function(seq) {
     var code = seq[0];
-    var instrument = seq[1];
+    var instrument = MUSIC.Types.cast("instrument", seq[1]);
 
     var noteseq = new MUSIC.NoteSequence();
     MUSIC.SequenceParser.parse(code, new MUSIC.ChangeTimeWrapper(noteseq,options.pulseTime));
