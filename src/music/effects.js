@@ -265,6 +265,31 @@ MUSIC.Curve.Ramp = function(initValue, endValue, n) {
   MUSIC.Curve.Formula.bind(this)(function(t){return initValue + (endValue - initValue)*t;}, n);
 };
 
+MUSIC.Curve.Periodic = function(fcn, frequency) {
+  var ta = 0;
+  var delayTime;
+  var lastTime = 0;
+  var deltatime;
+  var tb;
+  var period = 1.0 / frequency;
+  if (frequency.at) {
+    this.at = function(t) {
+      deltatime = t - lastTime;
+      ta += deltatime * frequency.at(t);
+      ta = ta % 1;
+
+      lastTime = t;
+      return fcn(ta);
+    };
+  } else {
+    this.at = function(t) {
+      ta = (t % period) / period;
+      if (ta < 0) ta++;
+      return fcn(ta);
+    };
+  }
+};
+
 MUSIC.Effects.register("ADSR", function(music, next, options) {
   options = options || {};
   var samples = options.samples || 100;
