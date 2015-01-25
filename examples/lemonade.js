@@ -1,25 +1,23 @@
-// create the sound generator
-var twopi = Math.PI * 2;
-var op = music.lemonade.op;
-var twopi = Math.PI * 2;
-var sineWave = function(t) {
-  return Math.sin(twopi*t);
-};
+var LFOFreq = 5;
+var sfx = music.echo({delay:1/LFOFreq, gain:0.3});
 
+var sineWave = MUSIC.Wave.sine;
+var squareWave = MUSIC.Wave.square();
 var combineTwo = function(x,y){return x+y;};
+
+// create the sound generator
 var generator = {
   freq: function(fr) {
-    var formulaNode = music
+    var formulaNode = sfx
             .ADSR({
               node: function(node) {
-                var reducedFreq = 5;
                 return node
                     .lemonade(
                       {
                         ops: [
-                          {frequency: function(x,y,z){return (z+0.2)*fr*4;}, wave: sineWave},
+                          {frequency: function(x,y,z){return (z+0.2)*fr*4;}, wave: squareWave },
                           {frequency: function(x,y,z){return (z+0.2)*fr*2;}, wave: sineWave},
-                          {frequency: function(x,y,z){return reducedFreq;}, wave: sineWave}
+                          {frequency: function(x,y,z){return LFOFreq;}, wave: sineWave}
                         ],
                         output: combineTwo
                       }
