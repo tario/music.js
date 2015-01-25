@@ -95,9 +95,11 @@
   MUSIC.Wave.FunctionWave.prototype = waveOps;
 
 
-  MUSIC.Wave.sine = new MUSIC.Wave.FunctionWave(function(t) {
+  MUSIC.Wave.sine = function() {
+    return new MUSIC.Wave.FunctionWave(function(t) {
       return Math.sin(twopi*t);
-  });
+    });
+  };
 
   MUSIC.Wave.square = function(options) {
     options = options || {};
@@ -113,19 +115,23 @@
     });
   };
 
-  MUSIC.Wave.triangle = new MUSIC.Wave.FunctionWave(function(t) {
-    var t2 = t-0.25;
-    if (t2<0) t2++;
-    if (t2<0.5) {
-      return 1-t2*4;
-    } else {
-      return -1+(t2-0.5)*4;
-    }
-  });
+  MUSIC.Wave.triangle = function() {
+    return new MUSIC.Wave.FunctionWave(function(t) {
+      var t2 = t-0.25;
+      if (t2<0) t2++;
+      if (t2<0.5) {
+        return 1-t2*4;
+      } else {
+        return -1+(t2-0.5)*4;
+      }
+    });
+  };
 
-  MUSIC.Wave.sawtooth = new MUSIC.Wave.FunctionWave(function(t) {
-    return t*2-1;
-  });
+  MUSIC.Wave.sawtooth = function() {
+    return new MUSIC.Wave.FunctionWave(function(t) {
+      return t*2-1;
+    });
+  };
 
 })();
 

@@ -1,7 +1,7 @@
 var LFOFreq = 5;
 var sfx = music.echo({delay:1/LFOFreq, gain:0.3});
 
-var sineWave = MUSIC.Wave.sine;
+var sineWave = MUSIC.Wave.sine();
 var squareWave = MUSIC.Wave.square();
 var combineTwo = function(x,y){return x+y;};
 
