@@ -18,6 +18,7 @@ LemonadePlayable.prototype.play = function() {
   for (var i=0; i<opsLength; i++) {
     signalArray[i] = 0;
     phaseArray[i] = 0;
+    ops[i].wave = MUSIC.Types.cast("function", ops[i].wave)
   }
 
   var lastT = 0;
