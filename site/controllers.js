@@ -5,7 +5,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
   var exported;
 
   var processEntity = function(entity) {
-    if (entity.play) {
+    if (entity.playable) {
       $scope.playables.push(entity);
     };
     if (entity.instrument) {
