@@ -3,6 +3,8 @@ module.export = function(MusicContext) {
         var results = MusicContext.run(object.code);
         if (results.error) {
             object.codeError = results.error;
+        } else {
+            object.codeError = null;
         }
         return (results.instruments||[]).concat(results.playables||[]);
     };
