@@ -32,7 +32,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
       exported = module.export(MusicContext);
    });
 
-  $scope.$watch("object", function(newValue) {
+  var update = function(newValue) {
     if (!exported) return;      
 
     var resultArray = exported(newValue);
@@ -41,8 +41,8 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
       $scope.instruments = [];
       resultArray.forEach(processEntity);
     });
-
-  }, true);
+  };
+  $scope.$watch("object", fn.debounce(update,800), true);
 
 });
 
