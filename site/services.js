@@ -1,4 +1,4 @@
-var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror']);
+var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute']);
 musicShowCaseApp.service("MusicContext", function() {
   var music;
 
@@ -102,7 +102,12 @@ musicShowCaseApp.service("CodeRepository", function($http, $q) {
   return {
     getExample: function(uri) {
       return $http.get(uri).then(function(r) {
-        return r.data;
+        return {
+          type: "script",
+          object: {
+            code: r.data
+          }
+        };
       });
     },
 
