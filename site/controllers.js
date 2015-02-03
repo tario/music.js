@@ -14,23 +14,26 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
   };
 
   CodeRepository.getExample(uri).then(function(file) {
+    $scope.templateUrl = "site/components/" + file.type + "/index.html";
+    $http.get("site/components/" + file.type + "/runner.js")
+      .then(function(result) {
+      
+      var runnerCode = result.data;
+      var module = {export: function(){}};
+      eval(runnerCode);
+
+      exported = module.export(MusicContext);
+    });
+
     $timeout(function() {
       if (file.object.code) {
          file.object.code = file.object.code.replace(/\r\n/g, "\n");
       }
 
       $scope.object = file.object; //object;
+      $scope.fileType = file.type;
     });
   });
-
-   $http.get("site/components/jseditor/runner.js")
-     .then(function(result) {
-      var runnerCode = result.data;
-      var module = {export: function(){}};
-      eval(runnerCode);
-
-      exported = module.export(MusicContext);
-   });
 
   var update = function(newValue) {
     if (!exported) return;      
@@ -43,7 +46,6 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
     });
   };
   $scope.$watch("object", fn.debounce(update,800), true);
-
 });
 
 musicShowCaseApp.controller("MainController", function($scope, $timeout, MusicContext, CodeRepository, KeyboardFactory) {
