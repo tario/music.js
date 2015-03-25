@@ -31,6 +31,16 @@ musicShowCaseApp.service("MusicContext", function() {
   };
 
   return {
+    runFcn: function(f) {
+      if (music) {
+        music.dispose();
+      }
+      music = new MUSIC.Context();
+
+      return f(music);
+
+    },
+
     run: function(code) {
       var instrumentsArray = [];
       var playablesArray = [];
@@ -97,6 +107,19 @@ musicShowCaseApp.service("KeyboardFactory", function() {
   };
 });
 
+musicShowCaseApp.service("TypeService", function($http, $q) {
+
+  var getTypes = function() {
+      return $http.get("typeList.json").then(function(r) {
+        return r.data;
+      });
+  };
+
+  return {
+    getTypes: getTypes
+  };
+
+});
 
 musicShowCaseApp.service("CodeRepository", function($http, $q) {
   return {

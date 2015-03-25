@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicContext", function($timeout, $http, MusicContext) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicContext", "TypeService", function($timeout, $http, MusicContext, TypeService) {
   return {
     scope: {
       file: "=file"
@@ -11,6 +11,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
       var exported;
       var currentObject; 
 
+
       var updateObject = function(newValue) {
         if (!newValue) return;
         currentObject = exported(newValue);
@@ -20,6 +21,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
 
       var updateTemplate = function(file) {
         if (!file) return;
+        scope.selectedType = file.type;
         scope.templateUrl = "site/components/"+file.type+"/index.html";
         scope.object = file.object;
 
@@ -31,10 +33,22 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
           eval(runnerCode);
 
           exported = module.export(MusicContext);
+          updateObject(file.data);
         });
       };
       if (scope.file) updateTemplate(scope.file);
+
+      TypeService.getTypes().then(function(types) {
+        scope.types = types;
+      });
       
+      var changeType = function(newValue) {
+        if (!scope.file) return;
+        scope.file.type = newValue;
+        updateTemplate(scope.file);
+      };
+
+      scope.$watch("selectedType", changeType)
       scope.$watch("file", updateTemplate);
       scope.$watch("file.data", fn.debounce(updateObject,800), true);
     }

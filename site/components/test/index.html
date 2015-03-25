@@ -1,0 +1,8 @@
+<h1> Test Component  </h1>
+
+Transpose: <input ng-init="file.data.transpose = file.data.transpose || 0" ng-model="file.data.transpose"></input>
+<br/>
+Oscillator Type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType">
+  <option ng-repeat = "type in ['square', 'sine', 'sawtooth']" value="{{type}}">{{type}}</option>
+</select>
+
