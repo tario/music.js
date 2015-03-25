@@ -3,8 +3,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicContext", function($timeout, $http, MusicContext) {
   return {
     scope: {
-      file: "=file",
-      observer: "=observer"
+      file: "=file"
     },
     templateUrl: "objectEditor.html",
     link: function(scope, element, attrs) {
@@ -15,7 +14,8 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
       var updateObject = function(newValue) {
         if (!newValue) return;
         currentObject = exported(newValue);
-        if (scope.observer) scope.observer.changed(currentObject);
+        scope.file.object = currentObject;
+        if (scope.file && scope.file.changed) scope.file.changed();
       };
 
       var updateTemplate = function(file) {
@@ -36,7 +36,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
       if (scope.file) updateTemplate(scope.file);
       
       scope.$watch("file", updateTemplate);
-      scope.$watch("object", fn.debounce(updateObject,800), true);
+      scope.$watch("file.data", fn.debounce(updateObject,800), true);
     }
   };
 }]);

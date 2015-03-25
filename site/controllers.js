@@ -13,22 +13,22 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 
   CodeRepository.getExample(uri).then(function(file) {
     $timeout(function() {
-      if (file.object.code) {
-         file.object.code = file.object.code.replace(/\r\n/g, "\n");
+      file = Object.create(file);
+      if (file.data.code) {
+         file.data.code = file.data.code.replace(/\r\n/g, "\n");
       }
       $scope.file = file;
+      $scope.file.changed = function() {
+        $timeout(function() {
+          $scope.instruments = [];
+          $scope.playables = [];
+          file.object.forEach(processEntity);
+        });
+      };
+
     });
   });
 
-  $scope.observer = {
-    changed: function(newValue) {
-      $timeout(function() {
-        $scope.instruments = [];
-        $scope.playables = [];
-        newValue.forEach(processEntity);
-      });
-    }
-  };
 });
 
 musicShowCaseApp.controller("MainController", function($scope, $timeout, MusicContext, CodeRepository, KeyboardFactory) {

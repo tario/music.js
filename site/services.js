@@ -104,7 +104,7 @@ musicShowCaseApp.service("CodeRepository", function($http, $q) {
       return $http.get(uri).then(function(r) {
         return {
           type: "script",
-          object: {
+          data: {
             code: r.data
           }
         };
