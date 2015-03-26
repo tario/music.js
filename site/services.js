@@ -110,7 +110,7 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 musicShowCaseApp.service("TypeService", function($http, $q) {
 
   var getTypes = function() {
-      return $http.get("typeList.json").then(function(r) {
+      return $http.get("TypeList.json").then(function(r) {
         return r.data;
       });
   };
