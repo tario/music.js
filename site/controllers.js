@@ -39,7 +39,7 @@ musicShowCaseApp.controller("MainController", function($scope, $timeout, MusicCo
   });
 
   $scope.switchTo = function(example) {
-    document.location = "/#/editor/"+example.uri;
+    document.location = "#/editor/"+example.uri;
   };
 });
 
