@@ -38,5 +38,4 @@ var sawWaveSoundGenerator = {
   }
 };
 
-instruments.add("Custom sine wave oscillator", sineWaveSoundGenerator);
-instruments.add("Custom saw wave oscillator", sawWaveSoundGenerator);
+return new MUSIC.Instrument(sawWaveSoundGenerator);

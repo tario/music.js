@@ -65,4 +65,4 @@ var instrument = new MUSIC.MultiInstrument([
   ]);
 
 // add instrument to show on UI
-instruments.add("Monster bassline try", instrument);
+return instrument;

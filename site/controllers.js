@@ -2,14 +2,6 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, CodeRepository, KeyboardFactory) {
   var uri = $routeParams.uri;
-  var processEntity = function(entity) {
-    if (entity.playable) {
-      $scope.playables.push(entity);
-    };
-    if (entity.instrument) {
-      $scope.instruments.push(KeyboardFactory.keyboard(entity));
-    };
-  };
 
   CodeRepository.getExample(uri).then(function(file) {
     $timeout(function() {
@@ -22,12 +14,28 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
         $timeout(function() {
           $scope.instruments = [];
           $scope.playables = [];
-          file.object.forEach(processEntity);
+
+          if (file.object.note) {
+            // instrument
+            $scope.instruments.push(KeyboardFactory.keyboard(file.object));
+          } else if (file.object.play) {
+            $scope.playables.push(file.object);
+          }
         });
       };
 
     });
   });
+
+  $scope.startPlay = function(playable) {
+    playable.playing = playable.play();
+  };
+
+  $scope.stopPlay = function(playable) {
+    if (!playable.playing) return;
+    playable.playing.stop();
+    playable.playing = undefined;
+  };
 
 });
 

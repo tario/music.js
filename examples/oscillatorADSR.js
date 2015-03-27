@@ -20,4 +20,4 @@ var instrument =
                 .mapNote(function(n) { return n + 36; });
 
 // add instrument to show on UI
-instruments.add("Square wave oscillator", instrument);
+return instrument;

@@ -6,6 +6,6 @@ module.export = function(MusicContext) {
         } else {
             object.codeError = null;
         }
-        return (results.instruments||[]).concat(results.playables||[]);
+        return results.object;
     };
 };

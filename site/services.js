@@ -42,29 +42,13 @@ musicShowCaseApp.service("MusicContext", function() {
     },
 
     run: function(code) {
-      var instrumentsArray = [];
-      var playablesArray = [];
-
-      var instruments = {
-        add: function(name, inst) {
-          instrumentsArray.push({name: name, instrument: MUSIC.Types.cast("instrument", inst)});
-        }
-      };
-
-      var playables = {
-        add: function(name, playable) {
-          playablesArray.push({name: name, playable: playable, recordable: new Recordable(music, playable, name)});
-        }
-      };
-
       if (music) {
         music.dispose();
       }
       music = new MUSIC.Context();
 
       try {
-        eval(code);
-        return {instruments: instrumentsArray, playables: playablesArray};
+        return {object: eval("(function() {\n" + code + "\n})")()};
       } catch(e) {
         return {error: e.toString()};
       }
@@ -82,7 +66,7 @@ musicShowCaseApp.service("KeyboardFactory", function() {
               74: 'A#', 77: 'B'};
 
       return {
-        name: instrument.name,
+        name: "Keyboard",
         keyUp: function(keyCode) {
           var n = notes[keyCode];
           if (!n) return;
@@ -98,7 +82,7 @@ musicShowCaseApp.service("KeyboardFactory", function() {
           noteName = keyCodeToNote[keyCode];
           
           // depends on music.js
-          var note = instrument.instrument.note(MUSIC.noteToNoteNum(noteName)+36);
+          var note = instrument.note(MUSIC.noteToNoteNum(noteName)+36);
           if (note == undefined) return;
           notes[keyCode] = note.play();
         }

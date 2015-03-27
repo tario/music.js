@@ -13,4 +13,4 @@ var soundGenerator = {
 };
 
 // add instrument to show on UI
-instruments.add("Custom sine wave oscillator", soundGenerator);
+return new MUSIC.Instrument(soundGenerator);

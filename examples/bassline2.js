@@ -40,9 +40,4 @@ var decrescendo = new MUSIC.Curve.Formula(function(t){
   return 0.2*Math.sin(2*t)*Math.exp(-t);
 }).during(2);
 // add instrument to show on UI
-instruments.add("Heavy bass. simple wave", createHeavyBass(sfx, 800, 0));
-instruments.add("Heavy bass. distort", createHeavyBass(distort, 800, 0));
-instruments.add("Heavy bass. lowpass, wt vibrato", createHeavyBass(sfx, sineCurve2, sineCurve));
-instruments.add("Heavy bass. wt vibrato", createHeavyBass(sfx, 800, sineCurve));
-instruments.add("Heavy bass. lp vibrato", createHeavyBass(sfx, sineCurve2, 0));
-instruments.add("Heavy bass. distort + decrescendo", createHeavyBass(distort, 800, decrescendo));
+return createHeavyBass(sfx, sineCurve2, 0);

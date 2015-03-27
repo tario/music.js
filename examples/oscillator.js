@@ -1,2 +1,2 @@
 // add instrument to show on UI
-instruments.add("Square wave oscillator", music.oscillator({type: 'square'}));
+return new MUSIC.Instrument(music.oscillator({type: 'square'}));

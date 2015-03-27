@@ -85,7 +85,5 @@ var rythmSounds = {
   }
 };
 
-instruments.add("Oscillator SIN+SQ+SAW", instrument);
-instruments.add("Arpeggiator", arpeggiator);
-instruments.add("Rythm Sounds", rythmSounds);
+return instrument;
 

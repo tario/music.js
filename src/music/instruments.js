@@ -140,6 +140,8 @@ MUSIC.PatchInstrument = function(notes) {
       play: s.play
     });
   };
+
+  instrumentExtend(this);
 };
 
 MUSIC.SoundfontInstrument = function(sounds, audio, audioDestination) {

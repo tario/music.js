@@ -41,7 +41,4 @@ var song = new MUSIC.Song([
     "XXXYXXXYXXXYXXXYXXXYXXXYXXXYXXXYXXXYXXXYXXXY" 
   ], {X: melody1, Y: melody2}, {measure: 50*16*4 });
 
-instruments.add("Square wave oscillator", instrument.mapNote(function(n){return n+48;}));
-playables.add("pattern1", melody1);
-playables.add("pattern2", melody2);
-playables.add("Full song", song);
+return song;

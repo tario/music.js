@@ -16,4 +16,4 @@ var soundGenerator = {
 };
 
 // add instrument to show on UI
-instruments.add("Square wave oscillator with vibrato", soundGenerator);
+return new MUSIC.Instrument(soundGenerator);

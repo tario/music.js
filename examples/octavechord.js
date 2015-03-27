@@ -7,7 +7,7 @@ var instrument =
     new MUSIC.Instrument(soundGenerator);
 // add instrument to show on UI
 
-instruments.add("Square wave oscillator octave chord", [
+return new MUSIC.MultiInstrument([
                 instrument.mapNote(function(n) { return n + 24; }),
                 instrument.mapNote(function(n) { return n + 36; }),
                 instrument.mapNote(function(n) { return n + 48; })

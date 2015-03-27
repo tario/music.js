@@ -36,4 +36,4 @@ var generator = {
 };
 
 
-instruments.add("test sound", generator);
+return new MUSIC.Instrument(generator);

@@ -7,6 +7,6 @@
     <input ng-keyup="instrument.keyUp($event.keyCode)" ng-keydown="instrument.keyDown($event.keyCode)" placeholder="click here to use instrument" type="text"/>
 </div>
 <div ng-repeat="playable in playables">
-    <button ng-click="playable.playable.play()">{{playable.name}}<div>
-    <button ng-if="playable.recordable" ng-click="playable.recordable.record()">RECORD</button>
+    <button ng-disabled="playable.playing" ng-click="startPlay(playable)">PLAY<div>
+    <button ng-disabled="!playable.playing" ng-click="stopPlay(playable)">STOP<div>
 <div>
