@@ -1,4 +1,4 @@
-var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute']);
+var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute', 'ui.bootstrap']);
 musicShowCaseApp.service("MusicContext", function() {
   var music;
 

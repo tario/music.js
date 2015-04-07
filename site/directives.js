@@ -11,10 +11,16 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
       var exported;
       var currentObject; 
 
+      var getObject = function(file) { return file.object; };
 
-      var updateObject = function(newValue) {
+      var updateObject = function(newValue, subfiles) {
+        var subobjects;
+
         if (!newValue) return;
-        currentObject = exported(newValue);
+        if (subfiles) {
+          subobjects = subfiles.map(getObject);
+        }
+        currentObject = exported(newValue, subobjects);
         scope.file.object = currentObject;
         if (scope.file && scope.file.changed) scope.file.changed();
       };
@@ -48,9 +54,40 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
         updateTemplate(scope.file);
       };
 
+      scope.observer = {
+        notify: function() {
+          // TODO: decouple multiobjects
+          updateObject(scope.file.data, scope.file.objects);
+        }
+      };
+
       scope.$watch("selectedType", changeType)
       scope.$watch("file", updateTemplate);
-      scope.$watch("file.data", fn.debounce(updateObject,800), true);
+      scope.$watch("file.data", fn.debounce(function(newValue) { updateObject(newValue); },800), true);
+    }
+  };
+}]);
+
+musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
+  return {
+    scope: {
+      collection: "=collection",
+      observer: "=observer"
+    },
+    templateUrl: "arrayEditor.html",
+    link: function(scope, element, attrs) {
+      scope.addObject = function() {
+        $timeout(function() {
+          var newObjectChanged = function() { 
+            scope.observer.notify();
+          };
+          var newObject = {name: "New Object", changed: newObjectChanged};
+          scope.collection.objects=scope.collection.objects||[];
+          scope.collection.objects.push(newObject);
+
+          scope.observer.notify();
+        });
+      };
     }
   };
 }]);

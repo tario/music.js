@@ -8,12 +8,8 @@ module.export = function(MusicContext) {
           if (tr !== 0) {
             instrument = instrument.mapNote(function(n) { return n+tr; });
           }
-          return [
-            {
-              name: "oscillator",
-              instrument: instrument
-            }
-          ];
+
+          return instrument;
         });
     };
 };
