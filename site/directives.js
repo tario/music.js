@@ -16,7 +16,6 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
       var updateObject = function(newValue, subfiles) {
         var subobjects;
 
-        if (!newValue) return;
         if (subfiles) {
           subobjects = subfiles.map(getObject);
         }
