@@ -15,11 +15,15 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
           $scope.instruments = [];
           $scope.playables = [];
 
-          if (file.object.note) {
+          var obj = MusicContext.runFcn(function(music) {
+            return file.object(music);
+          });
+
+          if (obj.note) {
             // instrument
-            $scope.instruments.push(KeyboardFactory.keyboard(file.object));
-          } else if (file.object.play) {
-            $scope.playables.push(file.object);
+            $scope.instruments.push(KeyboardFactory.keyboard(obj));
+          } else if (obj.play) {
+            $scope.playables.push(obj);
           }
         });
       };

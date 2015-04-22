@@ -1,10 +1,10 @@
-module.export = function(MusicContext) {
-    return function(data, subobjects){
+module.export = function(data, subobjects) {
+    return function(music){
         if (!subobjects) return null;
-        return MusicContext.runFcn(function(music) {
-          var instrument = new MUSIC.MultiInstrument(subobjects);
-          return instrument;
-        });
+        var instrument = new MUSIC.MultiInstrument(subobjects.map(function(obj) {
+          return obj(music);
+        }));
+        return instrument;
     };
 };
 

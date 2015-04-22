@@ -1,11 +1,17 @@
-module.export = function(MusicContext) {
-    return function(object){
-        var results = MusicContext.run(object.code);
-        if (results.error) {
-            object.codeError = results.error;
-        } else {
-            object.codeError = null;
-        }
-        return results.object;
-    };
+module.export = function(object){
+  return function(music) {
+      var results;
+      try {
+        results = {object: eval("(function() {\n" + object.code + "\n})")()};
+      } catch(e) {
+        results = {error: e.toString()};
+      }
+
+      if (results.error) {
+          object.codeError = results.error;
+      } else {
+          object.codeError = null;
+      }
+      return results.object;
+  };
 };

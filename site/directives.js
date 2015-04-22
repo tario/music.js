@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicContext", "TypeService", function($timeout, $http, MusicContext, TypeService) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", function($timeout, $http, TypeService) {
   return {
     scope: {
       file: "=file"
@@ -37,7 +37,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "MusicCont
           var module = {export: function(){}};
           eval(runnerCode);
 
-          exported = module.export(MusicContext);
+          exported = module.export;
           updateObject(file.data);
         });
       };
