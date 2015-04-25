@@ -1,5 +1,6 @@
 [
   {"name": "script", "description": "Custom script"},
   {"name": "test", "description": "Test Component"},
+  {"name": "adsr", "description": "ADSR"},
   {"name": "multi_instrument", "description": "Multi Instrument"}
 ]
