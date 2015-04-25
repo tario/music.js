@@ -18,7 +18,7 @@ module.export = function(data, subobjects) {
 
             return instance.note(n)
                       .onStop(gainNode.dispose.bind(gainNode))
-                      .stopDelay(decayTime * 1000)
+                      .stopDelay(releaseTime * 1000)
                       .onStop(function(){ 
                         var currentLevel = gainNode._destination.gain.value;
                         var releaseCurve = new MUSIC.Curve.Ramp(currentLevel, 0.0, samples).during(releaseTime)
