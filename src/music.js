@@ -134,6 +134,8 @@ MUSIC.EffectsPipeline.prototype = {
     };
 
     var sfxBaseWrapper = function(elem) {
+      if (!elem.dispose) return elem;
+      
       var removeElem = function(x) {
         return x != elem;
       };

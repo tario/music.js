@@ -125,3 +125,17 @@ musicShowCaseApp.service("CodeRepository", function($http, $q) {
     }
   };
 });
+
+musicShowCaseApp.factory("pruneWrapper", function() {
+  return function(fcn) {
+    return function(music) {
+      var sfxBase = music.sfxBase();
+      var obj = fcn(sfxBase);
+      obj.dispose = function() {
+        sfxBase.prune();
+      };
+      return obj;
+    };
+  };
+});
+

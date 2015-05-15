@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", function($timeout, $http, TypeService) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "pruneWrapper", function($timeout, $http, TypeService, pruneWrapper) {
   return {
     scope: {
       file: "=file"
@@ -17,7 +17,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         var subobjects;
 
         if (subfiles) {
-          subobjects = subfiles.map(getObject);
+          subobjects = subfiles.map(getObject).map(pruneWrapper);
         }
         currentObject = exported(newValue, subobjects);
         scope.file.object = currentObject;

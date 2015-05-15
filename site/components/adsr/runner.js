@@ -17,7 +17,10 @@ module.export = function(data, subobjects) {
             gainNode.setParam('gain', startCurve);
 
             return instance.note(n)
-                      .onStop(gainNode.dispose.bind(gainNode))
+                      .onStop(function() {
+                        gainNode.dispose();
+                        instance.dispose();
+                      })
                       .stopDelay(releaseTime * 1000)
                       .onStop(function(){ 
                         var currentLevel = gainNode._destination.gain.value;
