@@ -127,6 +127,35 @@ MUSIC.EffectsPipeline.prototype = {
     return ret;
   },
 
+  sfxBase: function() {
+    var objects = [];
+    var dispose = function(obj) {
+      obj.dispose();
+    };
+
+    var sfxBaseWrapper = function(elem) {
+      var removeElem = function(x) {
+        return x != elem;
+      };
+      var originalDispose = elem.dispose;
+      objects.push(elem);
+      elem.dispose = function() {
+        objects = objects.filter(removeElem);
+        originalDispose.call(elem);
+      };
+
+      return elem;
+    };
+
+    var sfxPrune = function() {
+      objects.forEach(dispose);
+    };
+
+    var ret = this.wrap(sfxBaseWrapper);
+    ret.prune = sfxPrune;
+    return ret;
+  },
+
   oscillator: function(options) {
     return this._wrapFcn(new MUSIC.SoundLib.Oscillator(this._audio, this._audioDestination, options));
   },
