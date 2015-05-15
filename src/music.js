@@ -101,13 +101,38 @@ MUSIC.EffectsPipeline = function(audio, audioDestination) {
   this._audioDestination = audioDestination;
 };
 
+var defaultWrapFcn = function(obj){
+  return obj;
+};
+var compose = function(f,g) {
+  return function(obj) {
+    return g(f(obj));
+  };
+};
+
 MUSIC.EffectsPipeline.prototype = {
+
+  _wrapFcn: defaultWrapFcn,
+
+  wrap: function(f) {
+    var ret = new MUSIC.DummyNode(this)
+    if (this._wrapFcn !== defaultWrapFcn) {
+      f = compose(f, this._wrapFcn);
+    }
+    ret._wrapFcn = function(obj) {
+      var ret2 = f(obj);
+      ret2._wrapFcn = ret._wrapFcn;
+      return ret2;
+    };
+    return ret;
+  },
+
   oscillator: function(options) {
-    return new MUSIC.SoundLib.Oscillator(this._audio, this._audioDestination, options);
+    return this._wrapFcn(new MUSIC.SoundLib.Oscillator(this._audio, this._audioDestination, options));
   },
 
   soundfont: function(param) {
-    return new MUSIC.SoundfontInstrument(param, this._audio, this._audioDestination);
+    return this._wrapFcn(new MUSIC.SoundfontInstrument(param, this._audio, this._audioDestination));
   },
 
   sound: function(path) {
@@ -148,18 +173,22 @@ MUSIC.EffectsPipeline.prototype = {
   },
   
   formulaGenerator: function(fcn) {
-    return new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn);
+    return this._wrapFcn(new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn));
   },
 
   T: function() {
-    return new MUSIC.T(arguments, this._audio, this._audioDestination);
+    return this._wrapFcn(new MUSIC.T(arguments, this._audio, this._audioDestination));
   },
 
   noise: function() {
-    return new MUSIC.SoundLib.Noise(this._audio, this._audioDestination);
+    return this._wrapFcn(new MUSIC.SoundLib.Noise(this._audio, this._audioDestination));
   }
 };
 
+MUSIC.DummyNode = function(music) {
+  MUSIC.EffectsPipeline.apply(this, [music._audio, music._audioDestination]);
+};
+MUSIC.DummyNode.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
 MUSIC.T = function(args, music, audioDestination) {
   var api = T("WebAudioAPI:recv", music.audio /* audioContext */);
@@ -203,7 +232,7 @@ MUSIC.T.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
 MUSIC.Effects.register = function(effectName, fcn) {
   MUSIC.EffectsPipeline.prototype[effectName] = function(value) {
-    return fcn(this._audio, this._audioDestination, value);
+    return this._wrapFcn(fcn(this._audio, this._audioDestination, value));
   };
 };
 
