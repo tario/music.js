@@ -281,14 +281,6 @@ MUSIC.Context = function(options) {
   this._destination = gainNode;
   this.audio = audio;
 
-  var disposable = [];
-  this.dispose = function() {
-    for (var i=0; i<disposable.length; i++) {
-      var obj = disposable[i];
-      obj.dispose();
-    }
-  };
-
   this.record = function() {
     var rec = new Recorder(gainNode, {workerPath: "lib/recorder/recorderWorker.js"});
 
@@ -298,7 +290,6 @@ MUSIC.Context = function(options) {
 
   this.audio = audio;
 
-  this.registerDisposable = disposable.push.bind(disposable);
   MUSIC.EffectsPipeline.bind(this)(music, this);
 };
 MUSIC.Context.prototype = new MUSIC.EffectsPipeline();

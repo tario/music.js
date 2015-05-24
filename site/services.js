@@ -33,9 +33,9 @@ musicShowCaseApp.service("MusicContext", function() {
   return {
     runFcn: function(f) {
       if (music) {
-        music.dispose();
+        music.prune();
       }
-      music = new MUSIC.Context();
+      music = new MUSIC.Context().sfxBase();
 
       return f(music);
 
@@ -43,9 +43,9 @@ musicShowCaseApp.service("MusicContext", function() {
 
     run: function(code) {
       if (music) {
-        music.dispose();
+        music.prune();
       }
-      music = new MUSIC.Context();
+      music = new MUSIC.Context().sfxBase();
 
       try {
         return {object: eval("(function() {\n" + code + "\n})")()};

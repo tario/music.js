@@ -10,6 +10,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var file;
       var exported;
       var currentObject; 
+      var currentSubObjects;
 
       var getObject = function(file) { return file.object; };
 
@@ -38,7 +39,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
           eval(runnerCode);
 
           exported = module.export;
-          updateObject(file.data);
+          updateObject(file.data, currentSubObjects);
         });
       };
       if (scope.file) updateTemplate(scope.file);
@@ -56,13 +57,14 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       scope.observer = {
         notify: function() {
           // TODO: decouple multiobjects
+          currentSubObjects = scope.file.objects;
           updateObject(scope.file.data, scope.file.objects);
         }
       };
 
       scope.$watch("selectedType", changeType)
       scope.$watch("file", updateTemplate);
-      scope.$watch("file.data", fn.debounce(function(newValue) { updateObject(newValue); },800), true);
+      scope.$watch("file.data", fn.debounce(function(newValue) { updateObject(newValue, currentSubObjects); },800), true);
     }
   };
 }]);

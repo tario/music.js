@@ -23,7 +23,6 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
   };
 
   this.dispose = this.disconnect;
-  music.registerDisposable(this);
 
   this.output = function() {
     return audioNode;
@@ -88,7 +87,6 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
   };
 
   this.dispose = this.disconnect;
-  music.registerDisposable(this);  
 
   this.output = function() {
     return scriptNode;
@@ -183,7 +181,6 @@ var Echo = function(music, next, options) {
   };
 
   this.dispose = this.disconnect;
-  music.registerDisposable(this);    
 
   this.output = function() {
     return audioNode;
