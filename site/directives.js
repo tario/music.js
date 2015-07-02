@@ -11,6 +11,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var exported;
       var currentObject; 
       var currentSubObjects;
+      var types = TypeService.getTypes();
 
       var getObject = function(file) { return file.object; };
 
@@ -21,34 +22,42 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
           subobjects = subfiles.map(getObject).map(pruneWrapper);
         }
         currentObject = exported(newValue, subobjects);
-        scope.file.object = currentObject;
-        if (scope.file && scope.file.changed) scope.file.changed();
+        $timeout(function() {
+          scope.file.object = currentObject;
+          if (scope.file && scope.file.changed) scope.file.changed();
+        });
       };
 
       var updateTemplate = function(file) {
         if (!file) return;
-        scope.selectedType = file.type;
-        scope.templateUrl = "site/components/"+file.type+"/index.html";
-        scope.object = file.object;
 
-        $http.get("site/components/" + file.type + "/runner.js")
-          .then(function(result) {
-          
-          var runnerCode = result.data;
-          var module = {export: function(){}};
-          eval(runnerCode);
+        types.then(function() {
+          $timeout(function() {
+            scope.selectedType = file.type;
+            scope.templateUrl = "site/components/"+file.type+"/index.html";
+            scope.object = file.object;
 
-          exported = module.export;
-          updateObject(file.data, currentSubObjects);
+            $http.get("site/components/" + file.type + "/runner.js")
+              .then(function(result) {
+              
+              var runnerCode = result.data;
+              var module = {export: function(){}};
+              eval(runnerCode);
+
+              exported = module.export;
+              updateObject(file.data, currentSubObjects);
+            });
+          });
         });
       };
       if (scope.file) updateTemplate(scope.file);
 
-      TypeService.getTypes().then(function(types) {
+      types.then(function(types) {
         scope.types = types;
       });
       
       var changeType = function(newValue) {
+        if (!newValue) return;
         if (!scope.file) return;
         scope.file.type = newValue;
         updateTemplate(scope.file);
@@ -77,17 +86,30 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     },
     templateUrl: "arrayEditor.html",
     link: function(scope, element, attrs) {
-      scope.addObject = function() {
+      scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
+      var addObject = function(newObject) {
         $timeout(function() {
           var newObjectChanged = function() { 
             scope.observer.notify();
           };
-          var newObject = {name: "New Object", changed: newObjectChanged};
           scope.collection.objects=scope.collection.objects||[];
           scope.collection.objects.push(newObject);
 
           scope.observer.notify();
         });
+      };
+
+      var newObjectChanged = function() { 
+        scope.observer.notify();
+      };
+      if (attrs.minelements) {
+        for (var i=0; i<parseInt(attrs.minelements); i++) {
+          addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "test"});
+        }
+      }
+
+      scope.addObject = function() {
+        addObject({name: "New Object", changed: newObjectChanged})
       };
     }
   };

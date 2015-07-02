@@ -3,5 +3,5 @@
     <div style="margin:20px;" music-object-editor file="object">
     </div>
   </tab>
-  <tab ng-click="addObject()" heading="+"></tab>
+  <tab ng-if="collection.objects.length < maxElements" ng-click="addObject()" heading="+"></tab>
 </tabset>
