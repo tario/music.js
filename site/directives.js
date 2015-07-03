@@ -82,6 +82,7 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     },
     templateUrl: "arrayEditor.html",
     link: function(scope, element, attrs) {
+      scope.collection.objects=scope.collection.objects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
       var addObject = function(newObject) {
         $timeout(function() {
@@ -105,7 +106,7 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
       }
 
       scope.addObject = function() {
-        addObject({name: "New Object", changed: newObjectChanged})
+        addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "test"})
       };
     }
   };

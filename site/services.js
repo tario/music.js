@@ -93,26 +93,45 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 
 musicShowCaseApp.service("TypeService", function($http, $q) {
 
+  var plugins = ["core"];
+  var types = [];
+  var m = function(pluginName) {
+    return {
+      type: function(typeName, options, constructor) {
+        types.push({
+          templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
+          constructor: constructor,
+          name: typeName,
+          description: options.description
+        })
+      }
+    };
+  };
+
+  var loadPlugin = function(pluginName) {
+    return $http.get("site/plugin/" + pluginName + "/index.js")
+      .then(function(result) {
+        var runnerCode = result.data;
+        var module = {export: function(){}};
+        eval(runnerCode);
+
+        module.export(m(pluginName));
+      });
+  };
+
+  var pluginsLoaded = $q.all(plugins.map(loadPlugin));
+
   var getTypes = function() {
-      return $http.get("TypeList.json").then(function(r) {
-        return r.data;
+      return pluginsLoaded.then(function() {
+        return types;
       });
   };
 
   var getType = function(typeName, callback) {
-    $http.get("site/components/" + typeName + "/runner.js")
-      .then(function(result) {
-      
-      var runnerCode = result.data;
-      var module = {export: function(){}};
-      eval(runnerCode);
-
-      callback({
-        constructor: module.export,
-        templateUrl: "site/components/"+typeName+"/index.html"
+    pluginsLoaded
+      .then(function() {
+        callback(types.filter(function(type) { return type.name === typeName; })[0]);
       });
-    });
-
   };
 
   return {

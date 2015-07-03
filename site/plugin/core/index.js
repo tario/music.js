@@ -1,4 +1,47 @@
-module.export = function(data, subobjects) {
+module.export = function(m) {
+  m.type("script", {template: "script", description: "Custom script"}, function(object){
+    return function(music) {
+      var results;
+      try {
+        results = {object: eval("(function() {\n" + object.code + "\n})")()};
+      } catch(e) {
+        results = {error: e.toString()};
+      }
+
+      if (results.error) {
+          object.codeError = results.error;
+      } else {
+          object.codeError = null;
+      }
+      return results.object;
+    };
+  });
+
+  m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument"}, function(data, subobjects) {
+    return function(music){
+        if (!subobjects) return null;
+        var instrument = new MUSIC.MultiInstrument(subobjects.map(function(obj) {
+          return obj(music);
+        }));
+        return instrument;
+    };
+  });
+
+  m.type("test", {template: "test", description: "Test Component"}, function(data) {
+      return function(music){
+          var generator = music.oscillator({type: data.oscillatorType ||"square"});
+          var instrument = new MUSIC.Instrument(generator);
+
+          var tr = parseInt(data.transpose || 0);
+          if (tr !== 0) {
+            instrument = instrument.mapNote(function(n) { return n+tr; });
+          }
+
+          return instrument;
+      };
+  });
+
+  m.type("adsr", {template: "adsr", description: "ADSR"},  function(data, subobjects) {
     var wrapped = subobjects[0];
     var samples = data.samples || 100;
     var attackTime = parseFloat(data.attackTime || 0.4);
@@ -32,5 +75,5 @@ module.export = function(data, subobjects) {
           note: note
         });
     };
+  });
 };
-
