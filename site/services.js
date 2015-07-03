@@ -99,8 +99,25 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       });
   };
 
+  var getType = function(typeName, callback) {
+    $http.get("site/components/" + typeName + "/runner.js")
+      .then(function(result) {
+      
+      var runnerCode = result.data;
+      var module = {export: function(){}};
+      eval(runnerCode);
+
+      callback({
+        constructor: module.export,
+        templateUrl: "site/components/"+typeName+"/index.html"
+      });
+    });
+
+  };
+
   return {
-    getTypes: getTypes
+    getTypes: getTypes,
+    getType: getType
   };
 
 });

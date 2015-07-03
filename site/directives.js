@@ -8,7 +8,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
     templateUrl: "objectEditor.html",
     link: function(scope, element, attrs) {
       var file;
-      var exported;
+      var constructor;
       var currentObject; 
       var currentSubObjects;
       var types = TypeService.getTypes();
@@ -21,7 +21,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         if (subfiles) {
           subobjects = subfiles.map(getObject).map(pruneWrapper);
         }
-        currentObject = exported(newValue, subobjects);
+        currentObject = constructor(newValue, subobjects);
         $timeout(function() {
           scope.file.object = currentObject;
           if (scope.file && scope.file.changed) scope.file.changed();
@@ -34,18 +34,14 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         types.then(function() {
           $timeout(function() {
             scope.selectedType = file.type;
-            scope.templateUrl = "site/components/"+file.type+"/index.html";
             scope.object = file.object;
 
-            $http.get("site/components/" + file.type + "/runner.js")
-              .then(function(result) {
-              
-              var runnerCode = result.data;
-              var module = {export: function(){}};
-              eval(runnerCode);
-
-              exported = module.export;
-              updateObject(file.data, currentSubObjects);
+            TypeService.getType(file.type, function(type) {
+              $timeout(function() {
+                constructor = type.constructor;
+                scope.templateUrl = type.templateUrl;
+                updateObject(file.data, currentSubObjects);
+              });
             });
           });
         });
