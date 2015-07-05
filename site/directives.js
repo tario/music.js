@@ -47,11 +47,13 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                 constructor = type.constructor;
                 scope.templateUrl = type.templateUrl;
                 scope.type = type;
-                scope.parameters = type.parameters.map(function(parameter) {
-                  return {
-                    data: parameter,
-                  };
-                });
+                if (type.parameters) {
+                  scope.parameters = type.parameters.map(function(parameter) {
+                    return {
+                      data: parameter,
+                    };
+                  });
+                }
                 updateObject(file.data, currentSubObjects);
               });
             });
