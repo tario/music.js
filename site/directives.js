@@ -13,6 +13,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var currentSubObjects;
       var types = TypeService.getTypes();
 
+      scope.parameters = [];
       var getObject = function(file) { return file.object; };
 
       var updateObject = function(newValue, subfiles) {
@@ -21,6 +22,11 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         if (subfiles) {
           subobjects = subfiles.map(getObject).map(pruneWrapper);
         }
+
+        scope.parameters.forEach(function(parameter) {
+          newValue[parameter.data.name] = parameter.value;
+        });
+
         currentObject = constructor(newValue, subobjects);
         $timeout(function() {
           scope.file.object = currentObject;
@@ -40,6 +46,12 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
               $timeout(function() {
                 constructor = type.constructor;
                 scope.templateUrl = type.templateUrl;
+                scope.type = type;
+                scope.parameters = type.parameters.map(function(parameter) {
+                  return {
+                    data: parameter,
+                  };
+                });
                 updateObject(file.data, currentSubObjects);
               });
             });
@@ -67,6 +79,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         }
       };
 
+      scope.$watch("parameters", fn.debounce(function(newValue) { updateObject(scope.file.data, currentSubObjects); },800), true);
       scope.$watch("selectedType", changeType)
       scope.$watch("file", updateTemplate);
       scope.$watch("file.data", fn.debounce(function(newValue) { updateObject(newValue, currentSubObjects); },800), true);

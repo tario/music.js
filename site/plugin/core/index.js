@@ -76,4 +76,51 @@ module.export = function(m) {
         });
     };
   });
+
+  var genericType = function(name, options){
+    var fcn = options.fcn ||name;
+    m.type(name, 
+        {
+          template: "generic_wrapper_editor", 
+          parameters: options.parameters, 
+          description: options.description
+        },  function(data, subobjects) {
+
+          var opt;
+          if(options.singleParameter) {
+            var parameter = options.parameters[0];
+            opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+          } else {
+            opt = {};
+            options.parameters.forEach(function(parameter) {
+              opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+            });
+          }
+          var wrapped = subobjects[0];
+
+          return function(music) {
+            return wrapped(music[fcn].apply(music, [opt]));
+          };
+    });
+  };
+
+
+  genericType("gain", 
+      {
+        parameters: [
+          {name: "gain"}
+        ], 
+        singleParameter: true,
+        description: "Increase or decrease the amp. of signal"
+      });
+
+  genericType("echo", 
+      {
+        parameters: [
+          {name: "gain"},
+          {name: "delay"}
+        ], 
+        description: "Single echo effect"
+      });
+
 };

@@ -100,6 +100,7 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       type: function(typeName, options, constructor) {
         types.push({
           templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
+          parameters: options.parameters,
           constructor: constructor,
           name: typeName,
           description: options.description
