@@ -147,20 +147,20 @@ var Echo = function(music, next, options) {
   var delayNode = music.audio.createDelay(60);
   delayNode.delayTime.value = options.delay || 0.02;
 
-  var channelMergerNode = music.audio.createChannelMerger(2);
-
   var gainNode = music.audio.createGain();
+  var gainNode2 = music.audio.createGain();
   gainNode.gain.value = 1.0;
+  gainNode2.gain.value = 1.0;
 
   var att = music.audio.createGain();
   att.gain.value = options.gain || 0.2;
 
   setTimeout(function() {
-    gainNode.connect(channelMergerNode);
+    gainNode.connect(gainNode2);
     gainNode.connect(delayNode);
-    delayNode.connect(channelMergerNode);
-    channelMergerNode.connect(next._destination);
-    channelMergerNode.connect(att);
+    delayNode.connect(gainNode2);
+    gainNode2.connect(next._destination);
+    gainNode2.connect(att);
     att.connect(delayNode);
   });
 
@@ -172,11 +172,11 @@ var Echo = function(music, next, options) {
   };
 
   this.disconnect = function() {
-    gainNode.disconnect(channelMergerNode);
+    gainNode.disconnect(gainNode2);
     gainNode.disconnect(delayNode);
-    delayNode.disconnect(channelMergerNode);
-    channelMergerNode.disconnect(next._destination);
-    channelMergerNode.disconnect(att);
+    delayNode.disconnect(gainNode2);
+    gainNode2.disconnect(next._destination);
+    gainNode2.disconnect(att);
     att.disconnect(delayNode);
   };
 
