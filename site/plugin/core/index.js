@@ -123,4 +123,15 @@ module.export = function(m) {
         description: "Single echo effect"
       });
 
+  ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"].forEach(function(filterName) {
+    genericType(filterName, 
+        {
+          parameters: [
+            {name: "frequency"}
+          ], 
+          description: filterName
+        });
+
+  });
+
 };
