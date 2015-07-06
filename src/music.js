@@ -244,7 +244,10 @@ MUSIC.T = function(args, music, audioDestination) {
     return gainNode;
   }; 
 
+  var disconnected = false;
   this.disconnect = function() {
+    if (disconnected) return;
+    disconnected = true;
     gainNode.disconnect(audioDestination._destination);
     api.cancel();
   };

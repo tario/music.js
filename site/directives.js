@@ -16,11 +16,12 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       scope.parameters = [];
       var getObject = function(file) { return file.object; };
 
+      var truthy = function(x ) { return x; };
       var updateObject = function(newValue, subfiles) {
         var subobjects;
 
         if (subfiles) {
-          subobjects = subfiles.map(getObject).map(pruneWrapper);
+          subobjects = subfiles.map(getObject).filter(truthy).map(pruneWrapper);
         }
 
         scope.parameters.forEach(function(parameter) {
@@ -28,9 +29,10 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         });
 
         currentObject = constructor(newValue, subobjects);
+
         $timeout(function() {
           scope.file.object = currentObject;
-          if (scope.file && scope.file.changed) scope.file.changed();
+          if (currentObject && scope.file && scope.file.changed) scope.file.changed();
         });
       };
 

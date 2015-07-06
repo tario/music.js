@@ -18,7 +18,10 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
     return next;
   };
 
+  var disconnected = false;
   this.disconnect = function() {
+    if (disconnected) return;
+    disconnected = true;
     audioNode.disconnect(next._destination);
   };
 
@@ -82,7 +85,10 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
     return next;
   };
 
+  var disconnected = false;
   this.disconnect = function() {
+    if (disconnected) return;
+    disconnected = true;
     scriptNode.disconnect(next._destination);
   };
 
@@ -171,7 +177,10 @@ var Echo = function(music, next, options) {
     return next;
   };
 
+  var disconnected = false;
   this.disconnect = function() {
+    if (disconnected) return;
+    disconnected = true;
     gainNode.disconnect(gainNode2);
     gainNode.disconnect(delayNode);
     delayNode.disconnect(gainNode2);

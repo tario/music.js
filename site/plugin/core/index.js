@@ -1,5 +1,6 @@
 module.export = function(m) {
   m.type("script", {template: "script", description: "Custom script"}, function(object){
+    if (!object) return;
     return function(music) {
       var results;
       try {
@@ -18,6 +19,8 @@ module.export = function(m) {
   });
 
   m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument"}, function(data, subobjects) {
+    if (!data) return;
+    if (!subobjects) return;
     return function(music){
         if (!subobjects) return null;
         var instrument = new MUSIC.MultiInstrument(subobjects.map(function(obj) {
@@ -28,6 +31,7 @@ module.export = function(m) {
   });
 
   m.type("test", {template: "test", description: "Test Component"}, function(data) {
+    if (!data) return;
       return function(music){
           var generator = music.oscillator({type: data.oscillatorType ||"square"});
           var instrument = new MUSIC.Instrument(generator);
@@ -42,7 +46,9 @@ module.export = function(m) {
   });
 
   m.type("adsr", {template: "adsr", description: "ADSR"},  function(data, subobjects) {
+    if (!subobjects) return;
     var wrapped = subobjects[0];
+    if (!wrapped) return;
     var samples = data.samples || 100;
     var attackTime = parseFloat(data.attackTime || 0.4);
     var decayTime = parseFloat(data.decayTime || 0.4);
@@ -96,7 +102,10 @@ module.export = function(m) {
               opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
             });
           }
+
+          if (!subobjects) return;
           var wrapped = subobjects[0];
+          if (!wrapped) return;
 
           return function(music) {
             return wrapped(music[fcn].apply(music, [opt]));
