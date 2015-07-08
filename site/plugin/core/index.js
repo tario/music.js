@@ -34,14 +34,7 @@ module.export = function(m) {
     if (!data) return;
       return function(music){
           var generator = music.oscillator({type: data.oscillatorType ||"square"});
-          var instrument = new MUSIC.Instrument(generator);
-
-          var tr = parseInt(data.transpose || 0);
-          if (tr !== 0) {
-            instrument = instrument.mapNote(function(n) { return n+tr; });
-          }
-
-          return instrument;
+          return new MUSIC.Instrument(generator);
       };
   });
 
@@ -82,6 +75,27 @@ module.export = function(m) {
         });
     };
   });
+
+
+  m.type("transpose",
+      {
+          template: "generic_wrapper_editor", 
+          parameters: [
+            {name: "amount"}
+          ], 
+          description: "Transpose by N semitones"
+
+      }, function(data, subobjects) {
+        if (!subobjects) return;
+        var wrapped = subobjects[0];
+        if (!wrapped) return;
+        var tr = parseInt(data.amount);
+        var transposeFcn = function(n) { return n+tr };
+
+        return function(music) {
+          return wrapped(music).mapNote(transposeFcn);
+        };
+      });
 
   var genericType = function(name, options){
     var fcn = options.fcn ||name;
