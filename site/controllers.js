@@ -5,10 +5,13 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 
   CodeRepository.getExample(uri).then(function(file) {
     $timeout(function() {
+      var outputFile = {};
       file = Object.create(file);
+
       if (file.data.code) {
          file.data.code = file.data.code.replace(/\r\n/g, "\n");
       }
+      $scope.outputFile = outputFile;
       $scope.file = file;
       $scope.observer = {};
       $scope.observer.notify = function() {
@@ -17,7 +20,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
           $scope.playables = [];
 
           var obj = MusicContext.runFcn(function(music) {
-            return file.object(music);
+            return outputFile.object(null)(music);
           });
 
           if (obj.note) {

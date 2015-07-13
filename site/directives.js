@@ -13,6 +13,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var currentSubObjects;
       var types = TypeService.getTypes();
 
+      scope.composition = attrs.composition;
       scope.parameters = [];
       var getObject = function(file) { return file.object; };
 
@@ -28,7 +29,13 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
           newValue[parameter.data.name] = parameter.value;
         });
 
-        currentObject = constructor(newValue, subobjects);
+        if (attrs.composition) {
+          currentObject = constructor(newValue, subobjects);
+        } else {
+          currentObject = function(subobjects) {
+            return constructor(newValue, subobjects);
+          };
+        }
 
         $timeout(function() {
           scope.file.object = currentObject;
@@ -136,19 +143,38 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
   return {
     scope: {
       observer: "=observer",
-      initFile: "=initFile"
+      initFile: "=initFile",
+      outputFile: "=outputFile"
     },
     templateUrl: "stack.html",
     link: function(scope, element, attrs) {
       scope.collection = [];
       var observer;
 
+      var outputFile;
       var subfileChanged = function() {
+        // do composition of stack
+        outputFile.object = function(lastObj) {
+          for (var i=scope.collection.length-1; i>=0; i--) {
+            lastObj = scope.collection[i].object([lastObj]);
+          }
+          return lastObj;
+        };
+
         $timeout(function() {
           observer.notify();
         });
       };
 
+      scope.add = function() {
+        $timeout(function() {
+          scope.collection.push({changed: subfileChanged});
+        });
+      };
+
+      scope.$watch("outputFile", function(newOutputFile) {
+        outputFile = newOutputFile;
+      });
       scope.$watch("observer", function(newObserver) {
         observer = newObserver;
       });
