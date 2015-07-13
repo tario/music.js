@@ -141,8 +141,22 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
     templateUrl: "stack.html",
     link: function(scope, element, attrs) {
       scope.collection = [];
+      var observer;
+
+      var subfileChanged = function() {
+        $timeout(function() {
+          observer.notify();
+        });
+      };
+
+      scope.$watch("observer", function(newObserver) {
+        observer = newObserver;
+      });
       scope.$watch("initFile", function(newFile) {
-        if (newFile) scope.collection.push(newFile);
+        if (newFile) {
+          newFile.changed = subfileChanged;
+          scope.collection.push(newFile);
+        }
       });
     }
   };  

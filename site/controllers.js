@@ -10,7 +10,8 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
          file.data.code = file.data.code.replace(/\r\n/g, "\n");
       }
       $scope.file = file;
-      $scope.file.changed = function() {
+      $scope.observer = {};
+      $scope.observer.notify = function() {
         $timeout(function() {
           $scope.instruments = [];
           $scope.playables = [];
