@@ -83,7 +83,10 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         }
       };
 
-      scope.$watch("parameters", fn.debounce(function(newValue) { updateObject(scope.file.data, currentSubObjects); },800), true);
+      scope.$watch("parameters", fn.debounce(function(newValue) { 
+        if (!scope.file) return;
+        updateObject(scope.file.data, currentSubObjects); 
+      },800), true);
       scope.$watch("selectedType", changeType)
       scope.$watch("file", updateTemplate);
       scope.$watch("file.data", fn.debounce(function(newValue) { updateObject(newValue, currentSubObjects); },800), true);
@@ -127,4 +130,21 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
       };
     }
   };
+}]);
+
+musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
+  return {
+    scope: {
+      observer: "=observer",
+      initFile: "=initFile"
+    },
+    templateUrl: "stack.html",
+    link: function(scope, element, attrs) {
+      scope.collection = [];
+      scope.$watch("initFile", function(newFile) {
+        if (newFile) scope.collection.push(newFile);
+      });
+    }
+  };  
+
 }]);
