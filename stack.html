@@ -1,4 +1,7 @@
-<div ng-repeat = "file in collection">
+<div ng-repeat = "file in collection" class="stack-element">
+  <button ng-click="remove($index)">remove</button>
+  <button ng-enabled="$index>0" ng-click="up($index)">↑</button>
+  <button ng-enabled="$index<collection.length-1" ng-click="down($index)">↓</button>
   <div music-object-editor file="file">
   </div>
 </div>

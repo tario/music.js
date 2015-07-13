@@ -166,9 +166,39 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
         });
       };
 
+      var swap = function(idx1, idx2) {
+        $timeout(function() {
+          var tmp = scope.collection[idx1];
+          scope.collection[idx1] = scope.collection[idx2];
+          scope.collection[idx2] = tmp;
+
+          subfileChanged();
+        });
+      };
+
+      scope.up = function(idx) {
+        swap(idx-1, idx);
+      };
+
+      scope.down = function(idx) {
+        swap(idx+1, idx);
+      };
+
+      scope.remove = function(idx) {
+        $timeout(function() {
+          var oldCollection = scope.collection;
+          scope.collection = [];
+          for (var i=0; i<oldCollection.length; i++) {
+            if (i!==idx) scope.collection.push(oldCollection[i]);
+          }
+
+          subfileChanged();
+        });
+      };
+
       scope.add = function() {
         $timeout(function() {
-          scope.collection.push({changed: subfileChanged});
+          scope.collection.push({changed: subfileChanged, data: {}});
         });
       };
 
