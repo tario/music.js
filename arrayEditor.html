@@ -1,6 +1,6 @@
 <tabset>
   <tab ng-repeat="object in collection.objects" heading="{{object.name}}">
-    <div style="margin:20px;" music-object-editor file="object">
+    <div style="margin:20px;" music-stack observer="stackObserver" output-file="object">
     </div>
   </tab>
   <tab ng-if="collection.objects.length < maxElements" ng-click="addObject()" heading="+"></tab>
