@@ -11,6 +11,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var constructor;
       var currentObject; 
       var currentSubObjects;
+      var composition;
       var types = TypeService.getTypes();
 
       scope.composition = attrs.composition;
@@ -21,16 +22,26 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var updateObject = function(newValue, subfiles) {
         var subobjects;
 
+        var nullComposition = function(obj) {
+          return obj([]);
+        };
+
         if (subfiles) {
-          subobjects = subfiles.map(getObject).filter(truthy).map(pruneWrapper);
+          subobjects = subfiles
+            .map(getObject)
+            .filter(truthy)
+            .map(nullComposition) // apply null composition
+            .map(pruneWrapper);
         }
 
         scope.parameters.forEach(function(parameter) {
           newValue[parameter.data.name] = parameter.value;
         });
 
-        if (attrs.composition) {
-          currentObject = constructor(newValue, subobjects);
+        if (composition) {
+          currentObject = function() {
+            return constructor(newValue, subobjects);
+          };
         } else {
           currentObject = function(subobjects) {
             return constructor(newValue, subobjects);
@@ -54,6 +65,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
             TypeService.getType(file.type, function(type) {
               $timeout(function() {
                 constructor = type.constructor;
+                composition = type.composition || attrs.composition;
                 scope.templateUrl = type.templateUrl;
                 scope.type = type;
                 if (type.parameters) {

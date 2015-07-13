@@ -18,7 +18,7 @@ module.export = function(m) {
     };
   });
 
-  m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument"}, function(data, subobjects) {
+  m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument", composition: true}, function(data, subobjects) {
     if (!data) return;
     if (!subobjects) return;
     return function(music){

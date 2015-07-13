@@ -103,6 +103,7 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
           parameters: options.parameters,
           constructor: constructor,
           name: typeName,
+          composition: options.composition,
           description: options.description
         })
       }
