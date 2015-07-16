@@ -1,5 +1,3 @@
-<h1>{{type.name}}</h1>
-
-<div ng-repeat="parameter in parameters">
+<div ng-repeat="parameter in parameters" class="generic-parameter">
 {{parameter.data.uiName || parameter.data.name}}: <input ng-model="parameter.value"></input>
 </div>

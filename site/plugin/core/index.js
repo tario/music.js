@@ -61,7 +61,7 @@ module.export = function(m) {
             return instance.note(n)
                       .onStop(function() {
                         gainNode.dispose();
-                        instance.dispose();
+                        if (instance.dispose) instance.dispose();
                       })
                       .stopDelay(releaseTime * 1000)
                       .onStop(function(){ 

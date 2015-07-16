@@ -159,6 +159,16 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     }
   };
 }]);
+musicShowCaseApp.directive("compressedElement", function() {
+    return {
+      scope: {},
+      templateUrl: "compressed.html",
+      transclude: true,
+      link: function(scope, element, attrs) {
+        scope.compressed = true;
+      }
+    };
+});
 
 musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
   return {
