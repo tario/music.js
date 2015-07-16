@@ -23,7 +23,7 @@ module.export = function(m) {
     return function(music) {
         if (!subobjects) return null;
         var instrument = subobjects[0];
-        return instrument;
+        return instrument(music);
     };
   });
 
