@@ -18,6 +18,15 @@ module.export = function(m) {
     };
   });
 
+  m.type("null", {template: "null", description: "This is a placeholder, it does nothing"}, function(data, subobjects) {
+    if (!subobjects) return;
+    return function(music) {
+        if (!subobjects) return null;
+        var instrument = subobjects[0];
+        return instrument;
+    };
+  });
+
   m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument", composition: true}, function(data, subobjects) {
     if (!data) return;
     if (!subobjects) return;
@@ -30,7 +39,7 @@ module.export = function(m) {
     };
   });
 
-  m.type("test", {template: "test", description: "Test Component"}, function(data) {
+  m.type("oscillator", {template: "oscillator", description: "Oscillator"}, function(data) {
     if (!data) return;
       return function(music){
           var generator = music.oscillator({type: data.oscillatorType ||"square"});

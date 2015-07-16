@@ -149,12 +149,12 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
       
       if (attrs.minelements) {
         for (var i=0; i<parseInt(attrs.minelements); i++) {
-          addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "test"});
+          addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "null"});
         }
       }
 
       scope.addObject = function() {
-        addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "test"})
+        addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "null"})
       };
     }
   };
@@ -229,7 +229,7 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
 
       scope.add = function() {
         $timeout(function() {
-          scope.collection.push({changed: subfileChanged, data: {}});
+          scope.collection.push({changed: subfileChanged, data: {}, type: "null"});
         });
       };
 
