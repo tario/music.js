@@ -1,4 +1,12 @@
 module.export = function(m) {
+  m.type("script_wrapper", {template: "script", description:"Script Wrapper"}, function(object, subobjects) {
+    if (!object) return;
+
+    var inner = eval("("+object.code+")");
+    return inner(subobjects[0]);
+  });
+
+
   m.type("script", {template: "script", description: "Custom script"}, function(object){
     if (!object) return;
     return function(music) {
