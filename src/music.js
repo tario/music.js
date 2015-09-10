@@ -259,7 +259,6 @@ MUSIC.T = function(args, music, audioDestination) {
     return audioDestination;
   };
 
-  music.registerDisposable(this);  
   MUSIC.EffectsPipeline.bind(this)(music, this);
 };
 MUSIC.T.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
