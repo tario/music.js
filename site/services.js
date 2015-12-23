@@ -1,4 +1,44 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute', 'ui.bootstrap']);
+
+musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
+
+  var getConstructor = function(descriptor) {
+      return TypeService.getType(descriptor.type)
+        .then(function(type) {
+          return function(subojects) {
+            return type.constructor(descriptor.data, subojects);
+          };
+        });
+  };
+
+  var create = function(descriptor) {
+    if (descriptor.type === "stack") {
+      return $q.all(descriptor.data.array.map(getConstructor))
+        .then(function(constuctors) {
+          var lastObj;
+          constuctors.reverse().forEach(function(constructor) {
+            if (lastObj) {
+              lastObj = constructor([pruneWrapper(lastObj)])
+            } else {
+              lastObj = constructor([])
+            }
+          });
+
+          return MusicContext.runFcn(function(music) {
+            return lastObj(music);
+          });
+        })
+    } else {
+      return getConstructor(descriptor)
+        .then(function(constructor) {
+          return constructor([]); 
+        });
+    }
+  };
+
+  return create;
+}]);
+
 musicShowCaseApp.service("MusicContext", function() {
   var music;
 
@@ -130,9 +170,11 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
   };
 
   var getType = function(typeName, callback) {
-    pluginsLoaded
+    return pluginsLoaded
       .then(function() {
-        callback(types.filter(function(type) { return type.name === typeName; })[0]);
+        var ret = types.filter(function(type) { return type.name === typeName; })[0]; 
+        if (callback) callback(ret);
+        return ret;
       });
   };
 

@@ -1,10 +1,20 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, CodeRepository, KeyboardFactory) {
+musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, CodeRepository, KeyboardFactory, MusicObjectFactory) {
   var uri = $routeParams.uri;
 
   var fileChanged = fn.debounce(function(newFile) {
-    console.log("CHANGED!");
+    $scope.instruments = [];
+    $scope.playables = [];
+    MusicObjectFactory($scope.file)
+      .then(function(obj) {
+          if (obj.note) {
+            // instrument
+            $scope.instruments.push(KeyboardFactory.keyboard(obj));
+          } else if (obj.play) {
+            $scope.playables.push(obj);
+          }
+      });
   }, 800);
   $scope.$watch('file', fileChanged, true);
   $scope.$on('objectChanged', fileChanged);
@@ -26,14 +36,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
           $scope.playables = [];
           /*var obj = MusicContext.runFcn(function(music) {
             return outputFile.object(null)(music);
-          });
-
-          if (obj.note) {
-            // instrument
-            $scope.instruments.push(KeyboardFactory.keyboard(obj));
-          } else if (obj.play) {
-            $scope.playables.push(obj);
-          }*/
+          });*/
         });
       };
 

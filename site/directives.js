@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "pruneWrapper", function($timeout, $http, TypeService, pruneWrapper) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", function($timeout, $http, TypeService) {
   return {
     scope: {
       file: "=file"
@@ -60,7 +60,10 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         updateTemplate(scope.file);
       };
 
-      scope.$watch("parameters", function(newValue) { 
+      scope.$watch("parameters", function(newValue) {
+        scope.parameters.forEach(function(parameter) {
+          scope.file.data[parameter.data.name] = parameter.value;
+        }); 
         scope.$emit("objectChanged");
       }, true);
       scope.$watch("selectedType", changeType)
@@ -149,7 +152,7 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
 
       scope.add = function() {
         $timeout(function() {
-          scope.collection.push({changed: subfileChanged, data: {}, type: "null"});
+          scope.collection.push({data: {}, type: "null"});
         });
       };
 
