@@ -179,7 +179,7 @@ function _base64ToArrayBuffer(base64) {
 
   this.note = function(notenum) {
     var source = audio.createBufferSource();
-    return {
+    return MUSIC.playablePipeExtend({
       play: function() {
         var source = audio.createBufferSource();
         source.buffer = noteAudio[notenum];
@@ -192,7 +192,7 @@ function _base64ToArrayBuffer(base64) {
           }
         };
       }
-    };
+    });
   };
 
   instrumentExtend(this);
