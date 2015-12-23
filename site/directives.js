@@ -9,48 +9,20 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
     link: function(scope, element, attrs) {
       var file;
       var constructor;
-      var currentObject; 
-      var currentSubObjects;
       var composition;
       var types = TypeService.getTypes();
 
       scope.composition = attrs.composition;
       scope.parameters = [];
-      var getObject = function(file) { return file.object; };
 
       var truthy = function(x ) { return x; };
-      var updateObject = function(newValue, subfiles) {
-        var subobjects;
-
-        var nullComposition = function(obj) {
-          return obj([]);
-        };
-
-        if (subfiles) {
-          subobjects = subfiles
-            .map(getObject)
-            .filter(truthy)
-            .map(nullComposition) // apply null composition
-            .map(pruneWrapper);
-        }
-
+      var updateObject = function(newValue) {
         scope.parameters.forEach(function(parameter) {
           newValue[parameter.data.name] = parameter.value;
         });
 
-        if (composition) {
-          currentObject = function() {
-            return constructor(newValue, subobjects);
-          };
-        } else {
-          currentObject = function(subobjects) {
-            return constructor(newValue, subobjects);
-          };
-        }
-
         $timeout(function() {
-          scope.file.object = currentObject;
-          if (currentObject && scope.file && scope.file.changed) scope.file.changed();
+          if (scope.file && scope.file.changed) scope.file.changed();
         });
       };
 
@@ -60,11 +32,9 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         types.then(function() {
           $timeout(function() {
             scope.selectedType = file.type;
-            scope.object = file.object;
 
             TypeService.getType(file.type, function(type) {
               $timeout(function() {
-                constructor = type.constructor;
                 composition = type.composition || attrs.composition;
                 scope.templateUrl = type.templateUrl;
                 scope.type = type;
@@ -75,7 +45,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                     };
                   });
                 }
-                updateObject(file.data, currentSubObjects);
+                updateObject(file.data);
               });
             });
           });
@@ -94,21 +64,12 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         updateTemplate(scope.file);
       };
 
-      scope.observer = {
-        notify: function() {
-          // TODO: decouple multiobjects
-          currentSubObjects = scope.file.objects;
-          updateObject(scope.file.data, scope.file.objects);
-        }
-      };
-
-      scope.$watch("parameters", fn.debounce(function(newValue) { 
-        if (!scope.file) return;
-        updateObject(scope.file.data, currentSubObjects); 
-      },800), true);
+      scope.$watch("parameters", function(newValue) { 
+        scope.$emit("objectChanged");
+      }, true);
       scope.$watch("selectedType", changeType)
       scope.$watch("file", updateTemplate);
-      scope.$watch("file.data", fn.debounce(function(newValue) { updateObject(newValue, currentSubObjects); },800), true);
+      //scope.$watch("file.data", fn.debounce(function(newValue) { debugger; },800), true);
     }
   };
 }]);
@@ -116,45 +77,28 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
   return {
     scope: {
-      collection: "=collection",
-      observer: "=observer"
+      collection: "=collection"
     },
     templateUrl: "arrayEditor.html",
     link: function(scope, element, attrs) {
       scope.collection.objects=scope.collection.objects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
 
-      scope.stackObserver = {
-        notify: function() {
-          $timeout(function() {
-            scope.observer.notify();
-          });
-        }
-      };
       var addObject = function(newObject) {
         $timeout(function() {
-          var newObjectChanged = function() { 
-            scope.observer.notify();
-          };
           scope.collection.objects=scope.collection.objects||[];
           scope.collection.objects.push(newObject);
-
-          scope.observer.notify();
         });
       };
 
-      var newObjectChanged = function() { 
-        scope.observer.notify();
-      };
-      
       if (attrs.minelements) {
         for (var i=0; i<parseInt(attrs.minelements); i++) {
-          addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "null"});
+          addObject({name: "New Object", type: attrs.defaulttype || "null"});
         }
       }
 
       scope.addObject = function() {
-        addObject({name: "New Object", changed: newObjectChanged, type: attrs.defaulttype || "null"})
+        addObject({name: "New Object", type: attrs.defaulttype || "null"})
       };
     }
   };
@@ -173,37 +117,19 @@ musicShowCaseApp.directive("compressedElement", function() {
 musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
   return {
     scope: {
-      observer: "=observer",
       initFile: "=initFile",
       outputFile: "=outputFile"
     },
     templateUrl: "stack.html",
     link: function(scope, element, attrs) {
       scope.collection = [];
-      var observer;
 
       var outputFile;
-      var subfileChanged = function() {
-        // do composition of stack
-        outputFile.object = function(lastObj) {
-          for (var i=scope.collection.length-1; i>=0; i--) {
-            lastObj = scope.collection[i].object([lastObj]);
-          }
-          return lastObj;
-        };
-
-        $timeout(function() {
-          observer.notify();
-        });
-      };
-
       var swap = function(idx1, idx2) {
         $timeout(function() {
           var tmp = scope.collection[idx1];
           scope.collection[idx1] = scope.collection[idx2];
           scope.collection[idx2] = tmp;
-
-          subfileChanged();
         });
       };
 
@@ -222,8 +148,6 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
           for (var i=0; i<oldCollection.length; i++) {
             if (i!==idx) scope.collection.push(oldCollection[i]);
           }
-
-          subfileChanged();
         });
       };
 
@@ -236,13 +160,9 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       scope.$watch("outputFile", function(newOutputFile) {
         outputFile = newOutputFile;
       });
-      scope.$watch("observer", function(newObserver) {
-        observer = newObserver;
-      });
       scope.$watch("initFile", function(newFile) {
         if (newFile) {
-          newFile.changed = subfileChanged;
-          scope.collection.push(newFile);
+          scope.collection = newFile.data.array;
         }
       });
     }

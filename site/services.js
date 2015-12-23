@@ -148,9 +148,14 @@ musicShowCaseApp.service("CodeRepository", function($http, $q) {
     getExample: function(uri) {
       return $http.get(uri).then(function(r) {
         return {
-          type: "script",
+          type: "stack",
           data: {
-            code: r.data
+            array: [{
+              type: "script",
+              data: {
+                code: r.data
+              }
+            }]
           }
         };
       });
