@@ -8,11 +8,8 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
     templateUrl: "objectEditor.html",
     link: function(scope, element, attrs) {
       var file;
-      var constructor;
-      var composition;
       var types = TypeService.getTypes();
 
-      scope.composition = attrs.composition;
       scope.parameters = [];
 
       var truthy = function(x ) { return x; };
@@ -35,7 +32,6 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
             TypeService.getType(file.type, function(type) {
               $timeout(function() {
-                composition = type.composition || attrs.composition;
                 scope.templateUrl = type.templateUrl;
                 scope.type = type;
                 if (type.parameters) {
