@@ -1,12 +1,36 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute', 'ui.bootstrap']);
 
-musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
-
+musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function(MusicContext, $q, TypeService, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
+  var nextId = 0;
   var getConstructor = function(descriptor) {
       return TypeService.getType(descriptor.type)
         .then(function(type) {
-          return function(subojects) {
-            return type.constructor(descriptor.data, subojects);
+          return function(subobjects) {
+            if (subobjects.length === 1) {
+              if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                // TODO: apply object mutation
+                return descriptor.__cache[subobjects[0].id];
+              }
+            } else if (subobjects.length === 0) {
+              if (descriptor.__cache && descriptor.__cache.noid) {
+                // TODO: apply object mutation
+                return descriptor.__cache.noid;
+              }
+            }
+
+            var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects));
+            nextId++;
+            ret.id = nextId;
+
+            if (subobjects.length === 1) {
+              descriptor.__cache = descriptor.__cache || {};
+              descriptor.__cache[subobjects[0].id] = ret;
+            } else if (subobjects.length === 0) {
+              descriptor.__cache = descriptor.__cache || {};
+              descriptor.__cache.noid = ret;
+            }
+
+            return ret;
           };
         });
   };
@@ -72,13 +96,8 @@ musicShowCaseApp.service("MusicContext", function() {
 
   return {
     runFcn: function(f) {
-      if (music) {
-        music.prune();
-      }
-      music = new MUSIC.Context().sfxBase();
-
+      if (!music) music = new MUSIC.Context().sfxBase();
       return f(music);
-
     },
 
     run: function(code) {
@@ -213,14 +232,32 @@ musicShowCaseApp.service("CodeRepository", function($http, $q) {
 
 musicShowCaseApp.factory("pruneWrapper", function() {
   return function(fcn) {
-    return function(music) {
-      var sfxBase = music.sfxBase();
-      var obj = fcn(sfxBase);
-      obj.dispose = function() {
-        sfxBase.prune();
+    if (!fcn._wrapper) {
+      fcn._wrapper = function(music) {
+        var sfxBase = music.sfxBase();
+        var obj = fcn(sfxBase);
+        obj.dispose = function() {
+          sfxBase.prune();
+        };
+        return obj;
       };
-      return obj;
-    };
+    }
+    return fcn._wrapper;
   };
 });
 
+musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
+    return function(fcn){
+      var _lastmusic;
+      var _lastinstance;
+      return function(music) {
+        if (_lastmusic && _lastmusic === music) {
+          return _lastinstance;
+        }
+
+        _lastmusic = music;
+        _lastinstance = fcn(music);
+        return _lastinstance;
+      };
+    };
+});
