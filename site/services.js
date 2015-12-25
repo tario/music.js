@@ -159,9 +159,9 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       var instances = [];
 
       var current = fcn(object, subobjects);
-      if (ret.update) {
+      if (current.update) {
         debugger;
-        return ret;
+        return current;
       }
 
       var ret = function(music) {
