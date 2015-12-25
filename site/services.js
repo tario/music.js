@@ -9,13 +9,11 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
             if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
               if (subobjects.length === 1) {
                 if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
-                  // TODO: apply object mutation
                   return descriptor.__cache[subobjects[0].id]
                           .update(descriptor.data);
                 }
               } else if (subobjects.length === 0) {
                 if (descriptor.__cache && descriptor.__cache.noid) {
-                  // TODO: apply object mutation
                   return descriptor.__cache.noid
                           .update(descriptor.data);
                 }
