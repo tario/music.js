@@ -164,6 +164,7 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       }
 
       var ret = function(music) {
+        var r;
         var wrapped = {};
         var proxy = function(name) {
           wrapped[name] = function() {
