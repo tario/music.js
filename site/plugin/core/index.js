@@ -98,7 +98,7 @@ module.export = function(m) {
       {
           template: "generic_wrapper_editor", 
           parameters: [
-            {name: "amount"}
+            {name: "amount", value: 0}
           ], 
           description: "Transpose by N semitones"
 

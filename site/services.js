@@ -165,18 +165,23 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       }
 
       var ret = function(music) {
-        var r = current(music);
-        var wrapped = {
-          note: function(n) {
-            return r.note(n);
-          },
-
-          update: function(object) {
-            r = current(music);
-          }
+        var wrapped = {};
+        var proxy = function(name) {
+          wrapped[name] = function() {
+            return r[name].apply(r, arguments);
+          };
         };
 
-        instances.push(wrapped);
+        var update = function(object) {
+            r = current(music);
+            for (var k in r) {
+              proxy(k);
+            }
+        };
+
+        update(object);
+
+        instances.push({wrapped: wrapped, update: update});
         return wrapped;
       };
 
@@ -299,6 +304,7 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 
         _lastmusic = music;
         _lastinstance = fcn(music);
+
         return _lastinstance;
       };
 

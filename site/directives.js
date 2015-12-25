@@ -38,6 +38,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                   scope.parameters = type.parameters.map(function(parameter) {
                     return {
                       data: parameter,
+                      value: parameter.value
                     };
                   });
                 }
