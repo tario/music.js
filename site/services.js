@@ -154,6 +154,45 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 });
 
 musicShowCaseApp.service("TypeService", function($http, $q) {
+  var make_mutable = function(fcn) {
+    return function(object, subobjects) {
+      var instances = [];
+
+      var current = fcn(object, subobjects);
+      if (ret.update) {
+        debugger;
+        return ret;
+      }
+
+      var ret = function(music) {
+        var r = current(music);
+        var wrapped = {
+          note: function(n) {
+            return r.note(n);
+          },
+
+          update: function(object) {
+            r = current(music);
+          }
+        };
+
+        instances.push(wrapped);
+        return wrapped;
+      };
+
+      ret.update = function(newobject) {
+        current = fcn(newobject, subobjects);
+        instances.forEach(function(ins) {
+          ins.update(object);
+        });
+
+        return ret;
+      };
+
+      return ret;
+    };
+  };
+
 
   var plugins = ["core"];
   var types = [];
@@ -163,7 +202,7 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
         types.push({
           templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
           parameters: options.parameters,
-          constructor: constructor,
+          constructor: make_mutable(constructor),
           name: typeName,
           composition: options.composition,
           description: options.description
