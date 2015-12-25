@@ -160,7 +160,6 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
 
       var current = fcn(object, subobjects);
       if (current.update) {
-        debugger;
         return current;
       }
 
