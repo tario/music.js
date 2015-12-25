@@ -1,13 +1,48 @@
 module.export = function(m) {
-  m.type("script_wrapper", {template: "script", description:"Script Wrapper"}, function(object, subobjects) {
+
+  var from_inmutable = function(fcn) {
+    return function(object, subobjects) {
+      var instances = [];
+
+      var current = fcn(object, subobjects);
+      var ret = function(music) {
+        var r = current(music);
+        var wrapped = {
+          note: function(n) {
+            return r.note(n);
+          },
+
+          update: function(object) {
+            r = current(music);
+          }
+        };
+
+        instances.push(wrapped);
+        return wrapped;
+      };
+
+      ret.update = function(newobject) {
+        current = fcn(newobject, subobjects);
+        instances.forEach(function(ins) {
+          ins.update(object);
+        });
+
+        return ret;
+      };
+
+      return ret;
+    };
+  };
+
+  m.type("script_wrapper", {template: "script", description:"Script Wrapper"}, from_inmutable(function(object, subobjects) {
     if (!object) return;
 
     var inner = eval("("+object.code+")");
     return inner(subobjects[0]);
-  });
+  }));
 
 
-  m.type("script", {template: "script", description: "Custom script"}, function(object){
+  m.type("script", {template: "script", description: "Custom script"}, from_inmutable(function(object){
     if (!object) return;
     return function(music) {
       var results;
@@ -24,18 +59,18 @@ module.export = function(m) {
       }
       return results.object;
     };
-  });
+  }));
 
-  m.type("null", {template: "null", description: "This is a placeholder, it does nothing"}, function(data, subobjects) {
+  m.type("null", {template: "null", description: "This is a placeholder, it does nothing"}, from_inmutable(function(data, subobjects) {
     if (!subobjects) return;
     return function(music) {
         if (!subobjects) return null;
         var instrument = subobjects[0];
         return instrument(music);
     };
-  });
+  }));
 
-  m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument", composition: true}, function(data, subobjects) {
+  m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument", composition: true}, from_inmutable(function(data, subobjects) {
     if (!data) return;
     if (!subobjects) return;
     return function(music){
@@ -45,17 +80,17 @@ module.export = function(m) {
         }));
         return instrument;
     };
-  });
+  }));
 
-  m.type("oscillator", {template: "oscillator", description: "Oscillator"}, function(data) {
+  m.type("oscillator", {template: "oscillator", description: "Oscillator"}, from_inmutable(function(data) {
     if (!data) return;
       return function(music){
           var generator = music.oscillator({type: data.oscillatorType ||"square"});
           return new MUSIC.Instrument(generator);
       };
-  });
+  }));
 
-  m.type("adsr", {template: "adsr", description: "ADSR"},  function(data, subobjects) {
+  m.type("adsr", {template: "adsr", description: "ADSR"},  from_inmutable(function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
     if (!wrapped) return;
@@ -91,7 +126,7 @@ module.export = function(m) {
           note: note
         });
     };
-  });
+  }));
 
 
   m.type("transpose",
@@ -102,7 +137,7 @@ module.export = function(m) {
           ], 
           description: "Transpose by N semitones"
 
-      }, function(data, subobjects) {
+      }, from_inmutable(function(data, subobjects) {
         if (!subobjects) return;
         var wrapped = subobjects[0];
         if (!wrapped) return;
@@ -112,7 +147,7 @@ module.export = function(m) {
         return function(music) {
           return wrapped(music).mapNote(transposeFcn);
         };
-      });
+      }));
 
   var genericType = function(name, options){
     var fcn = options.fcn ||name;
@@ -121,7 +156,7 @@ module.export = function(m) {
           template: "generic_wrapper_editor", 
           parameters: options.parameters, 
           description: options.description
-        },  function(data, subobjects) {
+        },  from_inmutable(function(data, subobjects) {
 
           var opt;
           if(options.singleParameter) {
@@ -141,7 +176,7 @@ module.export = function(m) {
           return function(music) {
             return wrapped(music[fcn].apply(music, [opt]));
           };
-    });
+    }));
   };
 
 

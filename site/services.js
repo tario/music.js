@@ -6,17 +6,22 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
       return TypeService.getType(descriptor.type)
         .then(function(type) {
           return function(subobjects) {
-            if (subobjects.length === 1) {
-              if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
-                // TODO: apply object mutation
-                return descriptor.__cache[subobjects[0].id];
-              }
-            } else if (subobjects.length === 0) {
-              if (descriptor.__cache && descriptor.__cache.noid) {
-                // TODO: apply object mutation
-                return descriptor.__cache.noid;
+            if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
+              if (subobjects.length === 1) {
+                if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                  // TODO: apply object mutation
+                  return descriptor.__cache[subobjects[0].id]
+                          .update(descriptor.data);
+                }
+              } else if (subobjects.length === 0) {
+                if (descriptor.__cache && descriptor.__cache.noid) {
+                  // TODO: apply object mutation
+                  return descriptor.__cache.noid
+                          .update(descriptor.data);
+                }
               }
             }
+            descriptor.last_type = descriptor.type;
 
             var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects));
             nextId++;
@@ -250,7 +255,7 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
     return function(fcn){
       var _lastmusic;
       var _lastinstance;
-      return function(music) {
+      var ret = function(music) {
         if (_lastmusic && _lastmusic === music) {
           return _lastinstance;
         }
@@ -259,5 +264,11 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
         _lastinstance = fcn(music);
         return _lastinstance;
       };
+
+      ret.update = function(data) {
+        fcn.update(data)
+        return ret;
+      };
+      return ret;
     };
 });
