@@ -156,8 +156,6 @@ musicShowCaseApp.service("KeyboardFactory", function() {
 musicShowCaseApp.service("TypeService", function($http, $q) {
   var make_mutable = function(fcn) {
     return function(object, subobjects) {
-      var instances = [];
-
       var current = fcn(object, subobjects);
       if (current.update) {
         return current;
@@ -166,31 +164,28 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       var ret = function(music) {
         var r;
         var wrapped = {};
+        var lastCurrent = current;
         var proxy = function(name) {
           wrapped[name] = function() {
+            if (lastCurrent != current) update()
             return r[name].apply(r, arguments);
           };
         };
 
-        var update = function(object) {
+        var update = function() {
             r = current(music);
-            for (var k in r) {
-              proxy(k);
-            }
+            for (var k in r) proxy(k);
+            _version = version;
         };
 
-        update(object);
+        update();
 
-        instances.push({wrapped: wrapped, update: update});
         return wrapped;
       };
 
       ret.update = function(newobject) {
         current = fcn(newobject, subobjects);
-        instances.forEach(function(ins) {
-          ins.update(object);
-        });
-
+        version++;
         return ret;
       };
 
