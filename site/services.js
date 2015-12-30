@@ -45,7 +45,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
           var lastObj;
           constuctors.reverse().forEach(function(constructor) {
             if (lastObj) {
-              lastObj = constructor([pruneWrapper(lastObj)])
+              lastObj = constructor([lastObj])
             } else {
               lastObj = constructor([])
             }
@@ -153,13 +153,15 @@ musicShowCaseApp.service("KeyboardFactory", function() {
   };
 });
 
-musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function($http, $q, pruneWrapper) {
+musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function($http, $q, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
   var make_mutable = function(fcn) {
     return function(object, subobjects) {
       var current = fcn(object, subobjects);
       if (current.update) {
         return current;
       }
+
+      current = sfxBaseOneEntryCacheWrapper(pruneWrapper(current));
 
       var ret = function(music) {
         var r;
@@ -173,8 +175,9 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function
         };
 
         var update = function() {
-            if (r && r.dispose) r.dispose();
-            r = current(music);
+            var newr = current(music);
+            if (newr !== r && r && r.dispose) r.dispose();
+            r = newr;
             lastCurrent = current;
             for (var k in r) proxy(k);
         };
@@ -185,7 +188,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function
       };
 
       ret.update = function(newobject) {
-        current = pruneWrapper(fcn(newobject, subobjects));
+        current = sfxBaseOneEntryCacheWrapper(pruneWrapper(fcn(newobject, subobjects)));
         return ret;
       };
 
