@@ -153,7 +153,7 @@ musicShowCaseApp.service("KeyboardFactory", function() {
   };
 });
 
-musicShowCaseApp.service("TypeService", function($http, $q) {
+musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function($http, $q, pruneWrapper) {
   var make_mutable = function(fcn) {
     return function(object, subobjects) {
       var current = fcn(object, subobjects);
@@ -167,15 +167,16 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
         var lastCurrent = current;
         var proxy = function(name) {
           wrapped[name] = function() {
-            if (lastCurrent != current) update()
+            if (lastCurrent != current) update();
             return r[name].apply(r, arguments);
           };
         };
 
         var update = function() {
+            if (r && r.dispose) r.dispose();
             r = current(music);
+            lastCurrent = current;
             for (var k in r) proxy(k);
-            _version = version;
         };
 
         update();
@@ -184,8 +185,7 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
       };
 
       ret.update = function(newobject) {
-        current = fcn(newobject, subobjects);
-        version++;
+        current = pruneWrapper(fcn(newobject, subobjects));
         return ret;
       };
 
@@ -244,7 +244,7 @@ musicShowCaseApp.service("TypeService", function($http, $q) {
     getType: getType
   };
 
-});
+}]);
 
 musicShowCaseApp.service("CodeRepository", function($http, $q) {
   return {
