@@ -124,23 +124,37 @@ module.export = function(m) {
         },  function(data, subobjects) {
 
           var opt;
-          if(options.singleParameter) {
-            var parameter = options.parameters[0];
-            opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
-          } else {
-            opt = {};
-            options.parameters.forEach(function(parameter) {
-              opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
-            });
-          }
 
           if (!subobjects) return;
           var wrapped = subobjects[0];
           if (!wrapped) return;
 
-          return function(music) {
-            return wrapped(music[fcn].apply(music, [opt]));
+          var nodes = [];
+          var ret = function(music) {
+            var node = music[fcn].apply(music, [opt]);
+            nodes.push(node)
+            return wrapped(node);
           };
+
+          ret.update = function(data) {
+            if(options.singleParameter) {
+              var parameter = options.parameters[0];
+              opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+            } else {
+              opt = {};
+              options.parameters.forEach(function(parameter) {
+                opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+              });
+            }
+
+            nodes.forEach(function(node) {
+              node.update(opt)
+            });
+          };
+
+          ret.update(data);
+
+          return ret;
     });
   };
 

@@ -137,10 +137,23 @@ MUSIC.Effects.register("biquad", MUSIC.Effects.BiQuad);
     });
   });
 
+var canMutate = function(obj, updateFcn) {
+  obj.update = function(value) {
+    updateFcn(value);
+    return obj;
+  };
+  return obj;
+};
+
+
 MUSIC.Effects.register("gain", function(music, next, value) {
   var gainNode = music.audio.createGain();
-  gainNode.gain.value = value;
-  return new MUSIC.Effects.WebAudioNodeWrapper(music, gainNode, next);
+  return canMutate(
+    new MUSIC.Effects.WebAudioNodeWrapper(music, gainNode, next),
+    function(value) {
+      gainNode.gain.value = value;
+    }
+  ).update(value);
 });
 
 MUSIC.Effects.register("delay", function(music, next, value) {
