@@ -187,7 +187,10 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
         return wrapped;
       };
 
+      var lastObjData;
       ret.update = function(newobject) {
+        if (JSON.stringify(newobject) === lastObjData) return ret;
+        lastObjData = JSON.stringify(newobject);
         current = sfxBaseOneEntryCacheWrapper(pruneWrapper(fcn(newobject, subobjects)));
         return ret;
       };
