@@ -88,6 +88,8 @@ MUSIC.Instrument = function(soundFactory) {
 
   instrumentExtend(this);
 };
+
+MUSIC.instrumentExtend = instrumentExtend;
 MUSIC.Instrument.frequency = frequency;
 
 MUSIC.MultiInstrument = function(instrumentArray) {

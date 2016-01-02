@@ -28,22 +28,32 @@ module.export = function(m) {
 
   m.type("null", {template: "null", description: "This is a placeholder, it does nothing"}, function(data, subobjects) {
     if (!subobjects) return;
-    return function(music) {
+    var ret = function(music) {
         if (!subobjects) return null;
         var instrument = subobjects[0];
         return instrument(music);
     };
+
+    ret.update = function() {
+      // do nothing;
+    };
+
+    return ret;
   });
 
   m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument", composition: true}, function(data, subobjects) {
     if (!data) return;
     if (!subobjects) return;
-    return function(music){
+    var ret = function(music){
         if (!subobjects) return null;
         var instrument = new MUSIC.MultiInstrument(subobjects.map(function(obj) {
           return obj(music);
         }));
         return instrument;
+    };
+
+    ret.update = function(data) {
+      // do nothing
     };
   });
 
@@ -59,17 +69,11 @@ module.export = function(m) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
     if (!wrapped) return;
-    var samples = data.samples || 100;
-    var attackTime = parseFloat(data.attackTime || 0.4);
-    var decayTime = parseFloat(data.decayTime || 0.4);
-    var sustainLevel = parseFloat(data.sustainLevel || 0.8);
-    var releaseTime = parseFloat(data.releaseTime || 0.4);
 
-    var attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
-    var decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
-    var startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+    var samples, attackTime, decayTime, sustainLevel, releaseTime;
+    var attackCurve, decayCurve, releaseCurve;
 
-    return function(music){
+    var ret = function(music){
         var note = function(n) {
             var gainNode = music.gain(sustainLevel);
             var instance = wrapped(gainNode);
@@ -87,10 +91,26 @@ module.export = function(m) {
                         gainNode.setParam('gain', releaseCurve); 
                       });
         };
-        return MUSIC.playablePipeExtend({
+        return MUSIC.instrumentExtend({
           note: note
         });
     };
+
+    ret.update = function(data) {
+      samples = data.samples || 100;  
+      attackTime = parseFloat(data.attackTime || 0.4);
+      decayTime = parseFloat(data.decayTime || 0.4);
+      sustainLevel = parseFloat(data.sustainLevel || 0.8);
+      releaseTime = parseFloat(data.releaseTime || 0.4);
+
+      attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
+      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
+      startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+    };
+
+    ret.update(data);
+
+    return ret;
   });
 
 
@@ -102,16 +122,24 @@ module.export = function(m) {
           ], 
           description: "Transpose by N semitones"
 
-      }, function(data, subobjects) {
+      },  function(data, subobjects) {
         if (!subobjects) return;
         var wrapped = subobjects[0];
         if (!wrapped) return;
-        var tr = parseInt(data.amount);
+        var tr, transposeFcn;
         var transposeFcn = function(n) { return n+tr };
 
-        return function(music) {
+        var ret = function(music) {
           return wrapped(music).mapNote(transposeFcn);
         };
+
+        ret.update = function(data) {
+          tr = parseInt(data.amount);
+        };
+
+        ret.update(data);
+
+        return ret;
       });
 
   var genericType = function(name, options){

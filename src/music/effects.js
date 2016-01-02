@@ -94,6 +94,10 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
 
   this.dispose = this.disconnect;
 
+  this.update = function(_f) {
+    fcn = _f;
+  };
+
   this.output = function() {
     return scriptNode;
   };
@@ -105,25 +109,24 @@ MUSIC.Effects.register("formula", function(music, next, fcn) {
   return new MUSIC.Effects.Formula(music, next, fcn)
 });
 
-MUSIC.Effects.register("attenuator", function(music, next, factor) {
-  MUSIC.Effects.Formula.bind(this)(music, next, function(input) {
-    return input * factor();
-  });
-});
 
 MUSIC.Effects.BiQuad = function(music, next, options) {
   var biquadFilter = music.audio.createBiquadFilter();
 
-  biquadFilter.type = options.type;
+  this.update = function(options) {
+    biquadFilter.type = options.type;
 
-  if (options.frequency.apply) {
-    options.frequency.apply(music.audio.currentTime, biquadFilter.frequency);
-  } else {
-    biquadFilter.frequency.value = options.frequency;
-  }
+    if (options.frequency.apply) {
+      options.frequency.apply(music.audio.currentTime, biquadFilter.frequency);
+    } else {
+      biquadFilter.frequency.value = options.frequency;
+    }
 
-  if (options.Q) biquadFilter.Q.value = options.Q;
-  if (options.gain) biquadFilter.gain.value = options.gain;
+    if (options.Q) biquadFilter.Q.value = options.Q;
+    if (options.gain) biquadFilter.gain.value = options.gain;
+  };
+
+  this.update(options);
 
   MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, biquadFilter, next);
 };
@@ -158,13 +161,21 @@ MUSIC.Effects.register("gain", function(music, next, value) {
 
 MUSIC.Effects.register("delay", function(music, next, value) {
   var delayNode = music.audio.createDelay(60);
-  delayNode.delayTime.value = value;
-  return new MUSIC.Effects.WebAudioNodeWrapper(music, delayNode, next);
+  return canMutate(
+    new MUSIC.Effects.WebAudioNodeWrapper(music, delayNode, next),
+    function(value) {
+      delayNode.delayTime.value = value;
+    }
+  ).update(value);
 });
 
 var Echo = function(music, next, options) {
+  this.update = function(options) {
+    delayNode.delayTime.value = options.delay || 0.02;
+    att.gain.value = options.gain || 0.2;
+  };
+
   var delayNode = music.audio.createDelay(60);
-  delayNode.delayTime.value = options.delay || 0.02;
 
   var gainNode = music.audio.createGain();
   var gainNode2 = music.audio.createGain();
@@ -172,7 +183,8 @@ var Echo = function(music, next, options) {
   gainNode2.gain.value = 1.0;
 
   var att = music.audio.createGain();
-  att.gain.value = options.gain || 0.2;
+
+  this.update(options);
 
   setTimeout(function() {
     gainNode.connect(gainNode2);
