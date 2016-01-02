@@ -2,8 +2,26 @@ module.export = function(m) {
   m.type("script_wrapper", {template: "script", description:"Script Wrapper"}, function(object, subobjects) {
     if (!object) return;
 
-    var inner = eval("("+object.code+")");
-    return inner(subobjects[0]);
+    var ret, inner;
+    ret = function(music) {
+      return inner(subobjects[0])(music);
+    };
+
+    ret.update = function(options) {
+      try {
+        inner = eval("("+object.code+")");
+        if (typeof inner !== 'function') throw "Not a function";
+      } catch (e) {
+        inner = function(obj) {
+          return obj;
+        };
+      }
+
+      return this;
+    };
+
+    ret.update(object);
+    return ret;
   });
 
 
@@ -36,6 +54,7 @@ module.export = function(m) {
 
     ret.update = function() {
       // do nothing;
+      return this;
     };
 
     return ret;
@@ -54,6 +73,7 @@ module.export = function(m) {
 
     ret.update = function(data) {
       // do nothing
+      return this;
     };
   });
 
@@ -106,6 +126,8 @@ module.export = function(m) {
       attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
       decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
       startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+
+      return this;
     };
 
     ret.update(data);
@@ -135,6 +157,8 @@ module.export = function(m) {
 
         ret.update = function(data) {
           tr = parseInt(data.amount);
+
+          return this;
         };
 
         ret.update(data);
@@ -178,6 +202,8 @@ module.export = function(m) {
             nodes.forEach(function(node) {
               node.update(opt)
             });
+
+            return this;
           };
 
           ret.update(data);
