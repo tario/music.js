@@ -12,6 +12,7 @@ module.export = function(m) {
         inner = eval("("+object.code+")");
         if (typeof inner !== 'function') throw "Not a function";
       } catch (e) {
+        console.error(e);
         inner = function(obj) {
           return obj;
         };
