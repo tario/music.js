@@ -5,6 +5,8 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 
   var lastObj;
   var fileChanged = function(newFile) {
+    if (!$scope.file) return;
+    
     MusicObjectFactory($scope.file)
       .then(function(obj) {
           if (obj !== lastObj) {
