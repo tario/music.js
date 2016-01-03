@@ -122,14 +122,12 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
     },
     templateUrl: "stack.html",
     link: function(scope, element, attrs) {
-      scope.collection = [];
-
       var outputFile;
       var swap = function(idx1, idx2) {
         $timeout(function() {
           var tmp = scope.collection[idx1];
-          scope.collection[idx1] = scope.collection[idx2];
-          scope.collection[idx2] = tmp;
+          scope.file.array[idx1] = scope.file.array[idx2];
+          scope.file.array[idx2] = tmp;
         });
       };
 
@@ -143,17 +141,17 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
 
       scope.remove = function(idx) {
         $timeout(function() {
-          var oldCollection = scope.collection;
-          scope.collection = [];
+          var oldCollection = scope.file.array;
+          scope.file.array = [];
           for (var i=0; i<oldCollection.length; i++) {
-            if (i!==idx) scope.collection.push(oldCollection[i]);
+            if (i!==idx) scope.file.array.push(oldCollection[i]);
           }
         });
       };
 
       scope.add = function() {
         $timeout(function() {
-          scope.collection.push({data: {}, type: "null"});
+          scope.file.array.push({data: {}, type: "null"});
         });
       };
 
@@ -162,7 +160,7 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       });
       scope.$watch("initFile", function(newFile) {
         if (newFile) {
-          scope.collection = newFile.data.array;
+          scope.file = newFile.data;
         }
       });
     }
