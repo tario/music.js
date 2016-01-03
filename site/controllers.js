@@ -4,7 +4,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
   var uri = $routeParams.uri;
 
   var lastObj;
-  var fileChanged = function(newFile) {
+  var fileChanged = fn.debounce(function(newFile) {
     if (!$scope.file) return;
     
     MusicObjectFactory($scope.file)
@@ -21,7 +21,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
           }
           lastObj = obj;
       });
-  };
+  }, 50);
   $scope.$watch('file', fileChanged, true);
 
   CodeRepository.getExample(uri).then(function(file) {

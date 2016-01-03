@@ -125,7 +125,7 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       var outputFile;
       var swap = function(idx1, idx2) {
         $timeout(function() {
-          var tmp = scope.collection[idx1];
+          var tmp = scope.file.array[idx1];
           scope.file.array[idx1] = scope.file.array[idx2];
           scope.file.array[idx2] = tmp;
         });
