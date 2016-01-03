@@ -153,7 +153,17 @@ module.export = function(m) {
         var transposeFcn = function(n) { return n+tr };
 
         var ret = function(music) {
-          return wrapped(music).mapNote(transposeFcn);
+          //return wrapped(music).mapNote(transposeFcn);
+          var wr = wrapped(music);
+          var x = Object.create(wr);
+
+          var originalNote = wr.note.bind(wr);
+          x.note = function(n) {
+            return originalNote(n+tr);
+          };
+
+          return x;
+
         };
 
         ret.update = function(data) {
