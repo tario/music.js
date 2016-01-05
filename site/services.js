@@ -262,7 +262,7 @@ musicShowCaseApp.service("CodeRepository", function($http, $q) {
             array: [{
               type: "script",
               data: {
-                code: r.data
+                code: r.data.replace(/\r\n/g, "\n")
               }
             }]
           }
