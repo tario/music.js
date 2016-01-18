@@ -16,6 +16,14 @@
   display: inline;
 }
 
+.object-template-editor select { 
+  width: auto;
+}
+
+.music-object-editor select { 
+  width: auto;
+}
+
 .compressed {
   max-height: 30px;
   overflow: hidden;
