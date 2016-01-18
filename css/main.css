@@ -30,7 +30,7 @@ li.examplelist ul:hover{
 }
 
 
-table .indexsection {
+/*table .indexsection {
   width: 15%
 }
 
@@ -42,7 +42,7 @@ table td {
 table {
   width: 100%;
 }
-
+*/
 .stack-element {
   border-color: black;
   border-width: 1px;
