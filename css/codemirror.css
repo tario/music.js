@@ -96,16 +96,16 @@ div.CodeMirror-overwrite div.CodeMirror-cursor {}
 
 /* DEFAULT THEME */
 
-.cm-s-default .cm-keyword {color: #e0e;}
+.cm-s-default .cm-keyword {color: #ff0;}
 .cm-s-default .cm-atom {color: #219;}
-.cm-s-default .cm-number {color: #164;}
-.cm-s-default .cm-def {color: #00f;}
+.cm-s-default .cm-number {color: #0ff;}
+.cm-s-default .cm-def {color: #fff;}
 .cm-s-default .cm-variable,
 .cm-s-default .cm-punctuation,
 .cm-s-default .cm-property,
 .cm-s-default .cm-operator {}
-.cm-s-default .cm-variable-2 {color: #05a;}
-.cm-s-default .cm-variable-3 {color: #085;}
+.cm-s-default .cm-variable-2 {color: #fff;}
+.cm-s-default .cm-variable-3 {color: #fff;}
 .cm-s-default .cm-comment {color: #0f0;}
 .cm-s-default .cm-string {color: #f00;}
 .cm-s-default .cm-string-2 {color: #f00;}
@@ -146,7 +146,7 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   position: relative;
   overflow: hidden;
   background: black;
-  color: white;
+  color: #ccc;
 }
 
 .CodeMirror-scroll {
