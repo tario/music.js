@@ -49,13 +49,32 @@ table {
 }
 */
 
+.musicapp .btn {
+  -webkit-box-shadow: 0 0 0 0;
+     -moz-box-shadow: 0 0 0 0;
+          box-shadow: 0 0 0 0;
+
+  margin-bottom: 0;
+}
+
+
+.musicapp .btn.active,
+.musicapp .btn:active {
+  margin-top: 0;
+  margin-left: 0;
+  color: #0000ff;
+  -webkit-box-shadow: 0 0 0;
+     -moz-box-shadow: 0 0 0;
+          box-shadow: 0 0 0;
+}
+
 .musicapp.container {
   width:100%;
 }
 
 .stack-element {
-  border-color: black;
-  border-width: 1px;
-  border-style: solid;
+  border: 2px solid #bbbbbb;
+  padding: 5px;
+  margin: 5px;
 }
 
