@@ -70,6 +70,7 @@ table {
 
 .musicapp.container {
   width:100%;
+  margin:0;
 }
 
 .stack-element {
