@@ -77,15 +77,15 @@
               </div>
         </div>
         <div class="container">
-            <div class="span3 bs-docs-sidebar">
-                <ul class="nav nav-list bs-docs-sidenav affix-top">
+            <div class="span4 bs-docs-sidebar">
+                <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li ng-repeat="example in examples">
                      <a ng-click="switchTo(example)" href="">{{example.name}}</a>
                   </li>
                 </ul>
             </div>
 
-            <div class="span8">
+            <div class="span7">
                 <div ng-view></div>
             </div>
         </div>

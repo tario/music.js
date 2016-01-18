@@ -3,10 +3,6 @@
 	white-space: pre;
 }
 
-li.examplelist {
-  list-style-type: none;
-}
-
 .object-template-editor input {
   width: 50px;
 }
@@ -25,10 +21,11 @@ li.examplelist {
   overflow: hidden;
 }
 
-li.examplelist ul:hover{
-  background-color: #ccf;
+.examplelist a {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
-
 
 /*table .indexsection {
   width: 15%
@@ -48,3 +45,4 @@ table {
   border-width: 1px;
   border-style: solid;
 }
+
