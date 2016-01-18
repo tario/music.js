@@ -2,7 +2,7 @@
 <script src="lib/angular.min.js"></script>
 <script src="lib/jquery-1.11.2.min.js"></script>
 <script src="lib/bootstrap.min.js"></script>
-<script src="lib/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<script src="lib/angular/ui-bootstrap-tpls-1.0.3.min.js"></script>
 <script src="lib/codemirror.js"></script>
 <script src="lib/codemirror/mode/javascript.js"></script>
 <script src="lib/angular/ui-codemirror.js"></script>
@@ -41,34 +41,46 @@
 
 <div ng-app="MusicShowCaseApp">
     <div ng-controller="MainController">
+        <script type="text/ng-template" id="todoModal.html">
+        <div class="modal-header">
+            // TODO
+        </div>
+        <div class="modal-body">
+            Sorry. Not implemented Yet :P
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="dismiss()">Dismiss</button>
+        </div>
+    </script>
+
     <!-- TODO: Move to directive  -->
         <div class="navbar navbar-inverse">
               <div class="navbar-inner">
                 <div class="container">
                   <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                   </button>
-                  <a class="brand" href="./index.html">Music.js</a>
+                  <a class="brand" href="">Music.js</a>
                   <div class="nav-collapse collapse">
                     <ul class="nav">
                       <li class="dropdown">
-                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">New</a>
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">New</a>
                          <ul class="dropdown-menu">
-                            <li><a href="#">Instrument</a></li>
-                            <li><a href="#">Pattern</a></li>
-                            <li><a href="#">Song</a></li>
+                            <li><a href="" ng-click="todo()">Instrument</a></li>
+                            <li><a href="" ng-click="todo()">Pattern</a></li>
+                            <li><a href="" ng-click="todo()">Song</a></li>
                          </ul>
                       </li>
                       <li class="dropdown">
-                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
                          <ul class="dropdown-menu">
-                            <li><a href="#">Preferences</a></li>
+                            <li><a href="" ng-click="todo()">Preferences</a></li>
                          </ul>
                       </li>
                       <li class="dropdown">
-                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
                          <ul class="dropdown-menu">
-                            <li><a href="#">View Help</a></li>
-                            <li><a href="#">About Music.js</a></li>
+                            <li><a href="" ng-click="todo()">View Help</a></li>
+                            <li><a href="" ng-click="todo()">About Music.js</a></li>
                          </ul>
                       </li>
                     </ul>

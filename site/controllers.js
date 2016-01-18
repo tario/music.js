@@ -57,7 +57,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 
 });
 
-musicShowCaseApp.controller("MainController", function($scope, $timeout, MusicContext, CodeRepository, KeyboardFactory) {
+musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, CodeRepository, KeyboardFactory) {
   var music;
 
   CodeRepository.getExampleList().then(function(examples) {
@@ -67,7 +67,18 @@ musicShowCaseApp.controller("MainController", function($scope, $timeout, MusicCo
   $scope.switchTo = function(example) {
     document.location = "#/editor/"+example.uri;
   };
+
+  $scope.todo = function() {
+    $uibModal.open({
+      templateUrl: "todoModal.html",
+      controller: "todoModalCtrl"
+    });
+  }
 });
 
-
+musicShowCaseApp.controller("todoModalCtrl", function($scope, $uibModalInstance) {
+  $scope.dismiss = function() {
+    $uibModalInstance.dismiss();
+  };
+});
 
