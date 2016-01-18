@@ -48,6 +48,11 @@ table {
   width: 100%;
 }
 */
+
+.musicapp.container {
+  width:100%;
+}
+
 .stack-element {
   border-color: black;
   border-width: 1px;
