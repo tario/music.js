@@ -167,3 +167,18 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
   };  
 
 }]);
+
+musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
+  return {
+    scope: {
+      instrument: '=instrument'
+    },
+    templateUrl: "keyboard.html",
+    link: function(scope, element, attrs) {
+      scope.$watch("instrument", function(instrument) {
+        scope.instrument = instrument;
+      });
+    }
+  };
+
+}]);

@@ -4,7 +4,7 @@
 <p> Use ZXCVBNM keys for keyboard </p>
 <div ng-repeat="instrument in instruments">
     {{instrument.name}}
-    <input ng-keyup="instrument.keyUp($event.keyCode)" ng-keydown="instrument.keyDown($event.keyCode)" placeholder="click here to use instrument" type="text"/>
+    <keyboard instrument="instrument" />
 </div>
 <div ng-repeat="playable in playables">
     <button ng-disabled="playable.playing" ng-click="startPlay(playable)">PLAY<div>
