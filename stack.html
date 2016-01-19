@@ -1,7 +1,7 @@
 <div ng-repeat = "subfile in file.array" class="stack-element" ng-if="file">
-  <button ng-click="remove($index)">remove</button>
-  <button ng-enabled="$index>0" ng-click="up($index)">↑</button>
-  <button ng-enabled="$index<collection.length-1" ng-click="down($index)">↓</button>
+  <button class="btn btn-primary" ng-click="remove($index)">remove</button>
+  <button class="btn btn-primary" ng-enabled="$index>0" ng-click="up($index)">↑</button>
+  <button class="btn btn-primary" ng-enabled="$index<collection.length-1" ng-click="down($index)">↓</button>
 
   <div compressed-element>
     <div music-object-editor file="subfile">
@@ -9,4 +9,4 @@
   </div>
 </div>
 
-<button ng-click="add()">ADD</button>
+<button class="btn btn-primary" ng-click="add()">ADD</button>

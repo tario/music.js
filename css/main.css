@@ -3,10 +3,6 @@
 	white-space: pre;
 }
 
-li.examplelist {
-  list-style-type: none;
-}
-
 .object-template-editor input {
   width: 50px;
 }
@@ -20,17 +16,26 @@ li.examplelist {
   display: inline;
 }
 
+.object-template-editor select { 
+  width: auto;
+}
+
+.music-object-editor select { 
+  width: auto;
+}
+
 .compressed {
   max-height: 30px;
   overflow: hidden;
 }
 
-li.examplelist ul:hover{
-  background-color: #ccf;
+.examplelist a {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-
-table .indexsection {
+/*table .indexsection {
   width: 15%
 }
 
@@ -42,9 +47,35 @@ table td {
 table {
   width: 100%;
 }
+*/
+
+.musicapp .btn {
+  -webkit-box-shadow: 0 0 0 0;
+     -moz-box-shadow: 0 0 0 0;
+          box-shadow: 0 0 0 0;
+
+  margin-bottom: 0;
+}
+
+
+.musicapp .btn.active,
+.musicapp .btn:active {
+  margin-top: 0;
+  margin-left: 0;
+  color: #0000ff;
+  -webkit-box-shadow: 0 0 0;
+     -moz-box-shadow: 0 0 0;
+          box-shadow: 0 0 0;
+}
+
+.musicapp.container {
+  width:100%;
+  margin:0;
+}
 
 .stack-element {
-  border-color: black;
-  border-width: 1px;
-  border-style: solid;
+  border: 2px solid #bbbbbb;
+  padding: 5px;
+  margin: 5px;
 }
+

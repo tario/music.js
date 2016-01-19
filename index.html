@@ -2,7 +2,7 @@
 <script src="lib/angular.min.js"></script>
 <script src="lib/jquery-1.11.2.min.js"></script>
 <script src="lib/bootstrap.min.js"></script>
-<script src="lib/ui-bootstrap-tpls-0.12.1.min.js"></script>
+<script src="lib/angular/ui-bootstrap-tpls-1.0.3.min.js"></script>
 <script src="lib/codemirror.js"></script>
 <script src="lib/codemirror/mode/javascript.js"></script>
 <script src="lib/angular/ui-codemirror.js"></script>
@@ -32,28 +32,76 @@
 <script src="src/soundfont/acoustic_grand_piano-ogg.js"></script>
 
 <link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap-responsive.min.css">
 <link rel="stylesheet" href="css/codemirror.css">
 <link rel="stylesheet" href="css/main.css">
 
 </head>
 <body>
 
-<div ng-app="MusicShowCaseApp">
+<div ng-app="MusicShowCaseApp" class="musicapp">
     <div ng-controller="MainController">
-        <table>
-            <tr>
-                <td class="indexsection">
-                    <li class="examplelist">
-                        <ul ng-repeat="example in examples" ng-click="switchTo(example)">
-                            {{example.name}}
-                        </ul>
-                    </li>
-                </td>
-                <td class="editorsection">
-                    <div ng-view></div>
-                </td>
-            </tr>
-        </table>
+    
+    <script type="text/ng-template" id="todoModal.html">
+        <div class="modal-header musicapp">
+            // TODO
+        </div>
+        <div class="modal-body musicapp">
+            Sorry. Not implemented Yet :P
+        </div>
+        <div class="modal-footer musicapp">
+            <button class="btn btn-primary" type="button" ng-click="dismiss()">Dismiss</button>
+        </div>
+    </script>
+
+    <!-- TODO: Move to directive  -->
+        <div class="navbar navbar-inverse">
+              <div class="navbar-inner">
+                <div class="container">
+                  <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                  </button>
+                  <a class="brand" href="">Music.js</a>
+                  <div class="nav-collapse collapse">
+                    <ul class="nav">
+                      <li class="dropdown">
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">New</a>
+                         <ul class="dropdown-menu">
+                            <li><a href="" ng-click="todo()">Instrument</a></li>
+                            <li><a href="" ng-click="todo()">Pattern</a></li>
+                            <li><a href="" ng-click="todo()">Song</a></li>
+                         </ul>
+                      </li>
+                      <li class="dropdown">
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
+                         <ul class="dropdown-menu">
+                            <li><a href="" ng-click="todo()">Preferences</a></li>
+                         </ul>
+                      </li>
+                      <li class="dropdown">
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
+                         <ul class="dropdown-menu">
+                            <li><a href="" ng-click="todo()">View Help</a></li>
+                            <li><a href="" ng-click="todo()">About Music.js</a></li>
+                         </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+        </div>
+        <div class="container musicapp">
+            <div class="span4 bs-docs-sidebar">
+                <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
+                  <li ng-repeat="example in examples">
+                     <a ng-click="switchTo(example)" href="">{{example.name}}</a>
+                  </li>
+                </ul>
+            </div>
+
+            <div class="span9">
+                <div ng-view></div>
+            </div>
+        </div>
     </div>
 </div>
 </body>
