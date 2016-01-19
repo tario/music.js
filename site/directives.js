@@ -175,6 +175,20 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
     },
     templateUrl: "keyboard.html",
     link: function(scope, element, attrs) {
+
+      var octave = function(base) {
+        return {
+          note: [],
+          play: function(idx) {
+            this.note[idx] = scope.instrument.note(base+idx).play();
+          },
+          stop: function(idx) {
+            this.note[idx].stop();
+            this.note[idx] = undefined;
+          }
+        };
+      };
+      scope.octaves = [octave(36),octave(48)];
       scope.$watch("instrument", function(instrument) {
         scope.instrument = instrument;
       });

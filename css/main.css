@@ -79,3 +79,47 @@ table {
   margin: 5px;
 }
 
+.piano-firstrow,
+.piano-secondrow {
+  display: flex;
+}
+
+.piano-firstrow .octave,
+.piano-secondrow .octave {
+  display: flex;
+}
+
+.piano-row .key.active {
+  background-color: aqua;
+}
+
+.piano-firstrow .key {
+  height: 50px;
+}
+
+.piano-firstrow .whitekey1,
+.piano-firstrow .whitekey2 {
+  background-color: white;
+  margin-left: 1px;
+}
+
+
+.piano-firstrow .whitekey1 {
+  width: 15px;
+}
+
+.piano-firstrow .whitekey2 {
+  width: 10px;
+}
+
+.piano-firstrow .blackkey {
+  width: 10px;
+  background-color: black;
+}
+
+.piano-secondrow .key {
+  width: 20px;
+  background-color: white;
+  height: 30px;
+  margin-left: 1px;
+}

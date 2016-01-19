@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, CodeRepository, KeyboardFactory, MusicObjectFactory) {
+musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, CodeRepository, MusicObjectFactory) {
   var uri = $routeParams.uri;
 
   var lastObj;
@@ -14,7 +14,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
             $scope.playables = [];
             if (obj.note) {
               // instrument
-              $scope.instruments.push(KeyboardFactory.keyboard(obj));
+              $scope.instruments.push(obj);
             } else if (obj.play) {
               $scope.playables.push(obj);
             }
@@ -57,7 +57,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 
 });
 
-musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, CodeRepository, KeyboardFactory) {
+musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, CodeRepository) {
   var music;
 
   CodeRepository.getExampleList().then(function(examples) {

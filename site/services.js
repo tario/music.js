@@ -118,41 +118,6 @@ musicShowCaseApp.service("MusicContext", function() {
   };
 });
 
-musicShowCaseApp.service("KeyboardFactory", function() {
-  return {
-    keyboard: function(instrument) {
-      var notes = {};
-      var keyCodeToNote = {
-              90: 'C', 83: 'C#', 88: 'D',  68: 'D#', 67: 'E',
-              86: 'F', 71: 'F#', 66: 'G', 72: 'G#', 78: 'A', 
-              74: 'A#', 77: 'B'};
-
-      return {
-        name: "Keyboard",
-        keyUp: function(keyCode) {
-          var n = notes[keyCode];
-          if (!n) return;
-          notes[keyCode] = undefined;
-          n.stop();
-        },
-
-        keyDown: function(keyCode) {
-          var n = notes[keyCode];
-          var noteName;
-          if (n) return;
-
-          noteName = keyCodeToNote[keyCode];
-          
-          // depends on music.js
-          var note = instrument.note(MUSIC.noteToNoteNum(noteName)+36);
-          if (note == undefined) return;
-          notes[keyCode] = note.play();
-        }
-      };
-    }
-  };
-});
-
 musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function($http, $q, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
   var make_mutable = function(fcn) {
     return function(object, subobjects) {
