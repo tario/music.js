@@ -188,7 +188,7 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
           }
         };
       };
-      scope.octaves = [octave(36),octave(48)];
+      scope.octaves = [24,36,48,60,72].map(octave);
       scope.$watch("instrument", function(instrument) {
         scope.instrument = instrument;
       });
