@@ -95,6 +95,8 @@ table {
 
 .piano-firstrow .key {
   height: 50px;
+  width: 10px;
+  background-color: black;
 }
 
 .piano-firstrow .whitekey1,
@@ -104,17 +106,12 @@ table {
 }
 
 
-.piano-firstrow .whitekey1 {
+.piano-firstrow .key.whitekey1 {
   width: 15px;
 }
 
-.piano-firstrow .whitekey2 {
+.piano-firstrow .key.whitekey2 {
   width: 10px;
-}
-
-.piano-firstrow .blackkey {
-  width: 10px;
-  background-color: black;
 }
 
 .piano-secondrow .key {
