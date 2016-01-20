@@ -128,3 +128,7 @@ input.invisible-text {
   color: grey;
   background-color: grey;
 }
+
+.music-object-editor select {
+  width: 100px;
+}
