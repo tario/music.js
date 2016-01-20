@@ -123,3 +123,8 @@ table {
   height: 30px;
   margin-left: 1px;
 }
+
+input.invisible-text {
+  color: grey;
+  background-color: grey;
+}

@@ -175,19 +175,53 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
     },
     templateUrl: "keyboard.html",
     link: function(scope, element, attrs) {
+      var keyCodeToNote = {
+              90: 'C', 83: 'C#', 88: 'D',  68: 'D#', 67: 'E',
+              86: 'F', 71: 'F#', 66: 'G', 72: 'G#', 78: 'A', 
+              74: 'A#', 77: 'B'};
 
       var octave = function(base) {
         return {
           note: [],
           play: function(idx) {
-            this.note[idx] = scope.instrument.note(base+idx).play();
+            if (this.note[idx]) return;
+
+            $timeout(function() {
+              this.note[idx] = scope.instrument.note(base+idx).play();
+            }.bind(this));
           },
           stop: function(idx) {
+            if (!this.note[idx])return;
             this.note[idx].stop();
-            this.note[idx] = undefined;
+
+            $timeout(function() {
+              this.note[idx] = undefined;
+            }.bind(this));
+          },
+          stopAll: function() {
+            this.note.forEach(function(note) {
+              if(note && note.stop) note.stop();
+            });
           }
         };
       };
+
+      scope.keyDown = function(keyCode) {
+        var noteName = keyCodeToNote[keyCode];
+        scope.octaves[1].play(MUSIC.noteToNoteNum(noteName));
+      };
+
+      scope.keyUp = function(keyCode) {
+        var noteName = keyCodeToNote[keyCode];
+        scope.octaves[1].stop(MUSIC.noteToNoteNum(noteName));
+      };
+
+      scope.$on("$destroy", function() {
+        scope.octaves.forEach(function(octave) {
+          octave.stopAll();
+        });
+      });
+
       scope.octaves = [24,36,48,60,72].map(octave);
       scope.$watch("instrument", function(instrument) {
         scope.instrument = instrument;
