@@ -92,9 +92,11 @@
         <div class="container musicapp">
             <div class="span4 bs-docs-sidebar">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
-                  <li ng-repeat="example in examples">
-                     <a ng-click="switchTo(example)" href="">{{example.name}}</a>
+                  <li> @ <input ng-model="searchKeyword"></input> </li>
+                  <li ng-repeat="file in files">
+                     <a ng-click="activate(file)" href="">{{iconForType(file.type)}} {{file.name}}</a>
                   </li>
+                  <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
             </div>
 

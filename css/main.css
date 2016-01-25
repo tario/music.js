@@ -29,6 +29,9 @@
   overflow: hidden;
 }
 
+.examplelist {
+  color: black;
+}
 .examplelist a {
   white-space: nowrap;
   text-overflow: ellipsis;

@@ -195,9 +195,20 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
   var pluginsLoaded = $q.all(plugins.map(loadPlugin));
 
-  var getTypes = function() {
+  var getTypes = function(keyword) {
+      var hasKeyword = function() {
+        return true;
+      };
+
+      if (keyword) {
+        keyword = keyword.toLowerCase();
+        hasKeyword = function(x) {
+          return x.name.toLowerCase().indexOf(keyword) !== -1;
+        };
+      }
+
       return pluginsLoaded.then(function() {
-        return types;
+        return types.filter(hasKeyword);
       });
   };
 
@@ -217,31 +228,58 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
 }]);
 
-musicShowCaseApp.service("CodeRepository", function($http, $q) {
+musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
+  var exampleList = $http.get("exampleList.json");
   return {
-    getExample: function(uri) {
-      return $http.get(uri).then(function(r) {
-        return {
-          type: "stack",
-          data: {
-            array: [{
-              type: "script",
+    getFile: function(id) {
+      return exampleList
+        .then(function(examples) {
+          var uri = examples.data.filter(function(x){ return x.id === id})[0].uri;
+          return $http.get(uri).then(function(r) {
+            return {
+              type: "stack",
               data: {
-                code: r.data.replace(/\r\n/g, "\n")
+                array: [{
+                  type: "script",
+                  data: {
+                    code: r.data.replace(/\r\n/g, "\n")
+                  }
+                }]
               }
-            }]
-          }
-        };
-      });
+            };
+          });
+        });
     },
 
-    getExampleList: function() {
-      return $http.get("exampleList.json").then(function(r) {
-        return r.data;
-      });
+    search: function(keyword) {
+
+      var hasKeyword = function() { return true };
+      if (keyword && keyword.length > 0) {
+        keyword = keyword.toLowerCase();
+        hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
+
+      return $q.all([
+        exampleList,
+        TypeService.getTypes(keyword)
+      ]).then(function(result) {
+        var res = result[0].data.filter(hasKeyword).concat(result[1].map(convertType));
+        return {
+          results: res.slice(0,15),
+          total: res.length
+        }
+      })
     }
   };
 });
+
+var convertType = function(type) {
+  return {
+    type: "fx",
+    name: type.name,
+    id: "type"+ type.name
+  };
+};
 
 musicShowCaseApp.factory("pruneWrapper", function() {
   return function(fcn) {

@@ -1,7 +1,7 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, CodeRepository, MusicObjectFactory) {
-  var uri = $routeParams.uri;
+musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+  var id = $routeParams.id;
 
   var lastObj;
   var fileChanged = fn.debounce(function(newFile) {
@@ -24,7 +24,7 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
   }, 50);
   $scope.$watch('file', fileChanged, true);
 
-  CodeRepository.getExample(uri).then(function(file) {
+  FileRepository.getFile(id).then(function(file) {
     $timeout(function() {
       var outputFile = {};
 
@@ -36,13 +36,17 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
         $timeout(function() {
           $scope.instruments = [];
           $scope.playables = [];
-          /*var obj = MusicContext.runFcn(function(music) {
-            return outputFile.object(null)(music);
-          });*/
         });
       };
 
     });
+  });
+
+  $scope.$on("addFx", function(evt, args) {
+    $scope.file.data.array = [{
+      type: args.fx.name,
+      data: {}
+    }].concat($scope.file.data.array);
   });
 
   $scope.startPlay = function(playable) {
@@ -57,16 +61,34 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 
 });
 
-musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, CodeRepository) {
+musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, FileRepository) {
   var music;
 
-  CodeRepository.getExampleList().then(function(examples) {
-    $scope.examples = examples;
+  FileRepository.search().then(function(files) {
+    $scope.filesTotal = files.total;
+    $scope.files = files.results;
   });
 
-  $scope.switchTo = function(example) {
-    document.location = "#/editor/"+example.uri;
+  $scope.activate = function(example) {
+    if (example.type === "instrument") {
+      document.location = "#/editor/"+example.id;
+    } else if (example.type === "fx") {
+      $scope.$broadcast("addFx", {fx: example})
+    }
   };
+
+  $scope.$watch("searchKeyword", fn.debounce(function() {
+    FileRepository.search($scope.searchKeyword).then(function(files) {
+      $scope.filesTotal = files.total;
+      $scope.files = files.results;
+    });
+  },200));
+
+  $scope.iconForType = function(type) {
+    if (type === "instrument") return "\u2328";
+    if (type === "fx") return "fx";
+    return "?";
+  }
 
   $scope.todo = function() {
     $uibModal.open({
