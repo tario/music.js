@@ -64,9 +64,11 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
 musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, FileRepository) {
   var music;
 
-  FileRepository.search().then(function(files) {
-    $scope.filesTotal = files.total;
-    $scope.files = files.results;
+  var currentObserver = FileRepository.search().observe(function(files) {
+    $timeout(function() {
+      $scope.filesTotal = files.total;
+      $scope.files = files.results;
+    });
   });
 
   $scope.activate = function(example) {
@@ -78,7 +80,8 @@ musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibMod
   };
 
   $scope.$watch("searchKeyword", fn.debounce(function() {
-    FileRepository.search($scope.searchKeyword).then(function(files) {
+    if (currentObserver) currentObserver.close();
+    currentObserver = FileRepository.search($scope.searchKeyword).observe(function(files) {
       $scope.filesTotal = files.total;
       $scope.files = files.results;
     });

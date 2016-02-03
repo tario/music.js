@@ -259,16 +259,32 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
         hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
       }
 
-      return $q.all([
-        exampleList,
-        TypeService.getTypes(keyword)
-      ]).then(function(result) {
-        var res = result[0].data.filter(hasKeyword).concat(result[1].map(convertType));
-        return {
-          results: res.slice(0,15),
-          total: res.length
+      var ee = new EventEmitter();
+      var updateSearch = function() {
+        $q.all([
+          exampleList,
+          TypeService.getTypes(keyword)
+        ]).then(function(result) {
+          var res = result[0].data.filter(hasKeyword).concat(result[1].map(convertType));
+          ee.emit("changed", {
+            results: res.slice(0,15),
+            total: res.length
+          });
+        });
+      };
+
+      return {
+        observe: function(cb) {
+          ee.addListener("changed", cb);
+          updateSearch();
+
+          return {
+            close: function() {
+              ee.removeListener("changed", cb);
+            }
+          };
         }
-      })
+      };
     }
   };
 });
