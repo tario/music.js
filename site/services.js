@@ -230,8 +230,60 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
 musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
   var exampleList = $http.get("exampleList.json");
+
+  var createId = function() {
+    var array = [];
+    for (var i = 0; i < 32; i++) {
+      var value = [0,1,2,3,4,5,6,7,8,9,'a','b','c','d','e','f'][Math.floor(Math.random()*16)];
+      array.push(value);
+    }
+
+    return array.join("");
+  };
+
+  var createdFilesIndex = [];
+  var createdFiles = {};
+
+  var genericStateEmmiter = new EventEmitter();
+
   return {
+    createFile: function() {
+      genericStateEmmiter.emit("changed");
+
+      var newid = createId();
+
+      createdFilesIndex.push({"type": "instrument", "name": newid, "id": newid});
+      createdFiles[newid] = {
+        type: "stack",
+        data: {
+          array: []
+        }
+      };
+
+      return $q.resolve(newid);
+    },
+    updateFile: function(id, contents) {
+      var obj = JSON.parse(JSON.stringify(contents));
+
+      if (obj && obj.data && obj.data.array) {
+        obj.data.array.forEach(function(elem) {
+          delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
+          delete elem.__cache;
+          delete elem.last_type;
+        });
+      }
+
+      createdFiles[id] = obj;
+
+      return $q.resolve();
+    },
     getFile: function(id) {
+
+      var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
+      if (localFile) {
+        return $q.resolve(JSON.parse(JSON.stringify(createdFiles[id])));
+      };
+
       return exampleList
         .then(function(examples) {
           var uri = examples.data.filter(function(x){ return x.id === id})[0].uri;
@@ -262,10 +314,15 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
       var ee = new EventEmitter();
       var updateSearch = function() {
         $q.all([
+          createdFilesIndex,
           exampleList,
           TypeService.getTypes(keyword)
         ]).then(function(result) {
-          var res = result[0].data.filter(hasKeyword).concat(result[1].map(convertType));
+          var res = result[0];
+          res = res.concat(result[1].data);
+          res = res.concat(result[2].map(convertType));
+          res = res.filter(hasKeyword);
+
           ee.emit("changed", {
             results: res.slice(0,15),
             total: res.length
@@ -273,14 +330,17 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
         });
       };
 
+
       return {
         observe: function(cb) {
           ee.addListener("changed", cb);
+          genericStateEmmiter.addListener("changed", updateSearch);
           updateSearch();
 
           return {
             close: function() {
               ee.removeListener("changed", cb);
+              genericStateEmmiter.removeListener("changed", updateSearch);
             }
           };
         }

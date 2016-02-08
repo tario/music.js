@@ -14,10 +14,6 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       var truthy = function(x ) { return x; };
       var updateObject = function(newValue) {
-        scope.parameters.forEach(function(parameter) {
-          newValue[parameter.data.name] = parameter.value;
-        });
-
         $timeout(function() {
           if (scope.file && scope.file.changed) scope.file.changed();
         });
@@ -38,7 +34,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                   scope.parameters = type.parameters.map(function(parameter) {
                     return {
                       data: parameter,
-                      value: parameter.value
+                      value: file.data && typeof file.data[parameter.name] !== "undefined" ? file.data[parameter.name] : parameter.value
                     };
                   });
                 }

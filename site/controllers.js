@@ -19,6 +19,8 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
               $scope.playables.push(obj);
             }
           }
+
+          FileRepository.updateFile(id, $scope.file);
           lastObj = obj;
       });
   }, 50);
@@ -92,6 +94,13 @@ musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibMod
     if (type === "fx") return "fx";
     return "?";
   }
+
+  $scope.newInstrument = function() {
+    FileRepository.createFile()
+      .then(function(id) {
+        document.location = "#/editor/"+id;
+      });
+  };
 
   $scope.todo = function() {
     $uibModal.open({
