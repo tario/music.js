@@ -252,7 +252,7 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
 
       var newid = createId();
 
-      createdFilesIndex.push({"type": "instrument", "name": newid, "id": newid});
+      createdFilesIndex.push({"type": "instrument", "name": "New Instrument", "id": newid});
       createdFiles[newid] = {
         type: "stack",
         data: {
@@ -261,6 +261,12 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
       };
 
       return $q.resolve(newid);
+    },
+    updateIndex: function(id, attributes) {
+      var localFile =  createdFilesIndex.filter(function(x){ return x.id === id})[0];
+      if (!localFile) return;
+
+      localFile.name = attributes.name;
     },
     updateFile: function(id, contents) {
       var obj = JSON.parse(JSON.stringify(contents));
@@ -281,22 +287,29 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
 
       var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
       if (localFile) {
-        return $q.resolve(JSON.parse(JSON.stringify(createdFiles[id])));
+        return $q.resolve({
+          index: {name: localFile.name, id: localFile.id},
+          contents: JSON.parse(JSON.stringify(createdFiles[id]))
+        });
       };
 
       return exampleList
         .then(function(examples) {
-          var uri = examples.data.filter(function(x){ return x.id === id})[0].uri;
+          localFile = examples.data.filter(function(x){ return x.id === id})[0];
+          var uri = localFile.uri;
           return $http.get(uri).then(function(r) {
             return {
-              type: "stack",
-              data: {
-                array: [{
-                  type: "script",
-                  data: {
-                    code: r.data.replace(/\r\n/g, "\n")
-                  }
-                }]
+              index:  {name: localFile.name, id: localFile.id},
+              contents: {
+                type: "stack",
+                data: {
+                  array: [{
+                    type: "script",
+                    data: {
+                      code: r.data.replace(/\r\n/g, "\n")
+                    }
+                  }]
+                }
               }
             };
           });

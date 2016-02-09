@@ -26,12 +26,17 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
   }, 50);
   $scope.$watch('file', fileChanged, true);
 
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
   FileRepository.getFile(id).then(function(file) {
     $timeout(function() {
       var outputFile = {};
 
       $scope.outputFile = outputFile;
-      $scope.file = file;
+      $scope.file = file.contents;
+      $scope.fileIndex = file.index;
       $scope.observer = {};
 
       $scope.observer.notify = function() {
