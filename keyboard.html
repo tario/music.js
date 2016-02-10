@@ -1,6 +1,6 @@
 <input class="invisible-text" ng-keyup="keyUp($event.keyCode)" ng-keydown="keyDown($event.keyCode)" type="text" maxlength="0"/>
 
-<div class="piano-row piano-firstrow">
+<div class="piano-row piano-firstrow" ng-mouseleave="stopAll">
   <div class="octave" ng-repeat="octave in octaves">
     <div 
       ng-repeat="idx in [0,1,2,3,4,5,6,7,8,9,10,11]" 
@@ -11,7 +11,7 @@
       ></div>
   </div>
 </div>
-<div class="piano-row piano-secondrow">
+<div class="piano-row piano-secondrow" ng-mouseleave="stopAll">
   <div class="octave" ng-repeat="octave in octaves">
     <div ng-repeat="idx in [0,2,4,5,7,9,11]" class="key" ng-class="{'active': octave.note[idx]}"
     ng-mouseenter="octave.play(idx)" ng-mouseleave="octave.stop(idx)"></div>

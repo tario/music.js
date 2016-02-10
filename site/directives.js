@@ -176,28 +176,33 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
               86: 'F', 71: 'F#', 66: 'G', 72: 'G#', 78: 'A', 
               74: 'A#', 77: 'B'};
 
+      var stopAll = function(x) {
+        return x.stopAll();
+      };
+
+      scope.stopAll = function() {
+        scope.octaves.forEach(stopAll);
+      };
+
       var octave = function(base) {
         return {
           note: [],
           play: function(idx) {
+            scope.octaves.forEach(stopAll);
             if (this.note[idx]) return;
 
-            $timeout(function() {
-              this.note[idx] = scope.instrument.note(base+idx).play();
-            }.bind(this));
+            this.note[idx] = scope.instrument.note(base+idx).play();
           },
           stop: function(idx) {
             if (!this.note[idx])return;
             this.note[idx].stop();
-
-            $timeout(function() {
-              this.note[idx] = undefined;
-            }.bind(this));
+            this.note[idx] = undefined;
           },
           stopAll: function() {
             this.note.forEach(function(note) {
               if(note && note.stop) note.stop();
             });
+            this.note = [];
           }
         };
       };
