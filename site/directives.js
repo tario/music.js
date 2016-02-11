@@ -5,7 +5,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
     scope: {
       file: "=file"
     },
-    templateUrl: "objectEditor.html",
+    templateUrl: "site/templates/objectEditor.html",
     link: function(scope, element, attrs) {
       var file;
       var types = TypeService.getTypes();
@@ -75,7 +75,7 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     scope: {
       collection: "=collection"
     },
-    templateUrl: "arrayEditor.html",
+    templateUrl: "site/templates/arrayEditor.html",
     link: function(scope, element, attrs) {
       scope.collection.objects=scope.collection.objects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
@@ -102,7 +102,7 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
 musicShowCaseApp.directive("compressedElement", function() {
     return {
       scope: {},
-      templateUrl: "compressed.html",
+      templateUrl: "site/templates/compressed.html",
       transclude: true,
       link: function(scope, element, attrs) {
         scope.compressed = true;
@@ -116,7 +116,7 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       initFile: "=initFile",
       outputFile: "=outputFile"
     },
-    templateUrl: "stack.html",
+    templateUrl: "site/templates/stack.html",
     link: function(scope, element, attrs) {
       var outputFile;
       var swap = function(idx1, idx2) {
@@ -169,7 +169,7 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
     scope: {
       instrument: '=instrument'
     },
-    templateUrl: "keyboard.html",
+    templateUrl: "site/templates/keyboard.html",
     link: function(scope, element, attrs) {
       var keyCodeToNote = {
               90: 'C', 83: 'C#', 88: 'D',  68: 'D#', 67: 'E',

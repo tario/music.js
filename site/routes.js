@@ -3,7 +3,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.config(function($routeProvider, $locationProvider) {
   $routeProvider
    .when('/editor/:id', {
-    templateUrl: 'editor.html',
+    templateUrl: 'site/templates/editor.html',
     controller: 'EditorController'
   });
 
