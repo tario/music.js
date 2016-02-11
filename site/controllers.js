@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("EditorController", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
 
   var lastObj;
@@ -66,9 +66,9 @@ musicShowCaseApp.controller("EditorController", function($scope, $timeout, $rout
     playable.playing = undefined;
   };
 
-});
+}]);
 
-musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibModal, MusicContext, FileRepository) {
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", function($scope, $timeout, $uibModal, MusicContext, FileRepository) {
   var music;
 
   var currentObserver = FileRepository.search().observe(function(files) {
@@ -113,11 +113,11 @@ musicShowCaseApp.controller("MainController", function($scope, $timeout, $uibMod
       controller: "todoModalCtrl"
     });
   }
-});
+}]);
 
-musicShowCaseApp.controller("todoModalCtrl", function($scope, $uibModalInstance) {
+musicShowCaseApp.controller("todoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
   $scope.dismiss = function() {
     $uibModalInstance.dismiss();
   };
-});
+}]);
 

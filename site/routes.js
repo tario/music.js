@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.config(function($routeProvider, $locationProvider) {
+musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
   $routeProvider
    .when('/editor/:id', {
     templateUrl: 'site/templates/editor.html',
@@ -9,7 +9,7 @@ musicShowCaseApp.config(function($routeProvider, $locationProvider) {
 
   // configure html5 to get links working on jsfiddle
   //$locationProvider.html5Mode(true);
-});;
+}]);;
 
 
 

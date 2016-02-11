@@ -228,7 +228,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
 }]);
 
-musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", function($http, $q, TypeService) {
   var exampleList = $http.get("exampleList.json");
 
   var createId = function() {
@@ -360,7 +360,7 @@ musicShowCaseApp.service("FileRepository", function($http, $q, TypeService) {
       };
     }
   };
-});
+}]);
 
 var convertType = function(type) {
   return {
