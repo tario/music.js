@@ -8,7 +8,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var DEST = "dist/"
 gulp.task("build", ["build-lib", "build-site"]);
 gulp.task("build-dev", ["build-lib-dev", "build-site-dev"]);
-gulp.task("default", ["webserver", "watch"]);
+gulp.task("default", ["build-dev", "webserver", "watch"]);
 
 gulp.task('webserver', function() {
   connect.server({livereload: true});
@@ -30,7 +30,7 @@ gulp.task('build-lib-dev', function(cb) {
 });
 
 gulp.task('build-site-dev', function(cb) {
-  return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/app.js", "site/*.js"])
+  return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/app.js", "site/*.js", "site/lib/codemirror/**/*.js"])
             .pipe(concat("site.js"))
             .pipe(gulp.dest(DEST))
             .pipe(connect.reload());
@@ -48,7 +48,7 @@ gulp.task('build-lib', function(cb) {
 });
 
 gulp.task('build-site', function(cb) {
-  return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/app.js", "site/*.js"])
+  return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/app.js", "site/*.js", "site/lib/codemirror/**/*.js"])
             .pipe(sourcemaps.init())
               .pipe(concat("site.js"))
               .pipe(gulp.dest(DEST))
