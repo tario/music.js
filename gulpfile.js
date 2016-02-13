@@ -22,13 +22,15 @@ gulp.task('watch', function() {
 gulp.task('build-lib-dev', function(cb) {
   return gulp.src(["src/lib/*.js", "src/typecast.js", "src/music.js", "src/music/**/*.js"])
             .pipe(concat("music.js"))
-            .pipe(gulp.dest(DEST));
+            .pipe(gulp.dest(DEST))
+            .pipe(connect.reload());
 });
 
 gulp.task('build-site-dev', function(cb) {
   return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/app.js", "site/*.js"])
             .pipe(concat("site.js"))
-            .pipe(gulp.dest(DEST));
+            .pipe(gulp.dest(DEST))
+            .pipe(connect.reload());
 });
 
 gulp.task('build-lib', function(cb) {
