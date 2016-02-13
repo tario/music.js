@@ -16,6 +16,9 @@ gulp.task('webserver', function() {
 
 gulp.task('watch', function() {
     gulp.watch('site/**/*.js', ['build-site-dev']);
+    gulp.watch('site/templates/*', ['build-site-dev']);
+    gulp.watch('css/*', ['build-site-dev']);
+    gulp.watch('*.html', ['build-site-dev']);
     gulp.watch('src/**/*.js', ['build-lib-dev']);
 })
 
