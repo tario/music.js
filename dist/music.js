@@ -736,10 +736,23 @@ MUSIC.SoundLib.Wave = function(path, period) {
   };  
 };
 
+MUSIC.AudioDestinationWrapper = function(music, audioDestination) {
+    this._destination = audioDestination;
+    MUSIC.EffectsPipeline.bind(this)(music, this)
+};
+MUSIC.AudioDestinationWrapper.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
+
+MUSIC.modulator = function(f) {
+  return {
+    module: f
+  };
+};
+
 MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   options = options || {};
   var effects = options.effects;
   var frequency = options.frequency;
+  var detune = options.detune;
 
   this.freq = function(newFreq) {
     var newoptions = {type: options.type, wave: options.wave, f: options.f, frequency: newFreq};
@@ -816,6 +829,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         osc.frequency.value = frequency;
       }
 
+      if (detune) {
+        if (detune.apply) {
+          detune.apply(music.audio.currentTime, osc.detune);
+        } else if (detune.module) {
+          var detuneModulatorFactory = (new MUSIC.AudioDestinationWrapper(music, osc.detune)).sfxBase();
+          var detuneModulator = detune.module(detuneModulatorFactory).play();
+        } else {
+          osc.detune.value = detune;
+        }
+      }
+
       osc.type = options.type;
 
       nextNode = destination;
@@ -823,11 +847,16 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       disposeNode = function() {
         osc.disconnect(audioDestination);
       };
+
       osc.connect(audioDestination);
       osc.start(0);
 
       return {
         stop : function() {
+          if (detuneModulator) {
+            detuneModulatorFactory.prune();
+            detuneModulator.stop();
+          }
           osc.stop(0);
           disposeNode();
         }
