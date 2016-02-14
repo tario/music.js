@@ -744,7 +744,17 @@ MUSIC.AudioDestinationWrapper.prototype = Object.create(MUSIC.EffectsPipeline.pr
 
 MUSIC.modulator = function(f) {
   return {
-    module: f
+    apply: function(currentTime, audioParam, music) {
+      var modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
+      var modulator = f(modulatorFactory).play();
+
+      return {
+        dispose: function() {
+          modulatorFactory.prune();
+          modulator.stop();
+        }
+      };
+    }
   };
 };
 
@@ -823,18 +833,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
       osc = music.audio.createOscillator();
 
+      var appliedFrequencyParam;
       if (frequency.apply) {
-        frequency.apply(music.audio.currentTime, osc.frequency);
+        appliedFrequencyParam = frequency.apply(music.audio.currentTime, osc.frequency);
       } else {
         osc.frequency.value = frequency;
       }
 
+      var appliedAudioParam;
       if (detune) {
         if (detune.apply) {
-          detune.apply(music.audio.currentTime, osc.detune);
-        } else if (detune.module) {
-          var detuneModulatorFactory = (new MUSIC.AudioDestinationWrapper(music, osc.detune)).sfxBase();
-          var detuneModulator = detune.module(detuneModulatorFactory).play();
+          appliedAudioParam = detune.apply(music.audio.currentTime, osc.detune, music);
         } else {
           osc.detune.value = detune;
         }
@@ -853,9 +862,11 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
       return {
         stop : function() {
-          if (detuneModulator) {
-            detuneModulatorFactory.prune();
-            detuneModulator.stop();
+          if (appliedAudioParam && appliedAudioParam.dispose) {
+            appliedAudioParam.dispose();
+          }
+          if (appliedFrequencyParam && appliedFrequencyParam.dispose) {
+            appliedFrequencyParam.dispose();
           }
           osc.stop(0);
           disposeNode();
