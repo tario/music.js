@@ -1,17 +1,12 @@
 // create the sound generator
-
-var amplitude = 1.03;
-var wfr = 100;
-var vibrato = function(fr) {
-  return function(t) {
-    return Math.pow(amplitude, Math.sin(t*wfr))*fr;
-  };
-};
+var sineModulator = MUSIC.modulator(function(pl){
+  return pl.gain(50).oscillator({type: "sine", frequency: 4.0}); 
+});
 
 var soundGenerator = {
   freq: function(fr) {
             return music
-              .oscillator({type: 'square', frequency: new MUSIC.Curve.Formula(vibrato(fr),100).during(4.0)});
+              .oscillator({type: 'square', frequency: fr, detune: sineModulator});
   }
 };
 
