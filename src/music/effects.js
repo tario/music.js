@@ -7,7 +7,7 @@ MUSIC.Effects.forEach = function(cb) {
   }
 };
 
-MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
+MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next, onDispose) {
 
   this._destination = audioNode;
   setTimeout(function() { // this hack prevents a bug in current version of chrome
@@ -21,6 +21,7 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next) {
   var disconnected = false;
   this.disconnect = function() {
     if (disconnected) return;
+    if (onDispose) onDispose();
     disconnected = true;
     audioNode.disconnect(next._destination);
   };
@@ -112,23 +113,45 @@ MUSIC.Effects.register("formula", function(music, next, fcn) {
 
 MUSIC.Effects.BiQuad = function(music, next, options) {
   var biquadFilter = music.audio.createBiquadFilter();
+  var gainModulation = nodispose;
+  var qModulation = nodispose;
+  var frequencyModulation = nodispose;
+  var detuneModulation = nodispose;
 
   this.update = function(options) {
     biquadFilter.type = options.type;
 
-    if (options.frequency.apply) {
-      options.frequency.apply(music.audio.currentTime, biquadFilter.frequency);
-    } else {
-      biquadFilter.frequency.value = options.frequency;
-    }
+    var assignParam = function(orig, audioParam) {
+      if (orig) {
+        if (orig.apply) {
+          return orig.apply(music.audio.currentTime, audioParam, music);
+        } else {
+          audioParam.value = orig;
+        }
+      }
 
-    if (options.Q) biquadFilter.Q.value = options.Q;
-    if (options.gain) biquadFilter.gain.value = options.gain;
+      return nodispose;
+    };
+
+    gainModulation.dispose();
+    qModulation.dispose();
+    frequencyModulation.dispose();
+    detuneModulation.dispose();
+
+    gainModulation = assignParam(options.gain, biquadFilter.gain);
+    qModulation = assignParam(options.Q, biquadFilter.Q);
+    frequencyModulation = assignParam(options.frequency, biquadFilter.frequency);
+    detuneModulation = assignParam(options.detune, biquadFilter.detune);
   };
 
   this.update(options);
 
-  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, biquadFilter, next);
+  MUSIC.Effects.WebAudioNodeWrapper.bind(this)(music, biquadFilter, next, function() {
+    gainModulation.dispose();
+    qModulation.dispose();
+    frequencyModulation.dispose();
+    detuneModulation.dispose();
+  });
 };
 MUSIC.Effects.BiQuad.prototype = Object.create(MUSIC.Effects.WebAudioNodeWrapper.prototype);
 
@@ -136,7 +159,7 @@ MUSIC.Effects.register("biquad", MUSIC.Effects.BiQuad);
 ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"]
   .forEach(function(filterName) {
     MUSIC.Effects.register(filterName, function(music, next, options) {
-      return new MUSIC.Effects.BiQuad(music, next, {type: filterName, frequency: options.frequency});
+      return new MUSIC.Effects.BiQuad(music, next, {type: filterName, frequency: options.frequency, Q: options.Q, detune: options.detune});
     });
   });
 
@@ -148,23 +171,48 @@ var canMutate = function(obj, updateFcn) {
   return obj;
 };
 
+var nodispose = {
+  dispose: function(){}
+};
 
 MUSIC.Effects.register("gain", function(music, next, value) {
   var gainNode = music.audio.createGain();
+  var volumeModulation = nodispose;
+
   return canMutate(
-    new MUSIC.Effects.WebAudioNodeWrapper(music, gainNode, next),
+    new MUSIC.Effects.WebAudioNodeWrapper(music, gainNode, next, function() {
+      volumeModulation.dispose();
+    }),
     function(value) {
-      gainNode.gain.value = value;
+      volumeModulation.dispose();
+
+      if (value.apply) {
+        volumeModulation = value.apply(music.audio.currentTime, gainNode.gain, music);
+      } else {
+        volumeModulation = nodispose;
+        gainNode.gain.value = value;
+      }
     }
   ).update(value);
 });
 
 MUSIC.Effects.register("delay", function(music, next, value) {
   var delayNode = music.audio.createDelay(60);
+  var delayModulation = nodispose;
+
   return canMutate(
-    new MUSIC.Effects.WebAudioNodeWrapper(music, delayNode, next),
+    new MUSIC.Effects.WebAudioNodeWrapper(music, delayNode, next, function() {
+      delayModulation.dispose();
+    }),
     function(value) {
-      delayNode.delayTime.value = value;
+      delayModulation.dispose();
+
+      if (value.apply) {
+        delayModulation = value.apply(music.audio.currentTime, delayNode.delayTime, music);
+      } else {
+        delayModulation = nodispose;
+        delayNode.delayTime.value = value;
+      }
     }
   ).update(value);
 });

@@ -9648,9 +9648,9 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   },200));
 
   $scope.iconForType = function(type) {
-    if (type === "instrument") return "\u2328";
-    if (type === "fx") return "fx";
-    return "?";
+    if (type === "instrument") return "keyboard-o";
+    if (type === "fx") return "bars";
+    return "question";
   }
 
   $scope.newInstrument = function() {
