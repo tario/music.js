@@ -4,6 +4,7 @@
 <script src="src/soundfont/accordion-ogg.js"></script>
 <script src="src/soundfont/acoustic_grand_piano-ogg.js"></script>
 
+<link rel="stylesheet" href="css/font-awesome.min.css">
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
 <link rel="stylesheet" href="css/codemirror.css">
@@ -69,9 +70,9 @@
         <div class="container musicapp">
             <div class="span4 bs-docs-sidebar">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
-                  <li> @ <input ng-model="searchKeyword"></input> </li>
+                  <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
                   <li ng-repeat="file in files">
-                     <a ng-click="activate(file)" href="">{{iconForType(file.type)}} {{file.name}}</a>
+                     <a ng-click="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                   </li>
                   <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
