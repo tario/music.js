@@ -1,3 +1,6 @@
+<div class="stackdropbar" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
+  drop new elements here
+</div>
 <div ng-repeat = "subfile in file.array" class="stack-element" ng-if="file">
   <button class="btn btn-primary" ng-click="remove($index)">remove</button>
   <button class="btn btn-primary" ng-show="$index>0" ng-click="up($index)">↑</button>

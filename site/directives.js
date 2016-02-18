@@ -127,6 +127,15 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
         });
       };
 
+      scope.onDropComplete = function(data, event) {
+        if (data.type === "fx") {
+          scope.file.array = [{
+            type: data.name,
+            data: {}
+          }].concat(scope.file.array);
+        }
+      };
+
       scope.up = function(idx) {
         swap(idx-1, idx);
       };

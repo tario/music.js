@@ -49,12 +49,12 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     });
   });
 
-  $scope.$on("addFx", function(evt, args) {
+/*  $scope.$on("addFx", function(evt, args) {
     $scope.file.data.array = [{
       type: args.fx.name,
       data: {}
     }].concat($scope.file.data.array);
-  });
+  });*/
 
   $scope.startPlay = function(playable) {
     playable.playing = playable.play();
@@ -81,8 +81,6 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   $scope.activate = function(example) {
     if (example.type === "instrument") {
       document.location = "#/editor/"+example.id;
-    } else if (example.type === "fx") {
-      $scope.$broadcast("addFx", {fx: example})
     }
   };
 

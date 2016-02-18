@@ -136,3 +136,17 @@ input.invisible-text {
 .music-object-editor select {
   width: 100px;
 }
+
+.stack-element.drag-enter {
+  border-color: red;
+}
+
+.stackdropbar {
+  width: 100%;
+  height: 20px;
+  background-color: black;
+}
+
+.stackdropbar.drag-enter {
+  background-color: #ccc;
+}
