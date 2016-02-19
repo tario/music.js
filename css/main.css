@@ -28,9 +28,15 @@
   width: auto;
 }
 
+.compressable {
+  -webkit-transition: max-height 0.2s linear; /* Safari */
+  transition: max-height 0.2s linear;
+  overflow: hidden;
+  max-height: 1000px;
+}
+
 .compressed {
   max-height: 30px;
-  overflow: hidden;
 }
 
 .examplelist {

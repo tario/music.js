@@ -106,6 +106,10 @@ musicShowCaseApp.directive("compressedElement", function() {
       transclude: true,
       link: function(scope, element, attrs) {
         scope.compressed = true;
+
+        scope.$on("togglecompress", function() {
+          scope.compressed = !scope.compressed;
+        });
       }
     };
 });
