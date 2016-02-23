@@ -1,1 +1,8 @@
-<div class="generic-parameter">osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth']" /></div>
+<div class="generic-parameter">
+Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth', 'triangle']"></select>
+
+<h1>detune</h1>
+<div class="music-object-editor" music-stack init-file="file.data.detune"></div>
+
+
+</div>

@@ -38,6 +38,13 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                     };
                   });
                 }
+
+                if (type._default) {
+                  for (var k in type._default) {
+                    file.data[k] = type._default[k]();
+                  }
+                }
+
                 updateObject(file.data);
               });
             });
@@ -117,12 +124,10 @@ musicShowCaseApp.directive("compressedElement", function() {
 musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
   return {
     scope: {
-      initFile: "=initFile",
-      outputFile: "=outputFile"
+      initFile: "=initFile"
     },
     templateUrl: "site/templates/stack.html",
     link: function(scope, element, attrs) {
-      var outputFile;
       var swap = function(idx1, idx2) {
         $timeout(function() {
           var tmp = scope.file.array[idx1];
@@ -164,9 +169,6 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
         });
       };
 
-      scope.$watch("outputFile", function(newOutputFile) {
-        outputFile = newOutputFile;
-      });
       scope.$watch("initFile", function(newFile) {
         if (newFile) {
           scope.file = newFile.data;

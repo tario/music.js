@@ -6,54 +6,91 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
       return TypeService.getType(descriptor.type)
         .then(function(type) {
           return function(subobjects) {
-            if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
-              if (subobjects.length === 1) {
-                if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
-                  return descriptor.__cache[subobjects[0].id]
-                          .update(descriptor.data);
-                }
-              } else if (subobjects.length === 0) {
-                if (descriptor.__cache && descriptor.__cache.noid) {
-                  return descriptor.__cache.noid
-                          .update(descriptor.data);
+            if (!type.components) {
+              if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
+                if (subobjects.length === 1) {
+                  if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                    return $q(function(resolve) {
+                      resolve(descriptor.__cache[subobjects[0].id]
+                            .update(descriptor.data));
+                    });
+                  }
+                } else if (subobjects.length === 0) {
+                  if (descriptor.__cache && descriptor.__cache.noid) {
+                    return $q(function(resolve) {
+                      resolve(descriptor.__cache.noid
+                            .update(descriptor.data));
+                    });
+                  }
                 }
               }
             }
+
             descriptor.last_type = descriptor.type;
 
-            var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects));
-            nextId++;
-            ret.id = nextId;
+            var buildComponents = [];
+            for (var k in type.components) {
+              (function(componentName) {
 
-            if (subobjects.length === 1) {
-              descriptor.__cache = descriptor.__cache || {};
-              descriptor.__cache[subobjects[0].id] = ret;
-            } else if (subobjects.length === 0) {
-              descriptor.__cache = descriptor.__cache || {};
-              descriptor.__cache.noid = ret;
+                if (!descriptor.data[componentName]) return;
+
+                buildComponents.push(
+                  createParametric(descriptor.data[componentName])
+                    .then(function(obj) {
+                      return {
+                        name: componentName,
+                        obj: obj
+                      };
+                    })
+                );
+
+              })(k);
             }
 
-            return ret;
+            return $q.all(buildComponents)
+              .then(function(objs) {
+                var components = {};
+                objs.forEach(function(obj) {
+                  components[obj.name] = obj.obj;
+                });
+                var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
+                nextId++;
+                ret.id = nextId;
+
+                if (subobjects.length === 1) {
+                  descriptor.__cache = descriptor.__cache || {};
+                  descriptor.__cache[subobjects[0].id] = ret;
+                } else if (subobjects.length === 0) {
+                  descriptor.__cache = descriptor.__cache || {};
+                  descriptor.__cache.noid = ret;
+                }
+
+                return ret;
+
+              })
           };
         });
   };
 
-  var create = function(descriptor) {
+  var createParametric = function(descriptor) {
     if (descriptor.type === "stack") {
       return $q.all(descriptor.data.array.map(getConstructor))
         .then(function(constuctors) {
-          var lastObj;
+
+          if (constuctors.length === 0) return null;
+
+          var proms;
           constuctors.reverse().forEach(function(constructor) {
-            if (lastObj) {
-              lastObj = constructor([lastObj])
+            if (proms) {
+              proms = proms.then(function(lastObj) {
+                return constructor([lastObj]);
+              });
             } else {
-              lastObj = constructor([])
+              proms = constructor([]);
             }
           });
 
-          return MusicContext.runFcn(function(music) {
-            return lastObj(music);
-          });
+          return proms;
         })
     } else {
       return getConstructor(descriptor)
@@ -61,6 +98,47 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
           return constructor([]); 
         });
     }
+  };
+
+  var create = function(descriptor) {
+    return createParametric(descriptor)
+      .then(function(fcn) {
+        return MusicContext.runFcn(function(music) {
+          return fcn(music);
+        });
+      });
+/*
+
+
+    if (descriptor.type === "stack") {
+      return $q.all(descriptor.data.array.map(getConstructor))
+        .then(function(constuctors) {
+
+          if (constuctors.length === 0) return null;
+
+          var proms;
+          constuctors.reverse().forEach(function(constructor) {
+            if (proms) {
+              proms = proms.then(function(lastObj) {
+                return constructor([lastObj]);
+              });
+            } else {
+              proms = constructor([]);
+            }
+          });
+
+          return proms.then(function(lastObj) {
+            return MusicContext.runFcn(function(music) {
+              return lastObj(music);
+            });
+          });
+        })
+    } else {
+      return getConstructor(descriptor)
+        .then(function(constructor) {
+          return constructor([]); 
+        });
+    }*/
   };
 
   return create;
@@ -120,8 +198,8 @@ musicShowCaseApp.service("MusicContext", function() {
 
 musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function($http, $q, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
   var make_mutable = function(fcn) {
-    return function(object, subobjects) {
-      var current = fcn(object, subobjects);
+    return function(object, subobjects, components) {
+      var current = fcn(object, subobjects, components);
       if (current.update) {
         return current;
       }
@@ -176,7 +254,9 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
           constructor: make_mutable(constructor),
           name: typeName,
           composition: options.composition,
-          description: options.description
+          components: options.components,
+          description: options.description,
+          _default: options._default
         })
       }
     };

@@ -78,10 +78,24 @@ module.export = function(m) {
     };
   });
 
-  m.type("oscillator", {template: "oscillator", description: "Oscillator"}, function(data) {
+  m.type("oscillator", {template: "oscillator", description: "Oscillator", 
+    components: {
+      detune: true
+    },
+    _default: {
+      detune: function() {
+        return {type: "stack", data: {array: []}}
+      }
+    }}, function(data, subobjects, components) {
     if (!data) return;
       return function(music){
-          var generator = music.oscillator({type: data.oscillatorType ||"square"});
+          var props = {type: data.oscillatorType ||"square"};
+          if (components && components.detune) {
+            props.detune = MUSIC.modulator(function(pl) {
+              return components.detune(pl).note(0);
+            });
+          };
+          var generator = music.oscillator(props);
           return new MUSIC.Instrument(generator);
       };
   });
