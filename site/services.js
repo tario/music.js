@@ -6,28 +6,6 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
       return TypeService.getType(descriptor.type)
         .then(function(type) {
           return function(subobjects) {
-            if (!type.components) {
-              if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
-                if (subobjects.length === 1) {
-                  if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
-                    return $q(function(resolve) {
-                      resolve(descriptor.__cache[subobjects[0].id]
-                            .update(descriptor.data));
-                    });
-                  }
-                } else if (subobjects.length === 0) {
-                  if (descriptor.__cache && descriptor.__cache.noid) {
-                    return $q(function(resolve) {
-                      resolve(descriptor.__cache.noid
-                            .update(descriptor.data));
-                    });
-                  }
-                }
-              }
-            }
-
-            descriptor.last_type = descriptor.type;
-
             var buildComponents = [];
             for (var k in type.components) {
               (function(componentName) {
@@ -49,10 +27,35 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
             return $q.all(buildComponents)
               .then(function(objs) {
+
                 var components = {};
                 objs.forEach(function(obj) {
                   components[obj.name] = obj.obj;
                 });
+
+                if (objs.length === 0) {
+                  if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
+                    if (subobjects.length === 1) {
+                      if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                        return $q(function(resolve) {
+                          resolve(descriptor.__cache[subobjects[0].id]
+                                .update(descriptor.data));
+                        });
+                      }
+                    } else if (subobjects.length === 0) {
+                      if (descriptor.__cache && descriptor.__cache.noid) {
+                        return $q(function(resolve) {
+                          resolve(descriptor.__cache.noid
+                                .update(descriptor.data));
+                        });
+                      }
+                    }
+                  }
+                }
+
+                descriptor.last_type = descriptor.type;
+
+
                 var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
                 nextId++;
                 ret.id = nextId;
