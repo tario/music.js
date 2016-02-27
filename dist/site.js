@@ -10524,15 +10524,20 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
         return x.stopAll();
       };
 
+      var update = function(octave) {
+        return octave.update();
+      };
+
       scope.stopAll = function() {
         scope.octaves.forEach(stopAll);
       };
 
       var octave = function(base) {
         return {
+          mouse: {},
+          key: {},
           note: [],
           play: function(idx) {
-            scope.octaves.forEach(stopAll);
             if (this.note[idx]) return;
 
             this.note[idx] = scope.instrument.note(base+idx).play();
@@ -10541,6 +10546,15 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
             if (!this.note[idx])return;
             this.note[idx].stop();
             this.note[idx] = undefined;
+          },
+          update: function() {
+            for (var idx=0; idx<11; idx++) {
+              if (this.mouse[idx] || this.key[idx]) {
+                this.play(idx);
+              } else {
+                this.stop(idx);
+              }
+            }
           },
           stopAll: function() {
             this.note.forEach(function(note) {
@@ -10551,15 +10565,37 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
         };
       };
 
+      var mouseOff = function(octave) {
+        octave.mouse = {};
+        octave.update();
+      };
+
+      scope.mouseLeave = function(octave, idx) {
+        octave.mouse[idx] = false;
+
+        octave.update();
+      };
+
+      scope.mouseEnter = function(octave, idx) {
+        scope.octaves.forEach(mouseOff);
+        octave.mouse[idx] = true;
+
+        scope.octaves.forEach(update);
+      };
+
       scope.keyDown = function(keyCode) {
         var noteName = keyCodeToNote[keyCode];
-        scope.octaves[1].play(MUSIC.noteToNoteNum(noteName));
-      };
+        var idx = MUSIC.noteToNoteNum(noteName);
+        scope.octaves[1].key[idx] = true;
+        scope.octaves[1].update();
+      }
 
       scope.keyUp = function(keyCode) {
         var noteName = keyCodeToNote[keyCode];
-        scope.octaves[1].stop(MUSIC.noteToNoteNum(noteName));
-      };
+        var idx = MUSIC.noteToNoteNum(noteName);
+        scope.octaves[1].key[idx] = false;
+        scope.octaves[1].update();
+      }
 
       scope.$on("$destroy", function() {
         scope.octaves.forEach(function(octave) {
