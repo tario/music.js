@@ -219,7 +219,7 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
             this.note[idx] = undefined;
           },
           update: function() {
-            for (var idx=0; idx<11; idx++) {
+            for (var idx=0; idx<12; idx++) {
               if (this.mouse[idx] || this.key[idx]) {
                 this.play(idx);
               } else {
