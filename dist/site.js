@@ -10583,21 +10583,32 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
         scope.octaves.forEach(update);
       };
 
-      scope.keyDown = function(keyCode) {
+      var keyDownHandler = function(e) {
+        var keyCode = e.keyCode;
         var noteName = keyCodeToNote[keyCode];
         var idx = MUSIC.noteToNoteNum(noteName);
         scope.octaves[1].key[idx] = true;
         scope.octaves[1].update();
+
+        scope.$digest();
       }
 
-      scope.keyUp = function(keyCode) {
+      var keyUpHandler = function(e) {
+        var keyCode = e.keyCode;
         var noteName = keyCodeToNote[keyCode];
         var idx = MUSIC.noteToNoteNum(noteName);
         scope.octaves[1].key[idx] = false;
         scope.octaves[1].update();
+
+        scope.$digest();
       }
 
+      $(document).bind("keydown", keyDownHandler);
+      $(document).bind("keyup", keyUpHandler);
+
       scope.$on("$destroy", function() {
+        $(document).unbind("keydown", keyDownHandler);
+        $(document).unbind("keyup", keyUpHandler);
         scope.octaves.forEach(function(octave) {
           octave.stopAll();
         });
