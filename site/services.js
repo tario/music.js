@@ -33,22 +33,20 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                   components[obj.name] = obj.obj;
                 });
 
-                if (objs.length === 0) {
-                  if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
-                    if (subobjects.length === 1) {
-                      if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
-                        return $q(function(resolve) {
-                          resolve(descriptor.__cache[subobjects[0].id]
-                                .update(descriptor.data));
-                        });
-                      }
-                    } else if (subobjects.length === 0) {
-                      if (descriptor.__cache && descriptor.__cache.noid) {
-                        return $q(function(resolve) {
-                          resolve(descriptor.__cache.noid
-                                .update(descriptor.data));
-                        });
-                      }
+                if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
+                  if (subobjects.length === 1) {
+                    if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                      return $q(function(resolve) {
+                        resolve(descriptor.__cache[subobjects[0].id]
+                              .update(descriptor.data, components));
+                      });
+                    }
+                  } else if (subobjects.length === 0) {
+                    if (descriptor.__cache && descriptor.__cache.noid) {
+                      return $q(function(resolve) {
+                        resolve(descriptor.__cache.noid
+                              .update(descriptor.data, components));
+                      });
                     }
                   }
                 }
@@ -80,7 +78,9 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
       return $q.all(descriptor.data.array.map(getConstructor))
         .then(function(constuctors) {
 
-          if (constuctors.length === 0) return null;
+          if (constuctors.length === 0) {
+            return null;
+          }
 
           var proms;
           constuctors.reverse().forEach(function(constructor) {
@@ -234,10 +234,11 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
       };
 
       var lastObjData;
-      ret.update = function(newobject) {
+      ret.update = function(newobject, _components) {
+        components = _components
         if (JSON.stringify(newobject) === lastObjData) return ret;
         lastObjData = JSON.stringify(newobject);
-        current = sfxBaseOneEntryCacheWrapper(pruneWrapper(fcn(newobject, subobjects)));
+        current = sfxBaseOneEntryCacheWrapper(pruneWrapper(fcn(newobject, subobjects, components)));
         return ret;
       };
 
@@ -484,8 +485,8 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
         return _lastinstance;
       };
 
-      ret.update = function(data) {
-        fcn.update(data)
+      ret.update = function() {
+        fcn.update.bind(fcn).apply(null, arguments);
         return ret;
       };
       return ret;
