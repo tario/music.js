@@ -242,10 +242,10 @@ var Echo = function(music, next, options) {
   setTimeout(function() {
     gainNode.connect(gainNode2);
     gainNode.connect(delayNode);
-    delayNode.connect(gainNode2);
+    delayNode.connect(att);
     gainNode2.connect(next._destination);
-    gainNode2.connect(att);
-    att.connect(delayNode);
+    gainNode2.connect(delayNode);
+    att.connect(gainNode2);
   });
 
   this._destination = gainNode;
@@ -261,10 +261,10 @@ var Echo = function(music, next, options) {
     disconnected = true;
     gainNode.disconnect(gainNode2);
     gainNode.disconnect(delayNode);
-    delayNode.disconnect(gainNode2);
+    delayNode.disconnect(att);
     gainNode2.disconnect(next._destination);
-    gainNode2.disconnect(att);
-    att.disconnect(delayNode);
+    gainNode2.disconnect(delayNode);
+    att.disconnect(gainNode2);
   };
 
   this.dispose = this.disconnect;
