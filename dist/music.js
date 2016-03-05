@@ -1151,7 +1151,7 @@ MUSIC.Effects.register("delay", function(music, next, value) {
 var Echo = function(music, next, options) {
   this.update = function(options) {
     delayNode.delayTime.value = options.delay || 0.02;
-    att.gain.value = options.gain || 0.2;
+    att.gain.value = options.gain === 0  ? 0 : (options.gain||0.2);
 
     if (delayNode.delayTime.value < 0.01) delayNode.delayTime.value = 0.01;
     if (delayNode.delayTime.value > 1) delayNode.delayTime.value = 1;
