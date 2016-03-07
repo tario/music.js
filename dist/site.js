@@ -10362,16 +10362,24 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                 if (type.parameters) {
                   scope.parameters = type.parameters.map(function(parameter) {
                     return {
+                      name: parameter.name,
                       data: parameter,
                       value: file.data && typeof file.data[parameter.name] !== "undefined" ? file.data[parameter.name] : parameter.value
                     };
                   });
                 }
-
-                if (type._default) {
-                  for (var k in type._default) {
-                    file.data[k] = type._default[k]();
-                  }
+                if (type.components) {
+                  scope.modulations = (type.components||[]).map(function(component) {
+                    return {
+                      name: component,
+                      value: {
+                        type: "stack",
+                        data: {
+                          array: []
+                        }
+                      }
+                    };
+                  });
                 }
 
                 updateObject(file.data);
@@ -10392,6 +10400,14 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         scope.file.type = newValue;
         updateTemplate(scope.file);
       };
+
+      scope.$watch("modulations", function(newValue) {
+        scope.file.data.modulation = scope.file.data.modulation||{};
+        scope.modulations.forEach(function(modulation) {
+          scope.file.data.modulation[modulation.name] = modulation.value;
+        }); 
+        scope.$emit("objectChanged");
+      }, true);
 
       scope.$watch("parameters", function(newValue) {
         scope.parameters.forEach(function(parameter) {
@@ -10648,13 +10664,17 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         .then(function(type) {
           return function(subobjects) {
             var buildComponents = [];
-            for (var k in type.components) {
-              (function(componentName) {
 
-                if (!descriptor.data[componentName]) return;
+            if (type.components) {
+              type.components.forEach(function(componentName) {
+                var value = descriptor.data.modulation[componentName];
+                if (!value) return;
+                if (!value.data) return;
+                if (!value.data.array) return;
+                if (value.data.array.length === 0) return;
 
                 buildComponents.push(
-                  createParametric(descriptor.data[componentName])
+                  createParametric(value)
                     .then(function(obj) {
                       return {
                         name: componentName,
@@ -10663,7 +10683,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                     })
                 );
 
-              })(k);
+              });
             }
 
             return $q.all(buildComponents)

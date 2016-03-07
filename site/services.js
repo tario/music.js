@@ -7,13 +7,17 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         .then(function(type) {
           return function(subobjects) {
             var buildComponents = [];
-            for (var k in type.components) {
-              (function(componentName) {
 
-                if (!descriptor.data[componentName]) return;
+            if (type.components) {
+              type.components.forEach(function(componentName) {
+                var value = descriptor.data.modulation[componentName];
+                if (!value) return;
+                if (!value.data) return;
+                if (!value.data.array) return;
+                if (value.data.array.length === 0) return;
 
                 buildComponents.push(
-                  createParametric(descriptor.data[componentName])
+                  createParametric(value)
                     .then(function(obj) {
                       return {
                         name: componentName,
@@ -22,7 +26,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                     })
                 );
 
-              })(k);
+              });
             }
 
             return $q.all(buildComponents)

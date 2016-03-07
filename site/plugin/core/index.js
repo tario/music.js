@@ -79,14 +79,7 @@ module.export = function(m) {
   });
 
   m.type("oscillator", {template: "oscillator", description: "Oscillator", 
-    components: {
-      detune: true
-    },
-    _default: {
-      detune: function() {
-        return {type: "stack", data: {array: []}}
-      }
-    }}, function(data, subobjects, components) {
+    components: ["detune"]}, function(data, subobjects, components) {
     if (!data) return;
       return function(music){
           var props = {type: data.oscillatorType ||"square"};
