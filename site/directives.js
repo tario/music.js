@@ -73,6 +73,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       };
 
       scope.$watch("modulations", function(newValue) {
+        if (!scope.modulations) return;
         scope.file.data.modulation = scope.file.data.modulation||{};
         scope.modulations.forEach(function(modulation) {
           scope.file.data.modulation[modulation.name] = modulation.value;
@@ -81,6 +82,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       }, true);
 
       scope.$watch("parameters", function(newValue) {
+        if (!scope.parameters) return;
         scope.parameters.forEach(function(parameter) {
           scope.file.data[parameter.data.name] = parameter.value;
         }); 
