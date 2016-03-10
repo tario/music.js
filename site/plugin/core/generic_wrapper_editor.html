@@ -1,3 +1,8 @@
 <div ng-repeat="parameter in parameters" class="generic-parameter">
 {{parameter.data.uiName || parameter.data.name}}: <input ng-model="parameter.value"></input>
 </div>
+
+<div ng-repeat="modulation in modulations">
+<h1>{{modulation.name}} modulation</h1>
+<div class="music-object-editor" music-stack init-file="modulation.value"></div>
+</div>

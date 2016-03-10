@@ -375,7 +375,8 @@ MUSIC.modulator = function(f) {
       return {
         dispose: function() {
           modulatorFactory.prune();
-          modulator.stop();
+          if (modulator) modulator.stop();
+          modulator = null;
         }
       };
     }

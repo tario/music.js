@@ -184,14 +184,15 @@ module.export = function(m) {
         return ret;
       });
 
-  var genericType = function(name, options){
+  var genericType = function(name, options, components){
     var fcn = options.fcn ||name;
     m.type(name, 
         {
           template: "generic_wrapper_editor", 
           parameters: options.parameters, 
+          components: options.components||[],
           description: options.description
-        },  function(data, subobjects) {
+        },  function(data, subobjects, components) {
 
           var opt;
 
@@ -206,14 +207,29 @@ module.export = function(m) {
             return wrapped(node);
           };
 
-          ret.update = function(data) {
+          ret.update = function(data, components) {
             if(options.singleParameter) {
               var parameter = options.parameters[0];
-              opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+
+              var modulator = components[parameter.name];
+              if (modulator) {
+                opt = MUSIC.modulator(function(pl) {
+                  return modulator(pl).note(0);
+                });
+              } else {
+                opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+              }
             } else {
               opt = {};
               options.parameters.forEach(function(parameter) {
-                opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+                var modulator = components[parameter.name];
+                if (modulator) {
+                  opt[parameter.name] = MUSIC.modulator(function(pl) {
+                    return modulator(pl).note(0);
+                  });
+                } else {
+                  opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+                }
               });
             }
 
@@ -224,7 +240,7 @@ module.export = function(m) {
             return this;
           };
 
-          ret.update(data);
+          ret.update(data, components);
 
           return ret;
     });
@@ -236,6 +252,7 @@ module.export = function(m) {
         parameters: [
           {name: "gain"}
         ], 
+        components: ["gain"],
         singleParameter: true,
         description: "Increase or decrease the amp. of signal"
       });
@@ -254,7 +271,8 @@ module.export = function(m) {
         {
           parameters: [
             {name: "frequency"}
-          ], 
+          ],
+          components: ["frequency"],
           description: filterName
         });
 
