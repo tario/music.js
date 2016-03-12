@@ -108,7 +108,7 @@ module.export = function(m) {
                         .onStop(function() {
                           if (instance.dispose) instance.dispose();
                         })
-                        .stopDelay(delay)
+                        .stopDelay(delay*1000)
                         .onStop(function() {
                           if (instance.preStop) instance.preStop();
                         });
@@ -135,14 +135,38 @@ module.export = function(m) {
   });
 
 
-  m.type("ads", {template: "ads", description: "Attack-Decay-Sustain signal"},  function(data, subobjects) {
+  m.type("adsr", {template: "adsr", description: "ADSR Envelope signal"},  function(data, subobjects) {
     var attackTime, decayTime, sustainLevel, m, b;
 
-    var ret = function(music){
+    var ret = function(music, x, stopped){
       var soundGenerator = {
         freq: function(fr) {
+          var itsover = false;
+          var itsover2 = false;
+          if (stopped) {
+            stopped.then(function() {
+              itsover = true;
+            });
+          }
+
+          var tf;
           var formulaNode = music
                     .formulaGenerator(function(t) {
+                      if (itsover) {
+                        if (!itsover2) {
+                          itsover2 = true;
+                          tf = t;
+                        }
+
+                        t-=tf;
+
+                        if(t>releaseTime) {
+                          return 0;
+                        } else {
+                          return sustainLevel * (releaseTime-t) / releaseTime;
+                        }
+                      }
+
                       if (t>attackTime) {
                         if (t>attackTime+decayTime){
                           return sustainLevel;
@@ -152,6 +176,7 @@ module.export = function(m) {
                       } else {
                         return t/attackTime;
                       }
+
                     });
 
           return formulaNode;
@@ -167,6 +192,7 @@ module.export = function(m) {
       attackTime = parseFloat(data.attackTime || 0.4);
       decayTime = parseFloat(data.decayTime || 0.4);
       sustainLevel = parseFloat(data.sustainLevel || 0.8);
+      releaseTime = parseFloat(data.releaseTime || 0.4);
 
       // (attackTime, 1) -> (attackTime + decayTime, sustainLevel)
       m = (sustainLevel - 1)/decayTime;
@@ -280,48 +306,68 @@ module.export = function(m) {
           description: options.description
         },  function(data, subobjects, components) {
 
-          var opt;
-
           if (!subobjects) return;
           var wrapped = subobjects[0];
           if (!wrapped) return;
 
           var nodes = [];
+          var getOpt;
+
           var ret = function(music) {
-            var node = music[fcn].apply(music, [opt]);
+            var stopped = Promise.defer();
+            var node = music[fcn].apply(music, [getOpt(stopped.promise)]);
             nodes.push(node)
-            return wrapped(node);
+            var r = wrapped(node);
+            r.preStop = function() {
+              stopped.resolve();
+            };
+
+            return r;
           };
+
 
           ret.update = function(data, components) {
             if(options.singleParameter) {
-              var parameter = options.parameters[0];
+              getOpt = function(stopped) {
+                var opt;
+                var parameter = options.parameters[0];
 
-              var modulator = components[parameter.name];
-              if (modulator) {
-                opt = MUSIC.modulator(function(pl) {
-                  return modulator(pl, true).note(0);
-                });
-              } else {
-                opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
-              }
-            } else {
-              opt = {};
-              options.parameters.forEach(function(parameter) {
                 var modulator = components[parameter.name];
                 if (modulator) {
-                  opt[parameter.name] = MUSIC.modulator(function(pl) {
-                    return modulator(pl, true).note(0);
+                  opt = MUSIC.modulator(function(pl) {
+                    return modulator(pl, true, stopped).note(0);
                   });
                 } else {
-                  opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+                  opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
                 }
-              });
+
+                return opt;
+              };
+
+            } else {
+              getOpt = function(stopped) {
+                var opt = {};
+                options.parameters.forEach(function(parameter) {
+                  var modulator = components[parameter.name];
+                  if (modulator) {
+                    opt[parameter.name] = MUSIC.modulator(function(pl) {
+                      return modulator(pl, true, stopped).note(0);
+                    });
+                  } else {
+                    opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
+                  }
+                });
+
+                return opt;
+              }
             }
 
-            nodes.forEach(function(node) {
-              node.update(opt)
-            });
+            if (nodes.length > 0) {
+              var opt = getOpt();
+              nodes.forEach(function(node) {
+                node.update(opt)
+              });
+            }
 
             return this;
           };
