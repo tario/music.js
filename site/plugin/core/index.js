@@ -139,8 +139,8 @@ module.export = function(m) {
     var attackTime, decayTime, sustainLevel, m, b;
 
     var ret = function(music, x, stopped){
-      var soundGenerator = {
-        freq: function(fr) {
+      return {
+        note: function() {
           var itsover = false;
           var itsover2 = false;
           if (stopped) {
@@ -183,9 +183,6 @@ module.export = function(m) {
 
         }
       };
-
-      // add instrument to show on UI
-      return new MUSIC.Instrument(soundGenerator);
     };
 
     ret.update = function(data) {
