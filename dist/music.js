@@ -1119,6 +1119,7 @@ MUSIC.Effects.register("gain", function(music, next, value) {
       volumeModulation.dispose();
 
       if (value.apply) {
+        gainNode.gain.value = 0.0;
         volumeModulation = value.apply(music.audio.currentTime, gainNode.gain, music);
       } else {
         volumeModulation = nodispose;

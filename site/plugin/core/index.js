@@ -85,7 +85,7 @@ module.export = function(m) {
           var props = {type: data.oscillatorType ||"square"};
           if (components && components.detune) {
             props.detune = MUSIC.modulator(function(pl) {
-              return components.detune(pl).note(0);
+              return components.detune(pl, true).note(0);
             });
           };
           var generator = music.oscillator(props);
@@ -93,7 +93,93 @@ module.export = function(m) {
       };
   });
 
-  m.type("adsr", {template: "adsr", description: "ADSR"},  function(data, subobjects) {
+  m.type("notesplit", {template: "notesplit", description: "Split effect stack by note"}, function(data, subobjects) {
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var delay;
+
+    var ret = function(music){
+        var note = function(n) {
+            var instance = wrapped(music, true);
+            if (delay > 0) {
+              return instance.note(n)
+                        .onStop(function() {
+                          if (instance.dispose) instance.dispose();
+                        })
+                        .stopDelay(delay)
+                        .onStop(function() {
+                          if (instance.preStop) instance.preStop();
+                        });
+            } else {
+              return instance.note(n)
+                        .onStop(function() {
+                          if (instance.dispose) instance.dispose();
+                        });
+            }
+        };
+        return MUSIC.instrumentExtend({
+          note: note
+        });
+    };
+
+    ret.update = function(data) {
+      delay = data.delay||0;
+      return this;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
+
+
+  m.type("ads", {template: "ads", description: "Attack-Decay-Sustain signal"},  function(data, subobjects) {
+    var attackTime, decayTime, sustainLevel, m, b;
+
+    var ret = function(music){
+      var soundGenerator = {
+        freq: function(fr) {
+          var formulaNode = music
+                    .formulaGenerator(function(t) {
+                      if (t>attackTime) {
+                        if (t>attackTime+decayTime){
+                          return sustainLevel;
+                        } else {
+                          return m*t+b;
+                        }
+                      } else {
+                        return t/attackTime;
+                      }
+                    });
+
+          return formulaNode;
+
+        }
+      };
+
+      // add instrument to show on UI
+      return new MUSIC.Instrument(soundGenerator);
+    };
+
+    ret.update = function(data) {
+      attackTime = parseFloat(data.attackTime || 0.4);
+      decayTime = parseFloat(data.decayTime || 0.4);
+      sustainLevel = parseFloat(data.sustainLevel || 0.8);
+
+      // (attackTime, 1) -> (attackTime + decayTime, sustainLevel)
+      m = (sustainLevel - 1)/decayTime;
+      b = -m * attackTime + 1
+      return this;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
+
+  m.type("envelope", {template: "adsr", description: "ADSR"},  function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
     if (!wrapped) return;
@@ -214,7 +300,7 @@ module.export = function(m) {
               var modulator = components[parameter.name];
               if (modulator) {
                 opt = MUSIC.modulator(function(pl) {
-                  return modulator(pl).note(0);
+                  return modulator(pl, true).note(0);
                 });
               } else {
                 opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
@@ -225,7 +311,7 @@ module.export = function(m) {
                 var modulator = components[parameter.name];
                 if (modulator) {
                   opt[parameter.name] = MUSIC.modulator(function(pl) {
-                    return modulator(pl).note(0);
+                    return modulator(pl, true).note(0);
                   });
                 } else {
                   opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);

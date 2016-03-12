@@ -478,9 +478,11 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
     return function(fcn){
       var _lastmusic;
       var _lastinstance;
-      var ret = function(music) {
-        if (_lastmusic && _lastmusic === music) {
-          return _lastinstance;
+      var ret = function(music, nowrap) {
+        if (!nowrap) {
+          if (_lastmusic && _lastmusic === music) {
+            return _lastinstance;
+          }
         }
 
         _lastmusic = music;
