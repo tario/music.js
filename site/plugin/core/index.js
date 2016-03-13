@@ -102,11 +102,13 @@ module.export = function(m) {
 
     var ret = function(music){
         var note = function(n) {
-            var instance = wrapped(music, true);
+            var baseNode = music.sfxBase();
+            var instance = wrapped(baseNode, true);
+
             if (delay > 0) {
               return instance.note(n)
                         .onStop(function() {
-                          if (instance.dispose) instance.dispose();
+                          baseNode.prune();
                         })
                         .stopDelay(delay*1000)
                         .onStop(function() {
@@ -212,14 +214,14 @@ module.export = function(m) {
 
     var ret = function(music){
         var note = function(n) {
-            var gainNode = music.gain(sustainLevel);
+            var baseNode = music.sfxBase();
+            var gainNode = baseNode.gain(sustainLevel);
             var instance = wrapped(gainNode);
             gainNode.setParam('gain', startCurve);
 
             return instance.note(n)
                       .onStop(function() {
-                        gainNode.dispose();
-                        if (instance.dispose) instance.dispose();
+                        baseNode.prune();
                       })
                       .stopDelay(releaseTime * 1000)
                       .onStop(function(){ 
