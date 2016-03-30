@@ -381,26 +381,6 @@ MUSIC.SoundLib = MUSIC.SoundLib || {};
 MUSIC.Effects = MUSIC.Effects || {};
 MUSIC.Types = new TypeCast();
 
-
-var getTemporalPipeline = function(effectsFcn, next, param) {
-  var nextNode = effectsFcn(next, param);
-  return {
-    _destination: nextNode._destination,
-    dispose: function() {
-      var x = nextNode;
-      while (1) {
-        x.disconnect();
-        x = x.next();
-        if (x === next) {
-          break;
-        }
-      };
-      disposeNode = null;
-    }
-  };
-
-};
-
 MUSIC.playablePipeExtend = function(obj) {
   obj.during = function(duration) {
     var original = this;
