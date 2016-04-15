@@ -5,10 +5,9 @@
   <button class="btn btn-primary" ng-click="remove($index)">remove</button>
   <button class="btn btn-primary" ng-show="$index>0" ng-click="up($index)">↑</button>
   <button class="btn btn-primary" ng-show="$index<file.array.length-1" ng-click="down($index)">↓</button>
+  <input type="checkbox" class="pull-right compressable-switch regular-checkbox" />
 
-  <button class="btn btn-primary pull-right" ng-click="$broadcast('togglecompress')">Expand</button>
-
-  <div compressed-element>
+  <div class="compressable">
     <div music-object-editor file="subfile">
     </div>
   </div>

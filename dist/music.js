@@ -381,6 +381,7 @@ MUSIC.SoundLib = MUSIC.SoundLib || {};
 MUSIC.Effects = MUSIC.Effects || {};
 MUSIC.Types = new TypeCast();
 
+
 MUSIC.playablePipeExtend = function(obj) {
   obj.during = function(duration) {
     var original = this;

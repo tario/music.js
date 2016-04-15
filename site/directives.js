@@ -124,20 +124,6 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     }
   };
 }]);
-musicShowCaseApp.directive("compressedElement", function() {
-    return {
-      scope: {},
-      templateUrl: "site/templates/compressed.html",
-      transclude: true,
-      link: function(scope, element, attrs) {
-        scope.compressed = true;
-
-        scope.$on("togglecompress", function() {
-          scope.compressed = !scope.compressed;
-        });
-      }
-    };
-});
 
 musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
   return {

@@ -35,7 +35,23 @@
   max-height: 1000px;
 }
 
-.compressed {
+.regular-checkbox {
+  background-color: #bbb;
+  border: none;
+  padding: 9px;
+  display: inline-block;
+  position: relative;
+  -webkit-appearance: none;
+  margin: 0 !important;
+}
+.regular-checkbox:focus {
+}
+.regular-checkbox:checked {
+  background-color: white;
+  border: none;
+}
+
+.compressable-switch:not(:checked) ~ .compressable {
   max-height: 30px;
 }
 
