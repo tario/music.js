@@ -44,8 +44,7 @@
   -webkit-appearance: none;
   margin: 0 !important;
 }
-.regular-checkbox:focus {
-}
+
 .regular-checkbox:checked {
   background-color: white;
   border: none;
