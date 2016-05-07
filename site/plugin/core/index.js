@@ -377,6 +377,14 @@ module.export = function(m) {
     });
   };
 
+  genericType("scale",
+  {
+    parameters: [
+      {name: 'base', _default: -1},
+      {name: 'top', _default: 1},
+    ],
+    description: "Scale signal"
+  });
 
   genericType("gain", 
       {

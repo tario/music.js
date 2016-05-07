@@ -188,6 +188,24 @@ MUSIC.EffectsPipeline.prototype = {
     return this._wrapFcn(new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn));
   },
 
+  scale: function(options) {
+    var a, b;
+    var formulaGenerator = new MUSIC.Effects.Formula(this._audio, this._audioDestination, function(input, t) {
+      return input*a+b;
+    });
+
+    var update = function(options) {
+      a = (options.top - options.base)/2;
+      b = options.base + a;
+    };
+
+    update(options);
+    formulaGenerator.update = update;
+
+    return formulaGenerator;
+  },
+
+
   T: function() {
     return this._wrapFcn(new MUSIC.T(arguments, this._audio, this._audioDestination));
   },
