@@ -389,7 +389,13 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   var detune = options.detune;
 
   this.freq = function(newFreq) {
-    var newoptions = {type: options.type, wave: options.wave, f: options.f, frequency: newFreq, detune: options.detune};
+    var newoptions = {
+      type: options.type,
+      wave: options.wave,
+      f: options.f,
+      frequency: options.fixed_frequency ? options.fixed_frequency : newFreq,
+      detune: options.detune
+    };
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
 

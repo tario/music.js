@@ -82,7 +82,11 @@ module.export = function(m) {
     components: ["detune"]}, function(data, subobjects, components) {
     if (!data) return;
       return function(music){
-          var props = {type: data.oscillatorType ||"square"};
+          var props = {
+            type: data.oscillatorType ||"square",
+            fixed_frequency: data.fixed_frequency && data.frequency,
+          };
+
           if (components && components.detune) {
             props.detune = MUSIC.modulator(function(pl) {
               return components.detune(pl, true).note(0);

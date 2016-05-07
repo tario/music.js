@@ -7,9 +7,9 @@
 	white-space: pre;
 }
 
-.object-template-editor input {
+/*.object-template-editor input {
   width: 50px;
-}
+}*/
 
 
 .object-template-editor {
@@ -35,6 +35,14 @@
   max-height: 1000px;
 }
 
+.showable {
+  -webkit-transition: opacity 0.2s; /* Safari */
+  transition: opacity 0.2s;
+  opacity: 1.0;
+  max-height: 1000px;
+}
+
+
 .regular-checkbox {
   background-color: #bbb;
   border: none;
@@ -52,6 +60,10 @@
 
 .compressable-switch:not(:checked) ~ .compressable {
   max-height: 30px;
+}
+
+.showable-switch:not(:checked) ~ .showable {
+  opacity: 0;
 }
 
 .examplelist {
@@ -170,4 +182,16 @@ input.invisible-text {
 
 .stackdropbar.drag-enter {
   background-color: #ccc;
+}
+
+.margin10 {
+  margin: 10px;
+}
+
+.inlinetable {
+  display: inline-table;
+}
+
+.hzinput {
+  width: 60px;
 }

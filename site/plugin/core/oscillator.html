@@ -1,6 +1,13 @@
 <div class="generic-parameter">
 Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth', 'triangle']"></select>
 
+<br/>
+<input type="checkbox" class="regular-checkbox showable-switch" ng-model="file.data.fixed_frequency" /> Fixed frequency
+<div class="showable margin10 inlinetable">
+<input type="text" class="hzinput" ng-model='file.data.frequency' />
+hz
+</div>
+
 <div ng-repeat="modulation in modulations">
 <h1>{{modulation.name}} modulation</h1>
 <div class="music-object-editor" music-stack init-file="modulation.value"></div>
