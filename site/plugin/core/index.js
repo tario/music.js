@@ -413,9 +413,11 @@ module.export = function(m) {
     genericType(filterName, 
         {
           parameters: [
-            {name: "frequency"}
+            {name: "frequency"},
+            {name: "detune"},
+            {name: "Q"}
           ],
-          components: ["frequency"],
+          components: ["frequency", "detune", "Q"],
           description: filterName
         });
 

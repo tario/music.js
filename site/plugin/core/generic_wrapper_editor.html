@@ -1,5 +1,5 @@
 <div ng-repeat="parameter in parameters" class="generic-parameter">
-{{parameter.data.uiName || parameter.data.name}}: <input ng-model="parameter.value"></input>
+{{parameter.data.uiName || parameter.data.name}}: <input type="text" ng-model="parameter.value"></input>
 </div>
 
 <div ng-repeat="modulation in modulations">

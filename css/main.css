@@ -7,10 +7,9 @@
 	white-space: pre;
 }
 
-/*.object-template-editor input {
+.object-template-editor input[type="text"] {
   width: 50px;
-}*/
-
+}
 
 .object-template-editor {
   display: inline;
