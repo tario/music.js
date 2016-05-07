@@ -1055,8 +1055,10 @@ MUSIC.Effects.BiQuad = function(music, next, options) {
   var frequencyModulation = nodispose;
   var detuneModulation = nodispose;
 
+  var biquadType = options.type;
+
   this.update = function(options) {
-    biquadFilter.type = options.type;
+    biquadFilter.type = biquadType;
 
     var assignParam = function(orig, audioParam) {
       if (orig) {
