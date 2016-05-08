@@ -1,5 +1,7 @@
 module.export = function(m) {
-  m.type("script_wrapper", {template: "script", description:"Script Wrapper"}, function(object, subobjects) {
+  m.type("script_wrapper", {template: "script", description:"Script Wrapper", _default: {
+    code: "function(subobj) {\n  return function(music) {\n    return subobj(music); \n  };\n}\n"
+  }}, function(object, subobjects) {
     if (!object) return;
 
     var ret, inner;
@@ -26,7 +28,9 @@ module.export = function(m) {
   });
 
 
-  m.type("script", {template: "script", description: "Custom script"}, function(object){
+  m.type("script", {template: "script", description: "Custom script", _default: {
+    code: "// add instrument to show on UI\nreturn new MUSIC.Instrument(music.oscillator({type: 'square'}));\n"
+  }}, function(object){
     if (!object) return;
     return function(music) {
       var results;
@@ -97,7 +101,9 @@ module.export = function(m) {
       };
   });
 
-  m.type("notesplit", {template: "notesplit", description: "Split effect stack by note"}, function(data, subobjects) {
+  m.type("notesplit", {template: "notesplit", description: "Split effect stack by note", _default: {
+    delay: 0.4
+  }}, function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
     if (!wrapped) return;
@@ -141,7 +147,12 @@ module.export = function(m) {
   });
 
 
-  m.type("adsr", {template: "adsr", description: "ADSR Envelope signal"},  function(data, subobjects) {
+  m.type("adsr", {template: "adsr", description: "ADSR Envelope signal", _default: {
+    attackTime: 0.4,
+    decayTime: 0.4,
+    sustainLevel: 0.8,
+    releaseTime: 0.4
+  }},  function(data, subobjects) {
     var attackTime, decayTime, sustainLevel, m, b;
 
     var ret = function(music, x, stopped){
@@ -208,7 +219,12 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("envelope", {template: "adsr", description: "ADSR"},  function(data, subobjects) {
+  m.type("envelope", {template: "adsr", description: "ADSR", _default: {
+    attackTime: 0.4,
+    decayTime: 0.4,
+    sustainLevel: 0.8,
+    releaseTime: 0.4
+  }},  function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
     if (!wrapped) return;
@@ -384,8 +400,8 @@ module.export = function(m) {
   genericType("scale",
   {
     parameters: [
-      {name: 'base', _default: -1},
-      {name: 'top', _default: 1},
+      {name: 'base', value: -1},
+      {name: 'top', value: 1},
     ],
     description: "Scale signal"
   });
@@ -393,7 +409,7 @@ module.export = function(m) {
   genericType("gain", 
       {
         parameters: [
-          {name: "gain"}
+          {name: "gain", value: 0.8}
         ], 
         components: ["gain"],
         singleParameter: true,
@@ -403,8 +419,8 @@ module.export = function(m) {
   genericType("echo", 
       {
         parameters: [
-          {name: "gain"},
-          {name: "delay"}
+          {name: "gain", value: 0.6},
+          {name: "delay", value: 0.1}
         ], 
         description: "Single echo effect"
       });
@@ -413,9 +429,9 @@ module.export = function(m) {
     genericType(filterName, 
         {
           parameters: [
-            {name: "frequency"},
-            {name: "detune"},
-            {name: "Q"}
+            {name: "frequency", value: 350},
+            {name: "detune", value: 0},
+            {name: "Q", value: 1}
           ],
           components: ["frequency", "detune", "Q"],
           description: filterName

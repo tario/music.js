@@ -30,6 +30,13 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
               $timeout(function() {
                 scope.templateUrl = type.templateUrl;
                 scope.type = type;
+
+                for (var k in type._default) {
+                  if (typeof file.data[k] === "undefined") {
+                    file.data[k] =type._default[k];
+                  }
+                }
+
                 if (type.parameters) {
                   scope.parameters = type.parameters.map(function(parameter) {
                     return {
