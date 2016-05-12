@@ -3,28 +3,10 @@ module.export = function(m) {
     code: "function(subobj) {\n  return function(music) {\n    return subobj(music); \n  };\n}\n"
   }}, function(object, subobjects) {
     if (!object) return;
-
-    var ret, inner;
-    ret = function(music) {
+    return function(music) {
+      var inner = eval("("+object.code+")");
       return inner(subobjects[0])(music);
     };
-
-    ret.update = function(options) {
-      try {
-        inner = eval("("+object.code+")");
-        if (typeof inner !== 'function') throw "Not a function";
-      } catch (e) {
-        console.error(e);
-        inner = function(obj) {
-          return obj;
-        };
-      }
-
-      return this;
-    };
-
-    ret.update(object);
-    return ret;
   });
 
 
