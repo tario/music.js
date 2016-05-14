@@ -268,6 +268,8 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
       var keyDownHandler = function(e) {
         var keyCode = e.keyCode;
         var noteName = keyCodeToNote[keyCode];
+        if (!noteName) return;
+
         var idx = MUSIC.noteToNoteNum(noteName);
         scope.octaves[1].key[idx] = true;
         scope.octaves[1].update();
@@ -278,6 +280,8 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
       var keyUpHandler = function(e) {
         var keyCode = e.keyCode;
         var noteName = keyCodeToNote[keyCode];
+        if (!noteName) return;
+
         var idx = MUSIC.noteToNoteNum(noteName);
         scope.octaves[1].key[idx] = false;
         scope.octaves[1].update();
