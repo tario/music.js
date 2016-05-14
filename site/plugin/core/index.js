@@ -1,14 +1,10 @@
 module.export = function(m) {
-  var wrapContextAsDisposable = function(context) {
-    var disposeList = [];
+  var DisposableAudioContextWrapper = function(context) {
+    this.context = context;
+    this.disposeList = [];
+  };
 
-    var dispose = function() {
-      disposeList.forEach(function(f) {
-        f();
-      });
-    };
-
-    var wrapNodeConnections = function(node) {
+  var wrapNodeConnections = function(node, disposeList) {
       var originalConnect = node.connect.bind(node);
       var originalDisconnect = node.disconnect.bind(node);
       var disconnected = new WeakMap();
@@ -25,26 +21,19 @@ module.export = function(m) {
       };
 
       return node;
+  };
+
+  var methods = ["createBuffer", "createBufferSource", "createMediaElementSource", "createMediaStreamSource", "createMediaStreamDestination", "createGain", "createDelay", "createBiquadFilter", "createIIRFilter", "createWaveShaper", "createPanner", "createConvolver", "createDynamicsCompressor", "createAnalyser", "createScriptProcessor", "createStereoPanner", "createOscillator", "createPeriodicWave", "createChannelSplitter", "createChannelMerger"];
+  methods.forEach(function(method) {
+    DisposableAudioContextWrapper.prototype[method] = function() {
+      return wrapNodeConnections(this.context[method].apply(this.context, arguments), this.disposeList);
     };
+  });
 
-    var wrap = function(name) {
-      var origFunc = context[name];
-      return function() {
-        var node = origFunc.apply(context, arguments);
-        return wrapNodeConnections(node);
-      };
-    };
-
-    var ret = {
-      dispose: dispose
-    };
-
-    var methods = ["createBuffer", "createBufferSource", "createMediaElementSource", "createMediaStreamSource", "createMediaStreamDestination", "createGain", "createDelay", "createBiquadFilter", "createIIRFilter", "createWaveShaper", "createPanner", "createConvolver", "createDynamicsCompressor", "createAnalyser", "createScriptProcessor", "createStereoPanner", "createOscillator", "createPeriodicWave", "createChannelSplitter", "createChannelMerger"];
-    methods.forEach(function(m) {
-      ret[m] = wrap(m);
-    });
-
-    return ret;
+  DisposableAudioContextWrapper.prototype.dispose = function() {
+    for (var i=0; i<this.disposeList.length; i++) {
+      this.disposeList[i]();
+    }
   };
 
   var webaudioInstrument = function(instrument) {
@@ -82,7 +71,7 @@ module.export = function(m) {
 
       return {
         note: function(n) {
-          var wrappedContext = wrapContextAsDisposable(context);
+          var wrappedContext = new DisposableAudioContextWrapper(context);
           var playable = instr.note(n, wrappedContext, destination);
           return afterStop(playable, function() {
             if (wrappedContext.dispose) wrappedContext.dispose();
