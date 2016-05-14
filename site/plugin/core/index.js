@@ -45,7 +45,7 @@ module.export = function(m) {
           return {stop: stop};
         };
         var note = function() {
-          return {play: play};
+          return MUSIC.playablePipeExtend({play: play});
         };
         return {note: note};
       };
@@ -87,9 +87,11 @@ module.export = function(m) {
         note: function(n) {
           var wrappedContext = new DisposableAudioContextWrapper(context);
           var playable = instr.note(n, wrappedContext, destination);
-          return afterStop(playable, function() {
-            if (wrappedContext.dispose) wrappedContext.dispose();
-          });
+
+          return MUSIC.playablePipeExtend(playable)
+            .onStop(function() {
+              if (wrappedContext.dispose) wrappedContext.dispose();
+            });
         }
       };
     };
@@ -126,7 +128,7 @@ module.export = function(m) {
       var waInstr = webaudioInstrument(subobjects[0]);
       var scoped = withScopedNote(inner(waInstr));
 
-      return scoped(music._audio.audio, music._audio._destination);
+      return scoped(music._audio.audio, music._audioDestination._destination);
     };
   });
 
