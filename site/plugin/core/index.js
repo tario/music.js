@@ -81,7 +81,7 @@ module.export = function(m) {
     };
   };
 
-  m.type("webaudio_script_wrapper", {template: "script", description:"Script Wrapper", _default: {
+  m.type("webaudio_script", {template: "script", description:"Webaudio Script", _default: {
     code: ["",
     "function(instrument) {",
     "  return function(context, destination) {",
@@ -94,6 +94,19 @@ module.export = function(m) {
   }}, function(object, subobjects) {
     if (!object) return;
     return function(music) {
+      var frequency = MUSIC.Instrument.frequency;
+      var note = function(f) {
+        return MUSIC.instrumentExtend({note: f});
+      };
+
+      var play = function(f) {
+        return {play: f};
+      };
+
+      var stop = function(f) {
+        return {stop: f};
+      };
+
       var inner = eval("("+object.code+")");
 
       var waInstr = webaudioInstrument(subobjects[0]);
