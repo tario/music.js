@@ -51,8 +51,12 @@ module.export = function(m) {
       };
     }
 
-    return function(context, destination) {
-      var music = (new MUSIC.AudioDestinationWrapper({audio: context}, destination)).sfxBase();
+    return function(context_or_music, destination) {
+      if (context_or_music._destination) {
+        return instrument(context_or_music);
+      }
+
+      var music = (new MUSIC.AudioDestinationWrapper({audio: context_or_music}, destination)).sfxBase();
       var ret = instrument(music);
 
       ret.dispose = function(){
@@ -64,23 +68,29 @@ module.export = function(m) {
   };
 
   var withScopedNote = function(instrument) {
-    return function(context, destination) {
-      var instr = instrument(context, destination);
+    return function(music) {
+      var context = music._audio.audio;
+      var destination = music._audioDestination._destination;
+      if (instrument.length === 1) {
+        return instrument(music);
+      } else if (instrument.length === 2) {
+        instr = instrument(context, destination);
 
-      return {
-        note: function(n) {
-          var wrappedContext = new DisposableAudioContextWrapper(context);
-          var playable = instr.note(n, wrappedContext, destination);
+        return {
+          note: function(n) {
+            var wrappedContext = new DisposableAudioContextWrapper(context);
+            var playable = instr.note(n, wrappedContext, destination);
 
-          return MUSIC.playablePipeExtend(playable)
-            .onError(function(err) {
-              if (wrappedContext.dispose) wrappedContext.dispose();
-            })
-            .onStop(function() {
-              if (wrappedContext.dispose) wrappedContext.dispose();
-            });
-        }
-      };
+            return MUSIC.playablePipeExtend(playable)
+              .onError(function(err) {
+                if (wrappedContext.dispose) wrappedContext.dispose();
+              })
+              .onStop(function() {
+                if (wrappedContext.dispose) wrappedContext.dispose();
+              });
+          }
+        };
+      }
     };
   };
 
@@ -117,7 +127,7 @@ module.export = function(m) {
       var waInstr = webaudioInstrument(subobjects[0]);
       var scoped = withScopedNote(inner(waInstr));
 
-      return scoped(music._audio.audio, music._audioDestination._destination);
+      return scoped(music);
     };
   });
 
