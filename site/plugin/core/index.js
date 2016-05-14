@@ -75,7 +75,7 @@ module.export = function(m) {
       if (instrument.length === 1) {
         return instrument(music);
       } else if (instrument.length === 2) {
-        instr = instrument(context, destination);
+        var instr = instrument(context, destination);
 
         return {
           note: function(n) {
