@@ -7,16 +7,17 @@ module.export = function(m) {
   var wrapNodeConnections = function(node, disposeList) {
       var originalConnect = node.connect.bind(node);
       var originalDisconnect = node.disconnect.bind(node);
-      var disconnected = new WeakMap();
+      var connected = new WeakMap();
       node.disconnect = function(dest) {
-        if (disconnected.has(dest)) return;
-        disconnected.set(dest,1);
+        if (!connected.has(dest)) return;
+        connected.delete(dest);
         originalDisconnect(dest);
       };
       node.connect = function(dest) {
         disposeList.push(function() {
           node.disconnect(dest);
         });
+        connected.set(dest, 1);
         return originalConnect(dest);
       };
 
