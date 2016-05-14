@@ -1,4 +1,119 @@
 module.export = function(m) {
+  var wrapContextAsDisposable = function(context) {
+    var disposeList = [];
+
+    var dispose = function() {
+      disposeList.forEach(function(f) {
+        f();
+      });
+    };
+
+    var wrapNodeConnections = function(node) {
+      var originalConnect = node.connect.bind(node);
+      var originalDisconnect = node.disconnect.bind(node);
+      var disconnected = new WeakMap();
+      node.disconnect = function(dest) {
+        if (disconnected.has(dest)) return;
+        disconnected.set(dest,1);
+        originalDisconnect(dest);
+      };
+      node.connect = function(dest) {
+        disposeList.push(function() {
+          node.disconnect(dest);
+        });
+        return originalConnect(dest);
+      };
+
+      return node;
+    };
+
+    var wrap = function(name) {
+      var origFunc = context[name];
+      return function() {
+        var node = origFunc.apply(context, arguments);
+        return wrapNodeConnections(node);
+      };
+    };
+
+    var ret = {
+      dispose: dispose
+    };
+
+    var methods = ["createBuffer", "createBufferSource", "createMediaElementSource", "createMediaStreamSource", "createMediaStreamDestination", "createGain", "createDelay", "createBiquadFilter", "createIIRFilter", "createWaveShaper", "createPanner", "createConvolver", "createDynamicsCompressor", "createAnalyser", "createScriptProcessor", "createStereoPanner", "createOscillator", "createPeriodicWave", "createChannelSplitter", "createChannelMerger"];
+    methods.forEach(function(m) {
+      ret[m] = wrap(m);
+    });
+
+    return ret;
+  };
+
+  var webaudioInstrument = function(instrument) {
+    return function(context, destination) {
+      var music = (new MUSIC.AudioDestinationWrapper({audio: context}, destination)).sfxBase();
+      var ret = instrument(music);
+
+      ret.dispose = function(){
+        factory.prune();
+      };
+
+      return ret;
+    };
+  };
+
+  var afterStop = function(playable, fcn) {
+    var play = function() {
+      var playing = playable.play();
+      return {
+        stop: function() {
+          playing.stop();
+          fcn();
+        }
+      };
+    };
+
+    return {
+      play: play
+    };
+  };
+
+  var withScopedNote = function(instrument) {
+    return function(context, destination) {
+      var instr = instrument(context, destination);
+
+      return {
+        note: function(n) {
+          var wrappedContext = wrapContextAsDisposable(context);
+          var playable = instr.note(n, wrappedContext, destination);
+          return afterStop(playable, function() {
+            if (wrappedContext.dispose) wrappedContext.dispose();
+          });
+        }
+      };
+    };
+  };
+
+  m.type("webaudio_script_wrapper", {template: "script", description:"Script Wrapper", _default: {
+    code: ["",
+    "function(instrument) {",
+    "  return function(context, destination) {",
+    "    var gain = context.createGain();",
+    "    gain.connect(destination);",
+    "    gain.gain.value = 0.6;",
+    "    return instrument(context, gain);",
+    "  };",
+    "}"].join("\n")
+  }}, function(object, subobjects) {
+    if (!object) return;
+    return function(music) {
+      var inner = eval("("+object.code+")");
+
+      var waInstr = webaudioInstrument(subobjects[0]);
+      var scoped = withScopedNote(inner(waInstr));
+
+      return scoped(music._audio.audio, music._audio._destination);
+    };
+  });
+
   m.type("script_wrapper", {template: "script", description:"Script Wrapper", _default: {
     code: "function(subobj) {\n  return function(music) {\n    return subobj(music); \n  };\n}\n"
   }}, function(object, subobjects) {
