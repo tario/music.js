@@ -63,22 +63,6 @@ module.export = function(m) {
     };
   };
 
-  var afterStop = function(playable, fcn) {
-    var play = function() {
-      var playing = playable.play();
-      return {
-        stop: function() {
-          playing.stop();
-          fcn();
-        }
-      };
-    };
-
-    return {
-      play: play
-    };
-  };
-
   var withScopedNote = function(instrument) {
     return function(context, destination) {
       var instr = instrument(context, destination);
@@ -89,6 +73,9 @@ module.export = function(m) {
           var playable = instr.note(n, wrappedContext, destination);
 
           return MUSIC.playablePipeExtend(playable)
+            .onError(function(err) {
+              if (wrappedContext.dispose) wrappedContext.dispose();
+            })
             .onStop(function() {
               if (wrappedContext.dispose) wrappedContext.dispose();
             });
@@ -116,7 +103,9 @@ module.export = function(m) {
       };
 
       var play = function(f) {
-        return {play: f};
+        return {play: function() {
+          return f() || {stop: function() {}};
+        }};
       };
 
       var stop = function(f) {

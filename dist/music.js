@@ -419,6 +419,33 @@ MUSIC.playablePipeExtend = function(obj) {
     );
   };
 
+  obj.onError = function(fcn) {
+    var original = this;
+    return MUSIC.playablePipeExtend(
+      {
+        play: function(param) {
+          try {
+            var playing = original.play(param);
+            return {
+              stop: function() {
+                try {
+                  playing.stop();
+                } catch(e) {
+                  console.error(e);
+                  fcn(e);
+                }
+              }
+            };
+          } catch(e) {
+            console.error(e);
+            fcn(e);
+            throw e;
+          }
+        }
+      }
+    );
+  };
+
   obj.onStop = function(fcn) {
     var original = this;
     return MUSIC.playablePipeExtend(
