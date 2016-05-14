@@ -9,6 +9,13 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     
     MusicObjectFactory($scope.file)
       .then(function(obj) {
+          if (!obj) {
+            $scope.instruments = [];
+            $scope.playables = [];
+            console.log("removed");
+            return;
+          }
+
           if (obj !== lastObj) {
             $scope.instruments = [];
             $scope.playables = [];

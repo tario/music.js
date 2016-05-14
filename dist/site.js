@@ -10216,6 +10216,13 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     
     MusicObjectFactory($scope.file)
       .then(function(obj) {
+          if (!obj) {
+            $scope.instruments = [];
+            $scope.playables = [];
+            console.log("removed");
+            return;
+          }
+
           if (obj !== lastObj) {
             $scope.instruments = [];
             $scope.playables = [];
@@ -10766,6 +10773,8 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
   var create = function(descriptor) {
     return createParametric(descriptor)
       .then(function(fcn) {
+        if (!fcn) return;
+
         return MusicContext.runFcn(function(music) {
           return fcn(music);
         });

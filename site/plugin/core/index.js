@@ -37,6 +37,20 @@ module.export = function(m) {
   };
 
   var webaudioInstrument = function(instrument) {
+    if (!instrument) {
+      return function(context, destination) {
+        var stop = function() {
+        };
+        var play = function() {
+          return {stop: stop};
+        };
+        var note = function() {
+          return {play: play};
+        };
+        return {note: note};
+      };
+    }
+
     return function(context, destination) {
       var music = (new MUSIC.AudioDestinationWrapper({audio: context}, destination)).sfxBase();
       var ret = instrument(music);

@@ -110,6 +110,8 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
   var create = function(descriptor) {
     return createParametric(descriptor)
       .then(function(fcn) {
+        if (!fcn) return;
+
         return MusicContext.runFcn(function(music) {
           return fcn(music);
         });
