@@ -10,7 +10,5 @@
   {"type": "instrument", "name": "Custom sine wave oscillator 2", "uri": "examples/periodicFormulaGenerator.js", "id": "EX8"},
   {"type": "instrument", "name": "Chiptune Set", "uri": "examples/chiptune.js", "id": "EX9"},
   {"type": "instrument", "name": "Astro Robo Sasa lvl 1 music", "uri": "examples/astroRoboSasa.js", "id": "EX10"},
-  {"type": "instrument", "name": "Bassline", "uri": "examples/bassline.js", "id": "EX11"},
-  {"type": "instrument", "name": "Heavy Bassline Try 2", "uri": "examples/bassline2.js", "id": "EX12"},
   {"type": "instrument", "name": "Lemonade", "uri": "examples/lemonade.js", "id": "EX13"} 
 ]

@@ -94,7 +94,7 @@ module.export = function(m) {
     };
   };
 
-  m.type("webaudio_script", {template: "script", description:"Webaudio Script", _default: {
+  m.type("script", {template: "script", description:"Script", _default: {
     code: ["",
     "function(instrument) {",
     "  return function(context, destination) {",
@@ -128,38 +128,6 @@ module.export = function(m) {
       var scoped = withScopedNote(inner(waInstr));
 
       return scoped(music);
-    };
-  });
-
-  m.type("script_wrapper", {template: "script", description:"Script Wrapper", _default: {
-    code: "function(subobj) {\n  return function(music) {\n    return subobj(music); \n  };\n}\n"
-  }}, function(object, subobjects) {
-    if (!object) return;
-    return function(music) {
-      var inner = eval("("+object.code+")");
-      return inner(subobjects[0])(music);
-    };
-  });
-
-
-  m.type("script", {template: "script", description: "Custom script", _default: {
-    code: "// add instrument to show on UI\nreturn new MUSIC.Instrument(music.oscillator({type: 'square'}));\n"
-  }}, function(object){
-    if (!object) return;
-    return function(music) {
-      var results;
-      try {
-        results = {object: eval("(function() {\n" + object.code + "\n})")()};
-      } catch(e) {
-        results = {error: e.toString()};
-      }
-
-      if (results.error) {
-          object.codeError = results.error;
-      } else {
-          object.codeError = null;
-      }
-      return results.object;
     };
   });
 
