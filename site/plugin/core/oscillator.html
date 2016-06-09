@@ -1,5 +1,25 @@
 <div class="generic-parameter">
-Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth', 'triangle']"></select>
+Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth', 'triangle', 'custom']"></select>
+
+<div ng-show="file.data.oscillatorType == 'custom'">
+<h1>Series</h1>
+<div class="allow-scroll-x">
+  <table class="series">
+    <thead>
+      <tr>
+        <td></td>
+        <td ng-repeat="index in range(0,255)">{{index}}</td>
+      </tr>
+    </thead>
+    <tbody ng-init="file.data.series = file.data.series ||{}">
+      <tr ng-init="file.data.series[key] = file.data.series[key] || []" ng-repeat="key in ['sin', 'cos', 'sqr', 'saw', 'tgl']">
+        <td>{{key}}</td>
+        <td ng-init="file.data.series[key][index] = file.data.series[key][index] || 0" ng-repeat="index in range(0,255)"><input max="1" min="-1" type="number" step="any" class="factorinput" ng-model='file.data.series[key][index]' /></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
 
 <br/>
 <input type="checkbox" class="regular-checkbox showable-switch" ng-model="file.data.fixed_frequency" /> Fixed frequency

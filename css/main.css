@@ -194,3 +194,34 @@ input.invisible-text {
 .hzinput {
   width: 60px;
 }
+
+input.factorinput {
+  width: 40px;
+  margin-left: 0;
+  -webkit-transition: width 0.2s; /* Safari */
+  transition: width 0.2s;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+input.factorinput:hover {
+  width: 100px;
+}
+
+p.factorrow {
+  width: 4000px;
+}
+
+input.factorinput:focus {
+  width: 100px;
+}
+
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+.allow-scroll-x {
+  overflow-x: scroll;
+}
