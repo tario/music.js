@@ -3,21 +3,35 @@ Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType |
 
 <div ng-show="file.data.oscillatorType == 'custom'">
 <h1>Series</h1>
-<div class="allow-scroll-x">
-  <table class="series">
-    <thead>
-      <tr>
-        <td></td>
-        <td ng-repeat="index in range(0,255)">{{index}}</td>
-      </tr>
-    </thead>
-    <tbody ng-init="file.data.series = file.data.series ||{}">
-      <tr ng-init="file.data.series[key] = file.data.series[key] || []" ng-repeat="key in ['sin', 'cos', 'sqr', 'saw', 'tgl']">
-        <td>{{key}}</td>
-        <td ng-init="file.data.series[key][index] = file.data.series[key][index] || 0" ng-repeat="index in range(0,255)"><input max="1" min="-1" type="number" step="any" class="factorinput" ng-model='file.data.series[key][index]' /></td>
-      </tr>
-    </tbody>
-  </table>
+<div class="row-fluid">
+  <div class="span1">
+    <table class="series">
+      <thead>
+        <tr>
+          <td class="fixed-header">...</td>
+        </tr>
+      </thead>
+      <tbody ng-init="file.data.series = file.data.series ||{}">
+        <tr ng-init="file.data.series[key] = file.data.series[key] || []" ng-repeat="key in ['sin', 'sqr', 'saw', 'tgl', 'cos', 'sqrcos', 'sawcos', 'tglcos']">
+          <td class="fixed-header">{{key}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="span11 allow-scroll-x">
+    <table class="series">
+      <thead>
+        <tr>
+          <td class="cell" ng-repeat="index in range(0,127)">{{index}}</td>
+        </tr>
+      </thead>
+      <tbody ng-init="file.data.series = file.data.series ||{}">
+        <tr ng-init="file.data.series[key] = file.data.series[key] || []" ng-repeat="key in ['sin', 'sqr', 'saw', 'tgl', 'cos', 'sqrcos', 'sawcos', 'tglcos']">
+          <td class="cell" ng-init="file.data.series[key][index] = file.data.series[key][index] || 0" ng-repeat="index in range(0,127)"><input max="1" min="-1" type="number" step="any" class="factorinput" ng-model='file.data.series[key][index]' /></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 </div>
 
