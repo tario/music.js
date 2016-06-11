@@ -204,10 +204,6 @@ input.factorinput {
   margin-bottom: 0;
 }
 
-input.factorinput:hover {
-  width: 100px;
-}
-
 p.factorrow {
   width: 4000px;
 }

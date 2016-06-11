@@ -421,7 +421,8 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       wave: options.wave,
       f: options.f,
       frequency: options.fixed_frequency ? options.fixed_frequency : newFreq,
-      detune: options.detune
+      detune: options.detune,
+      periodicWave: options.periodicWave
     };
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
@@ -482,6 +483,15 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     newOptions.f = options.wave.f;
     MUSIC.SoundLib.Oscillator.bind(this)(music, destination, newOptions);
   } else {
+    var wave;
+    if (!options.periodicWave) {
+      if (options.type === "custom") {
+        var real = new Float32Array(options.series.sin || []);
+        var imag = new Float32Array(options.series.cos || []);
+        options.periodicWave = music.audio.createPeriodicWave(real, imag);
+      }
+    }
+
     this.play = function(param) {
       var osc;
       var nextNode;
@@ -506,7 +516,11 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         }
       }
 
-      osc.type = options.type;
+      if (options.periodicWave) {
+        osc.setPeriodicWave(options.periodicWave);
+      } else {
+        osc.type = options.type;
+      }
 
       nextNode = destination;
       audioDestination = nextNode._destination;

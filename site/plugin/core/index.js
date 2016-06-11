@@ -172,6 +172,7 @@ module.export = function(m) {
           var props = {
             type: data.oscillatorType ||"square",
             fixed_frequency: data.fixed_frequency && data.frequency,
+            series: data.series
           };
 
           if (components && components.detune) {

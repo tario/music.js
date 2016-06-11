@@ -10349,7 +10349,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       scope.parameters = [];
       scope.range = function(init, end) {
         var x = [];
-        for (var i=0;i<=end;i++) {
+        for (var i=init;i<=end;i++) {
           x.push(i);
         }
         return x;
