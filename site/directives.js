@@ -11,6 +11,16 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var types = TypeService.getTypes();
 
       scope.parameters = [];
+
+      scope.oscTermsUpdate = fn.debounce(function(serie, terms) {
+        var serie = eval("(function(n) { return " + serie + "; })");
+        $timeout(function() {
+          for (var n=1;n<512;n++) {
+            terms[n]=serie(n);
+          }
+        });
+      },400);
+
       scope.range = function(init, end) {
         var x = [];
         for (var i=init;i<=end;i++) {

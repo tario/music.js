@@ -222,6 +222,14 @@ input[type=number]::-webkit-outer-spin-button {
   overflow-x: scroll;
 }
 
-table.series tr {
+table.terms tr {
   height: 25px;
+}
+
+input.serie {
+  width: 100% !important  ;
+}
+
+p.serie-label {
+  margin: 10px 20px;
 }

@@ -486,8 +486,9 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     var wave;
     if (!options.periodicWave) {
       if (options.type === "custom") {
-        var real = new Float32Array(options.series.sin || []);
-        var imag = new Float32Array(options.series.cos || []);
+        var real = new Float32Array(options.terms.sin || []);
+        var imag = new Float32Array(options.terms.cos || []);
+
         options.periodicWave = music.audio.createPeriodicWave(real, imag);
       }
     }
