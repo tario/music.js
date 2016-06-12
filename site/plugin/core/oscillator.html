@@ -2,18 +2,28 @@
 Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth', 'triangle', 'custom']"></select>
 
 <div ng-show="file.data.oscillatorType == 'custom'">
+<h1>Waveform</h1>
+<div class="row-fluid" ng-init="file.data.waveform = file.data.waveform || '0'">
+  <div class="span1">
+    <p class="serie-label">f(t)= </p>
+  </div>
+  <div class="span11" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
+    <input class="serie" type="text" ng-model="file.data.waveform" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms); file.data.serie.sin = '0'; file.data.serie.cos = '0'" />
+  </div>
+</div>
+
 <h1>Serie</h1>
 <div class="row-fluid" ng-init="file.data.serie = file.data.serie ||{}">
   <div class="span1">
-    <p class="serie-label">sin</p>
+    <p class="serie-label">a(n)=</p>
   </div>
   <div class="span11" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
-    <input class="serie" type="text" ng-model="file.data.serie.sin" ng-change="oscTermsUpdate(file.data.serie.sin, file.data.terms.sin)" />
+    <input class="serie" type="text" ng-model="file.data.serie.sin" ng-change="oscTermsUpdate(file.data.serie.sin, file.data.terms.sin); file.data.waveform = '0'" />
   </div>
 </div>
 <div class="row-fluid">
   <div class="span1">
-    <p class="serie-label">cos</p>
+    <p class="serie-label">b(n)=</p>
   </div>
   <div class="span11" ng-init="file.data.serie.cos = file.data.serie.cos || '0'">
     <input class="serie" type="text" ng-model="file.data.serie.cos" ng-change="oscTermsUpdate(file.data.serie.cos, file.data.terms.cos)" />

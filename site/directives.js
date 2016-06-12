@@ -12,6 +12,21 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       scope.parameters = [];
 
+      scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms) {
+        var waveform = eval("(function(t) { return " + waveform + "; })");
+        var count = 512;
+        var values = new Array(count);
+        for (var i = 0; i < count; i++) {
+          values[i] = waveform(i/count);
+        }
+
+        var ft = new DFT(values.length);
+        ft.forward(values);
+
+        terms.sin = ft.real;
+        terms.cos = ft.imag;
+      },400);
+
       scope.oscTermsUpdate = fn.debounce(function(serie, terms) {
         var serie = eval("(function(n) { return " + serie + "; })");
         $timeout(function() {
