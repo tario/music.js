@@ -12716,14 +12716,24 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       },400);
 
-      scope.oscTermsUpdate = fn.debounce(function(serie, terms) {
-        var serie = eval("(function(n) { return " + serie + "; })");
-        $timeout(function() {
+      scope.oscTermsUpdate = fn.debounce(function(serie, terms, errVar) {
+
+        try {
+          var serie = eval("(function(n) { return " + serie + "; })");
           for (var n=1;n<512;n++) {
             terms[n]=serie(n);
+            if (isNaN(terms[n])) throw "Not a number: " + terms[n];
+  
           }
-          scope.$broadcast('termschanged');
-        });
+          scope[errVar] = false;
+          $timeout(function() {
+            scope.$broadcast('termschanged');
+          });
+        } catch (err) {
+          $timeout(function() {
+            scope[errVar] = err.toString();
+          });
+        }
       },400);
 
       scope.range = function(init, end) {

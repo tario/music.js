@@ -30,14 +30,30 @@ Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType |
   <div class="span1">
     <p class="serie-label">a(n)=</p>
   </div>
-  <div class="span5" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
-    <input class="serie" type="text" ng-model="file.data.serie.sin" ng-change="oscTermsUpdate(file.data.serie.sin, file.data.terms.sin); file.data.waveform = '0'" />
+  <div class="span5" ng-init="file.data.serie.cos = file.data.serie.cos || '0'">
+    <input ng-class='{"invalid-text": invalidA}' class="serie" type="text" ng-model="file.data.serie.cos" ng-change="oscTermsUpdate(file.data.serie.cos, file.data.terms.cos, 'invalidA'); file.data.waveform = '0'" />
   </div>
   <div class="span1">
     <p class="serie-label">b(n)=</p>
   </div>
-  <div class="span5" ng-init="file.data.serie.cos = file.data.serie.cos || '0'">
-    <input class="serie" type="text" ng-model="file.data.serie.cos" ng-change="oscTermsUpdate(file.data.serie.cos, file.data.terms.cos)" />
+  <div class="span5" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
+    <input ng-class='{"invalid-text": invalidB}' class="serie" type="text" ng-model="file.data.serie.sin" ng-change="oscTermsUpdate(file.data.serie.sin, file.data.terms.sin, 'invalidB')" />
+  </div>
+</div>
+<div class="row-fluid invalid-text">
+  <div class="span1">
+  </div>
+  <div class="span5">
+    <div ng-show="invalidA">
+      {{invalidA}}
+    </div>
+  </div>
+  <div class="span1">
+  </div>
+  <div class="span5" ng-show="invalidB">
+    <div ng-show="invalidB">
+      {{invalidB}}
+    </div>
   </div>
 </div>
 
@@ -51,7 +67,7 @@ Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType |
         </tr>
       </thead>
       <tbody ng-init="file.data.terms = file.data.terms ||{}">
-        <tr ng-init="file.data.terms[key] = file.data.terms[key] || []" ng-repeat="key in ['sin', 'cos']">
+        <tr ng-init="file.data.terms[key] = file.data.terms[key] || []" ng-repeat="key in ['cos', 'sin']">
           <td class="fixed-header">{{key}}</td>
         </tr>
       </tbody>
