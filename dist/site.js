@@ -12670,6 +12670,34 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
           terms.sin[i] = ft.real[i];
           terms.cos[i] = ft.imag[i];
         }
+
+        var f = function(t){
+          var ret = 0;
+          for (var i=1;i<256;i++) {
+            var a = terms.sin[i];
+            var b = terms.cos[i];
+
+            ret = ret + a * Math.sin(t*2*Math.PI*i);
+            ret = ret + b * Math.cos(t*2*Math.PI*i);
+          }
+          return ret;
+        };
+
+        var maxvalue = 0;
+        for (var i=0; i<512; i++) {
+          var value = f(i/512);
+          if (value>maxvalue) {
+            maxvalue=value;
+          } else if (value<-maxvalue) {
+            maxvalue=-value;
+          }
+        }
+
+        for (var i=0;i<512;i++) {
+          terms.sin[i] = terms.sin[i] / maxvalue;
+          terms.cos[i] = terms.cos[i] / maxvalue;
+        }
+
         scope.$broadcast('termschanged');
 
       },400);
@@ -13002,8 +13030,8 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
           var a = scope.terms.sin[i];
           var b = scope.terms.cos[i];
 
-          ret = ret + a * Math.sin(t*i);
-          ret = ret + b * Math.cos(t*i);
+          ret = ret + a * Math.sin(t*2*Math.PI*i);
+          ret = ret + b * Math.cos(t*2*Math.PI*i);
         }
         return ret;
       };
@@ -13035,7 +13063,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
           context.moveTo(0, f(0));
           for (var i=1; i<64; i++) {
             var t = i/64;
-            context.lineTo(t, f(t*2*Math.PI));
+            context.lineTo(t, f(t));
           }
           context.restore();
           context.lineJoin = 'round';
