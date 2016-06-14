@@ -7,14 +7,21 @@ Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType |
   <div class="span1">
     <p class="serie-label">f(t)= </p>
   </div>
-  <div class="span7" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
-    <input class="serie" type="text" ng-model="file.data.waveform" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms, resolution); file.data.serie.sin = '0'; file.data.serie.cos = '0'" />
+  <div class="span9" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
+    <input ng-class='{"invalid-text": invalidWaveform}' class="serie" type="text" ng-model="file.data.waveform" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms, resolution); file.data.serie.sin = '0'; file.data.serie.cos = '0'" />
   </div>
   <div class="span1">
     <p class="serie-label">res= </p>
   </div>
-  <div class="span3">
+  <div class="span1">
     <input class="serie" type="number" min="8" max="2048" ng-init="resolution=resolution||64" ng-model="resolution" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms, resolution); file.data.serie.sin = '0'; file.data.serie.cos = '0'"/>
+  </div>
+</div>
+<div class="row-fluid invalid-text">
+  <div class="span1">
+  </div>
+  <div class="span7" ng-show="invalidWaveform">
+    {{invalidWaveform}}
   </div>
 </div>
 

@@ -12656,53 +12656,63 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       };
 
       scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms, resolution) {
-        var waveform = eval("(function(t) { return " + waveform + "; })");
-        var count = resolution;
-        var values = new Array(count);
-        for (var i = 0; i < count; i++) {
-          values[i] = waveform(i/count);
-        }
 
-        var ft = new DFT(values.length);
-        ft.forward(values);
-
-        for (var i=0;i<count;i++) {
-          terms.cos[i] = ft.real[i];
-          terms.sin[i] = ft.imag[i];
-        }
-        terms.cos.length = ft.real.length/2;
-        terms.sin.length = ft.imag.length/2;
-
-        var f = function(t){
-          var ret = 0;
-          for (var i=1;i<count/2;i++) {
-            var a = terms.sin[i];
-            var b = terms.cos[i];
-
-            ret = ret + a * Math.sin(t*2*Math.PI*i);
-            ret = ret + b * Math.cos(t*2*Math.PI*i);
+        try {
+          var waveform = eval("(function(t) { return " + waveform + "; })");
+          var count = resolution;
+          var values = new Array(count);
+          for (var i = 0; i < count; i++) {
+            values[i] = waveform(i/count);
+            if (isNaN(values[i])) throw "Not a number: " + values[i];
           }
-          return ret;
-        };
 
-        var maxvalue = 0;
-        var count = terms.sin.length;
-        for (var i=0; i<count; i++) {
-          var value = f(i/count);
-          if (value>maxvalue) {
-            maxvalue=value;
-          } else if (value<-maxvalue) {
-            maxvalue=-value;
+          var ft = new DFT(values.length);
+          ft.forward(values);
+
+          for (var i=0;i<count;i++) {
+            terms.cos[i] = ft.real[i];
+            terms.sin[i] = ft.imag[i];
           }
-        }
+          terms.cos.length = ft.real.length/2;
+          terms.sin.length = ft.imag.length/2;
 
-        for (var i=0;i<count;i++) {
-          terms.sin[i] = terms.sin[i] / maxvalue;
-          terms.cos[i] = terms.cos[i] / maxvalue;
-        }
+          var f = function(t){
+            var ret = 0;
+            for (var i=1;i<count/2;i++) {
+              var a = terms.sin[i];
+              var b = terms.cos[i];
 
-        $timeout(function() {});
-        scope.$broadcast('termschanged');
+              ret = ret + a * Math.sin(t*2*Math.PI*i);
+              ret = ret + b * Math.cos(t*2*Math.PI*i);
+            }
+            return ret;
+          };
+
+          var maxvalue = 0;
+          var count = terms.sin.length;
+          for (var i=0; i<count; i++) {
+            var value = f(i/count);
+            if (value>maxvalue) {
+              maxvalue=value;
+            } else if (value<-maxvalue) {
+              maxvalue=-value;
+            }
+          }
+
+          for (var i=0;i<count;i++) {
+            terms.sin[i] = terms.sin[i] / maxvalue;
+            terms.cos[i] = terms.cos[i] / maxvalue;
+          }
+
+          $timeout(function() {
+            scope.invalidWaveform = false;
+          });
+          scope.$broadcast('termschanged');
+        } catch (err) {
+          $timeout(function() {
+            scope.invalidWaveform = err.toString();
+          });
+        }
 
       },400);
 

@@ -243,3 +243,11 @@ canvas.wavegraph {
   border-color: white;
   border-width: 8px;
 }
+
+input.invalid-text {
+  color: red;
+}
+
+div.invalid-text {
+  color: red;
+}
