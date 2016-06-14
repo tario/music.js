@@ -18,7 +18,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms) {
         var waveform = eval("(function(t) { return " + waveform + "; })");
-        var count = 512;
+        var count = 1024;
         var values = new Array(count);
         for (var i = 0; i < count; i++) {
           values[i] = waveform(i/count);
@@ -27,14 +27,14 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         var ft = new DFT(values.length);
         ft.forward(values);
 
-        for (var i=0;i<512;i++) {
-          terms.sin[i] = ft.real[i];
-          terms.cos[i] = ft.imag[i];
+        for (var i=0;i<count;i++) {
+          terms.cos[i] = ft.real[i];
+          terms.sin[i] = ft.imag[i];
         }
 
         var f = function(t){
           var ret = 0;
-          for (var i=1;i<256;i++) {
+          for (var i=1;i<count/2;i++) {
             var a = terms.sin[i];
             var b = terms.cos[i];
 
@@ -387,7 +387,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
     link: function(scope, element, attrs) {
       var f = function(t){
         var ret = 0;
-        for (var i=1;i<256;i++) {
+        for (var i=1;i<scope.terms.sin.length;i++) {
           var a = scope.terms.sin[i];
           var b = scope.terms.cos[i];
 
@@ -421,10 +421,10 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
           context.translate(0,canvas.height/2);
           context.scale(canvas.width,canvas.height/2);
 
-          context.moveTo(0, f(0));
+          context.moveTo(0, -f(0));
           for (var i=1; i<64; i++) {
             var t = i/64;
-            context.lineTo(t, f(t));
+            context.lineTo(t, -f(t));
           }
           context.restore();
           context.lineJoin = 'round';
