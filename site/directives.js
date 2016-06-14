@@ -16,9 +16,9 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         scope.$broadcast('termschanged');
       };
 
-      scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms) {
+      scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms, resolution) {
         var waveform = eval("(function(t) { return " + waveform + "; })");
-        var count = 512;
+        var count = resolution;
         var values = new Array(count);
         for (var i = 0; i < count; i++) {
           values[i] = waveform(i/count);
@@ -31,6 +31,8 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
           terms.cos[i] = ft.real[i];
           terms.sin[i] = ft.imag[i];
         }
+        terms.cos.length = ft.real.length/2;
+        terms.sin.length = ft.imag.length/2;
 
         var f = function(t){
           var ret = 0;
@@ -45,8 +47,9 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         };
 
         var maxvalue = 0;
-        for (var i=0; i<512; i++) {
-          var value = f(i/512);
+        var count = terms.sin.length;
+        for (var i=0; i<count; i++) {
+          var value = f(i/count);
           if (value>maxvalue) {
             maxvalue=value;
           } else if (value<-maxvalue) {
@@ -54,11 +57,12 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
           }
         }
 
-        for (var i=0;i<512;i++) {
+        for (var i=0;i<count;i++) {
           terms.sin[i] = terms.sin[i] / maxvalue;
           terms.cos[i] = terms.cos[i] / maxvalue;
         }
 
+        $timeout(function() {});
         scope.$broadcast('termschanged');
 
       },400);
@@ -421,10 +425,10 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
           context.translate(0,canvas.height/2);
           context.scale(canvas.width,canvas.height/2);
 
-          context.moveTo(0, -f(0));
-          for (var i=1; i<64; i++) {
+          context.moveTo(0, -f(0)*0.8);
+          for (var i=1; i<=64; i++) {
             var t = i/64;
-            context.lineTo(t, -f(t));
+            context.lineTo(t, -f(t)*0.8);
           }
           context.restore();
           context.lineJoin = 'round';
