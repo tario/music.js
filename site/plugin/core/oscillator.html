@@ -50,12 +50,12 @@ Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType |
     <table class="terms">
       <thead>
         <tr>
-          <td class="cell" ng-repeat="index in range(1,512)">{{index}}</td>
+          <td class="cell" ng-repeat="index in range(1,256)">{{index}}</td>
         </tr>
       </thead>
       <tbody ng-init="file.data.terms = file.data.terms ||{}">
         <tr ng-init="file.data.terms[key] = file.data.terms[key] || []" ng-repeat="key in ['sin', 'cos']">
-          <td class="cell" ng-init="file.data.terms[key][index] = file.data.terms[key][index] || 0" ng-repeat="index in range(1,512)"><input ng-change="termschanged()" type="number" step="any" class="factorinput" ng-model='file.data.terms[key][index]' /></td>
+          <td class="cell" ng-init="file.data.terms[key][index] = file.data.terms[key][index] || 0" ng-repeat="index in range(1,256)"><input ng-change="termschanged()" type="number" step="any" class="factorinput" ng-model='file.data.terms[key][index]' /></td>
         </tr>
       </tbody>
     </table>

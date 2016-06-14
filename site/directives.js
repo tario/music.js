@@ -18,7 +18,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms) {
         var waveform = eval("(function(t) { return " + waveform + "; })");
-        var count = 1024;
+        var count = 512;
         var values = new Array(count);
         for (var i = 0; i < count; i++) {
           values[i] = waveform(i/count);
