@@ -251,3 +251,7 @@ input.invalid-text {
 div.invalid-text {
   color: red;
 }
+
+select.preset {
+  width: 100%;
+}
