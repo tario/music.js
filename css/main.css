@@ -255,3 +255,18 @@ div.invalid-text {
 select.preset {
   width: 100%;
 }
+
+.affix {
+  position: fixed;
+}
+
+.navbar {
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
+.navbar-padding {
+  width: 100%;
+  height: 40px;
+}
