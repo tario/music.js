@@ -319,7 +319,7 @@ module.export = function(m) {
     var ret = function(music){
         var note = function(n) {
             var baseNode = music.sfxBase();
-            var gainNode = baseNode.gain(sustainLevel);
+            var gainNode = baseNode.gain(attackTime > 0 ? 0 : sustainLevel);
             var instance = wrapped(gainNode);
             gainNode.setParam('gain', startCurve);
 
