@@ -323,16 +323,20 @@ module.export = function(m) {
             var instance = wrapped(gainNode);
             gainNode.setParam('gain', startCurve);
 
-            return instance.note(n)
+            var ret = instance.note(n)
                       .onStop(function() {
                         baseNode.prune();
                       })
-                      .stopDelay(releaseTime * 1000)
+            if (releaseTime > 0) {
+              ret = ret.stopDelay(releaseTime * 1000)
                       .onStop(function(){ 
                         var currentLevel = gainNode._destination.gain.value;
                         var releaseCurve = new MUSIC.Curve.Ramp(currentLevel, 0.0, samples).during(releaseTime)
                         gainNode.setParam('gain', releaseCurve); 
                       });
+            }
+
+            return ret;
         };
         return MUSIC.instrumentExtend({
           note: note
