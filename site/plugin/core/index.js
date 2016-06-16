@@ -527,4 +527,41 @@ module.export = function(m) {
 
   });
 
+
+  /*
+    TIMBRE 
+  */
+
+  var genericTimbreType = function(name, options){
+    m.type(name, 
+        {
+          template: "generic_timbre_editor", 
+          parameters: options.parameters, 
+          description: options.description
+        },  function(data, subobjects) {
+          if (!subobjects) return;
+          var wrapped = subobjects[0];
+          if (!wrapped) return;
+
+          var opt = {};
+          options.parameters.forEach(function(param) {
+            opt[param.name] = parseFloat(data[param.name]);
+          });
+
+          var ret = function(music) {
+            return wrapped(music.T("reverb", opt));
+          };
+
+          return ret;
+        });
+  };
+
+  genericTimbreType("reverb", {
+    parameters: [
+      {name: 'room', value: 0.35},
+      {name: 'damp', value: 0.1},
+      {name: 'mix', value: 0.75}
+    ],
+    description: "Reverb powered by timbre.js"
+  });
 };
