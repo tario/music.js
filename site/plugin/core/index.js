@@ -285,7 +285,11 @@ module.export = function(m) {
                           return m*t+b;
                         }
                       } else {
-                        return t/attackTime;
+                        if (attackTime == 0) {
+                          return 1;
+                        } else {
+                          return t/attackTime;
+                        }
                       }
 
                     });
