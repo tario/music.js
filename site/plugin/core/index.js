@@ -165,10 +165,11 @@ module.export = function(m) {
     };
   });
 
+  var defaultModWrapper = function(x){return x;};
   m.type("oscillator", {template: "oscillator", description: "Oscillator", 
     components: ["detune"]}, function(data, subobjects, components) {
     if (!data) return;
-      return function(music, flag, modWrapper){
+      return function(music, options){
           var props = {
             type: data.oscillatorType ||"square",
             fixed_frequency: data.fixed_frequency && data.frequency,
@@ -177,7 +178,7 @@ module.export = function(m) {
 
           if (components && components.detune) {
             props.detune = MUSIC.modulator(function(pl) {
-              return modWrapper(components.detune)(pl, true).note(0);
+              return (options.modWrapper||defaultModWrapper)(components.detune)(pl, {nowrap: true}).note(0);
             });
           };
           var generator = music.oscillator(props);
@@ -199,12 +200,12 @@ module.export = function(m) {
             var baseNode = music.sfxBase();
             var stopped = Promise.defer();
             var modWrapper = function(modulator) {
-              return function(a1, a2) {
-                return modulator(a1, a2, stopped.promise);
+              return function(music, options) {
+                return modulator(music, {nowrap: options.nowrap, stopped: stopped.promise});
               };
             };
 
-            var instance = wrapped(baseNode, true, modWrapper);
+            var instance = wrapped(baseNode, {modWrapper: modWrapper});
 
             if (delay > 0) {
               return instance.note(n)
@@ -246,13 +247,15 @@ module.export = function(m) {
   }},  function(data, subobjects) {
     var attackTime, decayTime, sustainLevel, m, b;
 
-    var ret = function(music, x, stopped){
+    var ret = function(music, options){
+      options = options ||{};
+
       return {
         note: function() {
           var itsover = false;
           var itsover2 = false;
-          if (stopped) {
-            stopped.then(function() {
+          if (options.stopped) {
+            options.stopped.then(function() {
               itsover = true;
             });
           }
@@ -428,10 +431,12 @@ module.export = function(m) {
           var nodes = [];
           var getOpt;
 
-          var ret = function(music, flag, modWrapper) {
-            var node = music[fcn].apply(music, [getOpt(modWrapper)]);
+          var ret = function(music, options) {
+            options = options ||{};
+
+            var node = music[fcn].apply(music, [getOpt(options.modWrapper)]);
             nodes.push(node)
-            return wrapped(node, flag, modWrapper);
+            return wrapped(node, options);
           };
 
 
@@ -445,7 +450,7 @@ module.export = function(m) {
                 var modulator = components[parameter.name];
                 if (modulator) {
                   opt = MUSIC.modulator(function(pl) {
-                    return modWrapper(modulator)(pl, true).note(0);
+                    return modWrapper(modulator)(pl, {nowrap: true}).note(0);
                   });
                 } else {
                   opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);

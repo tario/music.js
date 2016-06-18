@@ -13343,7 +13343,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
       current = sfxBaseOneEntryCacheWrapper(pruneWrapper(current));
 
-      var ret = function(music, flag, modWrapper) {
+      var ret = function(music, options) {
         var r;
         var wrapped = {};
         var lastCurrent = current;
@@ -13355,7 +13355,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
         };
 
         var update = function() {
-            var newr = current(music, flag, modWrapper);
+            var newr = current(music, options);
             if (newr !== r && r && r.dispose) r.dispose();
             r = newr;
             lastCurrent = current;
@@ -13591,9 +13591,9 @@ var convertType = function(type) {
 musicShowCaseApp.factory("pruneWrapper", function() {
   return function(fcn) {
     if (!fcn._wrapper) {
-      fcn._wrapper = function(music, flag, modWrapper) {
+      fcn._wrapper = function(music, modWrapper) {
         var sfxBase = music.sfxBase();
-        var obj = fcn(sfxBase, flag, modWrapper);
+        var obj = fcn(sfxBase, modWrapper);
         obj.dispose = function() {
           sfxBase.prune();
         };
@@ -13608,15 +13608,17 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
     return function(fcn){
       var _lastmusic;
       var _lastinstance;
-      var ret = function(music, nowrap, stopped) {
-        if (!nowrap) {
+      var ret = function(music, options) {
+        options = options ||{};
+
+        if (!options.nowrap) {
           if (_lastmusic && _lastmusic === music) {
             return _lastinstance;
           }
         }
 
         _lastmusic = music;
-        _lastinstance = fcn(music, nowrap, stopped);
+        _lastinstance = fcn(music, options);
 
         return _lastinstance;
       };
