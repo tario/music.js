@@ -197,7 +197,14 @@ module.export = function(m) {
     var ret = function(music){
         var note = function(n) {
             var baseNode = music.sfxBase();
-            var instance = wrapped(baseNode, true);
+            var stopped = Promise.defer();
+            var modWrapper = function(modulator) {
+              return function(a1, a2) {
+                return modulator(a1, a2, stopped.promise);
+              };
+            };
+
+            var instance = wrapped(baseNode, true, modWrapper);
 
             if (delay > 0) {
               return instance.note(n)
@@ -206,11 +213,12 @@ module.export = function(m) {
                         })
                         .stopDelay(delay*1000)
                         .onStop(function() {
-                          if (instance.preStop) instance.preStop();
+                          stopped.resolve();
                         });
             } else {
               return instance.note(n)
                         .onStop(function() {
+                          stopped.resolve();
                           if (instance.dispose) instance.dispose();
                         });
             }
@@ -403,6 +411,7 @@ module.export = function(m) {
         return ret;
       });
 
+  var defaultModWrapper = function(x){return x;};
   var genericType = function(name, options, components){
     var fcn = options.fcn ||name;
     m.type(name, 
@@ -420,29 +429,24 @@ module.export = function(m) {
           var nodes = [];
           var getOpt;
 
-          var ret = function(music) {
-            var stopped = Promise.defer();
-            var node = music[fcn].apply(music, [getOpt(stopped.promise)]);
+          var ret = function(music, flag, modWrapper) {
+            var node = music[fcn].apply(music, [getOpt(modWrapper)]);
             nodes.push(node)
-            var r = wrapped(node);
-            r.preStop = function() {
-              stopped.resolve();
-            };
-
-            return r;
+            return wrapped(node);
           };
 
 
           ret.update = function(data, components) {
             if(options.singleParameter) {
-              getOpt = function(stopped) {
+              getOpt = function(modWrapper) {
+                modWrapper = modWrapper || defaultModWrapper;
                 var opt;
                 var parameter = options.parameters[0];
 
                 var modulator = components[parameter.name];
                 if (modulator) {
                   opt = MUSIC.modulator(function(pl) {
-                    return modulator(pl, true, stopped).note(0);
+                    return modWrapper(modulator)(pl, true).note(0);
                   });
                 } else {
                   opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
@@ -452,13 +456,14 @@ module.export = function(m) {
               };
 
             } else {
-              getOpt = function(stopped) {
+              getOpt = function(modWrapper) {
+                modWrapper = modWrapper || defaultModWrapper;
                 var opt = {};
                 options.parameters.forEach(function(parameter) {
                   var modulator = components[parameter.name];
                   if (modulator) {
                     opt[parameter.name] = MUSIC.modulator(function(pl) {
-                      return modulator(pl, true, stopped).note(0);
+                      return modWrapper(modulator)(pl, true).note(0);
                     });
                   } else {
                     opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
