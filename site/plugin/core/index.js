@@ -168,7 +168,7 @@ module.export = function(m) {
   m.type("oscillator", {template: "oscillator", description: "Oscillator", 
     components: ["detune"]}, function(data, subobjects, components) {
     if (!data) return;
-      return function(music){
+      return function(music, flag, modWrapper){
           var props = {
             type: data.oscillatorType ||"square",
             fixed_frequency: data.fixed_frequency && data.frequency,
@@ -177,7 +177,7 @@ module.export = function(m) {
 
           if (components && components.detune) {
             props.detune = MUSIC.modulator(function(pl) {
-              return components.detune(pl, true).note(0);
+              return modWrapper(components.detune)(pl, true).note(0);
             });
           };
           var generator = music.oscillator(props);
@@ -237,7 +237,6 @@ module.export = function(m) {
 
     return ret;
   });
-
 
   m.type("adsr", {template: "adsr", description: "ADSR Envelope signal", _default: {
     attackTime: 0.4,
@@ -432,7 +431,7 @@ module.export = function(m) {
           var ret = function(music, flag, modWrapper) {
             var node = music[fcn].apply(music, [getOpt(modWrapper)]);
             nodes.push(node)
-            return wrapped(node);
+            return wrapped(node, flag, modWrapper);
           };
 
 

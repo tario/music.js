@@ -13343,7 +13343,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
       current = sfxBaseOneEntryCacheWrapper(pruneWrapper(current));
 
-      var ret = function(music) {
+      var ret = function(music, flag, modWrapper) {
         var r;
         var wrapped = {};
         var lastCurrent = current;
@@ -13355,7 +13355,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
         };
 
         var update = function() {
-            var newr = current(music);
+            var newr = current(music, flag, modWrapper);
             if (newr !== r && r && r.dispose) r.dispose();
             r = newr;
             lastCurrent = current;
@@ -13591,9 +13591,9 @@ var convertType = function(type) {
 musicShowCaseApp.factory("pruneWrapper", function() {
   return function(fcn) {
     if (!fcn._wrapper) {
-      fcn._wrapper = function(music) {
+      fcn._wrapper = function(music, flag, modWrapper) {
         var sfxBase = music.sfxBase();
-        var obj = fcn(sfxBase);
+        var obj = fcn(sfxBase, flag, modWrapper);
         obj.dispose = function() {
           sfxBase.prune();
         };
