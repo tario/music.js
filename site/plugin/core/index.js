@@ -239,6 +239,39 @@ module.export = function(m) {
     return ret;
   });
 
+  m.type("rise", {
+        template: "generic_wrapper_editor", 
+        parameters: [
+          {name: "time", value: 1},
+          {name: "target", value: 1}
+        ], 
+        description: "Rise signal to target",
+  }, function(data, subobjects) {
+    var fallTime = 1;
+    var target = 1;
+    var ret = function(music) {
+      return {
+        note: function() {
+          var formulaNode = music
+                    .formulaGenerator(function(t) {
+                      if (t < fallTime) {
+                        return t*target/fallTime;
+                      } else {
+                        return target;
+                      }
+                    });
+          return formulaNode;
+        }
+      };
+    };
+
+    ret.update = function(data) {
+      fallTime = parseFloat(data.time);
+      target = parseFloat(data.target);
+    };
+    return ret;
+  });
+
   m.type("adsr", {template: "adsr", description: "ADSR Envelope signal", _default: {
     attackTime: 0.4,
     decayTime: 0.4,
