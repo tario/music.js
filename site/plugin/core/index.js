@@ -612,4 +612,30 @@ module.export = function(m) {
     ],
     description: "Reverb powered by timbre.js"
   });
+
+
+
+
+  /*
+
+  NOISE
+
+  */
+  m.type("noise", {
+        template: "generic_wrapper_editor", 
+        description: "White noise generator"
+  }, function(data, subobjects) {
+    var ret = function(music) {
+      return {
+        note: function() {
+          return music.noise();
+        }
+      };
+    };
+
+    ret.update = function(data) {
+    };
+    return ret;
+  });
+
 };

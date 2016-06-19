@@ -340,15 +340,27 @@ MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {
 };
 
 MUSIC.SoundLib.Noise = function(audio, nextProvider) {
+  var audioContext = audio.audio;
+
+  var bufferSize = 2 * audioContext.sampleRate,
+      noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate),
+      output = noiseBuffer.getChannelData(0);
+  for (var i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+  }
+
   this.play = function(param) {
-    var audioDestination;
-    var noiseGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function() {
-      return Math.random();
-    });
+    var whiteNoise = audioContext.createBufferSource();
+    whiteNoise.buffer = noiseBuffer;
+    whiteNoise.loop = true;
+    whiteNoise.start(0);
+
+    whiteNoise.connect(nextProvider._destination);
 
     return {
       stop: function() {
-        noiseGenerator.disconnect(nextProvider._destination);
+        whiteNoise.stop();
+        whiteNoise.disconnect(nextProvider._destination);
       }
     }
   };
