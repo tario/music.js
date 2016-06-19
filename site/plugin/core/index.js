@@ -670,6 +670,12 @@ module.export = function(m) {
 
       var scale;
       var duration, gap, interval, total, loop;
+      var semitoneScale = {
+        add: function(a, b) {
+          return a + b;
+        }
+      };
+
       var ret = function(music) {
         var instrument = wrapped(music);
 
@@ -703,7 +709,11 @@ module.export = function(m) {
       };
 
       ret.update = function(data){
-        scale = MUSIC.Utils.Scale(data.scale);
+        if (data.semitone) {
+          scale = semitoneScale;
+        } else {
+          scale = MUSIC.Utils.Scale(data.scale);
+        }
         duration = data.duration;
         gap = data.gap;
         interval = data.interval;

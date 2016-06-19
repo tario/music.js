@@ -276,6 +276,10 @@ select.preset {
 }
 
 .arpeggiator .note-cell {
+  padding-top: 10px;
   display: inline-table;
   width: 30px;
+}
+.compressable-switch:not(:checked) ~ .compressable {
+  max-height: 30px;
 }

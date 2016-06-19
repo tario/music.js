@@ -2,14 +2,24 @@
   <h1>Arpeggio</h1>
   <div class="row-fluid">
     <div class="span2">
-      <p class="serie-label">scale </p>
+      <p class="serie-label">semitone </p>
     </div>
-    <div class="span2">
-      <input ng-init="file.data.scale = file.data.scale || 0" type="number" min=0 max=11 ng-model="file.data.scale" />
+    <div class="span1">
+      <p class="serie-label">
+        <input class="regular-checkbox" ng-init="file.data.semitone = file.data.semitone || false" type="checkbox" ng-model="file.data.semitone" />
+      </p>
     </div>
+    <div ng-show="!file.data.semitone">
+      <div class="span1">
+        <p class="serie-label">scale </p>
+      </div>
+      <div class="span1">
+        <input ng-init="file.data.scale = file.data.scale || 0" type="number" min=0 max=11 ng-model="file.data.scale" />
+      </div>
 
-    <div class="span8">
-      <show-scale scale="file.data.scale"></show-scale>
+      <div class="span7">
+        <show-scale scale="file.data.scale"></show-scale>
+      </div>
     </div>
   </div>
 

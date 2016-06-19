@@ -13115,9 +13115,7 @@ musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
     scope: {
       scale: "=scale"
     },
-    template: ['<p class="serie-label">',
-      '<div class="note-cell" ng-repeat="note in notes">{{note}}</div><div class="note-cell" ng-repeat="note in notes">{{note}}</div>',
-      '</p>'].join("\n"),
+    template: '<div class="note-cell" ng-repeat="note in notes">{{note}}</div><div class="note-cell" ng-repeat="note in notes">{{note}}</div>',
     link: function(scope, element, attrs) {
       var notation = function(n) {
         return ["C","Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"][n];
