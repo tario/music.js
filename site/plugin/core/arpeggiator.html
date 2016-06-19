@@ -1,0 +1,47 @@
+<div class="arpeggiator">
+  <h1>Arpeggio</h1>
+  <div class="row-fluid">
+    <div class="span2">
+      <p class="serie-label">scale </p>
+    </div>
+    <div class="span2">
+      <input ng-init="file.data.scale = file.data.scale || 0" type="number" min=0 ng-model="file.data.scale" />
+    </div>
+
+    <div class="span8">
+      <show-scale scale="file.data.scale"></show-scale>
+    </div>
+  </div>
+
+  <div class="row-fluid">
+    <div class="span2">
+      <p class="serie-label">interval</p>
+    </div>
+    <div class="span2">
+      <input ng-init="file.data.interval = file.data.interval || 2" min=1 type="number" ng-model="file.data.interval" />
+    </div>
+
+    <div class="span2">
+      <p class="serie-label">total</p>
+    </div>
+    <div class="span2">
+      <input ng-init="file.data.total = file.data.total || 8" type="number" ng-model="file.data.total" />
+    </div>
+  </div>
+  <h1>Notes</h1>
+  <div class="row-fluid">
+    <div class="span2">
+      <p class="serie-label">duration </p>
+    </div>
+    <div class="span2">
+      <input ng-init="file.data.duration = file.data.duration || 100" min=0 type="number" ng-model="file.data.duration" />
+    </div>
+    <div class="span2">
+      <p class="serie-label">gap </p>
+    </div>
+    <div class="span2">
+      <input  ng-init="file.data.gap = file.data.gap || 0" type="number" ng-model="file.data.gap" />
+    </div>
+    <div class="span2"></div>
+ </div>
+</div>
