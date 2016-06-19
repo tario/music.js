@@ -13110,6 +13110,33 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
   };
 }]);
 
+musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
+  return {
+    scope: {
+      scale: "=scale"
+    },
+    template: ['<p class="serie-label">',
+      '<div class="note-cell" ng-repeat="note in notes">{{note}}</div><div class="note-cell" ng-repeat="note in notes">{{note}}</div>',
+      '</p>'].join("\n"),
+    link: function(scope, element, attrs) {
+      var notation = function(n) {
+        return ["C","Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"][n];
+      };
+
+      scope.$watch("scale", function(newVal) {
+        $timeout(function() {
+          var scale = MUSIC.Utils.Scale(newVal);
+          var deltas = [0,1,2,3,4,5,6];
+
+          scope.notes = deltas.map(function(d) {
+            return scale.add(0,d);
+          }).map(notation);
+        });
+      });
+    }
+  };
+}]);
+
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {

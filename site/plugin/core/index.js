@@ -652,4 +652,61 @@ module.export = function(m) {
     description: "Red noise generator"
   });
 
+  /*
+
+  ARPEGGIATOR
+
+  */
+
+  m.type("arpeggiator", 
+    {
+      template: "arpeggiator", 
+      description: "Note arpeggiator", _default: {
+    scale: 0, interval: 2, duration: 100, gap: 0
+  }}, function(data, subobjects) {
+      if (!subobjects) return;
+      var wrapped = subobjects[0];
+      if (!wrapped) return;
+
+      var scale;
+      var duration, gap, interval, total;
+      var ret = function(music) {
+        var instrument = wrapped(music);
+
+        var arpeggiator = {
+          note: function(n) {
+            var noteSeq = new MUSIC.NoteSequence();
+            var box = duration + gap;
+
+            if (total > 0) noteSeq.push([n, 0, duration]);
+            if (total > 1) {
+              for (var i=1;i<total;i++) {
+                noteSeq.push([scale.add(n,i*interval), i*box, duration]);
+              }
+            }
+            if (total > 0 && gap > 0) {
+              noteSeq.padding(gap);
+            }
+
+            return noteSeq.makePlayable(instrument).loop();
+          }
+        };
+
+        return arpeggiator;
+      };
+
+      ret.update = function(data){
+        scale = MUSIC.Utils.Scale(data.scale);
+        duration = data.duration;
+        gap = data.gap;
+        interval = data.interval;
+        total = data.total;
+      };
+
+      ret.update(data);
+
+      return ret;
+
+  });
+
 };

@@ -1850,6 +1850,11 @@ MUSIC.NoteSequence.Playing.prototype.stop = function() {
   this._context.stop();
 };
 
+MUSIC.NoteSequence.prototype.padding = function(time){
+  this._totalduration = this._totalduration + time;
+};
+
+
 MUSIC.NoteSequence.prototype.push = function(array){
   var noteNum = array[0];
   var startTime = array[1];
