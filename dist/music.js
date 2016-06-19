@@ -619,6 +619,10 @@ MUSIC.EffectsPipeline.prototype = {
 
   pink_noise: function() {
     return this._wrapFcn(new MUSIC.SoundLib.PinkNoise(this._audio, this._audioDestination));
+  },
+
+  red_noise: function() {
+    return this._wrapFcn(new MUSIC.SoundLib.RedNoise(this._audio, this._audioDestination));
   }
 };
 
@@ -748,6 +752,27 @@ MUSIC.SoundLib.PinkNoise = function(audio, nextProvider) {
   MUSIC.playablePipeExtend(this);
 };
 
+MUSIC.SoundLib.RedNoise = function(audio, nextProvider) {
+  this.play = function(param) {
+    var audioDestination;
+    var lastOut = 0.0;
+
+    var noiseGenerator = new MUSIC.Effects.Formula(audio, nextProvider, function() {
+      var white = Math.random() * 2 - 1;
+      var ret = (lastOut + (0.02 * white)) / 1.02;
+      lastOut = ret;
+      return ret * 3.5;
+    });
+
+    return {
+      stop: function() {
+        noiseGenerator.disconnect(nextProvider._destination);
+      }
+    }
+  };
+
+  MUSIC.playablePipeExtend(this);
+};
 
 MUSIC.SoundLib.Noise = function(audio, nextProvider) {
   var audioContext = audio.audio;

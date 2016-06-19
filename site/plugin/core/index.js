@@ -621,38 +621,35 @@ module.export = function(m) {
   NOISE
 
   */
-  m.type("noise", {
-        template: "generic_wrapper_editor", 
-        description: "White noise generator"
-  }, function(data, subobjects) {
-    var ret = function(music) {
-      return {
-        note: function() {
-          return music.noise();
-        }
-      };
-    };
 
-    ret.update = function(data) {
-    };
-    return ret;
+  var playableType = function(name, method_name, options) {
+    m.type(name, options, function(data, subobjects) {
+      var ret = function(music) {
+        return {
+          note: function() {
+            return music[method_name].apply(music,[]);
+          }
+        };
+      };
+
+      ret.update = function(data){};
+      return ret;
+    });
+  };
+
+  playableType("noise", "noise", {
+    template: "generic_wrapper_editor", 
+    description: "White noise generator"
   });
 
-  m.type("pink noise", {
-        template: "generic_wrapper_editor", 
-        description: "Pink noise generator"
-  }, function(data, subobjects) {
-    var ret = function(music) {
-      return {
-        note: function() {
-          return music.pink_noise();
-        }
-      };
-    };
+  playableType("pink noise", "pink_noise", {
+    template: "generic_wrapper_editor", 
+    description: "Pink noise generator"
+  });
 
-    ret.update = function(data) {
-    };
-    return ret;
+  playableType("red noise", "red_noise", {
+    template: "generic_wrapper_editor", 
+    description: "Red noise generator"
   });
 
 };
