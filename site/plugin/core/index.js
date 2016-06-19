@@ -294,6 +294,7 @@ module.export = function(m) {
           }
 
           var tf;
+          var lastValue = sustainLevel;
           var formulaNode = music
                     .formulaGenerator(function(t) {
                       if (itsover) {
@@ -307,23 +308,24 @@ module.export = function(m) {
                         if(t>releaseTime) {
                           return 0;
                         } else {
-                          return sustainLevel * (releaseTime-t) / releaseTime;
+                          return lastValue * (releaseTime-t) / releaseTime;
                         }
                       }
 
                       if (t>attackTime) {
                         if (t>attackTime+decayTime){
-                          return sustainLevel;
+                          lastValue = sustainLevel;
                         } else {
-                          return m*t+b;
+                          lastValue = m*t+b;
                         }
                       } else {
                         if (attackTime == 0) {
-                          return 1;
+                          lastValue = 1;
                         } else {
-                          return t/attackTime;
+                          lastValue = t/attackTime;
                         }
                       }
+                      return lastValue;
 
                     });
 
