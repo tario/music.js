@@ -638,4 +638,21 @@ module.export = function(m) {
     return ret;
   });
 
+  m.type("pink noise", {
+        template: "generic_wrapper_editor", 
+        description: "Pink noise generator"
+  }, function(data, subobjects) {
+    var ret = function(music) {
+      return {
+        note: function() {
+          return music.pink_noise();
+        }
+      };
+    };
+
+    ret.update = function(data) {
+    };
+    return ret;
+  });
+
 };
