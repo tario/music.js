@@ -5,7 +5,7 @@
       <p class="serie-label">scale </p>
     </div>
     <div class="span2">
-      <input ng-init="file.data.scale = file.data.scale || 0" type="number" min=0 ng-model="file.data.scale" />
+      <input ng-init="file.data.scale = file.data.scale || 0" type="number" min=0 max=11 ng-model="file.data.scale" />
     </div>
 
     <div class="span8">
@@ -25,9 +25,21 @@
       <p class="serie-label">total</p>
     </div>
     <div class="span2">
-      <input ng-init="file.data.total = file.data.total || 8" type="number" ng-model="file.data.total" />
+      <input ng-init="file.data.total = file.data.total || 8" type="number" min=1 max=32 ng-model="file.data.total" />
     </div>
   </div>
+
+  <div class="row-fluid">
+    <div class="span2">
+      <p class="serie-label">loop</p>
+    </div>
+    <div class="span2">
+      <p class="serie-label">
+        <input class="regular-checkbox" ng-init="file.data.loop = file.data.loop || false" type="checkbox" ng-model="file.data.loop" />
+      </p>
+    </div>
+  </div>
+
   <h1>Notes</h1>
   <div class="row-fluid">
     <div class="span2">

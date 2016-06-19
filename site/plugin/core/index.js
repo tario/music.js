@@ -669,7 +669,7 @@ module.export = function(m) {
       if (!wrapped) return;
 
       var scale;
-      var duration, gap, interval, total;
+      var duration, gap, interval, total, loop;
       var ret = function(music) {
         var instrument = wrapped(music);
 
@@ -680,15 +680,22 @@ module.export = function(m) {
 
             if (total > 0) noteSeq.push([n, 0, duration]);
             if (total > 1) {
-              for (var i=1;i<total;i++) {
+              for (var i=1;i<total-1;i++) {
                 noteSeq.push([scale.add(n,i*interval), i*box, duration]);
               }
+
+              noteSeq.push([scale.add(n,i*interval), i*box, loop ? duration : 60000]);
             }
-            if (total > 0 && gap > 0) {
+            if (total > 0 && gap > 0 && loop) {
               noteSeq.padding(gap);
             }
 
-            return noteSeq.makePlayable(instrument).loop();
+            if (loop) {
+              return noteSeq.makePlayable(instrument).loop();  
+            } else {
+              return noteSeq.makePlayable(instrument);
+            }
+            
           }
         };
 
@@ -701,6 +708,7 @@ module.export = function(m) {
         gap = data.gap;
         interval = data.interval;
         total = data.total;
+        loop = data.loop;
       };
 
       ret.update(data);
