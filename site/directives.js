@@ -478,8 +478,16 @@ musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
     },
     template: '<div class="note-cell" ng-repeat="note in notes">{{note}}</div><div class="note-cell" ng-repeat="note in notes">{{note}}</div>',
     link: function(scope, element, attrs) {
-      var notation = function(n) {
-        return ["C","Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"][n];
+      var semitoneToNote = function(n) {
+        return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
+      };
+
+      var noteToSemitone = function(n) {
+        return [0,2,4,5,7,9,11][n%7];
+      };
+
+      var notation7 = function(n) {
+        return ["C","D","E","F","G","A","B"][n % 7];
       };
 
       scope.$watch("scale", function(newVal) {
@@ -487,9 +495,18 @@ musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
           var scale = MUSIC.Utils.Scale(newVal);
           var deltas = [0,1,2,3,4,5,6];
 
+          var initTone = semitoneToNote(newVal);
+          if (initTone.length) initTone = initTone[1];
+
           scope.notes = deltas.map(function(d) {
-            return scale.add(0,d);
-          }).map(notation);
+            var semitone = scale.add(newVal,d);
+            var tone = (initTone + d) % 7;
+            var alt = "";
+
+            if (noteToSemitone(tone) > semitone % 12) alt = "b";
+            if (noteToSemitone(tone) < semitone % 12) alt = "#";
+            return notation7(tone) + alt;
+          });
         });
       });
     }
