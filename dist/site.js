@@ -12510,6 +12510,20 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngR
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+  var id = $routeParams.id;
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  FileRepository.getFile(id).then(function(file) {
+    $timeout(function() {
+      var outputFile = {};
+      $scope.fileIndex = file.index;
+    });
+  });
+}]);
+
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
 
@@ -12602,8 +12616,8 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   });
 
   $scope.activate = function(example) {
-    if (example.type === "instrument") {
-      document.location = "#/editor/"+example.id;
+    if (example.type === "instrument" ||example.type === "song") {
+      document.location = "#/editor/"+example.type+"/"+example.id;
     }
   };
 
@@ -12617,14 +12631,22 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
 
   $scope.iconForType = function(type) {
     if (type === "instrument") return "keyboard-o";
+    if (type === "song") return "music";
     if (type === "fx") return "bars";
     return "question";
   }
 
   $scope.newInstrument = function() {
-    FileRepository.createFile()
+    FileRepository.createFile({type: "instrument", name: "New Instrument"})
       .then(function(id) {
-        document.location = "#/editor/"+id;
+        document.location = "#/editor/instrument/"+id;
+      });
+  };
+
+  $scope.newSong = function() {
+    FileRepository.createFile({type: "song", name: "New Song"})
+      .then(function(id) {
+        document.location = "#/editor/song/"+id;
       });
   };
 
@@ -13162,10 +13184,14 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
   $routeProvider
-   .when('/editor/:id', {
-    templateUrl: 'site/templates/editor.html',
-    controller: 'EditorController'
-  });
+    .when('/editor/instrument/:id', {
+      templateUrl: 'site/templates/editor.html',
+      controller: 'EditorController'
+    })
+    .when('/editor/song/:id', {
+      templateUrl: 'site/templates/songEditor.html',
+      controller: 'SongEditorController'
+    });
 
   // configure html5 to get links working on jsfiddle
   //$locationProvider.html5Mode(true);
@@ -13513,12 +13539,12 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
   var genericStateEmmiter = new EventEmitter();
 
   return {
-    createFile: function() {
+    createFile: function(options) {
       genericStateEmmiter.emit("changed");
 
       var newid = createId();
 
-      createdFilesIndex.push({"type": "instrument", "name": "New Instrument", "id": newid});
+      createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
       createdFiles[newid] = {
         type: "stack",
         data: {

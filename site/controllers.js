@@ -1,5 +1,19 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+  var id = $routeParams.id;
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  FileRepository.getFile(id).then(function(file) {
+    $timeout(function() {
+      var outputFile = {};
+      $scope.fileIndex = file.index;
+    });
+  });
+}]);
+
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
 
@@ -92,8 +106,8 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   });
 
   $scope.activate = function(example) {
-    if (example.type === "instrument") {
-      document.location = "#/editor/"+example.id;
+    if (example.type === "instrument" ||example.type === "song") {
+      document.location = "#/editor/"+example.type+"/"+example.id;
     }
   };
 
@@ -107,14 +121,22 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
 
   $scope.iconForType = function(type) {
     if (type === "instrument") return "keyboard-o";
+    if (type === "song") return "music";
     if (type === "fx") return "bars";
     return "question";
   }
 
   $scope.newInstrument = function() {
-    FileRepository.createFile()
+    FileRepository.createFile({type: "instrument", name: "New Instrument"})
       .then(function(id) {
-        document.location = "#/editor/"+id;
+        document.location = "#/editor/instrument/"+id;
+      });
+  };
+
+  $scope.newSong = function() {
+    FileRepository.createFile({type: "song", name: "New Song"})
+      .then(function(id) {
+        document.location = "#/editor/song/"+id;
       });
   };
 
