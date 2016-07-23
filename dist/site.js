@@ -12524,6 +12524,20 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
   });
 }]);
 
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+  var id = $routeParams.id;
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  FileRepository.getFile(id).then(function(file) {
+    $timeout(function() {
+      var outputFile = {};
+      $scope.fileIndex = file.index;
+    });
+  });
+}]);
+
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
 
@@ -12616,7 +12630,7 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   });
 
   $scope.activate = function(example) {
-    if (example.type === "instrument" ||example.type === "song") {
+    if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {
       document.location = "#/editor/"+example.type+"/"+example.id;
     }
   };
@@ -12631,8 +12645,9 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
 
   $scope.iconForType = function(type) {
     if (type === "instrument") return "keyboard-o";
-    if (type === "song") return "music";
-    if (type === "fx") return "bars";
+    if (type === "song") return "th";
+    if (type === "pattern") return "music";
+    if (type === "fx") return "magic";
     return "question";
   }
 
@@ -12647,6 +12662,13 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
     FileRepository.createFile({type: "song", name: "New Song"})
       .then(function(id) {
         document.location = "#/editor/song/"+id;
+      });
+  };
+
+  $scope.newPattern = function() {
+    FileRepository.createFile({type: "pattern", name: "New Pattern"})
+      .then(function(id) {
+        document.location = "#/editor/pattern/"+id;
       });
   };
 
@@ -13191,6 +13213,10 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
     .when('/editor/song/:id', {
       templateUrl: 'site/templates/songEditor.html',
       controller: 'SongEditorController'
+    })
+    .when('/editor/pattern/:id', {
+      templateUrl: 'site/templates/patternEditor.html',
+      controller: 'PatternEditorController'
     });
 
   // configure html5 to get links working on jsfiddle
