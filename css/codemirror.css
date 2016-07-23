@@ -20,13 +20,13 @@
 }
 
 .CodeMirror-scrollbar-filler, .CodeMirror-gutter-filler {
-  background-color: #000084; /* The little square between H and V scrollbars */
+  background-color: #0000AA; /* The little square between H and V scrollbars */
 }
 
 /* GUTTER */
 
 .CodeMirror-gutters {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid #AAAAAA;
   background-color: black;
   white-space: nowrap;
 }
@@ -41,7 +41,7 @@
 }
 
 .CodeMirror-guttermarker { color: black; }
-.CodeMirror-guttermarker-subtle { color: #999; }
+.CodeMirror-guttermarker-subtle { color: #555555; }
 
 /* CURSOR */
 
@@ -55,7 +55,7 @@
 .CodeMirror.cm-keymap-fat-cursor div.CodeMirror-cursor {
   width: auto;
   border: 0;
-  background: #7e7;
+  background: #55FF55;
 }
 .CodeMirror.cm-keymap-fat-cursor div.CodeMirror-cursors {
   z-index: 1;
@@ -69,19 +69,19 @@
   animation: blink 1.06s steps(1) infinite;
 }
 @-moz-keyframes blink {
-  0% { background: #7e7; }
+  0% { background: #55FF55; }
   50% { background: none; }
-  100% { background: #7e7; }
+  100% { background: #55FF55; }
 }
 @-webkit-keyframes blink {
-  0% { background: #7e7; }
+  0% { background: #55FF55; }
   50% { background: none; }
-  100% { background: #7e7; }
+  100% { background: #55FF55; }
 }
 @keyframes blink {
-  0% { background: #7e7; }
+  0% { background: #55FF55; }
   50% { background: none; }
-  100% { background: #7e7; }
+  100% { background: #55FF55; }
 }
 
 /* Can style cursor different in overwrite (non-insert) mode */
@@ -90,15 +90,15 @@ div.CodeMirror-overwrite div.CodeMirror-cursor {}
 .cm-tab { display: inline-block; }
 
 .CodeMirror-ruler {
-  border-left: 1px solid #ccc;
+  border-left: 1px solid #AAAAAA;
   position: absolute;
 }
 
 /* DEFAULT THEME */
 
-.cm-s-default .cm-keyword {color: #ff0;}
-.cm-s-default .cm-atom {color: #219;}
-.cm-s-default .cm-number {color: #0ff;}
+.cm-s-default .cm-keyword {color: #FFFF55;}
+.cm-s-default .cm-atom {color: #55FFFF;}
+.cm-s-default .cm-number {color: #55FFFF;}
 .cm-s-default .cm-def {color: #fff;}
 .cm-s-default .cm-variable,
 .cm-s-default .cm-punctuation,
@@ -106,19 +106,19 @@ div.CodeMirror-overwrite div.CodeMirror-cursor {}
 .cm-s-default .cm-operator {}
 .cm-s-default .cm-variable-2 {color: #fff;}
 .cm-s-default .cm-variable-3 {color: #fff;}
-.cm-s-default .cm-comment {color: #0f0;}
-.cm-s-default .cm-string {color: #f00;}
-.cm-s-default .cm-string-2 {color: #f00;}
-.cm-s-default .cm-meta {color: #555;}
-.cm-s-default .cm-qualifier {color: #555;}
-.cm-s-default .cm-builtin {color: #30a;}
-.cm-s-default .cm-bracket {color: #997;}
-.cm-s-default .cm-tag {color: #170;}
-.cm-s-default .cm-attribute {color: #00c;}
-.cm-s-default .cm-header {color: blue;}
-.cm-s-default .cm-quote {color: #090;}
-.cm-s-default .cm-hr {color: #999;}
-.cm-s-default .cm-link {color: #00c;}
+.cm-s-default .cm-comment {color: #00AA00;}
+.cm-s-default .cm-string {color: #AA0000;}
+.cm-s-default .cm-string-2 {color: #AA0000;}
+.cm-s-default .cm-meta {color: #555555;}
+.cm-s-default .cm-qualifier {color: #555555;}
+.cm-s-default .cm-builtin {color: #0000AA;}
+.cm-s-default .cm-bracket {color: #FFFF55;}
+.cm-s-default .cm-tag {color: #00AA00;}
+.cm-s-default .cm-attribute {color: #0000AA;}
+.cm-s-default .cm-header {color: #0000AA;}
+.cm-s-default .cm-quote {color: #00AA00;}
+.cm-s-default .cm-hr {color: #AAAAAA;}
+.cm-s-default .cm-link {color: #0000AA;}
 
 .cm-negative {color: #d44;}
 .cm-positive {color: #292;}
@@ -126,13 +126,13 @@ div.CodeMirror-overwrite div.CodeMirror-cursor {}
 .cm-em {font-style: italic;}
 .cm-link {text-decoration: underline;}
 
-.cm-s-default .cm-error {color: #f00;}
-.cm-invalidchar {color: #f00;}
+.cm-s-default .cm-error {color: #AA0000;}
+.cm-invalidchar {color: #FF5555;}
 
 /* Default styles for common addons */
 
-div.CodeMirror span.CodeMirror-matchingbracket {color: #0f0;}
-div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
+div.CodeMirror span.CodeMirror-matchingbracket {color: #00AA00;}
+div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #FF5555;}
 .CodeMirror-matchingtag { background: rgba(255, 150, 0, .3); }
 .CodeMirror-activeline-background {background: #e8f2ff;}
 

@@ -43,7 +43,7 @@
 
 
 .regular-checkbox {
-  background-color: #bbb;
+  background-color: #AAAAAA;
   border: none;
   padding: 9px;
   display: inline-block;
@@ -101,7 +101,7 @@ table {
 .musicapp .btn:active {
   margin-top: 0;
   margin-left: 0;
-  color: #0000ff;
+  color: #0000AA;
   -webkit-box-shadow: 0 0 0;
      -moz-box-shadow: 0 0 0;
           box-shadow: 0 0 0;
@@ -113,7 +113,7 @@ table {
 }
 
 .stack-element {
-  border: 2px solid #bbbbbb;
+  border: 2px solid #AAAAAA;
   padding: 5px;
   margin: 5px;
 }
@@ -180,7 +180,7 @@ input.invisible-text {
 }
 
 .stackdropbar.drag-enter {
-  background-color: #ccc;
+  background-color: #aaaaaa;
 }
 
 .margin10 {
@@ -245,11 +245,11 @@ canvas.wavegraph {
 }
 
 input.invalid-text {
-  color: red;
+  color: #AA0000;
 }
 
 div.invalid-text {
-  color: red;
+  color: #AA0000;
 }
 
 select.preset {
