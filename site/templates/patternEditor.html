@@ -1,1 +1,45 @@
 <input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+<div class="pattern-main-window">
+  <div class="row-fluid">
+      <div class="span3">
+        <p class="serie-label">Measure beats</p>
+      </div>
+      <div class="span1">
+        <input type="number" class="smallinput" min=1 max=50 ng-model="file.measure" ng-change="fileChanged()"/>
+      </div>
+  </div>
+
+  <div class="row-fluid" ng-class="{'enabled-instrument': file.track[0].instrument}" >
+      <div class="span2">
+      <!-- Instrument drop zone -->
+          <div class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
+            <span ng-show="file.track[0].instrument" class="fa fa-keyboard-o"></span>
+            <p>{{file.track[0].instrument ? file.track[0].instrument.name : "drop instrument here" }}</p>
+          </div>
+      </div>  
+      <div class="span10">
+        <div class="event-area-container">    
+          <div class="event-area">
+            <div class="overlay zebra">
+
+            </div>
+            <div class="overlay innergrid">
+              
+            </div>
+            <div class="overlay maingrid" ng-style="mainGridStyle">
+
+            </div>
+            <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)">
+              <div 
+                ng-repeat="evt in file.track[0].events" 
+                class="note" ng-class="{selected: selected===evt}"
+                ng-mousedown="mouseDownEvent(evt, 0)"
+                ng-mouseup="mouseUpEvent(evt, 0)"
+                ng-style="{'width': evt.l*beatWidth/100+'px', 'left':evt.s*beatWidth/100+'px', 'bottom': evt.n*10+'px'}"
+                ></div>
+            </div>
+          </div>
+        </div>
+      </div>  
+  </div>
+</div>

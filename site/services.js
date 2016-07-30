@@ -336,6 +336,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
 
   var genericStateEmmiter = new EventEmitter();
 
+  var defaultFile = {
+    instrument: {
+      type: "stack",
+      data: {
+        array: []
+      }
+    },
+    pattern: {
+      measure: 8
+    }
+  };
+
   return {
     createFile: function(options) {
       genericStateEmmiter.emit("changed");
@@ -343,13 +355,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
       var newid = createId();
 
       createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
-      createdFiles[newid] = {
-        type: "stack",
-        data: {
-          array: []
-        }
-      };
-
+      createdFiles[newid] = defaultFile[options.type] ||{};
       return $q.resolve(newid);
     },
     updateIndex: function(id, attributes) {

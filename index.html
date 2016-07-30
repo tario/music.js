@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
 <link rel="stylesheet" href="css/codemirror.css">
 <link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/pattern.css">
 
 <script>
   if (location.host.split(":")[0] === "localhost") {
@@ -77,7 +78,7 @@
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
                   <li ng-repeat="file in files">
-                     <a ng-drag="true" ng-drag-data="file" ng-click="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
+                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                   </li>
                   <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
