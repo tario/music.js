@@ -16,6 +16,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
 
 musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
+  var defaultL = 200;
   
   $scope.beatWidth = 10;
 
@@ -39,44 +40,108 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     $scope.mouseMove = function() {};
   };
 
-  $scope.mouseDown = function(event) {
-    if (event.target.classList.contains("note")) return;
-    var newEvt = {
-      n: Math.floor(100 - event.offsetY / 10),
-      s: Math.floor(event.offsetX / $scope.beatWidth) * 100,
-      l: 200
-    };
-
-    $scope.file.track[0].events.push(newEvt);
-
+  $scope.mouseLeave = function() {
     if (lastPlaying) lastPlaying.stop();
     lastPlaying = null;
-    if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(newEvt.n).play();
+    $scope.mouseMove = function() {};
   };
 
-  $scope.mouseMove = function() {};
-
-  $scope.mouseDownEvent = function(evt, trackId) {
-    $scope.selected = evt;
-    if (lastPlaying) lastPlaying.stop();
-    if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(evt.n).play();
-
-    $scope.mouseMove = function(event) {
-      if (event.target.classList.contains("note")) return;
+  var moveEvent = function(evt) {
+    return function(event) {
+      if (!event.target.classList.contains("event-list")) return;
       evt.s = Math.floor(event.offsetX / $scope.beatWidth) * 100;
+
+      if (evt.s < 0) evt.s = 0;
 
       var oldN = evt.n;
       evt.n = Math.floor(100 - event.offsetY / 10);
+      $scope.fileChanged();
 
       if (oldN !== evt.n){
         if (lastPlaying) lastPlaying.stop();
         if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(evt.n).play();
       }
     };
-
   };
 
-  $scope.mouseUpEvent = function(evt, trackId) {
+  var cancelMove = function() {
+    if (lastPlaying) lastPlaying.stop();
+    lastPlaying = null;
+
+    $scope.mouseMove = function(){};
+    $scope.mouseLeave = function(){};
+  };
+
+  $scope.mouseDown = function(event) {
+    if (!event.target.classList.contains("event-list")) return;
+    var newEvt = {
+      n: Math.floor(100 - event.offsetY / 10),
+      s: Math.floor(event.offsetX / $scope.beatWidth) * 100,
+      l: defaultL
+    };
+
+    $scope.selected = newEvt;
+
+    $scope.file.track[0].events.push(newEvt);
+    $scope.fileChanged();
+
+    if (lastPlaying) lastPlaying.stop();
+    lastPlaying = null;
+    if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(newEvt.n).play();
+
+    $scope.mouseMove = moveEvent(newEvt);
+    $scope.mouseLeave = function() {
+      if (lastPlaying) lastPlaying.stop();
+      lastPlaying = null;
+
+      $scope.file.track[0].events = $scope.file.track[0].events.filter(function(e) { return e !== newEvt; });
+
+      cancelMove();
+    };
+
+    $scope.mouseUpResizeEvent = cancelMove;
+    $scope.mouseUpEvent = cancelMove;
+    $scope.mouseUp = cancelMove;
+  };
+
+  $scope.mouseDownEvent = function(evt, trackId) {
+    $scope.selected = evt;
+    if (lastPlaying) lastPlaying.stop();
+    if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(evt.n).play();
+
+    $scope.mouseMove = moveEvent(evt);
+    $scope.mouseLeave = function() {
+      if (lastPlaying) lastPlaying.stop();
+      lastPlaying = null;
+
+      $scope.file.track[0].events = $scope.file.track[0].events.filter(function(e) { return e !== evt; });
+
+      cancelMove();
+    };
+
+    $scope.mouseUpResizeEvent = cancelMove;
+    $scope.mouseUpEvent = cancelMove;
+    $scope.mouseUp = cancelMove;
+  };
+
+  $scope.mouseDownResizeEvent = function(evt, trackId) {
+    $scope.selected = evt;
+    if (lastPlaying) lastPlaying.stop();
+    if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(evt.n).play();
+
+    $scope.mouseMove = function(event) {
+      if (!event.target.classList.contains("event-list")) return;
+      evt.refs = Math.floor(event.offsetX / $scope.beatWidth) * 100;
+      evt.l = evt.refs - evt.s;
+      if (evt.l<100) evt.l=100;
+
+      defaultL = evt.l;
+      $scope.fileChanged();
+    };
+
+    $scope.mouseUpResizeEvent = cancelMove;
+    $scope.mouseUpEvent = cancelMove;
+    $scope.mouseUp = cancelMove;
   };
 
   $scope.instrument = [];
@@ -112,11 +177,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
       $scope.fileIndex = file.index;
       $scope.file = file.contents;
       if (!$scope.file.track) $scope.file.track=[{}];
-      $scope.file.track[0].events = [
-        {l:500, n:24, s:500},
-        {l:100, n:26, s:1000},
-        {l:100, n:27, s:1100},
-      ];
+      $scope.file.track[0].events = $scope.file.track[0].events || [];
 
       updateGrid();
       $scope.updateInstrument();

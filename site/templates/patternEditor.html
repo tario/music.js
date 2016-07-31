@@ -29,14 +29,25 @@
             <div class="overlay maingrid" ng-style="mainGridStyle">
 
             </div>
-            <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)">
+            <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">
               <div 
+                draggable="false"
                 ng-repeat="evt in file.track[0].events" 
                 class="note" ng-class="{selected: selected===evt}"
-                ng-mousedown="mouseDownEvent(evt, 0)"
-                ng-mouseup="mouseUpEvent(evt, 0)"
                 ng-style="{'width': evt.l*beatWidth/100+'px', 'left':evt.s*beatWidth/100+'px', 'bottom': evt.n*10+'px'}"
-                ></div>
+                >
+
+                <div class="drag-event-section" ng-style="{'width': (evt.l*beatWidth/100-5)+'px', 'height':'10px'}"
+                  draggable="false"
+                  ng-mousedown="mouseDownEvent(evt, 0)"
+                  ng-mouseup="mouseUpEvent(evt, 0)">
+                </div>
+                <div class="resize-section"
+                  draggable="false"
+                  ng-mousedown="mouseDownResizeEvent(evt, 0)"
+                  ng-mouseup="mouseUpResizeEvent(evt, 0)">
+                </div>
+              </div>
             </div>
           </div>
         </div>
