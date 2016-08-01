@@ -104,7 +104,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     $scope.mouseUp = cancelMove;
   };
 
-  $scope.mouseDownEvent = function(evt, trackId) {
+  $scope.mouseDownEvent = function(evt, trackId, event) {
+    event.preventDefault();
+
     $scope.selected = evt;
     if (lastPlaying) lastPlaying.stop();
     if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(evt.n).play();
@@ -124,7 +126,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     $scope.mouseUp = cancelMove;
   };
 
-  $scope.mouseDownResizeEvent = function(evt, trackId) {
+  $scope.mouseDownResizeEvent = function(evt, trackId, event) {
+    event.preventDefault();
+
     $scope.selected = evt;
     if (lastPlaying) lastPlaying.stop();
     if ($scope.instrument[0]) lastPlaying = $scope.instrument[0].note(evt.n).play();
