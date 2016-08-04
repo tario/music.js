@@ -21,6 +21,29 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $scope.beatWidth = 10;
   $scope.zoomLevel = 4;
 
+  var semitoneToNote = function(n) {
+    return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
+  };
+
+  var noteToSemitone = function(n) {
+    return [0,2,4,5,7,9,11][n%7];
+  };
+
+  var notation7 = function(n) {
+    return ["C","D","E","F","G","A","B"][n % 7];
+  };
+
+  $scope.noteName = function(n) {
+    var note7 = semitoneToNote(n);
+
+    if (Array.isArray(note7)) {
+      note7 = note7[0]
+      return notation7(note7)  + '#';
+    } else {
+      return notation7(note7);
+    }
+  };
+
   $scope.zoomIn = function() {
     $scope.zoomLevel = $scope.zoomLevel * 2;
     if ($scope.zoomLevel > 32) $scope.zoomLevel = 32;
@@ -40,7 +63,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   var updateGrid = function() {
-    $scope.mainGridStyle = {"background-size": ($scope.file.measure*$scope.beatWidth*$scope.zoomLevel) + "px 120px"};
+    $scope.mainGridStyle = {"background-size": ($scope.file.measure*$scope.beatWidth*$scope.zoomLevel) + "px 240px"};
   };
 
   $scope.fileChanged = fn.debounce(function() {
@@ -69,7 +92,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
       if (evt.s < 0) evt.s = 0;
 
       var oldN = evt.n;
-      evt.n = Math.floor(100 - event.offsetY / 10);
+      evt.n = Math.floor(120 - event.offsetY / 20);
       $scope.fileChanged();
 
       if (oldN !== evt.n){
@@ -90,7 +113,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $scope.mouseDown = function(event) {
     if (!event.target.classList.contains("event-list")) return;
     var newEvt = {
-      n: Math.floor(100 - event.offsetY / 10),
+      n: Math.floor(120 - event.offsetY / 20),
       s: Math.floor(event.offsetX / $scope.beatWidth) / $scope.zoomLevel * 100,
       l: defaultL
     };
