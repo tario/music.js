@@ -19,13 +19,28 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var defaultL = 200;
   
   $scope.beatWidth = 10;
+  $scope.zoomLevel = 4;
+
+  $scope.zoomIn = function() {
+    $scope.zoomLevel = $scope.zoomLevel * 2;
+    if ($scope.zoomLevel > 32) $scope.zoomLevel = 32;
+
+    updateGrid();
+  };
+
+  $scope.zoomOut = function() {
+    $scope.zoomLevel = $scope.zoomLevel / 2;
+    if ($scope.zoomLevel < 1) $scope.zoomLevel = 1;
+
+    updateGrid();
+  };
 
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   var updateGrid = function() {
-    $scope.mainGridStyle = {"background-size": ($scope.file.measure*$scope.beatWidth) + "px 120px"};
+    $scope.mainGridStyle = {"background-size": ($scope.file.measure*$scope.beatWidth*$scope.zoomLevel) + "px 120px"};
   };
 
   $scope.fileChanged = fn.debounce(function() {
@@ -49,7 +64,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var moveEvent = function(evt) {
     return function(event) {
       if (!event.target.classList.contains("event-list")) return;
-      evt.s = Math.floor(event.offsetX / $scope.beatWidth) * 100;
+      evt.s = Math.floor(event.offsetX / $scope.beatWidth) / $scope.zoomLevel * 100;
 
       if (evt.s < 0) evt.s = 0;
 
@@ -76,7 +91,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!event.target.classList.contains("event-list")) return;
     var newEvt = {
       n: Math.floor(100 - event.offsetY / 10),
-      s: Math.floor(event.offsetX / $scope.beatWidth) * 100,
+      s: Math.floor(event.offsetX / $scope.beatWidth) / $scope.zoomLevel * 100,
       l: defaultL
     };
 
@@ -135,9 +150,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
     $scope.mouseMove = function(event) {
       if (!event.target.classList.contains("event-list")) return;
-      evt.refs = Math.floor(event.offsetX / $scope.beatWidth) * 100;
+      evt.refs = Math.floor(event.offsetX / $scope.beatWidth) / $scope.zoomLevel * 100;
       evt.l = evt.refs - evt.s;
-      if (evt.l<100) evt.l=100;
+      if (evt.l<100/$scope.zoomLevel) evt.l=100/$scope.zoomLevel;
 
       defaultL = evt.l;
       $scope.fileChanged();

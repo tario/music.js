@@ -8,6 +8,34 @@
         <input type="number" class="smallinput" min=1 max=50 ng-model="file.measure" ng-change="fileChanged()"/>
       </div>
   </div>
+  <div class="row-fluid">
+      <div class="span3">
+        <p class="serie-label">Measure count</p>
+      </div>
+      <div class="span1">
+        <input type="number" class="smallinput" min=1 max=16 ng-model="file.measureCount" ng-change="fileChanged()"/>
+      </div>
+  </div>
+  <div class="row-fluid">
+      <div class="span3">
+        <p class="serie-label">Zoom level</p>
+      </div>
+      <div class="span2">
+        <div class="row-fluid">
+          <div class="span4">
+            <p class="serie-label"><a href="" ng-click="zoomOut()">-</a></p>
+          </div>
+          <div class="span4">
+            <p class="serie-label">{{zoomLevel}}x</p>
+          </div>
+          <div class="span4">
+            <p class="serie-label"><a href="" ng-click="zoomIn()">+</a></p>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <hr class="soften"></hr>
 
   <div class="row-fluid" ng-class="{'enabled-instrument': file.track[0].instrument}" >
       <div class="span2">
@@ -17,9 +45,10 @@
             <p>{{file.track[0].instrument ? file.track[0].instrument.name : "drop instrument here" }}</p>
           </div>
       </div>  
+
       <div class="span10">
         <div class="event-area-container">    
-          <div class="event-area">
+          <div class="event-area" ng-style="{width: file.measureCount*file.measure*beatWidth*zoomLevel + 'px'}">
             <div class="overlay zebra">
 
             </div>
@@ -34,10 +63,10 @@
                 draggable="false"
                 ng-repeat="evt in file.track[0].events" 
                 class="note" ng-class="{selected: selected===evt}"
-                ng-style="{'width': evt.l*beatWidth/100+'px', 'left':evt.s*beatWidth/100+'px', 'bottom': evt.n*10+'px'}"
+                ng-style="{'width': evt.l*zoomLevel*beatWidth/100+'px', 'left':evt.s*zoomLevel*beatWidth/100+'px', 'bottom': evt.n*10+'px'}"
                 >
 
-                <div class="drag-event-section" ng-style="{'width': (evt.l*beatWidth/100-5)+'px', 'height':'10px'}"
+                <div class="drag-event-section" ng-style="{'width': (evt.l*zoomLevel*beatWidth/100-5)+'px', 'height':'10px'}"
                   draggable="false"
                   ng-mousedown="mouseDownEvent(evt, 0, $event)"
                   ng-mouseup="mouseUpEvent(evt, 0)">
