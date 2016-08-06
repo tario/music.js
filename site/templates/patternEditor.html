@@ -47,6 +47,13 @@
       </div>  
 
       <div class="span10">
+        <music-event-editor 
+          measure-count="file.measureCount"
+          measure="file.measure"
+          track="file.track[0]"
+          beat-width="beatWidth"
+          zoom-level="zoomLevel"></music-event-editor>
+<!--
         <div class="event-area-container">    
           <div class="event-area" ng-style="{width: file.measureCount*file.measure*beatWidth*zoomLevel + 'px'}">
             <div class="overlay zebra">
@@ -80,6 +87,7 @@
             </div>
           </div>
         </div>
+-->        
       </div>  
   </div>
 </div>

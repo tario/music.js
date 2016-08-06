@@ -471,6 +471,151 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
   };
 }]);
 
+
+musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
+  return {
+    scope: {
+      /* Current track */
+      track: "=track",
+      /* Display params */
+      zoomLevel: "=zoomLevel",
+      beatWidth: "=beatWidth",
+      /* File params (common to all tracks) */
+      measure: "=measure",
+      measureCount: "=measureCount"
+    },
+    templateUrl: "site/templates/directives/musicEventEditor.html",
+    link: function(scope, element, attrs) {
+      var defaultL = 200;
+
+      var semitoneToNote = function(n) {
+        return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
+      };
+
+      var noteToSemitone = function(n) {
+        return [0,2,4,5,7,9,11][n%7];
+      };
+
+      var notation7 = function(n) {
+        return ["C","D","E","F","G","A","B"][n % 7];
+      };
+
+      scope.noteName = function(n) {
+        var note7 = semitoneToNote(n);
+
+        if (Array.isArray(note7)) {
+          note7 = note7[0]
+          return notation7(note7)  + '#';
+        } else {
+          return notation7(note7);
+        }
+      };
+
+      var updateGrid = function() {
+        scope.mainGridStyle = {"background-size": (scope.measure*scope.beatWidth*scope.zoomLevel) + "px 240px"};
+      };
+
+      scope.$watch("[measure, beatWidth, zoomLevel]", updateGrid);
+      $timeout(updateGrid);
+
+      scope.mouseUp = function(event) {
+        scope.mouseMove = function() {};
+      };
+
+      scope.mouseLeave = function() {
+        scope.mouseMove = function() {};
+      };
+
+      var moveEvent = function(evt) {
+        return function(event) {
+          if (!event.target.classList.contains("event-list")) return;
+          evt.s = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+
+          if (evt.s < 0) evt.s = 0;
+
+          var oldN = evt.n;
+          evt.n = Math.floor(120 - event.offsetY / 20);
+          scope.$emit("trackChanged", scope.track);
+
+          if (oldN !== evt.n){
+            scope.$emit("eventChanged", {evt:evt, track: scope.track});
+          }
+        };
+      };
+
+      var cancelMove = function() {
+        scope.mouseMove = function(){};
+        scope.mouseLeave = function(){};
+      };
+
+      scope.mouseDown = function(event) {
+        if (!event.target.classList.contains("event-list")) return;
+        var newEvt = {
+          n: Math.floor(120 - event.offsetY / 20),
+          s: Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100,
+          l: defaultL
+        };
+
+        scope.selected = newEvt;
+
+        scope.track.events.push(newEvt);
+        scope.$emit("trackChanged", scope.track);
+        scope.$emit("eventChanged", {evt:newEvt, track: scope.track});
+
+        scope.mouseMove = moveEvent(newEvt);
+        scope.mouseLeave = function() {
+          scope.track.events = scope.track.events.filter(function(e) { return e !== newEvt; });
+          cancelMove();
+        };
+
+        scope.mouseUpResizeEvent = cancelMove;
+        scope.mouseUpEvent = cancelMove;
+        scope.mouseUp = cancelMove;
+      };
+
+      scope.mouseDownEvent = function(evt, trackId, event) {
+        event.preventDefault();
+
+        scope.$emit("eventSelected", {evt: evt, track: scope.track});
+        scope.selected = evt;
+
+        scope.mouseMove = moveEvent(evt);
+        scope.mouseLeave = function() {
+          scope.track.events = scope.track.events.filter(function(e) { return e !== evt; });
+
+          cancelMove();
+        };
+
+        scope.mouseUpResizeEvent = cancelMove;
+        scope.mouseUpEvent = cancelMove;
+        scope.mouseUp = cancelMove;
+      };
+
+      scope.mouseDownResizeEvent = function(evt, trackId, event) {
+        event.preventDefault();
+
+        scope.selected = evt;
+        scope.$emit("eventChanged", {evt:evt, track: scope.track});
+
+        scope.mouseMove = function(event) {
+          if (!event.target.classList.contains("event-list")) return;
+          evt.refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+          evt.l = evt.refs - evt.s;
+          if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
+
+          defaultL = evt.l;
+          scope.$emit("trackChanged", scope.track);
+        };
+
+        scope.mouseUpResizeEvent = cancelMove;
+        scope.mouseUpEvent = cancelMove;
+        scope.mouseUp = cancelMove;
+      };
+
+    }
+  };
+}]);
+
 musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
   return {
     scope: {

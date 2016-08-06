@@ -1,0 +1,33 @@
+<div class="event-area-container">
+  <div class="event-area" ng-style="{width: measureCount*measure*beatWidth*zoomLevel + 'px'}">
+    <div class="overlay zebra">
+
+    </div>
+    <div class="overlay innergrid">
+      
+    </div>
+    <div class="overlay maingrid" ng-style="mainGridStyle">
+
+    </div>
+    <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">
+      <div 
+        draggable="false"
+        ng-repeat="evt in track.events" 
+        class="note" ng-class="{selected: selected===evt}"
+        ng-style="{'width': evt.l*zoomLevel*beatWidth/100+'px', 'left':evt.s*zoomLevel*beatWidth/100+'px', 'bottom': evt.n*20+'px'}"
+        >
+        <div class="overlay">{{noteName(evt.n)}}</div>
+        <div class="drag-event-section" ng-style="{'width': (evt.l*zoomLevel*beatWidth/100-5)+'px', 'height':'20px'}"
+          draggable="false"
+          ng-mousedown="mouseDownEvent(evt, 0, $event)"
+          ng-mouseup="mouseUpEvent(evt, 0)">
+        </div>
+        <div class="resize-section"
+          draggable="false"
+          ng-mousedown="mouseDownResizeEvent(evt, 0, $event)"
+          ng-mouseup="mouseUpResizeEvent(evt, 0)">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
