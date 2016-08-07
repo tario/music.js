@@ -43,6 +43,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   });
 
   var beep = function(instrument, n) {
+      if (!instrument) return;
       if (lastPlaying) lastPlaying.stop();
       lastPlaying = instrument.note(n).play();
 
@@ -53,6 +54,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   var computeMeasureCount = function() {
+    if (!$scope.file.track[0]) return;
+
     var endTime = $scope.file.track[0].events.map(function(evt) {
       return evt.s + evt.l;
     }).reduce(function(a,b) {
@@ -67,7 +70,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var lastPlaying;
   $scope.$on("eventChanged", function(evt, data) {
     computeMeasureCount();
-    
+
     if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
   });
 
@@ -75,6 +78,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     beep(instrument.get(data.track), data.evt.n);
   });
 
+  $scope.$watch("file.measure", computeMeasureCount);
 
   var instrument = new WeakMap();
   $scope.updateInstrument = function() {
