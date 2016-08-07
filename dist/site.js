@@ -12562,9 +12562,23 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
       },50);
   };
 
+  var computeMeasureCount = function() {
+    var endTime = $scope.file.track[0].events.map(function(evt) {
+      return evt.s + evt.l;
+    }).reduce(function(a,b) {
+      return a>b ? a : b;
+    }, 0);
+
+    var measureLength = $scope.file.measure * 100;
+
+    $scope.file.measureCount = Math.floor(endTime/measureLength) + 1;
+  };
+
   var lastPlaying;
   $scope.$on("eventChanged", function(evt, data) {
-    beep(instrument.get(data.track), data.evt.n);
+    computeMeasureCount();
+    
+    if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
   });
 
   $scope.$on("eventSelected", function(evt, data) {
@@ -13289,6 +13303,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
       var moveEvent = function(evt) {
         return function(event) {
+          var oldevt = {n:evt.n, s:evt.s, l:evt.l};
+
           if (!event.target.classList.contains("event-list")) return;
           evt.s = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
 
@@ -13296,11 +13312,9 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
           var oldN = evt.n;
           evt.n = Math.floor(120 - event.offsetY / 20);
-          scope.$emit("trackChanged", scope.track);
 
-          if (oldN !== evt.n){
-            scope.$emit("eventChanged", {evt:evt, track: scope.track});
-          }
+          scope.$emit("trackChanged", scope.track);
+          scope.$emit("eventChanged", {oldevt: oldevt, evt:evt, track: scope.track});
         };
       };
 
@@ -13321,7 +13335,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
         scope.track.events.push(newEvt);
         scope.$emit("trackChanged", scope.track);
-        scope.$emit("eventChanged", {evt:newEvt, track: scope.track});
+        scope.$emit("eventChanged", {oldevt:{}, evt:newEvt, track: scope.track});
 
         scope.mouseMove = moveEvent(newEvt);
         scope.mouseLeave = function() {
@@ -13356,9 +13370,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         event.preventDefault();
 
         scope.selected = evt;
-        scope.$emit("eventChanged", {evt:evt, track: scope.track});
 
         scope.mouseMove = function(event) {
+          var oldevt = {n:evt.n, s:evt.s, l:evt.l};
+
           if (!event.target.classList.contains("event-list")) return;
           evt.refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
           evt.l = evt.refs - evt.s;
@@ -13366,6 +13381,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
           defaultL = evt.l;
           scope.$emit("trackChanged", scope.track);
+          scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
         };
 
         scope.mouseUpResizeEvent = cancelMove;

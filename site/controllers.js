@@ -52,9 +52,23 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
       },50);
   };
 
+  var computeMeasureCount = function() {
+    var endTime = $scope.file.track[0].events.map(function(evt) {
+      return evt.s + evt.l;
+    }).reduce(function(a,b) {
+      return a>b ? a : b;
+    }, 0);
+
+    var measureLength = $scope.file.measure * 100;
+
+    $scope.file.measureCount = Math.floor(endTime/measureLength) + 1;
+  };
+
   var lastPlaying;
   $scope.$on("eventChanged", function(evt, data) {
-    beep(instrument.get(data.track), data.evt.n);
+    computeMeasureCount();
+    
+    if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
   });
 
   $scope.$on("eventSelected", function(evt, data) {
