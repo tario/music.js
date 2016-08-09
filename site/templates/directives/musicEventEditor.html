@@ -19,13 +19,14 @@
         <div class="overlay">{{noteName(evt.n)}}</div>
         <div class="drag-event-section" ng-style="{'width': (evt.l*zoomLevel*beatWidth/100-5)+'px', 'height':'20px'}"
           draggable="false"
-          ng-mousedown="mouseDownEvent(evt, 0, $event)"
-          ng-mouseup="mouseUpEvent(evt, 0)">
+          ng-mousedown="mouseDownEvent(evt, $event)"
+          ng-mouseup="mouseUpEvent(evt)"
+          ng-mousemove="mouseMoveEvent(evt, $event)">
         </div>
         <div class="resize-section"
           draggable="false"
-          ng-mousedown="mouseDownResizeEvent(evt, 0, $event)"
-          ng-mouseup="mouseUpResizeEvent(evt, 0)">
+          ng-mousedown="mouseDownResizeEvent(evt, $event)"
+          ng-mouseup="mouseUpResizeEvent(evt)">
         </div>
       </div>
     </div>
