@@ -12574,7 +12574,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
     var measureLength = $scope.file.measure * 100;
 
-    $scope.file.measureCount = Math.floor(endTime/measureLength) + 1;
+    $scope.file.measureCount = Math.floor((endTime-1)/measureLength) + 1;
+    if ($scope.file.measureCount<1) $scope.file.measureCount=1;
   };
 
   var lastPlaying;
