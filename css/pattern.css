@@ -18,14 +18,11 @@ input.smallinput {
 .event-area-container {
   height: 200px;
   overflow: scroll;
-  direction: rtl;
 }
 
 .event-area {
   position: relative;
   height: 2400px;
-  direction: ltr;
-  float: left;
 }
 
 .event-area .maingrid {
