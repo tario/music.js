@@ -516,6 +516,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
       };
 
       scope.$watch("[measure, beatWidth, zoomLevel]", updateGrid);
+      scope.$watch("track.scroll", function() {
+        scope.$emit("trackChanged", scope.track);        
+      });
+
       $timeout(updateGrid);
 
       scope.mouseUp = function(event) {
@@ -687,3 +691,24 @@ musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
     }
   };
 }]);
+
+musicShowCaseApp.directive("ngScrollTop", ["$parse", "$timeout", function($parse, $timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollVarGetter = $parse(attrs.ngScrollTop);
+      var scrollVarSetter = scrollVarGetter.assign;
+
+      scope.$watch(attrs.ngScrollTop, function() {
+        $(element).scrollTop(scrollVarGetter(scope));
+      });
+
+      element.on('scroll', function() {
+        $timeout(function() {
+          scrollVarSetter(scope, $(element).scrollTop());
+        });
+      });
+    }
+  };
+}]);
+

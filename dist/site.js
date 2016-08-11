@@ -1,10 +1,3 @@
-/*!
- * EventEmitter v4.2.11 - git.io/ee
- * Unlicense - http://unlicense.org/
- * Oliver Caldwell - http://oli.me.uk/
- * @preserve
- */
-(function(){"use strict";function t(){}function i(t,n){for(var e=t.length;e--;)if(t[e].listener===n)return e;return-1}function n(e){return function(){return this[e].apply(this,arguments)}}var e=t.prototype,r=this,s=r.EventEmitter;e.getListeners=function(n){var r,e,t=this._getEvents();if(n instanceof RegExp){r={};for(e in t)t.hasOwnProperty(e)&&n.test(e)&&(r[e]=t[e])}else r=t[n]||(t[n]=[]);return r},e.flattenListeners=function(t){var e,n=[];for(e=0;e<t.length;e+=1)n.push(t[e].listener);return n},e.getListenersAsObject=function(n){var e,t=this.getListeners(n);return t instanceof Array&&(e={},e[n]=t),e||t},e.addListener=function(r,e){var t,n=this.getListenersAsObject(r),s="object"==typeof e;for(t in n)n.hasOwnProperty(t)&&-1===i(n[t],e)&&n[t].push(s?e:{listener:e,once:!1});return this},e.on=n("addListener"),e.addOnceListener=function(e,t){return this.addListener(e,{listener:t,once:!0})},e.once=n("addOnceListener"),e.defineEvent=function(e){return this.getListeners(e),this},e.defineEvents=function(t){for(var e=0;e<t.length;e+=1)this.defineEvent(t[e]);return this},e.removeListener=function(r,s){var n,e,t=this.getListenersAsObject(r);for(e in t)t.hasOwnProperty(e)&&(n=i(t[e],s),-1!==n&&t[e].splice(n,1));return this},e.off=n("removeListener"),e.addListeners=function(e,t){return this.manipulateListeners(!1,e,t)},e.removeListeners=function(e,t){return this.manipulateListeners(!0,e,t)},e.manipulateListeners=function(r,t,i){var e,n,s=r?this.removeListener:this.addListener,o=r?this.removeListeners:this.addListeners;if("object"!=typeof t||t instanceof RegExp)for(e=i.length;e--;)s.call(this,t,i[e]);else for(e in t)t.hasOwnProperty(e)&&(n=t[e])&&("function"==typeof n?s.call(this,e,n):o.call(this,e,n));return this},e.removeEvent=function(e){var t,r=typeof e,n=this._getEvents();if("string"===r)delete n[e];else if(e instanceof RegExp)for(t in n)n.hasOwnProperty(t)&&e.test(t)&&delete n[t];else delete this._events;return this},e.removeAllListeners=n("removeEvent"),e.emitEvent=function(t,u){var n,e,r,i,o,s=this.getListenersAsObject(t);for(i in s)if(s.hasOwnProperty(i))for(n=s[i].slice(0),r=n.length;r--;)e=n[r],e.once===!0&&this.removeListener(t,e.listener),o=e.listener.apply(this,u||[]),o===this._getOnceReturnValue()&&this.removeListener(t,e.listener);return this},e.trigger=n("emitEvent"),e.emit=function(e){var t=Array.prototype.slice.call(arguments,1);return this.emitEvent(e,t)},e.setOnceReturnValue=function(e){return this._onceReturnValue=e,this},e._getOnceReturnValue=function(){return this.hasOwnProperty("_onceReturnValue")?this._onceReturnValue:!0},e._getEvents=function(){return this._events||(this._events={})},t.noConflict=function(){return r.EventEmitter=s,t},"function"==typeof define&&define.amd?define(function(){return t}):"object"==typeof module&&module.exports?module.exports=t:r.EventEmitter=t}).call(this);
 /*
  AngularJS v1.5.0-rc.0
  (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -10445,6 +10438,13 @@ Reverb.prototype.process = function (interleavedSamples){
 };
 
 
+/*!
+ * EventEmitter v4.2.11 - git.io/ee
+ * Unlicense - http://unlicense.org/
+ * Oliver Caldwell - http://oli.me.uk/
+ * @preserve
+ */
+(function(){"use strict";function t(){}function i(t,n){for(var e=t.length;e--;)if(t[e].listener===n)return e;return-1}function n(e){return function(){return this[e].apply(this,arguments)}}var e=t.prototype,r=this,s=r.EventEmitter;e.getListeners=function(n){var r,e,t=this._getEvents();if(n instanceof RegExp){r={};for(e in t)t.hasOwnProperty(e)&&n.test(e)&&(r[e]=t[e])}else r=t[n]||(t[n]=[]);return r},e.flattenListeners=function(t){var e,n=[];for(e=0;e<t.length;e+=1)n.push(t[e].listener);return n},e.getListenersAsObject=function(n){var e,t=this.getListeners(n);return t instanceof Array&&(e={},e[n]=t),e||t},e.addListener=function(r,e){var t,n=this.getListenersAsObject(r),s="object"==typeof e;for(t in n)n.hasOwnProperty(t)&&-1===i(n[t],e)&&n[t].push(s?e:{listener:e,once:!1});return this},e.on=n("addListener"),e.addOnceListener=function(e,t){return this.addListener(e,{listener:t,once:!0})},e.once=n("addOnceListener"),e.defineEvent=function(e){return this.getListeners(e),this},e.defineEvents=function(t){for(var e=0;e<t.length;e+=1)this.defineEvent(t[e]);return this},e.removeListener=function(r,s){var n,e,t=this.getListenersAsObject(r);for(e in t)t.hasOwnProperty(e)&&(n=i(t[e],s),-1!==n&&t[e].splice(n,1));return this},e.off=n("removeListener"),e.addListeners=function(e,t){return this.manipulateListeners(!1,e,t)},e.removeListeners=function(e,t){return this.manipulateListeners(!0,e,t)},e.manipulateListeners=function(r,t,i){var e,n,s=r?this.removeListener:this.addListener,o=r?this.removeListeners:this.addListeners;if("object"!=typeof t||t instanceof RegExp)for(e=i.length;e--;)s.call(this,t,i[e]);else for(e in t)t.hasOwnProperty(e)&&(n=t[e])&&("function"==typeof n?s.call(this,e,n):o.call(this,e,n));return this},e.removeEvent=function(e){var t,r=typeof e,n=this._getEvents();if("string"===r)delete n[e];else if(e instanceof RegExp)for(t in n)n.hasOwnProperty(t)&&e.test(t)&&delete n[t];else delete this._events;return this},e.removeAllListeners=n("removeEvent"),e.emitEvent=function(t,u){var n,e,r,i,o,s=this.getListenersAsObject(t);for(i in s)if(s.hasOwnProperty(i))for(n=s[i].slice(0),r=n.length;r--;)e=n[r],e.once===!0&&this.removeListener(t,e.listener),o=e.listener.apply(this,u||[]),o===this._getOnceReturnValue()&&this.removeListener(t,e.listener);return this},e.trigger=n("emitEvent"),e.emit=function(e){var t=Array.prototype.slice.call(arguments,1);return this.emitEvent(e,t)},e.setOnceReturnValue=function(e){return this._onceReturnValue=e,this},e._getOnceReturnValue=function(){return this.hasOwnProperty("_onceReturnValue")?this._onceReturnValue:!0},e._getEvents=function(){return this._events||(this._events={})},t.noConflict=function(){return r.EventEmitter=s,t},"function"==typeof define&&define.amd?define(function(){return t}):"object"==typeof module&&module.exports?module.exports=t:r.EventEmitter=t}).call(this);
 (function(root, factory) {
 	if (typeof define === 'function' && define.amd) {
 		define(factory);
@@ -12508,27 +12508,250 @@ if("undefined"==typeof jQuery)throw new Error("Bootstrap's JavaScript requires j
 var e=c.find(".active:last a"),f=a.Event("hide.bs.tab",{relatedTarget:b[0]}),g=a.Event("show.bs.tab",{relatedTarget:e[0]});if(e.trigger(f),b.trigger(g),!g.isDefaultPrevented()&&!f.isDefaultPrevented()){var h=a(d);this.activate(b.closest("li"),c),this.activate(h,h.parent(),function(){e.trigger({type:"hidden.bs.tab",relatedTarget:b[0]}),b.trigger({type:"shown.bs.tab",relatedTarget:e[0]})})}}},c.prototype.activate=function(b,d,e){function f(){g.removeClass("active").find("> .dropdown-menu > .active").removeClass("active").end().find('[data-toggle="tab"]').attr("aria-expanded",!1),b.addClass("active").find('[data-toggle="tab"]').attr("aria-expanded",!0),h?(b[0].offsetWidth,b.addClass("in")):b.removeClass("fade"),b.parent(".dropdown-menu").length&&b.closest("li.dropdown").addClass("active").end().find('[data-toggle="tab"]').attr("aria-expanded",!0),e&&e()}var g=d.find("> .active"),h=e&&a.support.transition&&(g.length&&g.hasClass("fade")||!!d.find("> .fade").length);g.length&&h?g.one("bsTransitionEnd",f).emulateTransitionEnd(c.TRANSITION_DURATION):f(),g.removeClass("in")};var d=a.fn.tab;a.fn.tab=b,a.fn.tab.Constructor=c,a.fn.tab.noConflict=function(){return a.fn.tab=d,this};var e=function(c){c.preventDefault(),b.call(a(this),"show")};a(document).on("click.bs.tab.data-api",'[data-toggle="tab"]',e).on("click.bs.tab.data-api",'[data-toggle="pill"]',e)}(jQuery),+function(a){"use strict";function b(b){return this.each(function(){var d=a(this),e=d.data("bs.affix"),f="object"==typeof b&&b;e||d.data("bs.affix",e=new c(this,f)),"string"==typeof b&&e[b]()})}var c=function(b,d){this.options=a.extend({},c.DEFAULTS,d),this.$target=a(this.options.target).on("scroll.bs.affix.data-api",a.proxy(this.checkPosition,this)).on("click.bs.affix.data-api",a.proxy(this.checkPositionWithEventLoop,this)),this.$element=a(b),this.affixed=null,this.unpin=null,this.pinnedOffset=null,this.checkPosition()};c.VERSION="3.3.4",c.RESET="affix affix-top affix-bottom",c.DEFAULTS={offset:0,target:window},c.prototype.getState=function(a,b,c,d){var e=this.$target.scrollTop(),f=this.$element.offset(),g=this.$target.height();if(null!=c&&"top"==this.affixed)return c>e?"top":!1;if("bottom"==this.affixed)return null!=c?e+this.unpin<=f.top?!1:"bottom":a-d>=e+g?!1:"bottom";var h=null==this.affixed,i=h?e:f.top,j=h?g:b;return null!=c&&c>=e?"top":null!=d&&i+j>=a-d?"bottom":!1},c.prototype.getPinnedOffset=function(){if(this.pinnedOffset)return this.pinnedOffset;this.$element.removeClass(c.RESET).addClass("affix");var a=this.$target.scrollTop(),b=this.$element.offset();return this.pinnedOffset=b.top-a},c.prototype.checkPositionWithEventLoop=function(){setTimeout(a.proxy(this.checkPosition,this),1)},c.prototype.checkPosition=function(){if(this.$element.is(":visible")){var b=this.$element.height(),d=this.options.offset,e=d.top,f=d.bottom,g=a(document.body).height();"object"!=typeof d&&(f=e=d),"function"==typeof e&&(e=d.top(this.$element)),"function"==typeof f&&(f=d.bottom(this.$element));var h=this.getState(g,b,e,f);if(this.affixed!=h){null!=this.unpin&&this.$element.css("top","");var i="affix"+(h?"-"+h:""),j=a.Event(i+".bs.affix");if(this.$element.trigger(j),j.isDefaultPrevented())return;this.affixed=h,this.unpin="bottom"==h?this.getPinnedOffset():null,this.$element.removeClass(c.RESET).addClass(i).trigger(i.replace("affix","affixed")+".bs.affix")}"bottom"==h&&this.$element.offset({top:g-b-f})}};var d=a.fn.affix;a.fn.affix=b,a.fn.affix.Constructor=c,a.fn.affix.noConflict=function(){return a.fn.affix=d,this},a(window).on("load",function(){a('[data-spy="affix"]').each(function(){var c=a(this),d=c.data();d.offset=d.offset||{},null!=d.offsetBottom&&(d.offset.bottom=d.offsetBottom),null!=d.offsetTop&&(d.offset.top=d.offsetTop),b.call(c,d)})})}(jQuery);
 var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute', 'ui.bootstrap', 'ngDraggable']);
 
+musicShowCaseApp.constant("MUSIC", MUSIC);
+
+
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.filter("block_name", function() {
+  return function(block, indexMap) {
+    if (block.id) {
+      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
+    } else {
+      return "Drop pattern here";
+    }
+  };
+});
+
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
+  $scope.indexMap = {};
+
   var id = $routeParams.id;
+
+  var instSet = InstrumentSet();
+
+  $scope.remove = function(block) {
+    delete block.id;
+    checkPayload();
+    $scope.fileChanged();
+  };
+
+  $scope.stop = function() {
+    if (playing) playing.stop();
+    playing = null;
+  };
+
+  var playing = null;
+
+  $scope.play = function() {
+    $scope.stop();
+    $q.all(instSet.all)
+      .then(function(instruments){
+        var patterns = {};
+
+        var createPattern = function(id) {
+          if (!id) return null;
+          if (patterns[id]) return patterns[id];
+
+          var pattern = $scope.indexMap[id].contents;
+          var changedBpm = Object.create(pattern);
+          changedBpm.bpm = $scope.file.bpm;
+
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
+            playing = null;
+          });
+
+          return patterns[id];
+        };        
+
+        var scale = 600 / $scope.file.bpm;
+        var measure = 100 * $scope.file.measure * scale;
+        var song = new MUSIC.Song(
+          $scope.file.tracks.map(function(track) {
+            return track.blocks.map(function(block) {
+              return createPattern(block.id);
+            });
+          })
+        , {measure: measure});
+
+        playing = song.play();
+
+      });
+
+
+  };
+
+  $scope.patternPlay = function(block) {
+    var pattern = $scope.indexMap[block.id].contents;
+    var doNothing = function() {};
+
+    var loader = {};
+    loader[pattern.tracks[0].instrument.id] = instSet.load(pattern.tracks[0].instrument.id);
+    $q.all(loader)
+      .then(function(instruments) {
+        $scope.stop();
+
+        var changedBpm = Object.create(pattern);
+        changedBpm.bpm = $scope.file.bpm;
+
+        playing = Pattern.patternCompose(changedBpm, instruments, function() {
+          playing = null;
+        }).play();
+      });
+  };
+
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
-      $scope.fileIndex = file.index;
+  $scope.fileChanged = fn.debounce(function() {
+    FileRepository.updateFile(id, $scope.file);
+  },100);;
+
+  var checkPayload = function() {
+    var maxblocks = 0;
+    var maxTrackIndex = 0;
+
+    $scope.file.tracks.forEach(function(track, trackIndex) {
+      for (var i=0;i<track.blocks.length;i++) {
+        if (track.blocks[i].id){
+          if (i>maxblocks) maxblocks=i;
+          if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
+        }
+      }
     });
-  });
+
+    if ($scope.file.tracks.length < maxTrackIndex+2) {
+      $scope.file.tracks.push({
+        blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
+      });
+    } else {
+      $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
+    }
+
+    var target = maxblocks + 2;
+    $scope.file.tracks.forEach(function(track) {
+      if (target > track.blocks.length) {
+        for (var i=0;i<target-track.blocks.length;i++) track.blocks.push({});
+      } else {
+        track.blocks = track.blocks.slice(0, target);
+      }
+    });
+    $scope.fileChanged();
+  };
+
+  $scope.onDropComplete = function($data,$event,block) {
+    if ($data.fromBlock) {
+
+      var swapId = block.id;
+      block.id = $data.fromBlock.id;
+      $data.fromBlock.id = swapId;
+
+      checkPayload();
+      return;
+    }
+    if ($data.type !== 'pattern') return;
+
+    block.id = $data.id;
+    FileRepository.getFile($data.id)
+      .then(function(f) {
+        f.contents.tracks.forEach(function(track) {
+          instSet.load(track.instrument.id);          
+        });
+
+        $scope.indexMap[$data.id] = f;
+        checkPayload();
+        $scope.fileChanged();
+      });
+    
+  };
+
+  var updateFromRepo = function() {
+    var block_ids = {};
+
+    FileRepository.getFile(id).then(function(file) {
+      if (file) {
+        file.contents.tracks.forEach(function(track) {
+          track.blocks.forEach(function(block){
+            if (block && block.id) {
+              if (!block_ids[block.id]){
+                block_ids[block.id] = FileRepository.getFile(block.id);
+              }
+            }
+          })
+        });
+      };
+
+      return $q.all(block_ids)
+        .then(function(indexMap) {
+          $scope.indexMap = indexMap;
+
+          for (var blockId in indexMap) {
+            var pattern = indexMap[blockId].contents;
+            pattern.tracks.forEach(function(track) {
+              if (track.instrument) instSet.load(track.instrument.id);
+            });
+          }
+        })
+        .then(function() {
+          $timeout(function() {
+            var outputFile = {};
+            $scope.fileIndex = file.index;
+            $scope.file = file.contents;
+          });
+        });
+    });
+  };
+
+  updateFromRepo();
+
+  var keyDownHandler = function(evt) {
+    if (evt.keyCode === 90 && evt.ctrlKey) {
+      FileRepository.undo(id);
+      updateFromRepo();
+    }
+
+    if (evt.keyCode === 89 && evt.ctrlKey) {
+      FileRepository.redo(id);
+      updateFromRepo();
+    }
+  };
+
+  $(document).bind("keydown", keyDownHandler);
+  $scope.$on("$destroy", function() {
+    $(document).unbind("keydown", keyDownHandler);
+    instSet.dispose();
+  });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
   $scope.zoomLevel = 4;
+
+  var playing = null;
+  var instSet = InstrumentSet();
+
+  $scope.stop = function() {
+    if (playing) playing.stop();
+    playing = null;
+  };
+
+  var noteseqFromTrack = function(track) {
+    return Pattern.noteseq($scope.file, track, function() {
+      playing = null;
+    }).makePlayable(instrument.get(track));
+  };
+
+  $scope.play = function() {
+    if (playing) return;
+    if (!instrument) return;
+
+    var inst = instrument.get($scope.file.tracks[0]);
+    if (!inst) return;
+    playing = noteseqFromTrack($scope.file.tracks[0]).play();
+  };
 
   $scope.zoomIn = function() {
     $scope.zoomLevel = $scope.zoomLevel * 2;
@@ -12546,7 +12769,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   $scope.fileChanged = fn.debounce(function() {
     FileRepository.updateFile(id, $scope.file);
-  });
+  },100);
 
   $scope.$on("trackChanged", function(track) {
     $scope.fileChanged();
@@ -12564,9 +12787,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   var computeMeasureCount = function() {
-    if (!$scope.file.track[0]) return;
+    if (!$scope.file) return;
+    if (!$scope.file.tracks[0]) return;
 
-    var endTime = $scope.file.track[0].events.map(function(evt) {
+    var endTime = $scope.file.tracks[0].events.map(function(evt) {
       return evt.s + evt.l;
     }).reduce(function(a,b) {
       return a>b ? a : b;
@@ -12593,40 +12817,61 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   var instrument = new WeakMap();
   $scope.updateInstrument = function() {
-    if (!$scope.file.track[0]) return;
-    if (!$scope.file.track[0].instrument) return;
+    if (!$scope.file.tracks[0]) return;
+    if (!$scope.file.tracks[0].instrument) return;
 
-    var instrumentId = $scope.file.track[0].instrument.id;
-    FileRepository.getFile(instrumentId)
-      .then(function(file) {
-        return MusicObjectFactory(file.contents);
-      })
+    instSet.load($scope.file.tracks[0].instrument.id)
       .then(function(musicObject) {
-        instrument.set($scope.file.track[0], musicObject);
+        instrument.set($scope.file.tracks[0], musicObject);
         beep(musicObject, 36);
       });
   };
 
-
   $scope.onDropComplete = function(instrument,event) {
-    $scope.file.track = $scope.file.track || [];
-    $scope.file.track[0] = $scope.file.track[0] || {};
-    $scope.file.track[0].instrument = instrument;
+    $scope.file.tracks = $scope.file.tracks || [];
+    $scope.file.tracks[0] = $scope.file.tracks[0] || {};
+    $scope.file.tracks[0].instrument = instrument;
 
     FileRepository.updateFile(id, $scope.file);
     $scope.updateInstrument();
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
-      $scope.fileIndex = file.index;
-      $scope.file = file.contents;
-      if (!$scope.file.track) $scope.file.track=[{}];
-      $scope.file.track[0].events = $scope.file.track[0].events || [];
-      $scope.updateInstrument();
+  var updateFromRepo = function() {
+    FileRepository.getFile(id).then(function(file) {
+      $timeout(function() {
+        var outputFile = {};
+        $scope.fileIndex = file.index;
+        $scope.file = file.contents;
+        if (!$scope.file.tracks) $scope.file.tracks=[{}];
+        $scope.file.tracks[0].events = $scope.file.tracks[0].events || [];
+        $scope.updateInstrument();
+      });
     });
+  };
+
+  updateFromRepo();
+
+  // undo & redo
+
+  var keyDownHandler = function(evt) {
+    if (evt.keyCode === 90 && evt.ctrlKey) {
+      FileRepository.undo(id);
+      updateFromRepo();
+    }
+
+    if (evt.keyCode === 89 && evt.ctrlKey) {
+      FileRepository.redo(id);
+      updateFromRepo();
+    }
+  };
+
+  $(document).bind("keydown", keyDownHandler);
+  $scope.$on("$destroy", function() {
+    $(document).unbind("keydown", keyDownHandler);
+    instSet.dispose();
   });
+
+
 }]);
 
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
@@ -12685,18 +12930,18 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     });
   });
 
+  $scope.$on("$destroy", function() {
+    $scope.instruments.forEach(function(instrument) {
+      if (instrument.dispose) instrument.dispose();
+    });
+  });
+
 /*  $scope.$on("addFx", function(evt, args) {
     $scope.file.data.array = [{
       type: args.fx.name,
       data: {}
     }].concat($scope.file.data.array);
   });*/
-
-  $scope.$on("$destroy", function() {
-    $scope.playables.forEach(function(playable) {
-      $scope.stopPlay(playable);
-    });
-  });
 
   $scope.startPlay = function(playable) {
     playable.playing = playable.play();
@@ -13296,6 +13541,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
       };
 
       scope.$watch("[measure, beatWidth, zoomLevel]", updateGrid);
+      scope.$watch("track.scroll", function() {
+        scope.$emit("trackChanged", scope.track);        
+      });
+
       $timeout(updateGrid);
 
       scope.mouseUp = function(event) {
@@ -13358,7 +13607,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMoveEvent = moveEventFromEvent(newEvt);
 
         scope.mouseLeave = function() {
-          scope.track.events = scope.track.events.filter(function(e) { return e !== newEvt; });
           cancelMove();
         };
 
@@ -13377,8 +13625,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMoveEvent = moveEventFromEvent(evt);
 
         scope.mouseLeave = function() {
-          scope.track.events = scope.track.events.filter(function(e) { return e !== evt; });
-
           cancelMove();
         };
 
@@ -13422,6 +13668,19 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseUp = cancelMove;
       };
 
+      var keyDownHandler = function(e) {
+        if (e.keyCode == 46) {
+          $timeout(function() {
+            scope.track.events = scope.track.events.filter(function(evt) { return evt !== scope.selected; });
+            scope.$emit("trackChanged", scope.track);
+          });
+        }
+      };
+
+      $(document).bind("keydown", keyDownHandler);
+      scope.$on("$destroy", function() {
+        $(document).unbind("keydown", keyDownHandler);
+      });
     }
   };
 }]);
@@ -13467,6 +13726,27 @@ musicShowCaseApp.directive("showScale", ["$timeout", function($timeout) {
     }
   };
 }]);
+
+musicShowCaseApp.directive("ngScrollTop", ["$parse", "$timeout", function($parse, $timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollVarGetter = $parse(attrs.ngScrollTop);
+      var scrollVarSetter = scrollVarGetter.assign;
+
+      scope.$watch(attrs.ngScrollTop, function() {
+        $(element).scrollTop(scrollVarGetter(scope));
+      });
+
+      element.on('scroll', function() {
+        $timeout(function() {
+          scrollVarSetter(scope, $(element).scrollTop());
+        });
+      });
+    }
+  };
+}]);
+
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
@@ -13812,7 +14092,104 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
 }]);
 
-musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", function($http, $q, TypeService) {
+musicShowCaseApp.service("Historial", [function() {
+  return function() {
+    var array = [];
+    var currentVersion = 0;
+
+    var undo = function() {
+      if (currentVersion > 0) currentVersion--;
+      return array[currentVersion];
+    };
+
+    var redo = function() {
+      if (currentVersion < array.length-1) currentVersion++;
+      return array[currentVersion];
+    };
+
+    var registerVersion = function(data) {
+      array = array.slice(0, currentVersion+1);
+      array.push(data);
+      if (array.length > 128) array = array.slice(1);
+      currentVersion = array.length-1;
+    };
+
+    return {
+      registerVersion: registerVersion,
+      undo: undo,
+      redo: redo
+    };
+  };
+}]);
+
+musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
+  var noteseq = function(file, track, onStop) {
+    var noteseq = new MUSIC.NoteSequence();
+    var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
+    var scale = 600 / file.bpm;
+
+    for (var i=0; i<events.length; i++) {
+      var evt = track.events[i];
+      noteseq.push([evt.n, evt.s * scale, evt.l * scale]);
+    }
+
+    noteseq.paddingTo(100 * file.measureCount * file.measure * scale);
+    noteseq.pushCallback([100*file.measureCount * file.measure * scale, onStop]);
+
+    return noteseq;
+  };
+
+  var patternCompose = function(file, instruments, onStop) {
+    var playableArray = file.tracks.map(function(track) {
+      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument.id]);
+    });
+
+    return new MUSIC.MultiPlayable(playableArray);
+  };
+
+  return {
+    noteseq: noteseq,
+    patternCompose: patternCompose
+  };
+}]);
+
+
+musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
+  return function() {
+    var set = {};
+    var created = [];
+    var load = function(id) {
+      if (!set[id]) {
+        set[id] = FileRepository.getFile(id)
+          .then(function(file) {
+            return MusicObjectFactory(file.contents);
+          })
+          .then(function(obj){
+            created.push(obj);
+            return obj;
+          });
+      } 
+
+      return set[id];
+    };
+
+    var dispose = function() {
+      created.forEach(function(instrument){
+        if (instrument.dispose) {
+          instrument.dispose();
+        }
+      });
+    };
+
+    return {
+      load: load,
+      all: set,
+      dispose: dispose
+    };
+  };
+}]);
+
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
   var exampleList = $http.get("exampleList.json");
 
   var createId = function() {
@@ -13837,13 +14214,36 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
         array: []
       }
     },
+    song: {
+      measure: 8,
+      bpm: 100,
+      tracks: [
+        {blocks: [{},{},{}]},
+        {blocks: [{},{},{}]}
+      ]
+    },
     pattern: {
       measure: 8,
-      measureCount: 1
+      measureCount: 1,
+      bpm: 100
     }
   };
 
+  var hist = new WeakMap();
+
   return {
+    undo: function(id) {
+      var oldVer = hist[id].undo();
+      if (!oldVer) return;
+
+      createdFiles[id] = JSON.parse(oldVer);
+    },
+    redo: function(id) {
+      var nextVer = hist[id].redo();
+      if (!nextVer) return;
+
+      createdFiles[id] = JSON.parse(nextVer);
+    },
     createFile: function(options) {
       genericStateEmmiter.emit("changed");
 
@@ -13851,6 +14251,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
 
       createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
       createdFiles[newid] = defaultFile[options.type] ||{};
+
+      hist[newid] = Historial();
+      hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
+
       return $q.resolve(newid);
     },
     updateIndex: function(id, attributes) {
@@ -13858,6 +14262,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
       if (!localFile) return;
 
       localFile.name = attributes.name;
+    },
+    getIndex: function(id) {
+      return $q.resolve(createdFilesIndex.filter(function(x){ return x.id === id})[0]);
     },
     updateFile: function(id, contents) {
       var obj = JSON.parse(JSON.stringify(contents));
@@ -13871,6 +14278,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
       }
 
       createdFiles[id] = obj;
+      hist[id].registerVersion(JSON.stringify(obj));
 
       return $q.resolve();
     },
