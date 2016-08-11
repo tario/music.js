@@ -581,11 +581,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMove = moveEvent(newEvt);
         scope.mouseMoveEvent = moveEventFromEvent(newEvt);
 
-        scope.mouseLeave = function() {
-          scope.track.events = scope.track.events.filter(function(e) { return e !== newEvt; });
-          cancelMove();
-        };
-
         scope.mouseUpResizeEvent = cancelMove;
         scope.mouseUpEvent = cancelMove;
         scope.mouseUp = cancelMove;
@@ -599,12 +594,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
         scope.mouseMove = moveEvent(evt);
         scope.mouseMoveEvent = moveEventFromEvent(evt);
-
-        scope.mouseLeave = function() {
-          scope.track.events = scope.track.events.filter(function(e) { return e !== evt; });
-
-          cancelMove();
-        };
 
         scope.mouseUpResizeEvent = cancelMove;
         scope.mouseUpEvent = cancelMove;
@@ -646,6 +635,18 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseUp = cancelMove;
       };
 
+      var keyDownHandler = function(e) {
+        if (e.keyCode == 46) {
+          $timeout(function() {
+            scope.track.events = scope.track.events.filter(function(evt) { return evt !== scope.selected; });
+          });
+        }
+      };
+
+      $(document).bind("keydown", keyDownHandler);
+      scope.$on("$destroy", function() {
+        $(document).unbind("keydown", keyDownHandler);
+      });
     }
   };
 }]);
