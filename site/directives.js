@@ -581,6 +581,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMove = moveEvent(newEvt);
         scope.mouseMoveEvent = moveEventFromEvent(newEvt);
 
+        scope.mouseLeave = function() {
+          cancelMove();
+        };
+
         scope.mouseUpResizeEvent = cancelMove;
         scope.mouseUpEvent = cancelMove;
         scope.mouseUp = cancelMove;
@@ -594,6 +598,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
         scope.mouseMove = moveEvent(evt);
         scope.mouseMoveEvent = moveEventFromEvent(evt);
+
+        scope.mouseLeave = function() {
+          cancelMove();
+        };
 
         scope.mouseUpResizeEvent = cancelMove;
         scope.mouseUpEvent = cancelMove;

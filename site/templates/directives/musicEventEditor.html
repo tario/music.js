@@ -9,7 +9,7 @@
     <div class="overlay maingrid" ng-style="mainGridStyle">
 
     </div>
-    <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)">
+    <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">
       <div 
         draggable="false"
         ng-repeat="evt in track.events" 
