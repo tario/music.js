@@ -53,7 +53,10 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   };
 
   var start = function(parameter) {
-    var array = eventsArray.slice(0);
+    var array = eventsArray.slice(0).sort(function(e1, e2) {
+      return e1.t - e2.t;
+    });
+    
     var timeoutHandlers = [];
     var eventCount = array.length;
 
