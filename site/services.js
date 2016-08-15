@@ -345,7 +345,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
     },
     pattern: {
       measure: 8,
-      measureCount: 1
+      measureCount: 1,
+      bpm: 100
     }
   };
 

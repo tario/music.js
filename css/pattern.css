@@ -94,3 +94,18 @@ input.smallinput {
   position: absolute;
   left: 0;
 }
+
+.player-controls {
+  border-style: solid;
+  border-color: white;
+  border-width: 2px;
+}
+
+.player-controls button.player {
+  float: right;
+  margin: 10px 5px;
+}
+
+.player-controls button.player:active {
+  margin: 10px 5px;
+}

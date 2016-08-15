@@ -1,5 +1,4 @@
 (function() {
-var playablePlay = function(playable) { return playable.play(); };
 var playingStop = function(playing) { playing.stop(); };
 
 MUSIC.MultiPlayable = function(playableArray) {
@@ -8,7 +7,8 @@ MUSIC.MultiPlayable = function(playableArray) {
   MUSIC.playablePipeExtend(this);
 };
 
-MUSIC.MultiPlayable.prototype.play = function() {
+MUSIC.MultiPlayable.prototype.play = function(options) {
+  var playablePlay = function(playable) { return playable.play(options); };
   var playingArray = this._playableArray.map(playablePlay);
 
   return {

@@ -3593,7 +3593,7 @@ MUSIC.NoteSequence.Playable.prototype.duration = function() {
   return this._duration;
 };
 
-MUSIC.NoteSequence.Playable.prototype.play = function() {
+MUSIC.NoteSequence.Playable.prototype.play = function(options) {
   this._runningFunSeq = this._noteseq._funseq.start(this._context);
   return new MUSIC.NoteSequence.Playing(this._runningFunSeq, this._context);
 };
@@ -3608,10 +3608,19 @@ MUSIC.NoteSequence.Playing.prototype.stop = function() {
   this._context.stop();
 };
 
+MUSIC.NoteSequence.prototype.paddingTo = function(time){
+  this._totalduration = time;
+};
+
 MUSIC.NoteSequence.prototype.padding = function(time){
   this._totalduration = this._totalduration + time;
 };
 
+MUSIC.NoteSequence.prototype.pushCallback = function(array){
+  var startTime = array[0];
+  var f = array[1];
+  this._funseq.push({t:startTime, f: f});
+};
 
 MUSIC.NoteSequence.prototype.push = function(array){
   var noteNum = array[0];
@@ -3666,7 +3675,6 @@ MUSIC.NoteSequence.context = function(instrument) {
 
 })();
 (function() {
-var playablePlay = function(playable) { return playable.play(); };
 var playingStop = function(playing) { playing.stop(); };
 
 MUSIC.MultiPlayable = function(playableArray) {
@@ -3675,7 +3683,8 @@ MUSIC.MultiPlayable = function(playableArray) {
   MUSIC.playablePipeExtend(this);
 };
 
-MUSIC.MultiPlayable.prototype.play = function() {
+MUSIC.MultiPlayable.prototype.play = function(options) {
+  var playablePlay = function(playable) { return playable.play(options); };
   var playingArray = this._playableArray.map(playablePlay);
 
   return {

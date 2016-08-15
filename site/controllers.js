@@ -20,6 +20,38 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $scope.beatWidth = 10;
   $scope.zoomLevel = 4;
 
+  var playing = null;
+
+  $scope.stop = function() {
+    if (playing) playing.stop();
+    playing = null;
+  };
+
+  var noteseqFromTrack = function(track) {
+    var noteseq = new MUSIC.NoteSequence();
+
+    for (var i=0; i<track.events.length; i++) {
+      var evt = track.events[i];
+      noteseq.push([evt.n, evt.s, evt.l]);
+    }
+
+    noteseq.paddingTo(100 * $scope.file.measureCount * $scope.file.measure);
+    noteseq.pushCallback([100*$scope.file.measureCount * $scope.file.measure, function() {
+      playing = null;
+    }]);
+
+    return noteseq.makePlayable(instrument.get(track));
+  };
+
+  $scope.play = function() {
+    if (playing) return;
+    if (!instrument) return;
+
+    var inst = instrument.get($scope.file.track[0]);
+    if (!inst) return;
+    playing = noteseqFromTrack($scope.file.track[0]).play();
+  };
+
   $scope.zoomIn = function() {
     $scope.zoomLevel = $scope.zoomLevel * 2;
     if ($scope.zoomLevel > 32) $scope.zoomLevel = 32;
