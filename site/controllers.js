@@ -29,14 +29,16 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   var noteseqFromTrack = function(track) {
     var noteseq = new MUSIC.NoteSequence();
+    var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
+    var scale = 600 / $scope.file.bpm;
 
-    for (var i=0; i<track.events.length; i++) {
+    for (var i=0; i<events.length; i++) {
       var evt = track.events[i];
-      noteseq.push([evt.n, evt.s, evt.l]);
+      noteseq.push([evt.n, evt.s * scale, evt.l * scale]);
     }
 
-    noteseq.paddingTo(100 * $scope.file.measureCount * $scope.file.measure);
-    noteseq.pushCallback([100*$scope.file.measureCount * $scope.file.measure, function() {
+    noteseq.paddingTo(100 * $scope.file.measureCount * $scope.file.measure * scale);
+    noteseq.pushCallback([100*$scope.file.measureCount * $scope.file.measure * scale, function() {
       playing = null;
     }]);
 
