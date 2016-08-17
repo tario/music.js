@@ -647,6 +647,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         if (e.keyCode == 46) {
           $timeout(function() {
             scope.track.events = scope.track.events.filter(function(evt) { return evt !== scope.selected; });
+            scope.$emit("trackChanged", scope.track);
           });
         }
       };

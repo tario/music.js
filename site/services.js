@@ -318,7 +318,37 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
 }]);
 
-musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", function($http, $q, TypeService) {
+musicShowCaseApp.service("Historial", [function() {
+  return function() {
+    var array = [];
+    var currentVersion = 0;
+
+    var undo = function() {
+      if (currentVersion > 0) currentVersion--;
+      return array[currentVersion];
+    };
+
+    var redo = function() {
+      if (currentVersion < array.length-1) currentVersion++;
+      return array[currentVersion];
+    };
+
+    var registerVersion = function(data) {
+      array = array.slice(0, currentVersion+1);
+      array.push(data);
+      if (array.length > 128) array = array.slice(1);
+      currentVersion = array.length-1;
+    };
+
+    return {
+      registerVersion: registerVersion,
+      undo: undo,
+      redo: redo
+    };
+  };
+}]);
+
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
   var exampleList = $http.get("exampleList.json");
 
   var createId = function() {
@@ -350,7 +380,21 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
     }
   };
 
+  var hist = new WeakMap();
+
   return {
+    undo: function(id) {
+      var oldVer = hist[id].undo();
+      if (!oldVer) return;
+
+      createdFiles[id] = JSON.parse(oldVer);
+    },
+    redo: function(id) {
+      var nextVer = hist[id].redo();
+      if (!nextVer) return;
+
+      createdFiles[id] = JSON.parse(nextVer);
+    },
     createFile: function(options) {
       genericStateEmmiter.emit("changed");
 
@@ -358,6 +402,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
 
       createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
       createdFiles[newid] = defaultFile[options.type] ||{};
+
+      hist[newid] = Historial();
+      hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
+
       return $q.resolve(newid);
     },
     updateIndex: function(id, attributes) {
@@ -378,6 +426,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", functi
       }
 
       createdFiles[id] = obj;
+      hist[id].registerVersion(JSON.stringify(obj));
 
       return $q.resolve();
     },

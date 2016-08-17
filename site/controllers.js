@@ -70,7 +70,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   $scope.fileChanged = fn.debounce(function() {
     FileRepository.updateFile(id, $scope.file);
-  });
+  },100);
 
   $scope.$on("trackChanged", function(track) {
     $scope.fileChanged();
@@ -141,16 +141,41 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     $scope.updateInstrument();
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
-      $scope.fileIndex = file.index;
-      $scope.file = file.contents;
-      if (!$scope.file.track) $scope.file.track=[{}];
-      $scope.file.track[0].events = $scope.file.track[0].events || [];
-      $scope.updateInstrument();
+  var updateFromRepo = function() {
+    FileRepository.getFile(id).then(function(file) {
+      $timeout(function() {
+        var outputFile = {};
+        $scope.fileIndex = file.index;
+        $scope.file = file.contents;
+        if (!$scope.file.track) $scope.file.track=[{}];
+        $scope.file.track[0].events = $scope.file.track[0].events || [];
+        $scope.updateInstrument();
+      });
     });
+  };
+
+  updateFromRepo();
+
+  // undo & redo
+
+  var keyDownHandler = function(evt) {
+    if (evt.keyCode === 90 && evt.ctrlKey) {
+      FileRepository.undo(id);
+      updateFromRepo();
+    }
+
+    if (evt.keyCode === 89 && evt.ctrlKey) {
+      FileRepository.redo(id);
+      updateFromRepo();
+    }
+  };
+
+  $(document).bind("keydown", keyDownHandler);
+  $scope.$on("$destroy", function() {
+    $(document).unbind("keydown", keyDownHandler);
   });
+
+
 }]);
 
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
