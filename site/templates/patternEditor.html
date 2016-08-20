@@ -1,7 +1,7 @@
 <input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
 <div class="pattern-main-window">
   <div class="row-fluid">
-    <div class="span8">
+    <div class="span6">
       <div class="row-fluid">
           <div class="span6">
             <p class="serie-label">Measure beats</p>
@@ -28,7 +28,7 @@
           </div>
       </div>
     </div>
-    <div class="span4 player-controls pull-right">
+    <div class="span6 player-controls pull-right">
       <div class="row-fluid">
         <button class="player btn btn-primary" ng-click="play()">
           Play
@@ -40,7 +40,7 @@
       <div class="row-fluid"> 
           <div class="span1 pull-right"></div>
           <div class="span3 pull-right">
-            <input type="number" class="smallinput" min=1 ng-model="file.bpm"/>
+            <input type="number" class="smallinput" min=1 ng-model="file.bpm"  ng-change="fileChanged()"/>
           </div>
           <div class="span2 pull-right">
             <p class="serie-label">Bpm</p>

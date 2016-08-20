@@ -1,15 +1,82 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.filter("block_name", function() {
+  return function(block, indexMap) {
+    if (block.id) {
+      return indexMap[block.id] ? indexMap[block.id].name : block.id;
+    } else {
+      return "Drop pattern here";
+    }
+  };
+});
+
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "indexMap", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, indexMap) {
   var id = $routeParams.id;
+  $scope.indexMap = indexMap;
+
+  $scope.remove = function(block) {
+    delete block.id;
+    checkPayload();
+    $scope.fileChanged();
+  };
+
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  $scope.fileChanged = function() {
+    FileRepository.updateFile(id, $scope.file);
+  };
+
+  var checkPayload = function() {
+    var maxblocks = 0;
+    var maxTrackIndex = 0;
+
+    $scope.file.tracks.forEach(function(track, trackIndex) {
+      for (var i=0;i<track.blocks.length;i++) {
+        if (track.blocks[i].id){
+          if (i>maxblocks) maxblocks=i;
+          if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
+        }
+      }
+    });
+
+    if ($scope.file.tracks.length < maxTrackIndex+2) {
+      $scope.file.tracks.push({
+        blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
+      });
+    } else {
+      $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
+    }
+
+    var target = maxblocks + 2;
+    $scope.file.tracks.forEach(function(track) {
+      if (target > track.blocks.length) {
+        for (var i=0;i<target-track.blocks.length;i++) track.blocks.push({});
+      } else {
+        track.blocks = track.blocks.slice(0, target);
+      }
+    });
+  };
+
+  $scope.onDropComplete = function($data,$event,block) {
+    if ($data.type !== 'pattern') return;
+
+    $scope.indexMap[$data.id] = $data;
+    $timeout(function() {
+      block.id = $data.id;
+
+      checkPayload();
+
+      $scope.fileChanged();
+    });
   };
 
   FileRepository.getFile(id).then(function(file) {
     $timeout(function() {
       var outputFile = {};
       $scope.fileIndex = file.index;
+      $scope.file = file.contents;
     });
   });
 }]);

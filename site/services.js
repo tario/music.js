@@ -373,6 +373,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         array: []
       }
     },
+    song: {
+      measure: 8,
+      bpm: 100,
+      tracks: [
+        {blocks: [{},{},{}]},
+        {blocks: [{},{},{}]}
+      ]
+    },
     pattern: {
       measure: 8,
       measureCount: 1,
@@ -413,6 +421,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       if (!localFile) return;
 
       localFile.name = attributes.name;
+    },
+    getIndex: function(id) {
+      return $q.resolve(createdFilesIndex.filter(function(x){ return x.id === id})[0]);
     },
     updateFile: function(id, contents) {
       var obj = JSON.parse(JSON.stringify(contents));

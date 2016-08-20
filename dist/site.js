@@ -12516,19 +12516,29 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     if (block.id) {
+<<<<<<< HEAD
       return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
+=======
+      return indexMap[block.id] ? indexMap[block.id].name : block.id;
+>>>>>>> [WIP] Song editor
     } else {
       return "Drop pattern here";
     }
   };
 });
 
+<<<<<<< HEAD
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
 
   var id = $routeParams.id;
 
   var instSet = InstrumentSet();
+=======
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "indexMap", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, indexMap) {
+  var id = $routeParams.id;
+  $scope.indexMap = indexMap;
+>>>>>>> [WIP] Song editor
 
   $scope.remove = function(block) {
     delete block.id;
@@ -12536,6 +12546,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
     $scope.fileChanged();
   };
 
+<<<<<<< HEAD
   $scope.stop = function() {
     if (playing) playing.stop();
     playing = null;
@@ -12600,13 +12611,21 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
       });
   };
 
+=======
+>>>>>>> [WIP] Song editor
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
+<<<<<<< HEAD
   $scope.fileChanged = fn.debounce(function() {
     FileRepository.updateFile(id, $scope.file);
   },100);;
+=======
+  $scope.fileChanged = function() {
+    FileRepository.updateFile(id, $scope.file);
+  };
+>>>>>>> [WIP] Song editor
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -12619,6 +12638,47 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
         }
       }
+<<<<<<< HEAD
+=======
+    });
+
+    if ($scope.file.tracks.length < maxTrackIndex+2) {
+      $scope.file.tracks.push({
+        blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
+      });
+    } else {
+      $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
+    }
+
+    var target = maxblocks + 2;
+    $scope.file.tracks.forEach(function(track) {
+      if (target > track.blocks.length) {
+        for (var i=0;i<target-track.blocks.length;i++) track.blocks.push({});
+      } else {
+        track.blocks = track.blocks.slice(0, target);
+      }
+    });
+  };
+
+  $scope.onDropComplete = function($data,$event,block) {
+    if ($data.type !== 'pattern') return;
+
+    $scope.indexMap[$data.id] = $data;
+    $timeout(function() {
+      block.id = $data.id;
+
+      checkPayload();
+
+      $scope.fileChanged();
+    });
+  };
+
+  FileRepository.getFile(id).then(function(file) {
+    $timeout(function() {
+      var outputFile = {};
+      $scope.fileIndex = file.index;
+      $scope.file = file.contents;
+>>>>>>> [WIP] Song editor
     });
 
     if ($scope.file.tracks.length < maxTrackIndex+2) {
@@ -13758,7 +13818,30 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
     })
     .when('/editor/song/:id', {
       templateUrl: 'site/templates/songEditor.html',
-      controller: 'SongEditorController'
+      controller: 'SongEditorController',
+      resolve: {
+        indexMap: ["$route", "$q", "FileRepository", function($route, $q, FileRepository) {
+          var id = $route.current.params.id;
+          var block_ids = {};
+
+          return FileRepository.getFile(id)
+            .then(function(file) {
+              if (file) {
+                file.contents.tracks.forEach(function(track) {
+                  track.blocks.forEach(function(block){
+                    if (block && block.id) {
+                      if (!block_ids[block.id]){
+                        block_ids[block.id] = FileRepository.getIndex(block.id);
+                      }
+                    }
+                  })
+                });
+              };
+
+              return $q.all(block_ids);
+            });
+        }]
+      }
     })
     .when('/editor/pattern/:id', {
       templateUrl: 'site/templates/patternEditor.html',
