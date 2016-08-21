@@ -43,18 +43,25 @@
         <div 
           class="pattern-block"
           ng-repeat="block in track.blocks"
-          ng-class="{enabled: block.id}"
           ng-drop="true"
           ng-drop-success="onDropComplete($data,$event,block)">
 
-          <span class="fa fa-music"></span>
+
           <p ng-show="block">
-            {{block | block_name:indexMap}}
+            Drop pattern here
           </p>
 
-          <div class="overlay">
-            <span class="remove-button fa fa-remove" ng-click="remove(block)">
-            </span>
+
+          <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}">
+            <span class="fa fa-music"></span>
+            <p ng-show="block">
+              {{block | block_name:indexMap}}
+            </p>
+
+            <div class="overlay">
+              <span class="remove-button fa fa-remove" ng-click="remove(block)">
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -348,6 +348,25 @@ musicShowCaseApp.service("Historial", [function() {
   };
 }]);
 
+musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
+  return function() {
+    var set = {};
+    var load = function(id) {
+      if (!set[id]) {
+        set[id] = FileRepository.getFile(id)
+          .then(function(file) {
+            return MusicObjectFactory(file.contents);
+          });
+      } 
+
+      return set[id];
+    };
+    return {
+      load: load
+    };
+  };
+}]);
+
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
   var exampleList = $http.get("exampleList.json");
 

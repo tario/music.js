@@ -12517,16 +12517,21 @@ musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     if (block.id) {
 <<<<<<< HEAD
+<<<<<<< HEAD
       return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
 =======
       return indexMap[block.id] ? indexMap[block.id].name : block.id;
 >>>>>>> [WIP] Song editor
+=======
+      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
+>>>>>>> fix song editor pattern dragdrop
     } else {
       return "Drop pattern here";
     }
   };
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
@@ -12539,6 +12544,12 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
   var id = $routeParams.id;
   $scope.indexMap = indexMap;
 >>>>>>> [WIP] Song editor
+=======
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet) {
+  var id = $routeParams.id;
+
+  var instSet = InstrumentSet();
+>>>>>>> fix song editor pattern dragdrop
 
   $scope.remove = function(block) {
     delete block.id;
@@ -12546,6 +12557,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
     $scope.fileChanged();
   };
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   $scope.stop = function() {
     if (playing) playing.stop();
@@ -12613,10 +12625,17 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
 
 =======
 >>>>>>> [WIP] Song editor
+=======
+  $scope.play = function() {
+    debugger;
+  };
+
+>>>>>>> fix song editor pattern dragdrop
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
+<<<<<<< HEAD
 <<<<<<< HEAD
   $scope.fileChanged = fn.debounce(function() {
     FileRepository.updateFile(id, $scope.file);
@@ -12626,6 +12645,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
     FileRepository.updateFile(id, $scope.file);
   };
 >>>>>>> [WIP] Song editor
+=======
+  $scope.fileChanged = fn.debounce(function() {
+    FileRepository.updateFile(id, $scope.file);
+  },100);;
+>>>>>>> fix song editor pattern dragdrop
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -12658,12 +12682,22 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
         track.blocks = track.blocks.slice(0, target);
       }
     });
+    $scope.fileChanged();
   };
 
   $scope.onDropComplete = function($data,$event,block) {
+    if ($data.fromBlock) {
+
+      var swapId = block.id;
+      block.id = $data.fromBlock.id;
+      $data.fromBlock.id = swapId;
+
+      checkPayload();
+      return;
+    }
     if ($data.type !== 'pattern') return;
 
-    $scope.indexMap[$data.id] = $data;
+    $scope.indexMap[$data.id] = {index: $data};
     $timeout(function() {
       block.id = $data.id;
 
@@ -12673,6 +12707,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
     });
   };
 
+<<<<<<< HEAD
   FileRepository.getFile(id).then(function(file) {
     $timeout(function() {
       var outputFile = {};
@@ -12761,6 +12796,43 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
           });
         });
     });
+=======
+  var updateFromRepo = function() {
+    var block_ids = {};
+
+    FileRepository.getFile(id).then(function(file) {
+      if (file) {
+        file.contents.tracks.forEach(function(track) {
+          track.blocks.forEach(function(block){
+            if (block && block.id) {
+              if (!block_ids[block.id]){
+                block_ids[block.id] = FileRepository.getFile(block.id);
+              }
+            }
+          })
+        });
+      };
+
+      return $q.all(block_ids)
+        .then(function(indexMap) {
+          $scope.indexMap = indexMap;
+
+          for (var blockId in indexMap) {
+            var pattern = indexMap[blockId].contents;
+            pattern.tracks.forEach(function(track) {
+              if (track.instrument) instSet.load(track.instrument.id);
+            });
+          }
+        })
+        .then(function() {
+          $timeout(function() {
+            var outputFile = {};
+            $scope.fileIndex = file.index;
+            $scope.file = file.contents;
+          });
+        });
+    });
+>>>>>>> fix song editor pattern dragdrop
   };
 
   updateFromRepo();
@@ -12780,7 +12852,10 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
     $(document).unbind("keydown", keyDownHandler);
+<<<<<<< HEAD
     instSet.dispose();
+=======
+>>>>>>> fix song editor pattern dragdrop
   });  
 }]);
 
@@ -12848,7 +12923,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   var computeMeasureCount = function() {
     if (!$scope.file) return;
+<<<<<<< HEAD
     if (!$scope.file.tracks[0]) return;
+=======
+    if (!$scope.file.track[0]) return;
+>>>>>>> fix song editor pattern dragdrop
 
     var endTime = $scope.file.tracks[0].events.map(function(evt) {
       return evt.s + evt.l;
@@ -13818,30 +13897,7 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
     })
     .when('/editor/song/:id', {
       templateUrl: 'site/templates/songEditor.html',
-      controller: 'SongEditorController',
-      resolve: {
-        indexMap: ["$route", "$q", "FileRepository", function($route, $q, FileRepository) {
-          var id = $route.current.params.id;
-          var block_ids = {};
-
-          return FileRepository.getFile(id)
-            .then(function(file) {
-              if (file) {
-                file.contents.tracks.forEach(function(track) {
-                  track.blocks.forEach(function(block){
-                    if (block && block.id) {
-                      if (!block_ids[block.id]){
-                        block_ids[block.id] = FileRepository.getIndex(block.id);
-                      }
-                    }
-                  })
-                });
-              };
-
-              return $q.all(block_ids);
-            });
-        }]
-      }
+      controller: 'SongEditorController'
     })
     .when('/editor/pattern/:id', {
       templateUrl: 'site/templates/patternEditor.html',
@@ -14205,6 +14261,7 @@ musicShowCaseApp.service("Historial", [function() {
   };
 }]);
 
+<<<<<<< HEAD
 musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   var noteseq = function(file, track, onStop) {
     var noteseq = new MUSIC.NoteSequence();
@@ -14241,20 +14298,29 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   return function() {
     var set = {};
     var created = [];
+=======
+musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
+  return function() {
+    var set = {};
+>>>>>>> fix song editor pattern dragdrop
     var load = function(id) {
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
             return MusicObjectFactory(file.contents);
+<<<<<<< HEAD
           })
           .then(function(obj){
             created.push(obj);
             return obj;
+=======
+>>>>>>> fix song editor pattern dragdrop
           });
       } 
 
       return set[id];
     };
+<<<<<<< HEAD
 
     var dispose = function() {
       created.forEach(function(instrument){
@@ -14268,6 +14334,10 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       load: load,
       all: set,
       dispose: dispose
+=======
+    return {
+      load: load
+>>>>>>> fix song editor pattern dragdrop
     };
   };
 }]);

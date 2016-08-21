@@ -3,16 +3,17 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     if (block.id) {
-      return indexMap[block.id] ? indexMap[block.id].name : block.id;
+      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
     } else {
       return "Drop pattern here";
     }
   };
 });
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "indexMap", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, indexMap) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet) {
   var id = $routeParams.id;
-  $scope.indexMap = indexMap;
+
+  var instSet = InstrumentSet();
 
   $scope.remove = function(block) {
     delete block.id;
@@ -20,13 +21,19 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
     $scope.fileChanged();
   };
 
+  $scope.play = function() {
+
+    
+    debugger;
+  };
+
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
-  $scope.fileChanged = function() {
+  $scope.fileChanged = fn.debounce(function() {
     FileRepository.updateFile(id, $scope.file);
-  };
+  },100);;
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -57,12 +64,22 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
         track.blocks = track.blocks.slice(0, target);
       }
     });
+    $scope.fileChanged();
   };
 
   $scope.onDropComplete = function($data,$event,block) {
+    if ($data.fromBlock) {
+
+      var swapId = block.id;
+      block.id = $data.fromBlock.id;
+      $data.fromBlock.id = swapId;
+
+      checkPayload();
+      return;
+    }
     if ($data.type !== 'pattern') return;
 
-    $scope.indexMap[$data.id] = $data;
+    $scope.indexMap[$data.id] = {index: $data};
     $timeout(function() {
       block.id = $data.id;
 
@@ -72,13 +89,61 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
     });
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
-      $scope.fileIndex = file.index;
-      $scope.file = file.contents;
+  var updateFromRepo = function() {
+    var block_ids = {};
+
+    FileRepository.getFile(id).then(function(file) {
+      if (file) {
+        file.contents.tracks.forEach(function(track) {
+          track.blocks.forEach(function(block){
+            if (block && block.id) {
+              if (!block_ids[block.id]){
+                block_ids[block.id] = FileRepository.getFile(block.id);
+              }
+            }
+          })
+        });
+      };
+
+      return $q.all(block_ids)
+        .then(function(indexMap) {
+          $scope.indexMap = indexMap;
+
+          for (var blockId in indexMap) {
+            var pattern = indexMap[blockId].contents;
+            pattern.tracks.forEach(function(track) {
+              if (track.instrument) instSet.load(track.instrument.id);
+            });
+          }
+        })
+        .then(function() {
+          $timeout(function() {
+            var outputFile = {};
+            $scope.fileIndex = file.index;
+            $scope.file = file.contents;
+          });
+        });
     });
-  });
+  };
+
+  updateFromRepo();
+
+  var keyDownHandler = function(evt) {
+    if (evt.keyCode === 90 && evt.ctrlKey) {
+      FileRepository.undo(id);
+      updateFromRepo();
+    }
+
+    if (evt.keyCode === 89 && evt.ctrlKey) {
+      FileRepository.redo(id);
+      updateFromRepo();
+    }
+  };
+
+  $(document).bind("keydown", keyDownHandler);
+  $scope.$on("$destroy", function() {
+    $(document).unbind("keydown", keyDownHandler);
+  });  
 }]);
 
 musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
@@ -155,6 +220,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   var computeMeasureCount = function() {
+    if (!$scope.file) return;
     if (!$scope.file.track[0]) return;
 
     var endTime = $scope.file.track[0].events.map(function(evt) {

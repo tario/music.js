@@ -8,30 +8,7 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
     })
     .when('/editor/song/:id', {
       templateUrl: 'site/templates/songEditor.html',
-      controller: 'SongEditorController',
-      resolve: {
-        indexMap: ["$route", "$q", "FileRepository", function($route, $q, FileRepository) {
-          var id = $route.current.params.id;
-          var block_ids = {};
-
-          return FileRepository.getFile(id)
-            .then(function(file) {
-              if (file) {
-                file.contents.tracks.forEach(function(track) {
-                  track.blocks.forEach(function(block){
-                    if (block && block.id) {
-                      if (!block_ids[block.id]){
-                        block_ids[block.id] = FileRepository.getIndex(block.id);
-                      }
-                    }
-                  })
-                });
-              };
-
-              return $q.all(block_ids);
-            });
-        }]
-      }
+      controller: 'SongEditorController'
     })
     .when('/editor/pattern/:id', {
       templateUrl: 'site/templates/patternEditor.html',

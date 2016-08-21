@@ -283,3 +283,11 @@ select.preset {
 .compressable-switch:not(:checked) ~ .compressable {
   max-height: 30px;
 }
+
+.bs-docs-sidebar {
+  z-index: 1;
+}
+
+.navbar {
+  z-index: 2;
+}
