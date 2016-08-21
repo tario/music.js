@@ -51,12 +51,12 @@
 
   <hr class="soften"></hr>
 
-  <div class="row-fluid" ng-class="{'enabled-instrument': file.track[0].instrument}" >
+  <div class="row-fluid" ng-class="{'enabled-instrument': file.tracks[0].instrument}" >
       <div class="span2">
       <!-- Instrument drop zone -->
           <div class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
-            <span ng-show="file.track[0].instrument" class="fa fa-keyboard-o"></span>
-            <p>{{file.track[0].instrument ? file.track[0].instrument.name : "drop instrument here" }}</p>
+            <span ng-show="file.tracks[0].instrument" class="fa fa-keyboard-o"></span>
+            <p>{{file.tracks[0].instrument ? file.tracks[0].instrument.name : "drop instrument here" }}</p>
           </div>
       </div>  
 
@@ -64,7 +64,7 @@
         <music-event-editor 
           measure-count="file.measureCount"
           measure="file.measure"
-          track="file.track[0]"
+          track="file.tracks[0]"
           beat-width="beatWidth"
           zoom-level="zoomLevel"></music-event-editor>   
       </div>  

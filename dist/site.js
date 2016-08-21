@@ -12930,10 +12930,14 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var computeMeasureCount = function() {
     if (!$scope.file) return;
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (!$scope.file.tracks[0]) return;
 =======
     if (!$scope.file.track[0]) return;
 >>>>>>> fix song editor pattern dragdrop
+=======
+    if (!$scope.file.tracks[0]) return;
+>>>>>>> renamed pattern.track to pattern.tracks
 
     var endTime = $scope.file.tracks[0].events.map(function(evt) {
       return evt.s + evt.l;
@@ -12965,7 +12969,15 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!$scope.file.tracks[0]) return;
     if (!$scope.file.tracks[0].instrument) return;
 
+<<<<<<< HEAD
     instSet.load($scope.file.tracks[0].instrument.id)
+=======
+    var instrumentId = $scope.file.tracks[0].instrument.id;
+    FileRepository.getFile(instrumentId)
+      .then(function(file) {
+        return MusicObjectFactory(file.contents);
+      })
+>>>>>>> renamed pattern.track to pattern.tracks
       .then(function(musicObject) {
         instrument.set($scope.file.tracks[0], musicObject);
         beep(musicObject, 36);

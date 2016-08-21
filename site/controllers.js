@@ -169,9 +169,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (playing) return;
     if (!instrument) return;
 
-    var inst = instrument.get($scope.file.track[0]);
+    var inst = instrument.get($scope.file.tracks[0]);
     if (!inst) return;
-    playing = noteseqFromTrack($scope.file.track[0]).play();
+    playing = noteseqFromTrack($scope.file.tracks[0]).play();
   };
 
   $scope.zoomIn = function() {
@@ -209,9 +209,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   var computeMeasureCount = function() {
     if (!$scope.file) return;
-    if (!$scope.file.track[0]) return;
+    if (!$scope.file.tracks[0]) return;
 
-    var endTime = $scope.file.track[0].events.map(function(evt) {
+    var endTime = $scope.file.tracks[0].events.map(function(evt) {
       return evt.s + evt.l;
     }).reduce(function(a,b) {
       return a>b ? a : b;
@@ -238,25 +238,25 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   var instrument = new WeakMap();
   $scope.updateInstrument = function() {
-    if (!$scope.file.track[0]) return;
-    if (!$scope.file.track[0].instrument) return;
+    if (!$scope.file.tracks[0]) return;
+    if (!$scope.file.tracks[0].instrument) return;
 
-    var instrumentId = $scope.file.track[0].instrument.id;
+    var instrumentId = $scope.file.tracks[0].instrument.id;
     FileRepository.getFile(instrumentId)
       .then(function(file) {
         return MusicObjectFactory(file.contents);
       })
       .then(function(musicObject) {
-        instrument.set($scope.file.track[0], musicObject);
+        instrument.set($scope.file.tracks[0], musicObject);
         beep(musicObject, 36);
       });
   };
 
 
   $scope.onDropComplete = function(instrument,event) {
-    $scope.file.track = $scope.file.track || [];
-    $scope.file.track[0] = $scope.file.track[0] || {};
-    $scope.file.track[0].instrument = instrument;
+    $scope.file.tracks = $scope.file.tracks || [];
+    $scope.file.tracks[0] = $scope.file.tracks[0] || {};
+    $scope.file.tracks[0].instrument = instrument;
 
     FileRepository.updateFile(id, $scope.file);
     $scope.updateInstrument();
@@ -268,8 +268,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
         var outputFile = {};
         $scope.fileIndex = file.index;
         $scope.file = file.contents;
-        if (!$scope.file.track) $scope.file.track=[{}];
-        $scope.file.track[0].events = $scope.file.track[0].events || [];
+        if (!$scope.file.tracks) $scope.file.tracks=[{}];
+        $scope.file.tracks[0].events = $scope.file.tracks[0].events || [];
         $scope.updateInstrument();
       });
     });
