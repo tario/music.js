@@ -12627,6 +12627,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 >>>>>>> [WIP] Song editor
 =======
   $scope.play = function() {
+
+
     debugger;
   };
 
@@ -12859,7 +12861,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   });  
 }]);
 
+<<<<<<< HEAD
 musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+=======
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Pattern", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Pattern) {
+>>>>>>> refactor: extracted noteseq assemble from pattern to service
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
@@ -14262,6 +14268,9 @@ musicShowCaseApp.service("Historial", [function() {
 }]);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> refactor: extracted noteseq assemble from pattern to service
 musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   var noteseq = function(file, track, onStop) {
     var noteseq = new MUSIC.NoteSequence();
@@ -14279,6 +14288,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return noteseq;
   };
 
+<<<<<<< HEAD
   var patternCompose = function(file, instruments, onStop) {
     var playableArray = file.tracks.map(function(track) {
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument.id]);
@@ -14290,6 +14300,10 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   return {
     noteseq: noteseq,
     patternCompose: patternCompose
+=======
+  return {
+    noteseq: noteseq
+>>>>>>> refactor: extracted noteseq assemble from pattern to service
   };
 }]);
 

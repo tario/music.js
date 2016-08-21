@@ -23,7 +23,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 
   $scope.play = function() {
 
-    
+
     debugger;
   };
 
@@ -146,7 +146,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Pattern", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Pattern) {
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
@@ -160,21 +160,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   var noteseqFromTrack = function(track) {
-    var noteseq = new MUSIC.NoteSequence();
-    var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
-    var scale = 600 / $scope.file.bpm;
-
-    for (var i=0; i<events.length; i++) {
-      var evt = track.events[i];
-      noteseq.push([evt.n, evt.s * scale, evt.l * scale]);
-    }
-
-    noteseq.paddingTo(100 * $scope.file.measureCount * $scope.file.measure * scale);
-    noteseq.pushCallback([100*$scope.file.measureCount * $scope.file.measure * scale, function() {
+    return Pattern.noteseq($scope.file, track, function() {
       playing = null;
-    }]);
-
-    return noteseq.makePlayable(instrument.get(track));
+    }).makePlayable(instrument.get(track));
   };
 
   $scope.play = function() {

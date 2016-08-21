@@ -348,6 +348,29 @@ musicShowCaseApp.service("Historial", [function() {
   };
 }]);
 
+musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
+  var noteseq = function(file, track, onStop) {
+    var noteseq = new MUSIC.NoteSequence();
+    var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
+    var scale = 600 / file.bpm;
+
+    for (var i=0; i<events.length; i++) {
+      var evt = track.events[i];
+      noteseq.push([evt.n, evt.s * scale, evt.l * scale]);
+    }
+
+    noteseq.paddingTo(100 * file.measureCount * file.measure * scale);
+    noteseq.pushCallback([100*file.measureCount * file.measure * scale, onStop]);
+
+    return noteseq;
+  };
+
+  return {
+    noteseq: noteseq
+  };
+}]);
+
+
 musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
   return function() {
     var set = {};
