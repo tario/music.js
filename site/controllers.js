@@ -10,7 +10,9 @@ musicShowCaseApp.filter("block_name", function() {
   };
 });
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet, Pattern) {
+  $scope.indexMap = {};
+
   var id = $routeParams.id;
 
   var instSet = InstrumentSet();
@@ -21,10 +23,33 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
     $scope.fileChanged();
   };
 
+  $scope.stop = function() {
+    if (playing) playing.stop();
+    playing = null;
+  };
+
+  var playing = null;
+
+
   $scope.play = function() {
 
+  };
 
-    debugger;
+  $scope.patternPlay = function(block) {
+    var firstPattern = $scope.indexMap[block.id].contents;
+    var doNothing = function() {};
+
+    instSet.load(firstPattern.tracks[0].instrument.id)
+      .then(function(i) {
+        $scope.stop();
+
+        var changedBpm = Object.create(firstPattern);
+        changedBpm.bpm = $scope.file.bpm;
+
+        playing = Pattern.noteseq(changedBpm, firstPattern.tracks[0], function() {
+          playing = null;
+        }).makePlayable(i).play();
+      });
   };
 
   $scope.indexChanged = function() {
@@ -79,14 +104,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
     }
     if ($data.type !== 'pattern') return;
 
-    $scope.indexMap[$data.id] = {index: $data};
-    $timeout(function() {
-      block.id = $data.id;
-
-      checkPayload();
-
-      $scope.fileChanged();
-    });
+    block.id = $data.id;
+    FileRepository.getFile($data.id)
+      .then(function(f) {
+        $scope.indexMap[$data.id] = f;
+        checkPayload();
+        $scope.fileChanged();
+      });
+    
   };
 
   var updateFromRepo = function() {

@@ -12533,6 +12533,7 @@ musicShowCaseApp.filter("block_name", function() {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
 
@@ -12546,6 +12547,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
 >>>>>>> [WIP] Song editor
 =======
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet) {
+=======
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet, Pattern) {
+  $scope.indexMap = {};
+
+>>>>>>> fixed pattern play on song (bpm)
   var id = $routeParams.id;
 
   var instSet = InstrumentSet();
@@ -12559,6 +12565,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fixed pattern play on song (bpm)
   $scope.stop = function() {
     if (playing) playing.stop();
     playing = null;
@@ -12566,6 +12575,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 
   var playing = null;
 
+<<<<<<< HEAD
   $scope.play = function() {
     $scope.stop();
     $q.all(instSet.all)
@@ -12626,10 +12636,28 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 =======
 >>>>>>> [WIP] Song editor
 =======
+=======
+
+>>>>>>> fixed pattern play on song (bpm)
   $scope.play = function() {
 
+  };
 
-    debugger;
+  $scope.patternPlay = function(block) {
+    var firstPattern = $scope.indexMap[block.id].contents;
+    var doNothing = function() {};
+
+    instSet.load(firstPattern.tracks[0].instrument.id)
+      .then(function(i) {
+        $scope.stop();
+
+        var changedBpm = Object.create(firstPattern);
+        changedBpm.bpm = $scope.file.bpm;
+
+        playing = Pattern.noteseq(changedBpm, firstPattern.tracks[0], function() {
+          playing = null;
+        }).makePlayable(i).play();
+      });
   };
 
 >>>>>>> fix song editor pattern dragdrop
@@ -12699,14 +12727,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
     }
     if ($data.type !== 'pattern') return;
 
-    $scope.indexMap[$data.id] = {index: $data};
-    $timeout(function() {
-      block.id = $data.id;
-
-      checkPayload();
-
-      $scope.fileChanged();
-    });
+    block.id = $data.id;
+    FileRepository.getFile($data.id)
+      .then(function(f) {
+        $scope.indexMap[$data.id] = f;
+        checkPayload();
+        $scope.fileChanged();
+      });
+    
   };
 
 <<<<<<< HEAD
