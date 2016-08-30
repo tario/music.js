@@ -13,15 +13,31 @@ PlayingSong.prototype.stop = function() {
   this._funseqHandler.stop();
 };
 
-var fromPatterns = function(patterns) {
-  return function(patternName) {
-    return patterns[patternName];
+var noPlay = {
+  play: function() {
+    return {
+      stop: function() {}
+    };
+  }
+};
+
+var defaultFromPatterns = function(patterns) {
+  return function(patternOrName) {
+    if (typeof patternOrName === 'string') return patterns[patternOrName];
+    return patternOrName || noPlay;
   };
 };
 
-MUSIC.Song = function(input, patterns, options){
+MUSIC.Song = function(input, patternsOrOptions, options){
+  var patterns;
+  if (arguments.length === 2) {
+    return MUSIC.Song.bind(this)(input, {}, patternsOrOptions);
+  } else {
+    patterns = patternsOrOptions;
+  }
 
   options = options || {};
+  var getFromPatterns = options.pattern|| defaultFromPatterns(patterns);
   var measure = options.measure || 500;
   var funseq;
   if (!funseq){
@@ -35,7 +51,6 @@ MUSIC.Song = function(input, patterns, options){
 
 
   var totalMeasures = input[0].length;
-  var getFromPatterns = fromPatterns(patterns);
 
   this._funseq = funseq;
   this._duration = totalMeasures * measure;

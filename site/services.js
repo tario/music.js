@@ -365,8 +365,17 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return noteseq;
   };
 
+  var patternCompose = function(file, instruments, onStop) {
+    var playableArray = file.tracks.map(function(track) {
+      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument.id]);
+    });
+
+    return new MUSIC.MultiPlayable(playableArray);
+  };
+
   return {
-    noteseq: noteseq
+    noteseq: noteseq,
+    patternCompose: patternCompose
   };
 }]);
 
@@ -385,7 +394,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       return set[id];
     };
     return {
-      load: load
+      load: load,
+      all: set
     };
   };
 }]);

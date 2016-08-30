@@ -30,25 +30,59 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 
   var playing = null;
 
-
   $scope.play = function() {
+    $q.all(instSet.all)
+      .then(function(instruments){
+        var patterns = {};
+
+        var createPattern = function(id) {
+          if (!id) return null;
+          if (patterns[id]) return patterns[id];
+
+          var pattern = $scope.indexMap[id].contents;
+          var changedBpm = Object.create(pattern);
+          changedBpm.bpm = $scope.file.bpm;
+
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
+            playing = null;
+          });
+
+          return patterns[id];
+        };
+
+        var scale = 600 / $scope.file.bpm;
+        var measure = 100 * $scope.file.measure * scale;
+        var song = new MUSIC.Song(
+          $scope.file.tracks.map(function(track) {
+            return track.blocks.map(function(block) {
+              return createPattern(block.id);
+            });
+          })
+        , {measure: measure});
+
+        playing = song.play();
+
+      });
+
 
   };
 
   $scope.patternPlay = function(block) {
-    var firstPattern = $scope.indexMap[block.id].contents;
+    var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
-    instSet.load(firstPattern.tracks[0].instrument.id)
-      .then(function(i) {
+    var loader = {};
+    loader[pattern.tracks[0].instrument.id] = instSet.load(pattern.tracks[0].instrument.id);
+    $q.all(loader)
+      .then(function(instruments) {
         $scope.stop();
 
-        var changedBpm = Object.create(firstPattern);
+        var changedBpm = Object.create(pattern);
         changedBpm.bpm = $scope.file.bpm;
 
-        playing = Pattern.noteseq(changedBpm, firstPattern.tracks[0], function() {
+        playing = Pattern.patternCompose(changedBpm, instruments, function() {
           playing = null;
-        }).makePlayable(i).play();
+        }).play();
       });
   };
 

@@ -12576,6 +12576,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   var playing = null;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   $scope.play = function() {
     $scope.stop();
     $q.all(instSet.all)
@@ -12639,24 +12640,61 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 =======
 
 >>>>>>> fixed pattern play on song (bpm)
+=======
+>>>>>>> Implemented song play
   $scope.play = function() {
+    $q.all(instSet.all)
+      .then(function(instruments){
+        var patterns = {};
+
+        var createPattern = function(id) {
+          if (!id) return null;
+          if (patterns[id]) return patterns[id];
+
+          var pattern = $scope.indexMap[id].contents;
+          var changedBpm = Object.create(pattern);
+          changedBpm.bpm = $scope.file.bpm;
+
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
+            playing = null;
+          });
+
+          return patterns[id];
+        };
+
+        var scale = 600 / $scope.file.bpm;
+        var measure = 100 * $scope.file.measure * scale;
+        var song = new MUSIC.Song(
+          $scope.file.tracks.map(function(track) {
+            return track.blocks.map(function(block) {
+              return createPattern(block.id);
+            });
+          })
+        , {measure: measure});
+
+        playing = song.play();
+
+      });
+
 
   };
 
   $scope.patternPlay = function(block) {
-    var firstPattern = $scope.indexMap[block.id].contents;
+    var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
-    instSet.load(firstPattern.tracks[0].instrument.id)
-      .then(function(i) {
+    var loader = {};
+    loader[pattern.tracks[0].instrument.id] = instSet.load(pattern.tracks[0].instrument.id);
+    $q.all(loader)
+      .then(function(instruments) {
         $scope.stop();
 
-        var changedBpm = Object.create(firstPattern);
+        var changedBpm = Object.create(pattern);
         changedBpm.bpm = $scope.file.bpm;
 
-        playing = Pattern.noteseq(changedBpm, firstPattern.tracks[0], function() {
+        playing = Pattern.patternCompose(changedBpm, instruments, function() {
           playing = null;
-        }).makePlayable(i).play();
+        }).play();
       });
   };
 
@@ -14329,6 +14367,9 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Implemented song play
   var patternCompose = function(file, instruments, onStop) {
     var playableArray = file.tracks.map(function(track) {
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument.id]);
@@ -14337,6 +14378,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return new MUSIC.MultiPlayable(playableArray);
   };
 
+<<<<<<< HEAD
   return {
     noteseq: noteseq,
     patternCompose: patternCompose
@@ -14344,6 +14386,11 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   return {
     noteseq: noteseq
 >>>>>>> refactor: extracted noteseq assemble from pattern to service
+=======
+  return {
+    noteseq: noteseq,
+    patternCompose: patternCompose
+>>>>>>> Implemented song play
   };
 }]);
 
@@ -14390,8 +14437,13 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       dispose: dispose
 =======
     return {
+<<<<<<< HEAD
       load: load
 >>>>>>> fix song editor pattern dragdrop
+=======
+      load: load,
+      all: set
+>>>>>>> Implemented song play
     };
   };
 }]);
