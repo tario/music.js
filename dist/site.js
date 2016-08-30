@@ -12645,21 +12645,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   $scope.play = function() {
     $q.all(instSet.all)
       .then(function(instruments){
-        var patterns = {};
-
         var createPattern = function(id) {
           if (!id) return null;
-          if (patterns[id]) return patterns[id];
 
           var pattern = $scope.indexMap[id].contents;
           var changedBpm = Object.create(pattern);
           changedBpm.bpm = $scope.file.bpm;
 
-          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
+          return Pattern.patternCompose(changedBpm, instruments, function() {
             playing = null;
           });
-
-          return patterns[id];
         };
 
         var scale = 600 / $scope.file.bpm;
@@ -12768,6 +12763,10 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
     block.id = $data.id;
     FileRepository.getFile($data.id)
       .then(function(f) {
+        f.contents.tracks.forEach(function(track) {
+          instSet.load(track.instrument.id);          
+        });
+
         $scope.indexMap[$data.id] = f;
         checkPayload();
         $scope.fileChanged();
