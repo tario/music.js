@@ -3579,9 +3579,9 @@ MUSIC.NoteSequence = function(funseq) {
   this._noteid = 0;
 };
 
-MUSIC.NoteSequence.Playable = function(noteseq, context, duration) {
+MUSIC.NoteSequence.Playable = function(noteseq, instrument, duration) {
   this._noteseq = noteseq;
-  this._context = context;
+  this._instrument = instrument;
   this._duration = duration;
 };
 
@@ -3594,8 +3594,9 @@ MUSIC.NoteSequence.Playable.prototype.duration = function() {
 };
 
 MUSIC.NoteSequence.Playable.prototype.play = function(options) {
-  this._runningFunSeq = this._noteseq._funseq.start(this._context);
-  return new MUSIC.NoteSequence.Playing(this._runningFunSeq, this._context);
+  var context = MUSIC.NoteSequence.context(this._instrument)
+  this._runningFunSeq = this._noteseq._funseq.start(context);
+  return new MUSIC.NoteSequence.Playing(this._runningFunSeq, context);
 };
 
 MUSIC.NoteSequence.Playing = function(runningFunSeq, ctx) {
@@ -3643,7 +3644,7 @@ MUSIC.NoteSequence.prototype.push = function(array){
 };
 
 MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
-  return new MUSIC.NoteSequence.Playable(this, MUSIC.NoteSequence.context(instrument), this._totalduration);
+  return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration);
 };
 
 MUSIC.NoteSequence.context = function(instrument) {

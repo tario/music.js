@@ -12643,19 +12643,25 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 =======
 >>>>>>> Implemented song play
   $scope.play = function() {
+    $scope.stop();
     $q.all(instSet.all)
       .then(function(instruments){
+        var patterns = {};
+
         var createPattern = function(id) {
           if (!id) return null;
+          if (patterns[id]) return patterns[id];
 
           var pattern = $scope.indexMap[id].contents;
           var changedBpm = Object.create(pattern);
           changedBpm.bpm = $scope.file.bpm;
 
-          return Pattern.patternCompose(changedBpm, instruments, function() {
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
             playing = null;
           });
-        };
+
+          return patterns[id];
+        };        
 
         var scale = 600 / $scope.file.bpm;
         var measure = 100 * $scope.file.measure * scale;
