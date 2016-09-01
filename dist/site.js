@@ -12534,6 +12534,7 @@ musicShowCaseApp.filter("block_name", function() {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
 
@@ -12549,6 +12550,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$rou
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet) {
 =======
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet, Pattern) {
+=======
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
+>>>>>>> instSet dispose
   $scope.indexMap = {};
 
 >>>>>>> fixed pattern play on song (bpm)
@@ -12926,6 +12930,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   $scope.$on("$destroy", function() {
     $(document).unbind("keydown", keyDownHandler);
 <<<<<<< HEAD
+<<<<<<< HEAD
     instSet.dispose();
 =======
 >>>>>>> fix song editor pattern dragdrop
@@ -12937,6 +12942,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 =======
 musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Pattern", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Pattern) {
 >>>>>>> refactor: extracted noteseq assemble from pattern to service
+=======
+    instSet.dispose();
+  });  
+}]);
+
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+>>>>>>> instSet dispose
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
@@ -13041,6 +13053,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!$scope.file.tracks[0].instrument) return;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     instSet.load($scope.file.tracks[0].instrument.id)
 =======
     var instrumentId = $scope.file.tracks[0].instrument.id;
@@ -13049,6 +13062,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
         return MusicObjectFactory(file.contents);
       })
 >>>>>>> renamed pattern.track to pattern.tracks
+=======
+    instSet.load($scope.file.tracks[0].instrument.id)
+>>>>>>> instSet dispose
       .then(function(musicObject) {
         instrument.set($scope.file.tracks[0], musicObject);
         beep(musicObject, 36);
@@ -14404,51 +14420,75 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   return function() {
     var set = {};
     var created = [];
+<<<<<<< HEAD
 =======
 musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
   return function() {
     var set = {};
 >>>>>>> fix song editor pattern dragdrop
+=======
+>>>>>>> instSet dispose
     var load = function(id) {
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
             return MusicObjectFactory(file.contents);
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> instSet dispose
           })
           .then(function(obj){
             created.push(obj);
             return obj;
+<<<<<<< HEAD
 =======
 >>>>>>> fix song editor pattern dragdrop
+=======
+>>>>>>> instSet dispose
           });
       } 
 
       return set[id];
     };
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> instSet dispose
 
     var dispose = function() {
       created.forEach(function(instrument){
         if (instrument.dispose) {
+<<<<<<< HEAD
+=======
+          debugger;
+>>>>>>> instSet dispose
           instrument.dispose();
         }
       });
     };
 
+<<<<<<< HEAD
     return {
       load: load,
       all: set,
       dispose: dispose
 =======
+=======
+>>>>>>> instSet dispose
     return {
 <<<<<<< HEAD
       load: load
 >>>>>>> fix song editor pattern dragdrop
 =======
       load: load,
+<<<<<<< HEAD
       all: set
 >>>>>>> Implemented song play
+=======
+      all: set,
+      dispose: dispose
+>>>>>>> instSet dispose
     };
   };
 }]);

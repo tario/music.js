@@ -10,7 +10,7 @@ musicShowCaseApp.filter("block_name", function() {
   };
 });
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet, Pattern) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
 
   var id = $routeParams.id;
@@ -207,16 +207,18 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
     $(document).unbind("keydown", keyDownHandler);
+    instSet.dispose();
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Pattern", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Pattern) {
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
   $scope.zoomLevel = 4;
 
   var playing = null;
+  var instSet = InstrumentSet();
 
   $scope.stop = function() {
     if (playing) playing.stop();
@@ -305,17 +307,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!$scope.file.tracks[0]) return;
     if (!$scope.file.tracks[0].instrument) return;
 
-    var instrumentId = $scope.file.tracks[0].instrument.id;
-    FileRepository.getFile(instrumentId)
-      .then(function(file) {
-        return MusicObjectFactory(file.contents);
-      })
+    instSet.load($scope.file.tracks[0].instrument.id)
       .then(function(musicObject) {
         instrument.set($scope.file.tracks[0], musicObject);
         beep(musicObject, 36);
       });
   };
-
 
   $scope.onDropComplete = function(instrument,event) {
     $scope.file.tracks = $scope.file.tracks || [];
@@ -358,6 +355,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
     $(document).unbind("keydown", keyDownHandler);
+    instSet.dispose();
   });
 
 

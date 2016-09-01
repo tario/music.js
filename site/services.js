@@ -383,19 +383,35 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
 musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
   return function() {
     var set = {};
+    var created = [];
     var load = function(id) {
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
             return MusicObjectFactory(file.contents);
+          })
+          .then(function(obj){
+            created.push(obj);
+            return obj;
           });
       } 
 
       return set[id];
     };
+
+    var dispose = function() {
+      created.forEach(function(instrument){
+        if (instrument.dispose) {
+          debugger;
+          instrument.dispose();
+        }
+      });
+    };
+
     return {
       load: load,
-      all: set
+      all: set,
+      dispose: dispose
     };
   };
 }]);
