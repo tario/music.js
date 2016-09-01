@@ -417,6 +417,12 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     });
   });
 
+  $scope.$on("$destroy", function() {
+    $scope.instruments.forEach(function(instrument) {
+      if (instrument.dispose) instrument.dispose();
+    });
+  });
+
 /*  $scope.$on("addFx", function(evt, args) {
     $scope.file.data.array = [{
       type: args.fx.name,

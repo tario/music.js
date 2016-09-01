@@ -282,8 +282,12 @@ MUSIC.T = function(args, music, audioDestination) {
   this.disconnect = function() {
     if (disconnected) return;
     disconnected = true;
+
     gainNode.disconnect(audioDestination._destination);
+    send.removeAll();
     api.cancel();
+    send.cancel();
+    synth.unlisten();
   };
 
   this.dispose = this.disconnect;

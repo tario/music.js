@@ -402,7 +402,6 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
     var dispose = function() {
       created.forEach(function(instrument){
         if (instrument.dispose) {
-          debugger;
           instrument.dispose();
         }
       });

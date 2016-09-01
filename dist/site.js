@@ -14460,9 +14460,12 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       created.forEach(function(instrument){
         if (instrument.dispose) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
           debugger;
 >>>>>>> instSet dispose
+=======
+>>>>>>> fixed disposal of timbre nodes
           instrument.dispose();
         }
       });
