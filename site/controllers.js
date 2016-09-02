@@ -63,6 +63,12 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     }].concat($scope.file.data.array);
   });*/
 
+  $scope.$on("$destroy", function() {
+    $scope.playables.forEach(function(playable) {
+      $scope.stopPlay(playable);
+    });
+  });
+
   $scope.startPlay = function(playable) {
     playable.playing = playable.play();
   };
