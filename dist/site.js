@@ -12523,7 +12523,23 @@ musicShowCaseApp.filter("block_name", function() {
   };
 });
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
+musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
+  $scope.numChannels = 2;
+  $scope.encoding = "wav";
+
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss();
+  };
+
+  $scope.start = function() {
+    $uibModalInstance.close({
+      encoding: $scope.encoding,
+      numChannels: $scope.numChannels
+    });
+  };
+}]);
+
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
   var music = new MUSIC.Context();
 
@@ -12542,19 +12558,29 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   $scope.record = function() {
     $scope.stop();
 
-    $scope.currentRec = music.record({format: 'wav'}, function(blob) {
-      var a = document.createElement("a");
-      document.body.appendChild(a);
-      a.style = "display: none";
-
-      var url  = window.URL.createObjectURL(blob);
-      a.href = url;
-      a.download = "output.wav";
-      a.click();
-      window.URL.revokeObjectURL(url);
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/recordOptions.html",
+      controller: "recordOptionsCtrl"
     });
 
-    $scope.play();
+    modalIns.result.then(function(encodingOptions) {
+      $scope.currentRec = music.record({
+        encoding: encodingOptions.encoding, 
+        numChannels: encodingOptions.numChannels
+      }, function(blob) {
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+
+        var url  = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = $scope.fileIndex.name + "." + encodingOptions.encoding;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
+
+      $scope.play();
+    });
   };
 
   $scope.stop = function() {

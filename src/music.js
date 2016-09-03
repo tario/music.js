@@ -322,7 +322,11 @@ MUSIC.Context = function(options) {
   this.audio = audio;
 
   this.record = function(options, callback) {
-    var recorder = new WebAudioRecorder(gainNode, {workerDir: "src/lib/recorder/worker/"});
+    var recorder = new WebAudioRecorder(gainNode, {
+      workerDir: "src/lib/recorder/worker/",
+      encoding: options.encoding,
+      numChannels: options.numChannels
+    });
     recorder.onComplete = function(recorder, blob) {
       callback(blob);
     };
