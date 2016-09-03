@@ -12516,50 +12516,20 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     if (block.id) {
-<<<<<<< HEAD
-<<<<<<< HEAD
       return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
-=======
-      return indexMap[block.id] ? indexMap[block.id].name : block.id;
->>>>>>> [WIP] Song editor
-=======
-      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
->>>>>>> fix song editor pattern dragdrop
     } else {
       return "Drop pattern here";
     }
   };
 });
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
+  var music = new MUSIC.Context();
 
   var id = $routeParams.id;
 
-  var instSet = InstrumentSet();
-=======
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "indexMap", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, indexMap) {
-  var id = $routeParams.id;
-  $scope.indexMap = indexMap;
->>>>>>> [WIP] Song editor
-=======
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet) {
-=======
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory","InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, InstrumentSet, Pattern) {
-=======
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
->>>>>>> instSet dispose
-  $scope.indexMap = {};
-
->>>>>>> fixed pattern play on song (bpm)
-  var id = $routeParams.id;
-
-  var instSet = InstrumentSet();
->>>>>>> fix song editor pattern dragdrop
+  var instSet = InstrumentSet(music);
 
   $scope.remove = function(block) {
     delete block.id;
@@ -12567,11 +12537,26 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
     $scope.fileChanged();
   };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> fixed pattern play on song (bpm)
+  $scope.currentRec = null;
+
+  $scope.record = function() {
+    $scope.stop();
+
+    $scope.currentRec = music.record({format: 'wav'}, function(blob) {
+      var a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+
+      var url  = window.URL.createObjectURL(blob);
+      a.href = url;
+      a.download = "output.wav";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+
+    $scope.play();
+  };
+
   $scope.stop = function() {
     if (playing) playing.stop();
     playing = null;
@@ -12579,8 +12564,6 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
 
   var playing = null;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   $scope.play = function() {
     $scope.stop();
     $q.all(instSet.all)
@@ -12595,9 +12578,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           var changedBpm = Object.create(pattern);
           changedBpm.bpm = $scope.file.bpm;
 
-          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
-            playing = null;
-          });
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {});
 
           return patterns[id];
         };        
@@ -12612,7 +12593,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           })
         , {measure: measure});
 
-        playing = song.play();
+        playing = song.play({
+          onStop: function() {
+            playing = null;
+            if ($scope.currentRec) $scope.currentRec.stop();
+            $scope.currentRec = null;
+            $timeout(function() {});
+          }
+        });
 
       });
 
@@ -12638,91 +12626,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
       });
   };
 
-=======
->>>>>>> [WIP] Song editor
-=======
-=======
-
->>>>>>> fixed pattern play on song (bpm)
-=======
->>>>>>> Implemented song play
-  $scope.play = function() {
-    $scope.stop();
-    $q.all(instSet.all)
-      .then(function(instruments){
-        var patterns = {};
-
-        var createPattern = function(id) {
-          if (!id) return null;
-          if (patterns[id]) return patterns[id];
-
-          var pattern = $scope.indexMap[id].contents;
-          var changedBpm = Object.create(pattern);
-          changedBpm.bpm = $scope.file.bpm;
-
-          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
-            playing = null;
-          });
-
-          return patterns[id];
-        };        
-
-        var scale = 600 / $scope.file.bpm;
-        var measure = 100 * $scope.file.measure * scale;
-        var song = new MUSIC.Song(
-          $scope.file.tracks.map(function(track) {
-            return track.blocks.map(function(block) {
-              return createPattern(block.id);
-            });
-          })
-        , {measure: measure});
-
-        playing = song.play();
-
-      });
-
-
-  };
-
-  $scope.patternPlay = function(block) {
-    var pattern = $scope.indexMap[block.id].contents;
-    var doNothing = function() {};
-
-    var loader = {};
-    loader[pattern.tracks[0].instrument.id] = instSet.load(pattern.tracks[0].instrument.id);
-    $q.all(loader)
-      .then(function(instruments) {
-        $scope.stop();
-
-        var changedBpm = Object.create(pattern);
-        changedBpm.bpm = $scope.file.bpm;
-
-        playing = Pattern.patternCompose(changedBpm, instruments, function() {
-          playing = null;
-        }).play();
-      });
-  };
-
->>>>>>> fix song editor pattern dragdrop
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   $scope.fileChanged = fn.debounce(function() {
     FileRepository.updateFile(id, $scope.file);
   },100);;
-=======
-  $scope.fileChanged = function() {
-    FileRepository.updateFile(id, $scope.file);
-  };
->>>>>>> [WIP] Song editor
-=======
-  $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
-  },100);;
->>>>>>> fix song editor pattern dragdrop
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -12735,62 +12645,6 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
         }
       }
-<<<<<<< HEAD
-=======
-    });
-
-    if ($scope.file.tracks.length < maxTrackIndex+2) {
-      $scope.file.tracks.push({
-        blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
-      });
-    } else {
-      $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
-    }
-
-    var target = maxblocks + 2;
-    $scope.file.tracks.forEach(function(track) {
-      if (target > track.blocks.length) {
-        for (var i=0;i<target-track.blocks.length;i++) track.blocks.push({});
-      } else {
-        track.blocks = track.blocks.slice(0, target);
-      }
-    });
-    $scope.fileChanged();
-  };
-
-  $scope.onDropComplete = function($data,$event,block) {
-    if ($data.fromBlock) {
-
-      var swapId = block.id;
-      block.id = $data.fromBlock.id;
-      $data.fromBlock.id = swapId;
-
-      checkPayload();
-      return;
-    }
-    if ($data.type !== 'pattern') return;
-
-    block.id = $data.id;
-    FileRepository.getFile($data.id)
-      .then(function(f) {
-        f.contents.tracks.forEach(function(track) {
-          instSet.load(track.instrument.id);          
-        });
-
-        $scope.indexMap[$data.id] = f;
-        checkPayload();
-        $scope.fileChanged();
-      });
-    
-  };
-
-<<<<<<< HEAD
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
-      $scope.fileIndex = file.index;
-      $scope.file = file.contents;
->>>>>>> [WIP] Song editor
     });
 
     if ($scope.file.tracks.length < maxTrackIndex+2) {
@@ -12873,43 +12727,6 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           });
         });
     });
-=======
-  var updateFromRepo = function() {
-    var block_ids = {};
-
-    FileRepository.getFile(id).then(function(file) {
-      if (file) {
-        file.contents.tracks.forEach(function(track) {
-          track.blocks.forEach(function(block){
-            if (block && block.id) {
-              if (!block_ids[block.id]){
-                block_ids[block.id] = FileRepository.getFile(block.id);
-              }
-            }
-          })
-        });
-      };
-
-      return $q.all(block_ids)
-        .then(function(indexMap) {
-          $scope.indexMap = indexMap;
-
-          for (var blockId in indexMap) {
-            var pattern = indexMap[blockId].contents;
-            pattern.tracks.forEach(function(track) {
-              if (track.instrument) instSet.load(track.instrument.id);
-            });
-          }
-        })
-        .then(function() {
-          $timeout(function() {
-            var outputFile = {};
-            $scope.fileIndex = file.index;
-            $scope.file = file.contents;
-          });
-        });
-    });
->>>>>>> fix song editor pattern dragdrop
   };
 
   updateFromRepo();
@@ -12929,26 +12746,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
     $(document).unbind("keydown", keyDownHandler);
-<<<<<<< HEAD
-<<<<<<< HEAD
-    instSet.dispose();
-=======
->>>>>>> fix song editor pattern dragdrop
-  });  
-}]);
-
-<<<<<<< HEAD
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
-=======
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Pattern", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Pattern) {
->>>>>>> refactor: extracted noteseq assemble from pattern to service
-=======
     instSet.dispose();
   });  
 }]);
 
 musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
->>>>>>> instSet dispose
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
@@ -13012,15 +12814,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   var computeMeasureCount = function() {
     if (!$scope.file) return;
-<<<<<<< HEAD
-<<<<<<< HEAD
     if (!$scope.file.tracks[0]) return;
-=======
-    if (!$scope.file.track[0]) return;
->>>>>>> fix song editor pattern dragdrop
-=======
-    if (!$scope.file.tracks[0]) return;
->>>>>>> renamed pattern.track to pattern.tracks
 
     var endTime = $scope.file.tracks[0].events.map(function(evt) {
       return evt.s + evt.l;
@@ -13052,19 +12846,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!$scope.file.tracks[0]) return;
     if (!$scope.file.tracks[0].instrument) return;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     instSet.load($scope.file.tracks[0].instrument.id)
-=======
-    var instrumentId = $scope.file.tracks[0].instrument.id;
-    FileRepository.getFile(instrumentId)
-      .then(function(file) {
-        return MusicObjectFactory(file.contents);
-      })
->>>>>>> renamed pattern.track to pattern.tracks
-=======
-    instSet.load($scope.file.tracks[0].instrument.id)
->>>>>>> instSet dispose
       .then(function(musicObject) {
         instrument.set($scope.file.tracks[0], musicObject);
         beep(musicObject, 36);
@@ -13186,6 +12968,12 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
       data: {}
     }].concat($scope.file.data.array);
   });*/
+
+  $scope.$on("$destroy", function() {
+    $scope.playables.forEach(function(playable) {
+      $scope.stopPlay(playable);
+    });
+  });
 
   $scope.startPlay = function(playable) {
     playable.playing = playable.play();
@@ -14125,11 +13913,12 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
     }
   };
 
-  var create = function(descriptor) {
+  var create = function(descriptor, music) {
     return createParametric(descriptor)
       .then(function(fcn) {
         if (!fcn) return;
 
+        if (music) return fcn(music);
         return MusicContext.runFcn(function(music) {
           return fcn(music);
         });
@@ -14366,10 +14155,6 @@ musicShowCaseApp.service("Historial", [function() {
   };
 }]);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> refactor: extracted noteseq assemble from pattern to service
 musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   var noteseq = function(file, track, onStop) {
     var noteseq = new MUSIC.NoteSequence();
@@ -14387,10 +14172,6 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return noteseq;
   };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> Implemented song play
   var patternCompose = function(file, instruments, onStop) {
     var playableArray = file.tracks.map(function(track) {
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument.id]);
@@ -14399,99 +14180,44 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return new MUSIC.MultiPlayable(playableArray);
   };
 
-<<<<<<< HEAD
   return {
     noteseq: noteseq,
     patternCompose: patternCompose
-=======
-  return {
-    noteseq: noteseq
->>>>>>> refactor: extracted noteseq assemble from pattern to service
-=======
-  return {
-    noteseq: noteseq,
-    patternCompose: patternCompose
->>>>>>> Implemented song play
   };
 }]);
 
 
 musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
-  return function() {
+  return function(music) {
     var set = {};
     var created = [];
-<<<<<<< HEAD
-=======
-musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
-  return function() {
-    var set = {};
->>>>>>> fix song editor pattern dragdrop
-=======
->>>>>>> instSet dispose
     var load = function(id) {
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
-            return MusicObjectFactory(file.contents);
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> instSet dispose
+            return MusicObjectFactory(file.contents, music);
           })
           .then(function(obj){
             created.push(obj);
             return obj;
-<<<<<<< HEAD
-=======
->>>>>>> fix song editor pattern dragdrop
-=======
->>>>>>> instSet dispose
           });
       } 
 
       return set[id];
     };
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> instSet dispose
 
     var dispose = function() {
       created.forEach(function(instrument){
         if (instrument.dispose) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-          debugger;
->>>>>>> instSet dispose
-=======
->>>>>>> fixed disposal of timbre nodes
           instrument.dispose();
         }
       });
     };
 
-<<<<<<< HEAD
     return {
       load: load,
       all: set,
       dispose: dispose
-=======
-=======
->>>>>>> instSet dispose
-    return {
-<<<<<<< HEAD
-      load: load
->>>>>>> fix song editor pattern dragdrop
-=======
-      load: load,
-<<<<<<< HEAD
-      all: set
->>>>>>> Implemented song play
-=======
-      all: set,
-      dispose: dispose
->>>>>>> instSet dispose
     };
   };
 }]);

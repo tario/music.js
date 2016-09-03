@@ -1,7 +1,7 @@
 (function() {
 
-var PlayingSong = function(funseq) {
-  this._context = {playing: []};
+var PlayingSong = function(funseq, options) {
+  this._context = {playing: [], onStop: options && options.onStop};
   this._funseqHandler = funseq.start(this._context);
 };
 
@@ -11,6 +11,10 @@ PlayingSong.prototype.stop = function() {
   });
 
   this._funseqHandler.stop();
+
+  if (this._context.onStop){
+    this._context.onStop();
+  }
 };
 
 var noPlay = {
@@ -76,14 +80,21 @@ MUSIC.Song = function(input, patternsOrOptions, options){
 
     })();
   };
+
+  funseq.push({t: totalMeasures*measure, f: function(context) {
+    if (context.onStop) {
+      context.onStop();
+    }
+  }});
+
 };
 
 MUSIC.Song.prototype.duration = function() {
   return this._duration;
 };
 
-MUSIC.Song.prototype.play = function() {
-  return new PlayingSong(this._funseq);
+MUSIC.Song.prototype.play = function(options) {
+  return new PlayingSong(this._funseq, options);
 };
 
 })();

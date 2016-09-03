@@ -321,11 +321,19 @@ MUSIC.Context = function(options) {
   this._destination = gainNode;
   this.audio = audio;
 
-  this.record = function() {
-    var rec = new Recorder(gainNode, {workerPath: "lib/recorder/recorderWorker.js"});
+  this.record = function(options, callback) {
+    var recorder = new WebAudioRecorder(gainNode, {workerDir: "src/lib/recorder/worker/"});
+    recorder.onComplete = function(recorder, blob) {
+      callback(blob);
+    };
 
-    rec.record();
-    return rec;
+    recorder.startRecording();
+    //recorder.record();
+    return {
+      stop: function() {
+        recorder.finishRecording();
+      }
+    };
   };
 
   this.audio = audio;

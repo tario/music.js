@@ -12,15 +12,36 @@ musicShowCaseApp.filter("block_name", function() {
 
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
   $scope.indexMap = {};
+  var music = new MUSIC.Context();
 
   var id = $routeParams.id;
 
-  var instSet = InstrumentSet();
+  var instSet = InstrumentSet(music);
 
   $scope.remove = function(block) {
     delete block.id;
     checkPayload();
     $scope.fileChanged();
+  };
+
+  $scope.currentRec = null;
+
+  $scope.record = function() {
+    $scope.stop();
+
+    $scope.currentRec = music.record({format: 'wav'}, function(blob) {
+      var a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+
+      var url  = window.URL.createObjectURL(blob);
+      a.href = url;
+      a.download = "output.wav";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+
+    $scope.play();
   };
 
   $scope.stop = function() {
@@ -44,9 +65,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           var changedBpm = Object.create(pattern);
           changedBpm.bpm = $scope.file.bpm;
 
-          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {
-            playing = null;
-          });
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {});
 
           return patterns[id];
         };        
@@ -61,7 +80,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$q", "$timeout",
           })
         , {measure: measure});
 
-        playing = song.play();
+        playing = song.play({
+          onStop: function() {
+            playing = null;
+            if ($scope.currentRec) $scope.currentRec.stop();
+            $scope.currentRec = null;
+            $timeout(function() {});
+          }
+        });
 
       });
 

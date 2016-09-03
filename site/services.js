@@ -107,11 +107,12 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
     }
   };
 
-  var create = function(descriptor) {
+  var create = function(descriptor, music) {
     return createParametric(descriptor)
       .then(function(fcn) {
         if (!fcn) return;
 
+        if (music) return fcn(music);
         return MusicContext.runFcn(function(music) {
           return fcn(music);
         });
@@ -381,14 +382,14 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
 
 
 musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
-  return function() {
+  return function(music) {
     var set = {};
     var created = [];
     var load = function(id) {
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
-            return MusicObjectFactory(file.contents);
+            return MusicObjectFactory(file.contents, music);
           })
           .then(function(obj){
             created.push(obj);
