@@ -10,6 +10,16 @@ musicShowCaseApp.filter("block_name", function() {
   };
 });
 
+musicShowCaseApp.filter("block_length", function() {
+  return function(block, indexMap) {
+    if (block.id) {
+      return indexMap[block.id] && indexMap[block.id].contents ? indexMap[block.id].contents.measureCount : 1;
+    } else {
+      return 1;
+    }
+  };
+});
+
 musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
   $scope.numChannels = 2;
   $scope.encoding = "wav";
@@ -154,7 +164,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     $scope.file.tracks.forEach(function(track, trackIndex) {
       for (var i=0;i<track.blocks.length;i++) {
         if (track.blocks[i].id){
-          if (i>maxblocks) maxblocks=i;
+          var mCount = $scope.indexMap[track.blocks[i].id].contents.measureCount;
+          if (i+mCount>maxblocks) maxblocks=i+mCount;
           if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
         }
       }
@@ -168,10 +179,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
       $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
     }
 
-    var target = maxblocks + 2;
+    var target = maxblocks + 1;
     $scope.file.tracks.forEach(function(track) {
       if (target > track.blocks.length) {
-        for (var i=0;i<target-track.blocks.length;i++) track.blocks.push({});
+        var payload = target-track.blocks.length;
+        for (var i=0;i<payload;i++) {
+          track.blocks.push({});
+        }
       } else {
         track.blocks = track.blocks.slice(0, target);
       }

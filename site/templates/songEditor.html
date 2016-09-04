@@ -52,16 +52,16 @@
           </p>
 
 
-          <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}">
+          <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap) + '%'}">
             <span class="fa fa-music"></span>
             <p ng-show="block">
               {{block | block_name:indexMap}}
             </p>
 
             <div class="overlay">
-              <span class="pattern-mini-button fa fa-remove" ng-click="remove(block)">
+              <span class="pattern-mini-button fa fa-remove" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
               </span>
-              <span class="pattern-mini-button fa fa-play" ng-click="patternPlay(block)">
+              <span class="pattern-mini-button fa fa-play" ng-click="patternPlay(block)" ng-mousedown="$event.stopPropagation()">
               </span>
             </div>
           </div>
