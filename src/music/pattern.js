@@ -19,7 +19,7 @@ MUSIC.MultiPlayable.prototype.play = function(options) {
 };
 
 var higher = function(a,b){ return a > b ? a : b; };
-var getDuration = function(playable) { return playable.duration(); };
+var getDuration = function(playable) { return playable && playable.duration ? playable.duration() : 0; };
 MUSIC.MultiPlayable.prototype.duration = function() {
   return this._playableArray.map(getDuration).reduce(higher, 0);
 };

@@ -68,12 +68,13 @@ MUSIC.Song = function(input, patternsOrOptions, options){
       var playableArray = patternArray.map(getFromPatterns) 
       var multiPlayable = new MUSIC.MultiPlayable(playableArray);
       var playing;
+      var duration = multiPlayable.duration();
+
       funseq.push({t: j*measure, f: function(context) {
         playing = multiPlayable.play();
         context.playing.push(playing);
       }});
-
-      funseq.push({t: (j+1)*measure, f: function(context) {
+      funseq.push({t: j*measure+duration, f: function(context) {
         playing.stop();
         context.playing = context.playing.filter(function(x){ return x != playing; });
       }});
