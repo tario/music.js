@@ -375,6 +375,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
   };
 
   var computeMeasureCount = function(file, measure) {
+    if (measure<1) measure=1;
+
     var endTime = file.tracks[0].events.map(function(evt) {
       return evt.s + evt.l;
     }).reduce(function(a,b) {
