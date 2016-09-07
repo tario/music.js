@@ -12523,15 +12523,15 @@ musicShowCaseApp.filter("block_name", function() {
   };
 });
 
-musicShowCaseApp.filter("block_length", function() {
-  return function(block, indexMap) {
-    if (block.id) {
-      return indexMap[block.id] && indexMap[block.id].contents ? indexMap[block.id].contents.measureCount : 1;
-    } else {
-      return 1;
-    }
+musicShowCaseApp.filter("block_length", ["Pattern", function(Pattern) {
+  return function(block, indexMap, measure) {
+    if (!block.id) return 1;
+    if (!indexMap[block.id]) return 1;
+    if (!indexMap[block.id].contents) return 1;
+
+    return Pattern.computeMeasureCount(indexMap[block.id].contents, measure);
   };
-});
+}]);
 
 musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
   $scope.numChannels = 2;
@@ -12674,10 +12674,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     var maxblocks = 0;
     var maxTrackIndex = 0;
 
+    if (!$scope.file) return;
+    if (!$scope.file.tracks) return;
+
     $scope.file.tracks.forEach(function(track, trackIndex) {
       for (var i=0;i<track.blocks.length;i++) {
         if (track.blocks[i].id){
-          var mCount = $scope.indexMap[track.blocks[i].id].contents.measureCount;
+          var mCount = Pattern.computeMeasureCount($scope.indexMap[track.blocks[i].id].contents, $scope.file.measure);
           if (i+mCount>maxblocks) maxblocks=i+mCount;
           if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
         }
@@ -12705,6 +12708,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     });
     $scope.fileChanged();
   };
+  $scope.$watch("file.measure", checkPayload);
 
   $scope.onDropComplete = function($data,$event,block) {
     if ($data.fromBlock) {
@@ -12856,16 +12860,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!$scope.file) return;
     if (!$scope.file.tracks[0]) return;
 
-    var endTime = $scope.file.tracks[0].events.map(function(evt) {
-      return evt.s + evt.l;
-    }).reduce(function(a,b) {
-      return a>b ? a : b;
-    }, 0);
-
-    var measureLength = $scope.file.measure * 100;
-
-    $scope.file.measureCount = Math.floor((endTime-1)/measureLength) + 1;
-    if ($scope.file.measureCount<1) $scope.file.measureCount=1;
+    $scope.file.measureCount = Pattern.computeMeasureCount($scope.file, $scope.file.measure);
   };
 
   var lastPlaying;
@@ -14220,9 +14215,23 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return new MUSIC.MultiPlayable(playableArray);
   };
 
+  var computeMeasureCount = function(file, measure) {
+    var endTime = file.tracks[0].events.map(function(evt) {
+      return evt.s + evt.l;
+    }).reduce(function(a,b) {
+      return a>b ? a : b;
+    }, 0);
+
+    var measureLength = measure * 100;
+    var measureCount = Math.floor((endTime-1)/measureLength) + 1;
+    if (measureCount<1) return 1;
+    return measureCount;
+  };
+
   return {
     noteseq: noteseq,
-    patternCompose: patternCompose
+    patternCompose: patternCompose,
+    computeMeasureCount: computeMeasureCount
   };
 }]);
 

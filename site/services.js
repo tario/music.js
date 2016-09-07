@@ -374,9 +374,23 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return new MUSIC.MultiPlayable(playableArray);
   };
 
+  var computeMeasureCount = function(file, measure) {
+    var endTime = file.tracks[0].events.map(function(evt) {
+      return evt.s + evt.l;
+    }).reduce(function(a,b) {
+      return a>b ? a : b;
+    }, 0);
+
+    var measureLength = measure * 100;
+    var measureCount = Math.floor((endTime-1)/measureLength) + 1;
+    if (measureCount<1) return 1;
+    return measureCount;
+  };
+
   return {
     noteseq: noteseq,
-    patternCompose: patternCompose
+    patternCompose: patternCompose,
+    computeMeasureCount: computeMeasureCount
   };
 }]);
 

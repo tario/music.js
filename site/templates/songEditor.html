@@ -52,7 +52,7 @@
           </p>
 
 
-          <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap) + '%'}">
+          <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap:file.measure) + '%'}">
             <span class="fa fa-music"></span>
             <p ng-show="block">
               {{block | block_name:indexMap}}
