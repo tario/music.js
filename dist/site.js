@@ -12968,6 +12968,19 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
   }, 50);
   $scope.$watch('file', fileChanged, true);
 
+  $scope.export = function() {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
+    var url  = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = $scope.fileIndex.name + ".json";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
@@ -14274,7 +14287,17 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 }]);
 
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
-  var exampleList = $http.get("exampleList.json");
+  var exampleList = $http.get("exampleList.json")
+    .then(function(result) {
+      return $q.all(result.data.map(function(entry) {
+        return $q.all({
+          fileId: createFile({type: entry.type, name: entry.name}),
+          contents: $http.get(entry.uri)
+        }).then(function(r) {
+          return updateFile(r.fileId, r.contents.data);
+        });
+      }));
+    });
 
   var createId = function() {
     var array = [];
@@ -14315,6 +14338,37 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var hist = new WeakMap();
 
+  var updateFile = function(id, contents) {
+    var obj = JSON.parse(JSON.stringify(contents));
+
+    if (obj && obj.data && obj.data.array) {
+      obj.data.array.forEach(function(elem) {
+        delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
+        delete elem.__cache;
+        delete elem.last_type;
+      });
+    }
+
+    createdFiles[id] = obj;
+    hist[id].registerVersion(JSON.stringify(obj));
+
+    return $q.resolve();
+  };
+
+  var createFile = function(options) {
+    genericStateEmmiter.emit("changed");
+
+    var newid = createId();
+
+    createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
+    createdFiles[newid] = defaultFile[options.type] ||{};
+
+    hist[newid] = Historial();
+    hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
+
+    return $q.resolve(newid);
+  };
+
   return {
     undo: function(id) {
       var oldVer = hist[id].undo();
@@ -14328,19 +14382,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       createdFiles[id] = JSON.parse(nextVer);
     },
-    createFile: function(options) {
-      genericStateEmmiter.emit("changed");
-
-      var newid = createId();
-
-      createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
-      createdFiles[newid] = defaultFile[options.type] ||{};
-
-      hist[newid] = Historial();
-      hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
-
-      return $q.resolve(newid);
-    },
+    createFile: createFile,
     updateIndex: function(id, attributes) {
       var localFile =  createdFilesIndex.filter(function(x){ return x.id === id})[0];
       if (!localFile) return;
@@ -14350,22 +14392,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     getIndex: function(id) {
       return $q.resolve(createdFilesIndex.filter(function(x){ return x.id === id})[0]);
     },
-    updateFile: function(id, contents) {
-      var obj = JSON.parse(JSON.stringify(contents));
-
-      if (obj && obj.data && obj.data.array) {
-        obj.data.array.forEach(function(elem) {
-          delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
-          delete elem.__cache;
-          delete elem.last_type;
-        });
-      }
-
-      createdFiles[id] = obj;
-      hist[id].registerVersion(JSON.stringify(obj));
-
-      return $q.resolve();
-    },
+    updateFile: updateFile,
     getFile: function(id) {
 
       var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
@@ -14376,7 +14403,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         });
       };
 
-      return exampleList
+      /*return exampleList
         .then(function(examples) {
           localFile = examples.data.filter(function(x){ return x.id === id})[0];
           var uri = localFile.uri;
@@ -14396,7 +14423,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               }
             };
           });
-        });
+        });*/
     },
 
     search: function(keyword) {
@@ -14411,12 +14438,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       var updateSearch = function() {
         $q.all([
           createdFilesIndex,
-          exampleList,
           TypeService.getTypes(keyword)
         ]).then(function(result) {
           var res = result[0];
-          res = res.concat(result[1].data);
-          res = res.concat(result[2].map(convertType));
+          res = res.concat(result[1].map(convertType));
           res = res.filter(hasKeyword);
 
           ee.emit("changed", {

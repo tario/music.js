@@ -392,12 +392,16 @@ module.export = function(m) {
         });
     };
 
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
     ret.update = function(data) {
       samples = data.samples || 100;  
-      attackTime = parseFloat(data.attackTime || 0.4);
-      decayTime = parseFloat(data.decayTime || 0.4);
-      sustainLevel = parseFloat(data.sustainLevel || 0.8);
-      releaseTime = parseFloat(data.releaseTime || 0.4);
+      attackTime = parseFloat(_def(data.attackTime, 0.4));
+      decayTime = parseFloat(_def(data.decayTime,0.4));
+      sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
+      releaseTime = parseFloat(_def(data.releaseTime,0.4));
 
       attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
       decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);

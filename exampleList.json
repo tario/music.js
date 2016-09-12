@@ -1,14 +1,11 @@
 [
-  {"type": "instrument", "name": "Square wave oscillator", "uri": "examples/oscillator.js", "id": "EX1"},
-  {"type": "instrument", "name": "Square wave oscillator with vibrato", "uri": "examples/oscillatorVibrato.js", "id": "EX2"},
-  {"type": "instrument", "name": "Sound patch (percussion)", "uri": "examples/percussion.js", "id": "EX3"},
-  {"type": "instrument", "name": "Sound font (piano)", "uri": "examples/piano.js", "id": "EX4"},
-  {"type": "instrument", "name": "Multi Instrument, octave chord", "uri": "examples/octavechord.js", "id": "EX5"},
-  {"type": "instrument", "name": "Sound wave oscillator with stop curve", "uri": "examples/oscillatorStopCurve.js", "id": "EX5"},
-  {"type": "instrument", "name": "Sound wave oscillator with ADSR envelope", "uri": "examples/oscillatorADSR.js", "id": "EX6"},
-  {"type": "instrument", "name": "Custom sine wave oscillator", "uri": "examples/formula.js", "id": "EX7"},
-  {"type": "instrument", "name": "Custom sine wave oscillator 2", "uri": "examples/periodicFormulaGenerator.js", "id": "EX8"},
-  {"type": "instrument", "name": "Chiptune Set", "uri": "examples/chiptune.js", "id": "EX9"},
-  {"type": "instrument", "name": "Astro Robo Sasa lvl 1 music", "uri": "examples/astroRoboSasa.js", "id": "EX10"},
-  {"type": "instrument", "name": "Lemonade", "uri": "examples/lemonade.js", "id": "EX13"} 
+  {"type": "instrument", "name": "Square+ADSR", "uri": "examples/squareadsr.json"},
+  {"type": "instrument", "name": "Sine+ADSR", "uri": "examples/sineadsr.json"},
+  {"type": "instrument", "name": "Sawtooth+ADSR", "uri": "examples/sawadsr.json"},
+  {"type": "instrument", "name": "Triangle+ADSR", "uri": "examples/triangleadsr.json"},
+  {"type": "instrument", "name": "Custom+ADSR", "uri": "examples/customadsr.json"},
+  {"type": "instrument", "name": "Square+ADSR+Reverb", "uri": "examples/squareadsrreverb.json"},
+  {"type": "instrument", "name": "Percussion noise", "uri": "examples/percussionnoise.json"},
+  {"type": "instrument", "name": "Percussion red noise", "uri": "examples/percussionrednoise.json"},
+  {"type": "instrument", "name": "Percussion pink noise", "uri": "examples/percussionpinknoise.json"}
 ]

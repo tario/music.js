@@ -1,0 +1,38 @@
+{
+  "type": "stack",
+  "data": {
+    "array": [
+      {
+        "type": "reverb",
+        "data": {
+          "room": 0.35,
+          "damp": 0.1,
+          "mix": 0.75
+        }
+      },
+      {
+        "type": "envelope",
+        "data": {
+          "attackTime": 0,
+          "decayTime": 0.2,
+          "sustainLevel": 0.8,
+          "releaseTime": 0.2
+        }
+      },
+      {
+        "type": "oscillator",
+        "data": {
+          "modulation": {
+            "detune": {
+              "type": "stack",
+              "data": {
+                "array": []
+              }
+            }
+          },
+          "oscillatorType": "square"
+        }
+      }
+    ]
+  }
+}

@@ -455,6 +455,19 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
   }, 50);
   $scope.$watch('file', fileChanged, true);
 
+  $scope.export = function() {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
+    var url  = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = $scope.fileIndex.name + ".json";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };

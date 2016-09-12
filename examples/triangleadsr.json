@@ -1,0 +1,31 @@
+{
+  "type": "stack",
+  "data": {
+    "array": [
+      {
+        "type": "envelope",
+        "data": {
+          "attackTime": 0.0,
+          "decayTime": 0.2,
+          "sustainLevel": 0.8,
+          "releaseTime": 0.2
+        }
+      },
+      {
+        "type": "oscillator",
+        "data": {
+          "modulation": {
+            "detune": {
+              "type": "stack",
+              "data": {
+                "array": []
+              }
+            }
+          },
+          "oscillatorType": "triangle"
+        }
+      }
+    ]
+  }
+}
+
