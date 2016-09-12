@@ -143,7 +143,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
                   scope.modulations = (type.components||[]).map(function(component) {
                     return {
                       name: component,
-                      value: {
+                      value: (file.data && file.data.modulation && file.data.modulation[component])|| {
                         type: "stack",
                         data: {
                           array: []

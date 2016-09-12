@@ -7,5 +7,7 @@
   {"type": "instrument", "name": "Square+ADSR+Reverb", "uri": "examples/squareadsrreverb.json"},
   {"type": "instrument", "name": "Percussion noise", "uri": "examples/percussionnoise.json"},
   {"type": "instrument", "name": "Percussion red noise", "uri": "examples/percussionrednoise.json"},
-  {"type": "instrument", "name": "Percussion pink noise", "uri": "examples/percussionpinknoise.json"}
+  {"type": "instrument", "name": "Percussion pink noise", "uri": "examples/percussionpinknoise.json"},
+  {"type": "instrument", "name": "Vibrato sine", "uri": "examples/vibratosine.json"},
+  {"type": "instrument", "name": "Percussion sine drop", "uri": "examples/percussionsine.json"}
 ]

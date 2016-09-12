@@ -1,0 +1,39 @@
+{
+  "type": "stack",
+  "data": {
+    "array": [
+      {
+        "type": "envelope",
+        "data": {
+          "attackTime": 0.0,
+          "decayTime": 0.4,
+          "sustainLevel": 0.8,
+          "releaseTime": 0.4
+        }
+      },
+      {
+        "type": "oscillator",
+        "data": {
+          "modulation": {
+            "detune": {
+              "type": "stack",
+              "data": {
+                "array": [
+                  {
+                    "type": "rise",
+                    "data": {
+                      "time": "2",
+                      "target": "-10000"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "oscillatorType": "sine",
+          "fixed_frequency": false
+        }
+      }
+    ]
+  }
+}
