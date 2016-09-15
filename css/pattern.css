@@ -44,6 +44,11 @@ input.smallinput {
   background-color: black;
 }
 
+.pattern-drop-lateral p {
+  word-break: break-word;
+  overflow: hidden;
+}
+
 .enabled-instrument .pattern-drop-lateral {
   background-color: white;
   color: black;
