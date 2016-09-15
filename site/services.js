@@ -374,14 +374,17 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
     return new MUSIC.MultiPlayable(playableArray);
   };
 
+  var higher = function(a,b) {
+    return a>b ? a : b;
+  };
+
   var computeMeasureCount = function(file, measure) {
     if (measure<1) measure=1;
-
-    var endTime = file.tracks[0].events.map(function(evt) {
-      return evt.s + evt.l;
-    }).reduce(function(a,b) {
-      return a>b ? a : b;
-    }, 0);
+    var endTime = file.tracks.map(function(track) {
+      return track.events.map(function(evt) {
+        return evt.s + evt.l;
+      }).reduce(higher, 0)
+    }).reduce(higher,0);
 
     var measureLength = measure * 100;
     var measureCount = Math.floor((endTime-1)/measureLength) + 1;
@@ -478,7 +481,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     pattern: {
       measure: 8,
       measureCount: 1,
-      bpm: 100
+      bpm: 100,
+      selectedInstrument: 0
     }
   };
 

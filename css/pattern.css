@@ -109,3 +109,20 @@ input.smallinput {
 .player-controls button.player:active {
   margin: 10px 5px;
 }
+
+.track-compact-view {
+  height: 20px;
+  background-color: #aaaaaa;
+}
+
+.track-compact-view-wrapper.selected .track-compact-view {
+  background-color: white;
+}
+
+.margin-top-20 {
+  margin-top: 20px;
+}
+
+.margin-top-10 {
+  margin-top: 10px;
+}

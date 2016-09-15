@@ -51,12 +51,12 @@
 
   <hr class="soften"></hr>
 
-  <div class="row-fluid" ng-class="{'enabled-instrument': file.tracks[0].instrument}" >
+  <div class="row-fluid" ng-class="{'enabled-instrument': file.tracks[file.selectedInstrument].instrument}" >
       <div class="span2">
       <!-- Instrument drop zone -->
           <div class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
-            <span ng-show="file.tracks[0].instrument" class="fa fa-keyboard-o"></span>
-            <p>{{file.tracks[0].instrument ? file.tracks[0].instrument.name : "drop instrument here" }}</p>
+            <span ng-show="file.tracks[file.selectedInstrument].instrument" class="fa fa-keyboard-o"></span>
+            <p>{{file.tracks[file.selectedInstrument].instrument ? file.tracks[file.selectedInstrument].instrument.name : "drop instrument here" }}</p>
           </div>
       </div>  
 
@@ -64,9 +64,35 @@
         <music-event-editor 
           measure-count="file.measureCount"
           measure="file.measure"
-          track="file.tracks[0]"
+          track="file.tracks[file.selectedInstrument]"
           beat-width="beatWidth"
           zoom-level="zoomLevel"></music-event-editor>   
-      </div>  
+      </div>
   </div>
+  <hr class="soften"></hr>
+
+  <div class="row-fluid margin-top-10" ng-repeat="track in file.tracks">
+    <div class="span2">
+      <button class="btn btn-primary">Remove</button>
+    </div>
+    <div class="span10">
+      <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedInstrument === $index}"
+          ng-click="file.selectedInstrument = $index">
+        <pattern-track-compact-view
+          measure-count="file.measureCount"
+          measure="file.measure"
+          track="tracl"
+          beat-width="beatWidth"
+          zoom-level="zoomLevel"></pattern-track-compact-view>
+      </div>
+    </div>
+  </div>
+
+  <div class="row-fluid margin-top-20">
+    <div class="span2">
+      <button ng-click="addTrack()" class="btn btn-primary">Add</button>
+    </div>
+  </div>
+
+
 </div>

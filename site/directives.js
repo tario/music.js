@@ -472,6 +472,22 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
 }]);
 
 
+musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($timeout) {
+  return {
+    scope: {
+      /* Current track */
+      track: "=track",
+      /* Display params */
+      zoomLevel: "=zoomLevel",
+      beatWidth: "=beatWidth",
+      /* File params (common to all tracks) */
+      measure: "=measure",
+      measureCount: "=measureCount"
+    },
+    templateUrl: "site/templates/directives/patternTrackCompactView.html"
+  };
+}]);
+
 musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
   return {
     scope: {
