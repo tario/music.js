@@ -269,6 +269,7 @@ module.export = function(m) {
       fallTime = parseFloat(data.time);
       target = parseFloat(data.target);
     };
+    ret.update(data);
     return ret;
   });
 
