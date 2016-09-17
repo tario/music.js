@@ -289,16 +289,27 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   
   $scope.beatWidth = 10;
   $scope.zoomLevel = 4;
-  $scope.selectedInstrument = 0;
+  $scope.selectedTrack = 0;
 
   var playing = null;
   var instSet = InstrumentSet();
+
+
+  $scope.removeTrack = function(trackIdx) {
+    if ($scope.file.tracks.length===1) return;
+
+    $scope.file.tracks = 
+      $scope.file.tracks.slice(0, trackIdx)
+        .concat($scope.file.tracks.slice(trackIdx+1));
+
+    $scope.file.selectedTrack = $scope.file.selectedTrack % $scope.file.tracks.length;
+  };
 
   $scope.addTrack = function() {
     $scope.file.tracks.push({
       events: []
     });
-    $scope.file.selectedInstrument = $scope.file.tracks.length-1;
+    $scope.file.selectedTrack = $scope.file.tracks.length-1;
   };
 
   $scope.stop = function() {
@@ -309,7 +320,9 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $scope.play = function() {
     var instruments = {};
     $scope.file.tracks.forEach(function(track) {
-      instruments[track.instrument.id] = instrument.get(track);
+      if (track.instrument) {
+        instruments[track.instrument.id] = instrument.get(track);
+      }
     });
 
     playing = Pattern.patternCompose($scope.file, instruments, function() {
@@ -383,7 +396,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   $scope.onDropComplete = function(instrument,event) {
-    var trackNo = $scope.file.selectedInstrument;
+    var trackNo = $scope.file.selectedTrack;
 
     $scope.file.tracks = $scope.file.tracks || [];
     $scope.file.tracks[trackNo] = $scope.file.tracks[trackNo] || {};

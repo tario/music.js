@@ -118,6 +118,7 @@ input.smallinput {
 .track-compact-view {
   height: 20px;
   background-color: #aaaaaa;
+  cursor: pointer;
 }
 
 .track-compact-view-wrapper.selected .track-compact-view {
