@@ -1363,6 +1363,7 @@ MUSIC.Curve.concat = function(c1, time1, c2, time2, n) {
 
   return {
     apply: function(currentTime, audioParam) {
+      audioParam.cancelScheduledValues(currentTime);
       audioParam.setValueCurveAtTime(array, currentTime, time)
     },
 
@@ -1383,6 +1384,7 @@ var during = function(fcn, n) {
 
     return { 
       apply: function(currentTime, audioParam) {
+        audioParam.cancelScheduledValues(currentTime);
         audioParam.setValueCurveAtTime(array, currentTime, time);
       },
 
