@@ -62,6 +62,14 @@ input.smallinput {
   background-color: #aaaaaa;
 }
 
+.track-compact-view-wrapper.selected .event-area .note {
+  background-color: #55ff55;
+}
+
+.track-compact-view-wrapper .event-area .note {
+  background-color: #00aa00;
+}
+
 .event-area .note {
   background-color: #55ff55;
   position: absolute;
