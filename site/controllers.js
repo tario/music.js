@@ -309,7 +309,6 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     $scope.file.tracks.push({
       events: []
     });
-    $scope.file.selectedTrack = $scope.file.tracks.length-1;
   };
 
   $scope.stop = function() {

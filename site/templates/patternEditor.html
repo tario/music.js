@@ -51,40 +51,43 @@
 
   <hr class="soften"></hr>
 
-  <div class="row-fluid" ng-class="{'enabled-instrument': file.tracks[file.selectedTrack].instrument}" >
-      <div class="span2">
-      <!-- Instrument drop zone -->
-          <div class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
-            <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard-o"></span>
-            <p>{{file.tracks[file.selectedTrack].instrument ? file.tracks[file.selectedTrack].instrument.name : "drop instrument here" }}</p>
-          </div>
-      </div>  
+  <h1>Tracks</h1>
 
-      <div class="span10">
-        <music-event-editor 
-          measure-count="file.measureCount"
-          measure="file.measure"
-          track="file.tracks[file.selectedTrack]"
-          beat-width="beatWidth"
-          zoom-level="zoomLevel"></music-event-editor>   
+
+  <div ng-repeat="track in file.tracks">
+    <div class="row-fluid">
+      <div class="vertical-margin span2">
+        <button ng-click="removeTrack($index)" class="btn btn-primary">Remove</button>
       </div>
-  </div>
-  <hr class="soften"></hr>
-
-  <div class="row-fluid margin-top-10" ng-repeat="track in file.tracks">
-    <div class="span2">
-      <button ng-click="removeTrack($index)" class="btn btn-primary">Remove</button>
+      <div class="vertical-margin span10">
+        <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedTrack === $index}"
+            ng-click="file.selectedTrack = $index">
+          <pattern-track-compact-view
+            measure-count="file.measureCount"
+            measure="file.measure"
+            track="file.tracks[$index]"
+            beat-width="beatWidth"
+            zoom-level="zoomLevel"></pattern-track-compact-view>
+        </div>
+      </div>
     </div>
-    <div class="span10">
-      <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedTrack === $index}"
-          ng-click="file.selectedTrack = $index">
-        <pattern-track-compact-view
-          measure-count="file.measureCount"
-          measure="file.measure"
-          track="tracl"
-          beat-width="beatWidth"
-          zoom-level="zoomLevel"></pattern-track-compact-view>
-      </div>
+    <div class="row-fluid" ng-if="file.selectedTrack == $index" ng-class="{'enabled-instrument': file.tracks[file.selectedTrack].instrument}" >
+        <div class="span2">
+        <!-- Instrument drop zone -->
+            <div class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
+              <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard-o"></span>
+              <p>{{file.tracks[file.selectedTrack].instrument ? file.tracks[file.selectedTrack].instrument.name : "drop instrument here" }}</p>
+            </div>
+        </div>  
+
+        <div class="span10">
+          <music-event-editor 
+            measure-count="file.measureCount"
+            measure="file.measure"
+            track="file.tracks[file.selectedTrack]"
+            beat-width="beatWidth"
+            zoom-level="zoomLevel"></music-event-editor>   
+        </div>
     </div>
   </div>
 

@@ -484,7 +484,26 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($tim
       measure: "=measure",
       measureCount: "=measureCount"
     },
-    templateUrl: "site/templates/directives/patternTrackCompactView.html"
+    templateUrl: "site/templates/directives/patternTrackCompactView.html",
+    link: function(scope) {
+      var semitoneToNote = function(n) {
+        return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
+      };
+      var notation7 = function(n) {
+        return ["C","D","E","F","G","A","B"][n % 7];
+      };
+      scope.noteName = function(n) {
+        var note7 = semitoneToNote(n);
+
+        if (Array.isArray(note7)) {
+          note7 = note7[0]
+          return notation7(note7)  + '#';
+        } else {
+          return notation7(note7);
+        }
+      };
+
+    }
   };
 }]);
 

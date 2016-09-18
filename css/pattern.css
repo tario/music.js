@@ -64,9 +64,13 @@ input.smallinput {
   height: 20px;
   color: black;
   overflow: hidden;
+  border-left-color: white;
+  border-left-style: solid;
+  border-left-width: 2px;
+  margin-left: -2px;
 }
 
-.event-area .note:hover {
+.event-area-container .event-area .note:hover {
   cursor: all-scroll;
 }
 
@@ -117,12 +121,12 @@ input.smallinput {
 
 .track-compact-view {
   height: 20px;
-  background-color: #aaaaaa;
+  background-color: black;
   cursor: pointer;
 }
 
 .track-compact-view-wrapper.selected .track-compact-view {
-  background-color: white;
+  background-color: #555555;
 }
 
 .margin-top-20 {
@@ -131,4 +135,9 @@ input.smallinput {
 
 .margin-top-10 {
   margin-top: 10px;
+}
+
+.vertical-margin {
+  margin-top: 5px;
+  margin-bottom: 5px;
 }

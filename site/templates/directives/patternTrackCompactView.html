@@ -1,2 +1,5 @@
-<div class="track-compact-view">
+<div class="track-compact-view event-area">
+  <div ng-repeat="evt in track.events" class="note" ng-style="{'width': evt.l*zoomLevel*beatWidth/100+'px', 'left':evt.s*zoomLevel*beatWidth/100+'px', 'z-index': evt.s}">
+    <div>{{noteName(evt.n)}}</div>
+  </div>
 </div>
