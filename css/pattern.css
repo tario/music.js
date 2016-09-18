@@ -20,6 +20,10 @@ input.smallinput {
   overflow: scroll;
 }
 
+.track-compact-view.event-area {
+  background-image: linear-gradient(to right, white 2px, transparent 1px);
+}
+
 .event-area {
   position: relative;
   height: 2400px;
@@ -123,6 +127,7 @@ input.smallinput {
   height: 20px;
   background-color: black;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .track-compact-view-wrapper.selected .track-compact-view {

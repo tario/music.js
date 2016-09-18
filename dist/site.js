@@ -13635,6 +13635,10 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($tim
           return notation7(note7);
         }
       };
+      var updateGrid = function() {
+        scope.mainGridStyle = {"background-size": (scope.measure*scope.beatWidth*scope.zoomLevel) + "px 240px"};
+      };
+      scope.$watch("[measure, beatWidth, zoomLevel]", updateGrid);
 
     }
   };
