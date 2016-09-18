@@ -137,7 +137,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     var loader = {};
 
     pattern.tracks.forEach(function(track) {
-      loader[track.instrument.id] = instSet.load(track.instrument.id);
+      if (track.instrument) loader[track.instrument.id] = instSet.load(track.instrument.id);
     });
     $q.all(loader)
       .then(function(instruments) {
@@ -216,7 +216,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     FileRepository.getFile($data.id)
       .then(function(f) {
         f.contents.tracks.forEach(function(track) {
-          instSet.load(track.instrument.id);          
+          if (track.instrument) instSet.load(track.instrument.id);
         });
 
         $scope.indexMap[$data.id] = f;
@@ -303,12 +303,16 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
         .concat($scope.file.tracks.slice(trackIdx+1));
 
     $scope.file.selectedTrack = $scope.file.selectedTrack % $scope.file.tracks.length;
+
+    $scope.fileChanged();
   };
 
   $scope.addTrack = function() {
     $scope.file.tracks.push({
       events: []
     });
+
+    $scope.fileChanged();
   };
 
   $scope.stop = function() {
