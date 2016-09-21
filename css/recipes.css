@@ -1,0 +1,15 @@
+.recipe-tooltip {
+  display: none;
+  width: 300px;
+  height: 100px;
+  background-color: #ffff55;
+  position: absolute;
+  right: -100px;
+  border-style: double;
+  border-color: black;
+  border-width: 8px;
+}
+
+.show-recipe-tooltip .recipe-tooltip {
+  display: block;
+}

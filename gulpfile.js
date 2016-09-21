@@ -30,7 +30,14 @@ gulp.task('build-lib-dev', function(cb) {
 });
 
 gulp.task('build-site-dev', function(cb) {
-  return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/app.js", "site/*.js", "site/lib/codemirror/**/*.js"])
+  return gulp.src([
+            "site/lib/*.js", 
+            "site/lib/*/*.js", 
+            "site/app.js", 
+            "site/*.js", 
+            "site/directives/*.js", 
+            "site/services/*.js", 
+            "site/lib/codemirror/**/*.js"])
             .pipe(concat("site.js"))
             .pipe(gulp.dest(DEST))
             .pipe(connect.reload());

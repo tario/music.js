@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/pattern.css">
 <link rel="stylesheet" href="css/song.css">
+<link rel="stylesheet" href="css/recipes.css">
 
 <script>
   if (location.host.split(":")[0] === "localhost") {
@@ -20,9 +21,7 @@
 
 </script>
 </head>
-<body>
-
-<div ng-app="MusicShowCaseApp" class="musicapp">
+<body ng-app="MusicShowCaseApp" class="musicapp">
     <div ng-controller="MainController">
     
     <script type="text/ng-template" id="todoModal.html">
@@ -80,7 +79,8 @@
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
                   <li ng-repeat="file in files">
-                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
+                    <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
+                    <recipe-tooltip rt-id="file.id"></recipe-tooltip>
                   </li>
                   <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
@@ -91,5 +91,4 @@
             </div>
         </div>
     </div>
-</div>
 </body>
