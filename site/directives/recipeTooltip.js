@@ -2,14 +2,16 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($parse, $timeout) {
   return {
     restrict: 'E',
-    template: '<div class="recipe-tooltip"><p>{{text}}</p></div>',
+    scope: {},
+    template: '<div ng-click="onClick()" class="recipe-tooltip"><p>{{text}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
-      var tooltipElementId = rtIdGetter(scope);
+      var tooltipElementId = rtIdGetter(scope.$parent);
 
-      scope.text = "Lorem ipsum sit dolor amet";
+      scope.onClick = function() {
+        scope.$parent.recipe.raise("tooltip_click");
+      };
 
-      console.log(tooltipElementId);
       scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
         $timeout(function() {
           scope.text = args.text;

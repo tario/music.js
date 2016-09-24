@@ -550,7 +550,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", function($scope, $timeout, $uibModal, MusicContext, FileRepository) {
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", "Recipe", function($scope, $timeout, $uibModal, MusicContext, FileRepository, Recipe) {
   var music;
 
   var currentObserver = FileRepository.search().observe(function(files) {
@@ -559,6 +559,8 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       $scope.files = files.results;
     });
   });
+
+  $scope.recipe = Recipe.start;
 
   $scope.activate = function(example) {
     if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {

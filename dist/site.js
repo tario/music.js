@@ -13063,7 +13063,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", function($scope, $timeout, $uibModal, MusicContext, FileRepository) {
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", "Recipe", function($scope, $timeout, $uibModal, MusicContext, FileRepository, Recipe) {
   var music;
 
   var currentObserver = FileRepository.search().observe(function(files) {
@@ -13072,6 +13072,8 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       $scope.files = files.results;
     });
   });
+
+  $scope.recipe = Recipe.start;
 
   $scope.activate = function(example) {
     if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {
@@ -14595,17 +14597,45 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse, $timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var recipeBlinkGetter = $parse(attrs.recipeBlink);
+      var blinkElementId = recipeBlinkGetter(scope);
+
+      scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
+        $timeout(function() {
+          $(element).addClass('blink');
+        })
+      });
+
+      scope.$on("_blink_disable_" + blinkElementId, function() {
+        $(element).removeClass('blink');
+      });
+
+      scope.$on("__blink_disable_all", function() {
+        $(element).removeClass('blink');
+      });
+    }
+  };
+}]);
+
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($parse, $timeout) {
   return {
     restrict: 'E',
-    template: '<div class="recipe-tooltip"><p>{{text}}</p></div>',
+    scope: {},
+    template: '<div ng-click="onClick()" class="recipe-tooltip"><p>{{text}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
-      var tooltipElementId = rtIdGetter(scope);
+      var tooltipElementId = rtIdGetter(scope.$parent);
 
-      scope.text = "Lorem ipsum sit dolor amet";
+      scope.onClick = function() {
+        scope.$parent.recipe.raise("tooltip_click");
+      };
 
-      console.log(tooltipElementId);
       scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
         $timeout(function() {
           scope.text = args.text;
@@ -14625,6 +14655,118 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
   };
 }]);
 
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("recipeWizard", ["$timeout", function($timeout) {
+  return {
+    restrict: 'E',
+    template: '<div class="recipe-wizard"><p>{{text}}</p></div>',
+    link: function(scope, element, attrs) {
+    }
+  };
+}]);
+
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', function($timeout, $rootScope) {
+    var currentRecipe = {
+      steps: [],
+      currentStep: 0
+    };
+
+    var handleEvent = function(event, args) {
+      var step = currentRecipe.steps[currentRecipe.currentStep];
+
+      if (!step) return;
+      if (step.eventHandler) step.eventHandler(event, args);
+    };
+
+    var runRecipeStep = function(currentStep) {
+      var step = currentRecipe.steps[currentStep||currentRecipe.currentStep];
+      $rootScope.$broadcast("__blink_disable_all");
+      $rootScope.$broadcast("__tooltip_hide_all");
+      if (!step) return;
+
+      (step.blink||[]).forEach(function(blink_id) {
+        $rootScope.$broadcast("_blink_enable_" + blink_id);
+      });
+
+      for (var tooltip_id in step.tooltip||{}) {
+        $rootScope.$broadcast("_tooltip_display_" + tooltip_id, {text: step.tooltip[tooltip_id]});
+      }
+    };
+
+    var next_step_on = function(eventName) {
+      return function(event, args) {
+        if (event === eventName) {
+          currentRecipe.currentStep++;
+          runRecipeStep();
+        }
+      }
+    };
+
+    var delay = function(fcn, ms) {
+      return function(event, args) {
+        $timeout(function() {
+          fcn(event, args);
+        }, ms);
+      };
+    };
+
+    var start = function(name) {
+      if (name === 'create_a_song') {
+        currentRecipe.steps = [
+          {
+            blink: ['menu_new'],
+            tooltip: {
+              menu_new: 'Click "new" menu option'
+            },
+            eventHandler: next_step_on('menu_new_click')
+          },
+          { 
+            blink: ['menu_new_pattern'],
+            tooltip: {
+              menu_new_pattern: 'Click "Pattern" menu option to create a new melodic pattern'
+            },
+            eventHandler: delay(next_step_on('menu_new_pattern_click'),500)
+          },
+          { 
+            blink: ['pattern_instrument_dropzone', 'Square+ADSR'],
+            tooltip: {
+              'pattern_instrument_dropzone': 'this is the instrument dropzone',
+              'Square+ADSR': "To start with, you will need to drag the instrument to the drop zone"
+            },
+            eventHandler: next_step_on('instrument_dropped')
+          },
+          {
+            tooltip: {
+              'pattern_instrument_dropzone': 'perfect! you just assigned the instrument to the track. Click this tooltip to continue',
+            },
+            eventHandler: next_step_on('tooltip_click')
+          },
+          {
+            tooltip: {
+              'pattern_track_event_area': 'Now, you can start to add musical notes'
+            },
+            eventHandler: next_step_on('tooltip_mouseover')
+          }
+        ];
+
+        currentRecipe.currentStep = 0;
+        runRecipeStep();
+      }
+    };
+
+    start.raise = function(name) {
+      handleEvent(name);
+    };
+
+    return {
+      start: start,
+      step: runRecipeStep,
+      handleEvent: handleEvent
+    };
+}]);
 
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE

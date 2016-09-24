@@ -1,15 +1,54 @@
 .recipe-tooltip {
   display: none;
-  width: 300px;
-  height: 100px;
+  min-width: 200px;
+  max-width: 400px;
   background-color: #ffff55;
   position: absolute;
-  right: -100px;
   border-style: double;
   border-color: black;
   border-width: 8px;
+  color: black;
+  visibility: visible;
+  z-index: 9999;
+  cursor: pointer;
 }
 
 .show-recipe-tooltip .recipe-tooltip {
   display: block;
 }
+
+.recipe-wizard {
+  display: none;
+  width: 30%;
+  height: 20%;
+  background-color: #ffff55;
+  position: fixed;
+  border-style: double;
+  border-color: black;
+  border-width: 8px;
+  z-index: 9999;
+  bottom: 0;
+  right: 0;
+}
+
+
+.blink:hover {
+  animation: initial;
+  -webkit-animation: initial;
+}
+
+.blink {
+  animation: blink-animation 0.5s steps(2, start) infinite;
+  -webkit-animation: blink-animation 0.5s steps(2, start) infinite;
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}
+

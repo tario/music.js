@@ -45,25 +45,31 @@
                   <a class="brand" href="">Music.js</a>
                   <div class="nav-collapse collapse">
                     <ul class="nav">
-                      <li class="dropdown">
+                      <li class="dropdown" recipe-blink="'menu_new'" ng-click="recipe.raise('menu_new_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">New</a>
                          <ul class="dropdown-menu">
-                            <li><a href="" ng-click="newInstrument()">Instrument</a></li>
-                            <li><a href="" ng-click="newPattern()">Pattern</a></li>
-                            <li><a href="" ng-click="newSong()">Song</a></li>
+                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')">Instrument</a>
+                              <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
+                            </li>
+                            <li recipe-blink="'menu_new_pattern'"><a href="" ng-click="newPattern(); recipe.raise('menu_new_pattern_click')">Pattern</a>
+                              <recipe-tooltip rt-id="'menu_new_pattern'"></recipe-tooltip>
+                            </li>
+                            <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')">Song</a>
+                              <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
+                            </li>
                          </ul>
+                         <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
                       </li>
-                      <li class="dropdown">
+                      <li class="dropdown" recipe-blink="'menu_preferences'">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
                          <ul class="dropdown-menu">
                             <li><a href="" ng-click="todo()">Preferences</a></li>
                          </ul>
                       </li>
-                      <li class="dropdown">
-                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
+                      <li class="dropdown" recipe-blink="'menu_help_recipes'">
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help/Recipes</a>
                          <ul class="dropdown-menu">
-                            <li><a href="" ng-click="todo()">View Help</a></li>
-                            <li><a href="" ng-click="todo()">About Music.js</a></li>
+                            <li><a href="" ng-click="recipe('create_a_song')">Create a song</a></li>
                          </ul>
                       </li>
                     </ul>
@@ -78,9 +84,9 @@
             <div class="span4 bs-docs-sidebar affix">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
-                  <li ng-repeat="file in files">
+                  <li ng-repeat="file in files" recipe-blink="file.name">
                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
-                    <recipe-tooltip rt-id="file.id"></recipe-tooltip>
+                    <recipe-tooltip rt-id="file.name"></recipe-tooltip>
                   </li>
                   <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
@@ -90,5 +96,7 @@
                 <div ng-view></div>
             </div>
         </div>
+
     </div>
+    <recipe-wizard></recipe-wizard>
 </body>

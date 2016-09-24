@@ -8,7 +8,6 @@ musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse
 
       scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
         $timeout(function() {
-          scope.text = args.text;
           $(element).addClass('blink');
         })
       });
