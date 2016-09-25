@@ -6,19 +6,24 @@ musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse
       var recipeBlinkGetter = $parse(attrs.recipeBlink);
       var blinkElementId = recipeBlinkGetter(scope);
 
-      scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
-        $timeout(function() {
-          $(element).addClass('blink');
-        })
-      });
+      if (!Array.isArray(blinkElementId)) blinkElementId = [blinkElementId];
 
-      scope.$on("_blink_disable_" + blinkElementId, function() {
-        $(element).removeClass('blink');
-      });
+      var registerEvent = function(blinkElementId) {
+        scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
+          $timeout(function() {
+            $(element).addClass('blink');
+          })
+        });
 
-      scope.$on("__blink_disable_all", function() {
-        $(element).removeClass('blink');
-      });
+        scope.$on("_blink_disable_" + blinkElementId, function() {
+          $(element).removeClass('blink');
+        });
+
+        scope.$on("__blink_disable_all", function() {
+          $(element).removeClass('blink');
+        });
+      };
+      blinkElementId.forEach(registerEvent);
     }
   };
 }]);

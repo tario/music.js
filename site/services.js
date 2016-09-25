@@ -473,17 +473,17 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       }
     },
     song: {
-      measure: 8,
-      bpm: 100,
+      measure: 4,
+      bpm: 140,
       tracks: [
         {blocks: [{},{},{}]},
         {blocks: [{},{},{}]}
       ]
     },
     pattern: {
-      measure: 8,
+      measure: 4,
       measureCount: 1,
-      bpm: 100,
+      bpm: 140,
       selectedTrack: 0
     }
   };

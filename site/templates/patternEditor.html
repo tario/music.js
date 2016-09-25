@@ -1,4 +1,7 @@
-<input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+<div>
+  <input recipe-blink="'pattern_name_input_box'" class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+  <recipe-tooltip rt-id="'pattern_name_input_box'"></recipe-tooltip>
+</div>
 <div class="pattern-main-window">
   <div class="row-fluid">
     <div class="span6">
@@ -30,8 +33,9 @@
     </div>
     <div class="span6 player-controls pull-right">
       <div class="row-fluid">
-        <button class="player btn btn-primary" ng-click="play()">
+        <button recipe-blink="'pattern_play'" class="player btn btn-primary" ng-click="play(); recipe.raise('pattern_play_click')">
           Play
+          <recipe-tooltip rt-id="'pattern_play'"></recipe-tooltip>
         </button>
         <button class="player btn btn-primary" ng-click="stop()">
           Stop

@@ -82,6 +82,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
   $scope.stop = function() {
     if (playing) playing.stop();
+    $scope.recipe.raise("song_play_stopped");
     playing = null;
   };
 
@@ -118,6 +119,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
         playing = song.play({
           onStop: function() {
+            $scope.recipe.raise("song_play_stopped");
             playing = null;
             if ($scope.currentRec) $scope.currentRec.stop();
             $scope.currentRec = null;
@@ -222,6 +224,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         $scope.indexMap[$data.id] = f;
         checkPayload();
         $scope.fileChanged();
+
+        $scope.recipe.raise('song_pattern_dropped');
       });
     
   };
@@ -288,7 +292,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
-  $scope.zoomLevel = 4;
+  $scope.zoomLevel = 8;
   $scope.selectedTrack = 0;
 
   var playing = null;
@@ -317,6 +321,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   $scope.stop = function() {
     if (playing) playing.stop();
+    $scope.recipe.raise("pattern_play_stopped");
     playing = null;
   };
 
@@ -329,6 +334,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     });
 
     playing = Pattern.patternCompose($scope.file, instruments, function() {
+      $scope.recipe.raise("pattern_play_stopped");
       playing = null;
     }).play();
   };

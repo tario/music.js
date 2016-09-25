@@ -12595,6 +12595,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
   $scope.stop = function() {
     if (playing) playing.stop();
+    $scope.recipe.raise("song_play_stopped");
     playing = null;
   };
 
@@ -12631,6 +12632,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
         playing = song.play({
           onStop: function() {
+            $scope.recipe.raise("song_play_stopped");
             playing = null;
             if ($scope.currentRec) $scope.currentRec.stop();
             $scope.currentRec = null;
@@ -12735,6 +12737,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         $scope.indexMap[$data.id] = f;
         checkPayload();
         $scope.fileChanged();
+
+        $scope.recipe.raise('song_pattern_dropped');
       });
     
   };
@@ -12801,7 +12805,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var id = $routeParams.id;
   
   $scope.beatWidth = 10;
-  $scope.zoomLevel = 4;
+  $scope.zoomLevel = 8;
   $scope.selectedTrack = 0;
 
   var playing = null;
@@ -12830,6 +12834,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   $scope.stop = function() {
     if (playing) playing.stop();
+    $scope.recipe.raise("pattern_play_stopped");
     playing = null;
   };
 
@@ -12842,6 +12847,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     });
 
     playing = Pattern.patternCompose($scope.file, instruments, function() {
+      $scope.recipe.raise("pattern_play_stopped");
       playing = null;
     }).play();
   };
@@ -13660,7 +13666,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
     },
     templateUrl: "site/templates/directives/musicEventEditor.html",
     link: function(scope, element, attrs) {
-      var defaultL = 200;
+      var defaultL = 100;
 
       var semitoneToNote = function(n) {
         return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
@@ -14396,17 +14402,17 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       }
     },
     song: {
-      measure: 8,
-      bpm: 100,
+      measure: 4,
+      bpm: 140,
       tracks: [
         {blocks: [{},{},{}]},
         {blocks: [{},{},{}]}
       ]
     },
     pattern: {
-      measure: 8,
+      measure: 4,
       measureCount: 1,
-      bpm: 100,
+      bpm: 140,
       selectedTrack: 0
     }
   };
@@ -14604,19 +14610,24 @@ musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse
       var recipeBlinkGetter = $parse(attrs.recipeBlink);
       var blinkElementId = recipeBlinkGetter(scope);
 
-      scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
-        $timeout(function() {
-          $(element).addClass('blink');
-        })
-      });
+      if (!Array.isArray(blinkElementId)) blinkElementId = [blinkElementId];
 
-      scope.$on("_blink_disable_" + blinkElementId, function() {
-        $(element).removeClass('blink');
-      });
+      var registerEvent = function(blinkElementId) {
+        scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
+          $timeout(function() {
+            $(element).addClass('blink');
+          })
+        });
 
-      scope.$on("__blink_disable_all", function() {
-        $(element).removeClass('blink');
-      });
+        scope.$on("_blink_disable_" + blinkElementId, function() {
+          $(element).removeClass('blink');
+        });
+
+        scope.$on("__blink_disable_all", function() {
+          $(element).removeClass('blink');
+        });
+      };
+      blinkElementId.forEach(registerEvent);
     }
   };
 }]);
@@ -14627,13 +14638,14 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
   return {
     restrict: 'E',
     scope: {},
-    template: '<div ng-click="onClick()" class="recipe-tooltip"><p>{{text}}</p></div>',
+    template: '<div ng-click="onClick($event)" class="recipe-tooltip"><p>{{text}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
       var tooltipElementId = rtIdGetter(scope.$parent);
 
-      scope.onClick = function() {
+      scope.onClick = function(e) {
         scope.$parent.recipe.raise("tooltip_click");
+        e.stopImmediatePropagation();
       };
 
       scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
@@ -14746,10 +14758,93 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', function($timeout,
           },
           {
             tooltip: {
-              'pattern_track_event_area': 'Now, you can start to add musical notes'
+              'pattern_track_event_area': 'Now, you can add musical notes. Click the area above to insert new notes,' +
+                ' you can drag them to reassign value and position, and change the duration by dragging from the edge.\n' +
+                ' add as many as you want and then click this window to continue'
             },
-            eventHandler: next_step_on('tooltip_mouseover')
+            eventHandler: next_step_on('tooltip_click')
+          },
+          {
+            blink: ['pattern_play'],
+            tooltip: {
+              'pattern_play': 'Click this button to hear your creation'
+            },
+            eventHandler: next_step_on('pattern_play_click')
+          },
+          {
+            tooltip: {
+              'pattern_play': 'Good! the music is playing...'
+            },
+            eventHandler: next_step_on('pattern_play_stopped')
+          },
+          {
+            tooltip: {
+              'pattern_play': 'Now, we are going to compose a song using this pattern'
+            },
+            eventHandler: next_step_on('tooltip_click')
+          },
+          {
+            blink: ['pattern_name_input_box'],
+            tooltip: {
+              'pattern_name_input_box': 'Optionally, you can name your pattern here'
+            },
+            eventHandler: next_step_on('tooltip_click')
+          },
+          {
+            blink: ['menu_new'],
+            tooltip: {
+              menu_new: 'Click "new" menu option, this time to create the song'
+            },
+            eventHandler: next_step_on('menu_new_click')
+          },
+          {
+            blink: ['menu_new_song'],
+            tooltip: {
+              menu_new_song: 'Click "Song" menu option to create a new song'
+            },
+            eventHandler: delay(next_step_on('menu_new_song_click'),500)
+          },
+          { 
+            blink: ['song_pattern_dropzone_0_0', 'index_pattern_type'],
+            tooltip: {
+              'song_pattern_dropzone_0_0': 'Drag your pattern to this block'
+            },
+            eventHandler: next_step_on('song_pattern_dropped')
+          },
+          { 
+            tooltip: {
+              'song_pattern_dropzone_0_0': 'Great!'
+            },
+            eventHandler: next_step_on('tooltip_click')
+          },
+          { 
+            blink: ['song_pattern_dropzone_0_1', 'index_pattern_type'],
+            tooltip: {
+              'song_pattern_dropzone_0_1': 'Drag your pattern to this another block'
+            },
+            eventHandler: next_step_on('song_pattern_dropped')
+          },
+          { 
+            blink: ['song_play'],
+            tooltip: {
+              'song_play': 'Click this button to hear your creation'
+            },
+            eventHandler: next_step_on('song_play_click')
+          },
+          { 
+            tooltip: {
+              'song_play': 'You should hear your pattern play twice...'
+            },
+            eventHandler: next_step_on('song_play_stopped')
+          },
+          { 
+            blink: ['song_rec'],
+            tooltip: {
+              'song_rec': 'Click this button to export an audio file of the song'
+            },
+            eventHandler: next_step_on('song_rec_click')
           }
+
         ];
 
         currentRecipe.currentStep = 0;

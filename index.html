@@ -84,7 +84,7 @@
             <div class="span4 bs-docs-sidebar affix">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
-                  <li ng-repeat="file in files" recipe-blink="file.name">
+                  <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']">
                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                     <recipe-tooltip rt-id="file.name"></recipe-tooltip>
                   </li>
