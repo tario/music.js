@@ -291,3 +291,7 @@ select.preset {
 .navbar {
   z-index: 2;
 }
+
+.dropdown-menu a.keep-color {
+  color: black;
+}

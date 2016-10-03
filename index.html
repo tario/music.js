@@ -66,10 +66,18 @@
                             <li><a href="" ng-click="todo()">Preferences</a></li>
                          </ul>
                       </li>
-                      <li class="dropdown" recipe-blink="'menu_help_recipes'">
-                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help/Recipes</a>
+                      <li class="dropdown" recipe-blink="'menu_help'">
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
                          <ul class="dropdown-menu">
-                            <li><a href="" ng-click="recipe('create_a_song')">Create a song</a></li>
+                            <li><a href="" ng-click="todo()">View Help</a></li>
+                            <li class="dropdown-submenu">
+                              <a class="keep-color" tabindex="-1" href="#">Recipes</a>
+                              <ul class="dropdown-menu">
+                                <li><a href="" ng-click="recipe('create_a_song')">How to create a song</a></li>
+                              </ul>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a href="" ng-click="todo()">About Music.js</a></li>
                          </ul>
                       </li>
                     </ul>
