@@ -1,4 +1,4 @@
-.musicapp .fa {
+.musicapp .examplelist .fa {
   margin-right: 14px;
 }
 
@@ -295,3 +295,7 @@ select.preset {
 .dropdown-menu a.keep-color {
   color: black;
 }
+
+a:focus, a:hover {
+  background-color: black;
+};
