@@ -30,14 +30,26 @@
     },
     {
       "tooltip": {
-        "pattern_track_event_area": "Now, you can add musical notes. Click the area above to insert new notes, you can drag them to reassign value and position, and change the duration by dragging from the edge.\n add as many as you want and then click this window to continue"
+        "pattern_track_event_area": "Now, you can add musical notes. Click the area above to insert a new note"
       },
-      "eventHandler": {"next_step_on": "tooltip_click"}
+      "eventHandler": {"delay": 100, "inner": {"next_step_on": "pattern_note_added"}}
+    },
+    {
+      "tooltip": {
+        "pattern_track_event_area": "Great!, now, try to add another one"
+      },
+      "eventHandler": {"delay": 100, "inner": {"next_step_on": "pattern_note_added"}}
+    },
+    {
+      "tooltip": {
+        "pattern_track_event_area": "Awesome!, you can drag them to re-assign value and position, move one of the notes you just created"
+      },
+      "eventHandler": {"next_step_on": "pattern_note_drag"}
     },
     {
       "blink": ["pattern_play"],
       "tooltip": {
-        "pattern_play": "Click this button to hear your creation"
+        "pattern_track_event_area": "Also, you can change the duration of the event by dragging from the right edge (like resizing), feel free to try it, or click play button to hear your creation and continue the tutorial"
       },
       "eventHandler": {"next_step_on": "pattern_play_click"}
     },
@@ -49,7 +61,7 @@
     },
     {
       "tooltip": {
-        "pattern_play": "Now, we are going to compose a song using this pattern"
+        "pattern_play": "Now, we are going to compose a song using this pattern. Click this tooltip to continue"
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
@@ -58,7 +70,8 @@
       "tooltip": {
         "pattern_name_input_box": "Optionally, you can name your pattern here"
       },
-      "eventHandler": {"next_step_on": "tooltip_click"}
+      "eventHandler": {"next_step_on": "tooltip_click"},
+      "duration": 7
     },
     {
       "blink": ["menu_new"],
@@ -85,7 +98,8 @@
       "tooltip": {
         "song_pattern_dropzone_0_0": "Great!"
       },
-      "eventHandler": {"next_step_on": "tooltip_click"}
+      "eventHandler": {"next_step_on": "tooltip_click"},
+      "duration": 2
     },
     { 
       "blink": ["song_pattern_dropzone_0_1", "index_pattern_type"],
@@ -110,9 +124,28 @@
     { 
       "blink": ["song_rec"],
       "tooltip": {
-        "song_rec": "Click this button to export an audio file of the song"
+        "song_rec": "Click this button to export an audio file of the song. You should get a .WAV file after playing the song"
       },
-      "eventHandler": {"next_step_on": "song_rec_click"}
+      "eventHandler": {"delay": 500, "inner": {"next_step_on": "song_rec_click"}}
+    },
+    { 
+      "blink": ["song_rec_confirm"],
+      "tooltip": {
+        "song_rec_confirm": "Review record options, and click this button when ready"
+      },
+      "eventHandler": {"next_step_on": "song_rec_confirm"}  
+    },
+    { 
+      "tooltip": {
+        "song_rec": "Your song is being recorded, please wait until it ends..."
+      },
+      "eventHandler": {"next_step_on": "song_rec_stop"}
+    },
+    { 
+      "tooltip": {
+        "song_rec": "Congratulations! you learned how to create a song using music.js. Click this tooltip to dismiss"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
     }
   ]
 }

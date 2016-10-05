@@ -12533,15 +12533,18 @@ musicShowCaseApp.filter("block_length", ["Pattern", function(Pattern) {
   };
 }]);
 
-musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
+musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", "Recipe", function($scope, $uibModalInstance, Recipe) {
   $scope.numChannels = 2;
   $scope.encoding = "wav";
+  $scope.recipe = Recipe.start;
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss();
   };
 
   $scope.start = function() {
+    $scope.recipe.raise("song_rec_confirm");
+
     $uibModalInstance.close({
       encoding: $scope.encoding,
       numChannels: $scope.numChannels
@@ -12587,6 +12590,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         a.download = $scope.fileIndex.name + "." + encodingOptions.encoding;
         a.click();
         window.URL.revokeObjectURL(url);
+
+        $scope.recipe.raise('song_rec_stop');
       });
 
       $scope.play();
@@ -13667,7 +13672,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
       beatWidth: "=beatWidth",
       /* File params (common to all tracks) */
       measure: "=measure",
-      measureCount: "=measureCount"
+      measureCount: "=measureCount",
+      recipe: '=recipe'
     },
     templateUrl: "site/templates/directives/musicEventEditor.html",
     link: function(scope, element, attrs) {
@@ -13759,7 +13765,9 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
         scope.selected = newEvt;
 
+        scope.recipe.raise('pattern_note_added');
         scope.track.events.push(newEvt);
+
         scope.$emit("trackChanged", scope.track);
         scope.$emit("eventChanged", {oldevt:{}, evt:newEvt, track: scope.track});
 
@@ -13788,9 +13796,14 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           cancelMove();
         };
 
-        scope.mouseUpResizeEvent = cancelMove;
-        scope.mouseUpEvent = cancelMove;
-        scope.mouseUp = cancelMove;
+        var _cancelMove = function() {
+          scope.recipe.raise('pattern_note_drag');
+          cancelMove();
+        };
+
+        scope.mouseUpResizeEvent = _cancelMove;
+        scope.mouseUpEvent = _cancelMove;
+        scope.mouseUp = _cancelMove;
       };
 
       scope.mouseDownResizeEvent = function(evt, event) {
@@ -13819,6 +13832,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
 
           defaultL = evt.l;
+
           scope.$emit("trackChanged", scope.track);
           scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
         };        
@@ -14702,7 +14716,9 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
     };
 
     var runRecipeStep = function(currentStep) {
-      var step = currentRecipe.steps[currentStep||currentRecipe.currentStep];
+      currentStep = currentStep||currentRecipe.currentStep;
+
+      var step = currentRecipe.steps[currentStep];
       $rootScope.$broadcast("__blink_disable_all");
       $rootScope.$broadcast("__tooltip_hide_all");
       if (!step) return;
@@ -14713,6 +14729,15 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
 
       for (var tooltip_id in step.tooltip||{}) {
         $rootScope.$broadcast("_tooltip_display_" + tooltip_id, {text: step.tooltip[tooltip_id]});
+      }
+
+      if (step.duration) {
+        $timeout(function() {
+          if (currentRecipe.currentStep <= currentStep) {
+            currentRecipe.currentStep = currentStep + 1;
+            runRecipeStep();
+          }
+        }, step.duration*1000);
       }
     };
 
@@ -14746,7 +14771,8 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
         return {
           blink: stepData.blink,
           tooltip: stepData.tooltip,
-          eventHandler: loadEventHandler(stepData.eventHandler)
+          eventHandler: loadEventHandler(stepData.eventHandler),
+          duration: stepData.duration
         };
       };
 

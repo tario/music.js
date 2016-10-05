@@ -20,15 +20,18 @@ musicShowCaseApp.filter("block_length", ["Pattern", function(Pattern) {
   };
 }]);
 
-musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
+musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", "Recipe", function($scope, $uibModalInstance, Recipe) {
   $scope.numChannels = 2;
   $scope.encoding = "wav";
+  $scope.recipe = Recipe.start;
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss();
   };
 
   $scope.start = function() {
+    $scope.recipe.raise("song_rec_confirm");
+
     $uibModalInstance.close({
       encoding: $scope.encoding,
       numChannels: $scope.numChannels
@@ -74,6 +77,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         a.download = $scope.fileIndex.name + "." + encodingOptions.encoding;
         a.click();
         window.URL.revokeObjectURL(url);
+
+        $scope.recipe.raise('song_rec_stop');
       });
 
       $scope.play();

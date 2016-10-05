@@ -521,7 +521,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
       beatWidth: "=beatWidth",
       /* File params (common to all tracks) */
       measure: "=measure",
-      measureCount: "=measureCount"
+      measureCount: "=measureCount",
+      recipe: '=recipe'
     },
     templateUrl: "site/templates/directives/musicEventEditor.html",
     link: function(scope, element, attrs) {
@@ -613,7 +614,9 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
 
         scope.selected = newEvt;
 
+        scope.recipe.raise('pattern_note_added');
         scope.track.events.push(newEvt);
+
         scope.$emit("trackChanged", scope.track);
         scope.$emit("eventChanged", {oldevt:{}, evt:newEvt, track: scope.track});
 
@@ -642,9 +645,14 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           cancelMove();
         };
 
-        scope.mouseUpResizeEvent = cancelMove;
-        scope.mouseUpEvent = cancelMove;
-        scope.mouseUp = cancelMove;
+        var _cancelMove = function() {
+          scope.recipe.raise('pattern_note_drag');
+          cancelMove();
+        };
+
+        scope.mouseUpResizeEvent = _cancelMove;
+        scope.mouseUpEvent = _cancelMove;
+        scope.mouseUp = _cancelMove;
       };
 
       scope.mouseDownResizeEvent = function(evt, event) {
@@ -673,6 +681,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
 
           defaultL = evt.l;
+
           scope.$emit("trackChanged", scope.track);
           scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
         };        

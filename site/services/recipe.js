@@ -13,7 +13,9 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
     };
 
     var runRecipeStep = function(currentStep) {
-      var step = currentRecipe.steps[currentStep||currentRecipe.currentStep];
+      currentStep = currentStep||currentRecipe.currentStep;
+
+      var step = currentRecipe.steps[currentStep];
       $rootScope.$broadcast("__blink_disable_all");
       $rootScope.$broadcast("__tooltip_hide_all");
       if (!step) return;
@@ -24,6 +26,15 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
 
       for (var tooltip_id in step.tooltip||{}) {
         $rootScope.$broadcast("_tooltip_display_" + tooltip_id, {text: step.tooltip[tooltip_id]});
+      }
+
+      if (step.duration) {
+        $timeout(function() {
+          if (currentRecipe.currentStep <= currentStep) {
+            currentRecipe.currentStep = currentStep + 1;
+            runRecipeStep();
+          }
+        }, step.duration*1000);
       }
     };
 
@@ -57,7 +68,8 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
         return {
           blink: stepData.blink,
           tooltip: stepData.tooltip,
-          eventHandler: loadEventHandler(stepData.eventHandler)
+          eventHandler: loadEventHandler(stepData.eventHandler),
+          duration: stepData.duration
         };
       };
 
