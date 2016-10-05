@@ -313,9 +313,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   $scope.addTrack = function() {
     $scope.file.tracks.push({
-      events: []
+      events: [],
+      scroll: 1000
     });
 
+    $scope.file.selectedTrack = $scope.file.tracks.length - 1;
     $scope.fileChanged();
   };
 

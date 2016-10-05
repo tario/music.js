@@ -484,7 +484,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       measure: 4,
       measureCount: 1,
       bpm: 140,
-      selectedTrack: 0
+      selectedTrack: 0,
+      tracks:[
+        {scroll: 1000, events: []}
+      ]
     }
   };
 

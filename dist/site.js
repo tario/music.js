@@ -12826,9 +12826,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
   $scope.addTrack = function() {
     $scope.file.tracks.push({
-      events: []
+      events: [],
+      scroll: 1000
     });
 
+    $scope.file.selectedTrack = $scope.file.tracks.length - 1;
     $scope.fileChanged();
   };
 
@@ -14413,7 +14415,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       measure: 4,
       measureCount: 1,
       bpm: 140,
-      selectedTrack: 0
+      selectedTrack: 0,
+      tracks:[
+        {scroll: 1000, events: []}
+      ]
     }
   };
 
