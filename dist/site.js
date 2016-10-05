@@ -12912,10 +12912,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
 
-    instSet.load($scope.file.tracks[trackNo].instrument.id)
+    return instSet.load($scope.file.tracks[trackNo].instrument.id)
       .then(function(musicObject) {
         instrument.set($scope.file.tracks[trackNo], musicObject);
-        beep(musicObject, 36);
+        return musicObject;
       });
   };
 
@@ -12927,7 +12927,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     $scope.file.tracks[trackNo].instrument = instrument;
 
     FileRepository.updateFile(id, $scope.file);
-    $scope.updateInstrument(trackNo);
+    $scope.updateInstrument(trackNo)
+      .then(function(musicObject) {
+        beep(musicObject, 36);
+      });
   };
 
   var updateFromRepo = function() {
