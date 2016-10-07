@@ -566,8 +566,18 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", "Recipe", function($scope, $timeout, $uibModal, MusicContext, FileRepository, Recipe) {
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", function($scope, $timeout, $uibModal, MusicContext, FileRepository, Recipe, WelcomeMessage) {
   var music;
+
+  $scope.welcome = function() {
+    // show welcome modal
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/welcome.html",
+      controller: "welcomeModalCtrl"
+    });
+  };
+
+  if (!WelcomeMessage.skip()) $scope.welcome();
 
   var currentObserver = FileRepository.search().observe(function(files) {
     $timeout(function() {

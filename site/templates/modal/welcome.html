@@ -1,0 +1,31 @@
+<div class="modal-header musicapp">
+    Welcome to Music.js: 8bit Edition
+</div>
+
+<div class="modal-body musicapp">
+  <div class="row-fluid">
+    <div class="span12">
+      <p>
+        Music.js is a web application that allows the composition of melodies powered (optionally) by javascript programming
+      </p>
+      <p>
+        This first basic edition, is fully oriented towards retro/8bit music by providing elemental oscillators, noise generators and basic modulation patterns
+      </p>
+      <p>
+        Do you want a basic tour?
+      </p>
+    </div>
+  </div>
+  <div class="row-fluid highlight" ng-class="{inverse: dontshowagain}">
+    <div class="span2">
+      <input type="checkbox" ng-model="dontshowagain" class="pull-right regular-checkbox" />
+    </div>
+    <div class="span10">
+      Never show this message again
+    </div>
+  </div>
+</div>
+<div class="modal-footer musicapp">
+    <button class="btn btn-primary" type="button" ng-click="tutorial()">Yes</button>
+    <button class="btn btn-primary" type="button" ng-click="dismiss()">No</button>
+</div>

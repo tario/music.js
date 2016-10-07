@@ -37,6 +37,7 @@ gulp.task('build-site-dev', function(cb) {
             "site/*.js", 
             "site/directives/*.js", 
             "site/services/*.js", 
+            "site/controllers/*.js", 
             "site/lib/codemirror/**/*.js"])
             .pipe(concat("site.js"))
             .pipe(gulp.dest(DEST))
