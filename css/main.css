@@ -307,4 +307,76 @@ select.preset {
 
 a:focus, a:hover {
   background-color: black;
-};
+}
+
+.modal-backdrop {
+  opacity: 0 !important;
+}
+
+input, select {
+  border: none !important;
+}
+
+body.modal-open {
+  background-color: black;
+}
+
+body.modal-open .main-window .navbar-inverse,
+body.modal-open .main-window .navbar-inner,
+body.modal-open .main-window .navbar-inner a,
+body.modal-open .main-window .nav,
+body.modal-open .main-window .dropdown-toggle,
+body.modal-open .main-window button.btn.btn-primary,
+body.modal-open .main-window input,
+body.modal-open .main-window select {
+  background-color: #555555 !important;
+  color: black;
+}
+
+body.modal-open .main-window p,
+body.modal-open .main-window .stack-element {
+  color: #555555 !important;
+}
+
+body.modal-open .main-window .piano-firstrow .key {
+  background-color: black !important;
+}
+
+body.modal-open .main-window input,
+body.modal-open .main-window .piano-firstrow .key.whitekey1,
+body.modal-open .main-window .piano-firstrow .key.whitekey2,
+body.modal-open .main-window .key,
+body.modal-open .main-window .pattern-block .block-content {
+  background-color: #aaaaaa !important;
+}
+
+body.modal-open .main-window .stack-element,
+body.modal-open .main-window .pattern-main-window,
+body.modal-open .main-window .player-controls,
+body.modal-open .main-window hr {
+  border-color: #555555 !important;
+}
+
+body.modal-open .main-window h1,
+body.modal-open .main-window h2,
+body.modal-open .main-window h3,
+body.modal-open .main-window h4,
+body.modal-open .main-window h5,
+body.modal-open .main-window h6 {
+  color: #555555 !important;
+}
+
+/*body.modal-open .main-window * {
+  background-color: #555555 !important;
+}*/
+
+.modal-dialog {
+  border-color: #0000ff;
+  border-width: 8px;
+  border-style: double;
+}
+
+.modal-header {
+  background-color: #0000ff;
+  color: white;
+}
