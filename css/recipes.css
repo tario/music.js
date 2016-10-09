@@ -1,7 +1,7 @@
 .recipe-tooltip {
   display: none;
   min-width: 300px;
-  max-width: 400px;
+  max-width: 300px;
   background-color: #ffff55;
   position: absolute;
   border-style: double;
@@ -16,8 +16,12 @@
   white-space: pre-wrap;
 }
 
-.show-recipe-tooltip .recipe-tooltip {
+.show-recipe-tooltip.recipe-tooltip {
   display: block;
+}
+
+.show-recipe-tooltip.cap-right {
+  right: 0;
 }
 
 .recipe-wizard {

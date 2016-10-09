@@ -3,11 +3,12 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
   return {
     restrict: 'E',
     scope: {},
-    template: '<div ng-click="onClick($event)" class="recipe-tooltip"><p>{{text}}</p></div>',
+    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled}" class="recipe-tooltip"><p>{{text}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
       var tooltipElementId = rtIdGetter(scope.$parent);
 
+      scope.tooltipEnabled = false;
       scope.onClick = function(e) {
         scope.$parent.recipe.raise("tooltip_click");
         e.stopImmediatePropagation();
@@ -16,18 +17,17 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
       scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
         $timeout(function() {
           scope.text = args.text;
-          $(element).addClass('show-recipe-tooltip');
+          scope.tooltipEnabled = true;
         })
       });
 
       scope.$on("_tooltip_hide_" + tooltipElementId, function() {
-        $(element).removeClass('show-recipe-tooltip');
+        scope.tooltipEnabled = false;
       });
 
       scope.$on("__tooltip_hide_all", function() {
-        $(element).removeClass('show-recipe-tooltip');
+        scope.tooltipEnabled = false;
       });
-
     }
   };
 }]);

@@ -98,10 +98,10 @@
               <recipe-tooltip rt-id="'navbar'"></recipe-tooltip>
         </div>
         <div class="navbar-padding"></div>
-        <div class="container musicapp" recipe-blink="'object_index_panel'">
+        <div class="container musicapp">
             <div class="span4">
             </div>
-            <div class="span4 bs-docs-sidebar affix">
+            <div class="span4 bs-docs-sidebar affix" recipe-blink="'object_index_panel'">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
                   <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']">
@@ -110,12 +110,13 @@
                   </li>
                   <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
+
+                <recipe-tooltip rt-id="'object_index_panel'"></recipe-tooltip>
             </div>
 
             <div class="span9">
                 <div ng-view></div>
             </div>
-            <recipe-tooltip rt-id="'object_index_panel'"></recipe-tooltip>
         </div>
 
     </div>
