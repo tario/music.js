@@ -1,8 +1,12 @@
-<div ng-repeat="parameter in parameters" class="generic-parameter">
+<div ng-repeat="parameter in parameters" class="generic-parameter show-contextual-tooltip">
 {{parameter.data.uiName || parameter.data.name}}: <input type="text" ng-model="parameter.value"></input>
+  <div ng-if="parameter.data.tooltip" class="help-tooltip contextual-tooltip">{{parameter.data.tooltip}}</div>
 </div>
 
 <div ng-repeat="modulation in modulations">
-<h1>{{modulation.name}} modulation</h1>
-<div class="music-object-editor" music-stack init-file="modulation.value"></div>
+  <div class="show-contextual-tooltip">
+    <h1>{{modulation.name}} modulation</h1>
+    <div class="music-object-editor" music-stack init-file="modulation.value"></div>
+    <div class="help-tooltip contextual-tooltip">You can setup the effects for {{modulation.name}} modulation here. If you leave it empty, there will be no modulation at all</div>
+  </div>
 </div>

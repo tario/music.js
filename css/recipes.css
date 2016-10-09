@@ -1,5 +1,34 @@
+.main-window.contextual-help-enabled * {
+  cursor: help;
+}
+.long-tooltip {
+  min-width: 500px !important;
+  max-width: 500px !important;
+}
+
+.contextual-tooltip-sibiling {
+  display: none;
+  white-space: normal !important;
+}
+
+.contextual-tooltip {
+  display: none;
+  white-space: normal !important;
+}
+
+.main-window.contextual-help-enabled .show-contextual-tooltip:hover > .contextual-tooltip {
+  display: block;
+}
+
+.main-window.contextual-help-enabled .show-contextual-tooltip-sibiling:hover ~ .contextual-tooltip {
+  display: block;
+}
+
 .recipe-tooltip {
   display: none;
+}
+
+.help-tooltip {
   min-width: 300px;
   max-width: 300px;
   background-color: #ffff55;

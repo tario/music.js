@@ -1,20 +1,24 @@
 <div class="arpeggiator">
   <h1>Arpeggio</h1>
   <div class="row-fluid">
-    <div class="span2">
+    <div class="span2 show-contextual-tooltip">
       <p class="serie-label">semitone </p>
+
+      <div class="help-tooltip contextual-tooltip">Enable this to use a tone scale instead of the default tone scale</div>
     </div>
-    <div class="span1">
+    <div class="span1 show-contextual-tooltip">
       <p class="serie-label">
         <input class="regular-checkbox" ng-init="file.data.semitone = file.data.semitone || false" type="checkbox" ng-model="file.data.semitone" />
       </p>
+      <div class="help-tooltip contextual-tooltip">Enable this to use a tone scale instead of the default tone scale</div>
     </div>
     <div ng-show="!file.data.semitone">
       <div class="span1">
         <p class="serie-label">scale </p>
       </div>
-      <div class="span1">
+      <div class="span1 show-contextual-tooltip">
         <input ng-init="file.data.scale = file.data.scale || 0" type="number" min=0 max=11 ng-model="file.data.scale" />
+        <div class="help-tooltip contextual-tooltip">Define the scale, by choosing the initial semitone. You can see the result on the right</div>
       </div>
 
       <div class="span7">
@@ -27,15 +31,17 @@
     <div class="span2">
       <p class="serie-label">interval</p>
     </div>
-    <div class="span2">
+    <div class="span2 show-contextual-tooltip">
       <input ng-init="file.data.interval = file.data.interval || 2" min=1 type="number" ng-model="file.data.interval" />
+      <div class="help-tooltip contextual-tooltip">The increment between notes (applies for both, tone and semitone arpeggiators)</div>
     </div>
 
     <div class="span2">
       <p class="serie-label">total</p>
     </div>
-    <div class="span2">
+    <div class="span2 show-contextual-tooltip">
       <input ng-init="file.data.total = file.data.total || 8" type="number" min=1 max=32 ng-model="file.data.total" />
+      <div class="help-tooltip contextual-tooltip">Total ammout of notes for the arpeggiator</div>
     </div>
   </div>
 
@@ -43,10 +49,11 @@
     <div class="span2">
       <p class="serie-label">loop</p>
     </div>
-    <div class="span2">
-      <p class="serie-label">
+    <div class="span2 show-contextual-tooltip">
+      <p class="serie-label" >
         <input class="regular-checkbox" ng-init="file.data.loop = file.data.loop || false" type="checkbox" ng-model="file.data.loop" />
       </p>
+       <div class="help-tooltip contextual-tooltip">Enable this option, if you want the arpeggiator to loop after the sequence is completed, otherwise, the note will keep playing the sound of the last note after the sequence is completed</div>
     </div>
   </div>
 
@@ -55,14 +62,16 @@
     <div class="span2">
       <p class="serie-label">duration </p>
     </div>
-    <div class="span2">
+    <div class="span2 show-contextual-tooltip">
       <input ng-init="file.data.duration = file.data.duration || 100" min=0 type="number" ng-model="file.data.duration" />
+      <div class="help-tooltip contextual-tooltip">Duration of this note of the sequence, in milliseconds</div>
     </div>
     <div class="span2">
       <p class="serie-label">gap </p>
     </div>
-    <div class="span2">
+    <div class="span2 show-contextual-tooltip">
       <input  ng-init="file.data.gap = file.data.gap || 0" type="number" ng-model="file.data.gap" />
+      <div class="help-tooltip contextual-tooltip">Duration of silence gap between notes, in milliseconds</div>
     </div>
     <div class="span2"></div>
  </div>

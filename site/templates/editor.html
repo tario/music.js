@@ -1,11 +1,15 @@
-<input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+<div class="show-contextual-tooltip">
+<input class="span6 show-contextual-tooltip" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+<div class="help-tooltip contextual-tooltip">Type here the name of the instrument</div>
+</div>
 <div class="music-object-editor" music-stack init-file="file" output-file="outputFile">
 </div>
 
 <p> Click grey bar and use ZXCVBNM keys to play instrument, or hover mouse on virtual keyboard </p>
-<div ng-repeat="instrument in instruments">
+<div ng-repeat="instrument in instruments" class="show-contextual-tooltip">
     {{instrument.name}}
-    <keyboard instrument="instrument" />
+    <div><keyboard instrument="instrument" /></div>
+    <div class="help-tooltip contextual-tooltip">Test the instrument here, using mouse or keyboard</div>
 </div>
 
 <!--<button class="btn btn-primary" ng-click="export()">Export</button>-->

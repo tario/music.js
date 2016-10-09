@@ -22,7 +22,7 @@
 </script>
 </head>
 <body ng-app="MusicShowCaseApp" class="musicapp">
-    <div ng-controller="MainController" class="main-window">
+    <div ng-controller="MainController" class="main-window" ng-class="{'contextual-help-enabled': contextualHelp}">
     
     <script type="text/ng-template" id="todoModal.html">
         <div class="modal-header musicapp">
@@ -36,6 +36,10 @@
         </div>
     </script>
 
+      <div class="contextual-help-switch" ng-click="contextualHelp = !contextualHelp">
+        ? {{contextualHelp ? 'Disable': 'Enable' }} Contextual Help
+      </div>
+
     <!-- TODO: Move to directive  -->
         <div class="navbar navbar-inverse" recipe-blink="'navbar'">
               <div class="navbar-inner">
@@ -45,7 +49,7 @@
                   <a class="brand" href="">Music.js</a>
                   <div class="nav-collapse collapse">
                     <ul class="nav">
-                      <li class="dropdown" recipe-blink="'menu_new'" ng-click="recipe.raise('menu_new_click')">
+                      <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_new'" ng-click="recipe.raise('menu_new_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">New</a>
                          <ul class="dropdown-menu">
                             <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')">Instrument</a>
@@ -59,15 +63,17 @@
                             </li>
                          </ul>
                          <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
+                         <div class="help-tooltip contextual-tooltip">You can create new blank items from this option</div>
                       </li>
-                      <li class="dropdown" recipe-blink="'menu_preferences'">
-                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
-                         <ul class="dropdown-menu">
+                      <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_preferences'">
+                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
+                          <ul class="dropdown-menu">
                             <li><a href="" ng-click="todo()">Preferences</a></li>
-                         </ul>
-                         <recipe-tooltip rt-id="'menu_preferences'"></recipe-tooltip>
+                          </ul>
+                          <recipe-tooltip rt-id="'menu_preferences'"></recipe-tooltip>
+                          <div class="help-tooltip contextual-tooltip">You can edit your preferences here</div>
                       </li>
-                      <li class="dropdown" recipe-blink="'menu_help'" ng-click="recipe.raise('menu_help_click')">
+                      <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_help'" ng-click="recipe.raise('menu_help_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
                          <ul class="dropdown-menu">
                             <li><a href="" ng-click="help()" recipe-blink="'menu_help_help'">View Help</a>
@@ -81,6 +87,9 @@
                               </ul>
                               <recipe-tooltip rt-id="'menu_help_recipes'"></recipe-tooltip>
                             </li>
+                            <li><a href="" ng-click="contextualHelp = !contextualHelp" recipe-blink="'menu_help_contextual_switch'">Contextual Help</a>
+                              <recipe-tooltip rt-id="'menu_help_contextual_help'"></recipe-tooltip>
+                            </li>
                             <li class="divider"></li>
                             <li><a href="" ng-click="welcome()" recipe-blink="'menu_help_welcome'">Welcome!</a>
                               <recipe-tooltip rt-id="'menu_help_welcome'"></recipe-tooltip>
@@ -89,7 +98,8 @@
                               <recipe-tooltip rt-id="'menu_help_about'"></recipe-tooltip>
                             </li>
                          </ul>
-                         <recipe-tooltip rt-id="'menu_help'"></recipe-tooltip>
+                          <recipe-tooltip rt-id="'menu_help'"></recipe-tooltip>
+                          <div class="help-tooltip contextual-tooltip">Menu to access help options and about</div>                         
                       </li>
                     </ul>
                   </div>
@@ -101,17 +111,34 @@
         <div class="container musicapp">
             <div class="span4">
             </div>
-            <div class="span4 bs-docs-sidebar affix" recipe-blink="'object_index_panel'">
+            <div class="span4 bs-docs-sidebar affix show-contextual-tooltip" recipe-blink="'object_index_panel'">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
-                  <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
-                  <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']">
+                  <li class="show-contextual-tooltip"><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> 
+                    <div class="help-tooltip contextual-tooltip">
+                      <p>
+                        Type here the word to filter objects
+                      </p>
+                    </div>
+                  </li>
+                  <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']" class="show-contextual-tooltip">
                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                     <recipe-tooltip rt-id="file.name"></recipe-tooltip>
+                    <div class="help-tooltip contextual-tooltip long-tooltip">
+                      <p>This is a resource object of type {{file.type}}
+                        <ul>
+                          <li>To use the resource, drag them from here into your creation on the right</li>
+                          <li>To instead, *edit* the resource, double click them (only applicable to instruments, patterns and songs)</li>
+                        </ul>
+                      </p>
+                    </div>
                   </li>
                   <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} more) ...</li>
                 </ul>
 
                 <recipe-tooltip rt-id="'object_index_panel'"></recipe-tooltip>
+                <div class="help-tooltip contextual-tooltip long-tooltip"><p>
+                  This is the object index, you can find here your crafting outputs and inputs
+                </p></div>
             </div>
 
             <div class="span9">

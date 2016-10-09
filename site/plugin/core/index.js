@@ -186,6 +186,15 @@ module.export = function(m) {
       };
   });
 
+  Promise.defer = function() {
+    var result = {};
+    result.promise = new Promise(function(resolve, reject) {
+        result.resolve = resolve;
+        result.reject = reject;
+    });
+    return result;
+  };
+
   m.type("notesplit", {template: "notesplit", description: "Split effect stack by note", _default: {
     delay: 0.4
   }}, function(data, subobjects) {
@@ -242,8 +251,8 @@ module.export = function(m) {
   m.type("rise", {
         template: "generic_wrapper_editor", 
         parameters: [
-          {name: "time", value: 1},
-          {name: "target", value: 1}
+          {name: "time", value: 1, tooltip: 'time in seconds to get from zero to the target'},
+          {name: "target", value: 1, tooltip: 'target signal level to reach'}
         ], 
         description: "Rise signal to target",
   }, function(data, subobjects) {
@@ -421,7 +430,7 @@ module.export = function(m) {
       {
           template: "generic_wrapper_editor", 
           parameters: [
-            {name: "amount", value: 0}
+            {name: "amount", value: 0, tooltip: 'amount of *semitones* to add to note number (e.g. 12 semitones = 1 octave)'}
           ], 
           description: "Transpose by N semitones"
 
@@ -541,8 +550,8 @@ module.export = function(m) {
   genericType("scale",
   {
     parameters: [
-      {name: 'base', value: -1},
-      {name: 'top', value: 1},
+      {name: 'base', value: -1, tooltip: 'base signal level'},
+      {name: 'top', value: 1, tooltip: 'top signal level'},
     ],
     description: "Scale signal"
   });
@@ -550,7 +559,7 @@ module.export = function(m) {
   genericType("gain", 
       {
         parameters: [
-          {name: "gain", value: 0.8}
+          {name: "gain", value: 0.8, tooltip: 'volume gain value, 0.0 = silence, 1.0 = keep the signal, >1.0 = amplify'}
         ], 
         components: ["gain"],
         singleParameter: true,
@@ -560,8 +569,8 @@ module.export = function(m) {
   genericType("echo", 
       {
         parameters: [
-          {name: "gain", value: 0.6},
-          {name: "delay", value: 0.1}
+          {name: "gain", value: 0.6, tooltip: 'amplification level between repetitions'},
+          {name: "delay", value: 0.1, tooltip: 'time separation (in seconds) between repetitions'}
         ], 
         description: "Single echo effect"
       });
@@ -570,9 +579,9 @@ module.export = function(m) {
     genericType(filterName, 
         {
           parameters: [
-            {name: "frequency", value: 350},
-            {name: "detune", value: 0},
-            {name: "Q", value: 1}
+            {name: "frequency", value: 350, tooltip: 'cut frequency for the filter'},
+            {name: "detune", value: 0, tooltip: 'detune (cents) to alter the frequency'},
+            {name: "Q", value: 1, tooltip: 'quality factor for the filter'}
           ],
           components: ["frequency", "detune", "Q"],
           description: filterName
@@ -611,9 +620,9 @@ module.export = function(m) {
 
   genericTimbreType("reverb", {
     parameters: [
-      {name: 'room', value: 0.35},
-      {name: 'damp', value: 0.1},
-      {name: 'mix', value: 0.75}
+      {name: 'room', value: 0.35, tooltip: 'room size'},
+      {name: 'damp', value: 0.1, tooltip: 'reverb HF damp'},
+      {name: 'mix', value: 0.75, tooltip: 'dry/wet balance'}
     ],
     description: "Reverb powered by timbre.js"
   });

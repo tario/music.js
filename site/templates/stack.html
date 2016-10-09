@@ -1,12 +1,13 @@
-<div class="stackdropbar" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
+<div class="stackdropbar show-contextual-tooltip" ng-drop="true" ng-drop-success="onDropComplete($data,$event)">
   drop new elements here
+  <div class="help-tooltip contextual-tooltip">You can drop new effects from the object index here</div>
 </div>
 <div ng-repeat = "subfile in file.array" class="stack-element" ng-if="file">
-  <button class="btn btn-primary" ng-click="remove($index)">remove</button>
-  <button class="btn btn-primary" ng-show="$index>0" ng-click="up($index)">↑</button>
-  <button class="btn btn-primary" ng-show="$index<file.array.length-1" ng-click="down($index)">↓</button>
-  <input type="checkbox" class="pull-right compressable-switch regular-checkbox" />
-
+  <button class="btn btn-primary show-contextual-tooltip" ng-click="remove($index)">remove<div class="help-tooltip contextual-tooltip">Removes the effect element from the pipeline</div></button>
+  <button class="btn btn-primary show-contextual-tooltip" ng-show="$index>0" ng-click="up($index)">↑<div class="help-tooltip contextual-tooltip">Changes the order of the element, to execute it AFTER</div></button>
+  <button class="btn btn-primary show-contextual-tooltip" ng-show="$index<file.array.length-1" ng-click="down($index)">↓<div class="help-tooltip contextual-tooltip">Changes the order of the element, to execute it BEFORE</div></button>
+  <input type="checkbox" class="pull-right compressable-switch regular-checkbox show-contextual-tooltip-sibiling" />
+  <div class="help-tooltip contextual-tooltip" style="right: 0">Expand/Shrink the display of advanced options for the element</div>
   <div class="compressable">
     <div music-object-editor file="subfile">
     </div>

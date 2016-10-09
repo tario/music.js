@@ -14695,7 +14695,7 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
   return {
     restrict: 'E',
     scope: {},
-    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="recipe-tooltip"><p>{{text}}</p></div>',
+    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="help-tooltip recipe-tooltip"><p>{{text}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
       var tooltipElementId = rtIdGetter(scope.$parent);

@@ -1,3 +1,20 @@
+.contextual-help-switch {
+  color: white;
+  background-color: black;
+  cursor: pointer;
+  position: fixed;
+  width: 100px;
+  height: 100px;
+  z-index: 99999;
+  left: 0;
+  bottom: 0;
+}
+
+.contextual-help-enabled .contextual-help-switch {
+  color: black;
+  background-color: white;
+}
+
 .musicapp .examplelist .fa {
   margin-right: 14px;
 }
