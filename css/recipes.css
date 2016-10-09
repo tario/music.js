@@ -1,6 +1,6 @@
 .recipe-tooltip {
   display: none;
-  min-width: 200px;
+  min-width: 300px;
   max-width: 400px;
   background-color: #ffff55;
   position: absolute;
@@ -13,6 +13,7 @@
   cursor: pointer;
   text-align: left;
   padding: 5px;
+  white-space: pre-wrap;
 }
 
 .show-recipe-tooltip .recipe-tooltip {

@@ -76,7 +76,7 @@
     {
       "blink": ["menu_new"],
       "tooltip": {
-        "menu_new": "Click \"new\" menu option, this time to create the song"
+        "menu_new": "Click \"new\" menu option, this time, is to create the song"
       },
       "eventHandler": {"next_step_on": "menu_new_click"}
     },
@@ -90,7 +90,7 @@
     { 
       "blink": ["song_pattern_dropzone_0_0", "index_pattern_type"],
       "tooltip": {
-        "song_pattern_dropzone_0_0": "Drag your pattern to this block"
+        "song_pattern_dropzone_0_0": "Drag your pattern to this block,"
       },
       "eventHandler": {"next_step_on": "song_pattern_dropped"}
     },
@@ -143,7 +143,7 @@
     },
     { 
       "tooltip": {
-        "song_rec": "Congratulations! you learned how to create a song using music.js. Click this tooltip to dismiss"
+        "song_rec": "Congratulations! you learned how to create a song using music.js.\n\n Click this tooltip to dismiss"
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     }

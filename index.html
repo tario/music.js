@@ -37,7 +37,7 @@
     </script>
 
     <!-- TODO: Move to directive  -->
-        <div class="navbar navbar-inverse">
+        <div class="navbar navbar-inverse" recipe-blink="'navbar'">
               <div class="navbar-inner">
                 <div class="container">
                   <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -65,29 +65,40 @@
                          <ul class="dropdown-menu">
                             <li><a href="" ng-click="todo()">Preferences</a></li>
                          </ul>
+                         <recipe-tooltip rt-id="'menu_preferences'"></recipe-tooltip>
                       </li>
-                      <li class="dropdown" recipe-blink="'menu_help'">
+                      <li class="dropdown" recipe-blink="'menu_help'" ng-click="recipe.raise('menu_help_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
                          <ul class="dropdown-menu">
-                            <li><a href="" ng-click="todo()">View Help</a></li>
-                            <li class="dropdown-submenu">
+                            <li><a href="" ng-click="todo()" recipe-blink="'menu_help_help'">View Help</a>
+                              <recipe-tooltip rt-id="'menu_help_help'"></recipe-tooltip>
+                            </li>
+                            <li class="dropdown-submenu" recipe-blink="'menu_help_recipes'">
                               <a class="keep-color" tabindex="-1" href="#" onclick="return false;">Recipes<span class="fa fa-caret-right pull-right"></span></a>
                               <ul class="dropdown-menu">
+                                <li><a href="" ng-click="recipe('intro')">Basic intro tour</a></li>
                                 <li><a href="" ng-click="recipe('create_a_song')">How to create a song</a></li>
                               </ul>
+                              <recipe-tooltip rt-id="'menu_help_recipes'"></recipe-tooltip>
                             </li>
                             <li class="divider"></li>
-                            <li><a href="" ng-click="welcome()">Welcome!</a></li>
-                            <li><a href="" ng-click="todo()">About Music.js</a></li>
+                            <li><a href="" ng-click="welcome()" recipe-blink="'menu_help_welcome'">Welcome!</a>
+                              <recipe-tooltip rt-id="'menu_help_welcome'"></recipe-tooltip>
+                            </li>
+                            <li><a href="" ng-click="todo()"  recipe-blink="'menu_help_about'">About Music.js</a>
+                              <recipe-tooltip rt-id="'menu_help_about'"></recipe-tooltip>
+                            </li>
                          </ul>
+                         <recipe-tooltip rt-id="'menu_help'"></recipe-tooltip>
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
+              <recipe-tooltip rt-id="'navbar'"></recipe-tooltip>
         </div>
         <div class="navbar-padding"></div>
-        <div class="container musicapp">
+        <div class="container musicapp" recipe-blink="'object_index_panel'">
             <div class="span4">
             </div>
             <div class="span4 bs-docs-sidebar affix">
@@ -104,6 +115,7 @@
             <div class="span9">
                 <div ng-view></div>
             </div>
+            <recipe-tooltip rt-id="'object_index_panel'"></recipe-tooltip>
         </div>
 
     </div>

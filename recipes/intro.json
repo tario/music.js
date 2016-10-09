@@ -1,0 +1,68 @@
+{
+  "steps": [
+    {
+      "blink": ["object_index_panel"],
+      "tooltip": {
+        "object_index_panel": "This is the Object Index Panel, you can browse and search here all craft inputs and results. \nE.g. musical instruments, melodic patterns, composed songs and instruments effects. \n\nClick on this message to continue"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["navbar"],
+      "tooltip": {
+        "navbar": "This is the menu bar, from this menu you can access to all the main features actually offered by music.js"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["menu_new"],
+      "tooltip": {
+        "menu_new": "From this option, you can start new creations: song compositions, pattern compositions and custom instruments"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["menu_preferences"],
+      "tooltip": {
+        "menu_preferences": "From this another option, you can access to complementary features not directly related with crafting. (Not available yet, sorry)"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["menu_help"],
+      "tooltip": {
+        "menu_help": "This is the most important option for novice users.\nFrom this help menu, you can access a variety of help options in order to get best understanding of the application. \n\nClick on ? menu to review the available options"
+      },
+      "eventHandler": {"next_step_on": "menu_help_click"}
+    },
+    {
+      "blink": ["menu_help_help"],
+      "tooltip": {
+        "menu_help_help": "This option, is to view a general useful help text"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["menu_help_recipes"],
+      "tooltip": {
+        "menu_help_recipes": "This another option, is to access a list of the available recipes"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["menu_help_welcome"],
+      "tooltip": {
+        "menu_help_welcome": "Displays the welcome message"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    {
+      "blink": ["menu_help_about"],
+      "tooltip": {
+        "menu_help_about": "General info about the application"
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    }
+
+  ]
+}
