@@ -3,7 +3,7 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
   return {
     restrict: 'E',
     scope: {},
-    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled}" class="recipe-tooltip"><p>{{text}}</p></div>',
+    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="recipe-tooltip"><p>{{text}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
       var tooltipElementId = rtIdGetter(scope.$parent);
@@ -16,6 +16,12 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
 
       scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
         $timeout(function() {
+          var windowWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+          var el = element[0];
+          var offset = windowWidth - el.getBoundingClientRect().left;
+
+          scope.capRight = offset < 300;
+
           scope.text = args.text;
           scope.tooltipEnabled = true;
         })
