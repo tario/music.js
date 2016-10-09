@@ -13154,12 +13154,27 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       });
   };
 
+
+  $scope.about = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/about.html",
+      controller: "infoModalCtrl"
+    });
+  };
+
+  $scope.help = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/help.html",
+      controller: "infoModalCtrl"
+    });
+  };
+
   $scope.todo = function() {
     $uibModal.open({
       templateUrl: "todoModal.html",
       controller: "todoModalCtrl"
     });
-  }
+  };
 }]);
 
 musicShowCaseApp.controller("todoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
@@ -14841,6 +14856,13 @@ musicShowCaseApp.factory("WelcomeMessage", ['$cookies', function($cookies) {
       setSkip: setSkip,
       skip: skip
     };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.controller("infoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
+  $scope.dismiss = function() {
+    $uibModalInstance.dismiss();
+  };
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");

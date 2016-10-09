@@ -46,6 +46,7 @@ input.smallinput {
   width: 100%;
   height: 100px;
   background-color: black;
+  color: white;
 }
 
 .pattern-drop-lateral p {

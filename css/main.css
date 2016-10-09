@@ -321,6 +321,29 @@ body.modal-open {
   background-color: black;
 }
 
+.modal-body h1,
+.modal-body h2,
+.modal-body h3,
+.modal-body h4,
+.modal-body h5,
+.modal-body h6 {
+  color: white;
+  background-color: black;
+}
+
+.modal-body .examplelist {
+  width: 250px;
+}
+
+.modal-body a {
+  color: black;
+}
+
+.modal-body a:hover {
+  background: none;
+  color: #555555;
+}
+
 body.modal-open .main-window .navbar-inverse,
 body.modal-open .main-window .navbar-inner,
 body.modal-open .main-window .navbar-inner a,

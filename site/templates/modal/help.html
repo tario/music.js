@@ -1,0 +1,75 @@
+<div class="modal-header musicapp">
+    HELP
+</div>
+
+<div class="modal-body musicapp">
+  <h3>MUSIC.JS FLOW</h3>
+    <p>
+    In order to create a song, you need to craft it, and craft the materials.
+    </p>
+    <p>
+    Actually, there is three type of craftable resources: instruments, patterns and *songs*
+    </p>
+
+    <p>While the right section shows the item being crafted. The left pannel, shows the crafting materials
+
+      <ul class="nav nav-list bs-docs-sidenav examplelist">
+        <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
+        <li><a href=""><span class="fa fa-keyboard-o"></span>Square+ADSR</a></li>
+        <li><a href=""><span class="fa fa-music"></span>4/4 Noise Rythm</a></li>
+        <li><a href=""><span class="fa fa-magic"></span>lowpass</a></li>
+        <li> ... (32 more) ...</li>
+      </ul>
+
+    <br/>
+    <br/>
+    <p>Each applicable type, has *drop zones* for accepting input resources</p>
+    <div class="row-fluid">
+      <div class="span4">
+        <div class="pattern-drop-lateral">
+          <p>drop instrument here</p>
+        </div>
+      </div>
+    </div>
+
+    <p>To use the resource on the item being crafted, you need to drag it to the dropzone</p>
+
+    <p>Following this principle, you can compose patterns from instruments, and finally, songs from instruments</p>
+
+    <p>Also, you can compose your custom instruments, from a range of effects:</p>
+      <ul class="nav nav-list bs-docs-sidenav examplelist">
+        <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
+        <li><a href=""><span class="fa fa-magic"></span>arpeggiator</a></li>
+        <li><a href=""><span class="fa fa-magic"></span>echo</a></li>
+        <li><a href=""><span class="fa fa-magic"></span>reverb</a></li>
+        <li><a href=""><span class="fa fa-magic"></span>lowpass</a></li>
+        <li><a href=""><span class="fa fa-magic"></span>highpass</a></li>
+        <li> ... (32 more) ...</li>
+      </ul>
+
+      <br/>
+
+      <p>
+      Don't worry, if you don't get it at first, you will do with the help of recipes and contextual help
+      </p>
+
+  <h3>RECIPES</h3>
+  <p>
+    Recipes, are interactive mini-tutorials to explain how to craft something (example: a song)
+  </p>
+  <p>
+    Some tutorials like 'intro' only explain a few things about the main interface
+  </p>
+  <p>
+    It's recommendable to follow these recipes if you don't know what to do or how to start using the app. 
+    The recipes are reachable from help menu ('?')
+  </p>
+
+  <h3>CONTEXTUAL HELP</h3>
+  <p>
+    There is a series of tooltips explaining on detail the different options of the app and how to use it. You can enable or disable it by click on the box in left-bottom corner of the screen
+  </p>
+</div>
+<div class="modal-footer musicapp">
+    <button class="btn btn-primary" type="button" ng-click="dismiss()">No</button>
+</div>
