@@ -81,6 +81,7 @@ input.smallinput {
   border-left-style: solid;
   border-left-width: 2px;
   margin-left: -2px;
+  overflow: visible;
 }
 
 .event-area-container .event-area .note:hover {

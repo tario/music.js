@@ -6,6 +6,11 @@
   max-width: 500px !important;
 }
 
+.event-note-tooltip {
+  transform: translateY(20px);
+  left:0;
+}
+
 .contextual-tooltip-sibiling {
   display: none;
   white-space: normal !important;
