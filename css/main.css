@@ -420,3 +420,11 @@ body.modal-open .main-window h6 {
   background-color: #0000ff;
   color: white;
 }
+
+.pseudo-body {
+  padding-top: 10px;
+  padding-bottom: 40px;
+  margin-left: -15px;
+  margin-right: -15px;
+  background-color: #0000ff;
+}
