@@ -305,8 +305,6 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
 
   $scope.removeTrack = function(trackIdx) {
-    if ($scope.file.tracks.length===1) return;
-
     $scope.file.tracks = 
       $scope.file.tracks.slice(0, trackIdx)
         .concat($scope.file.tracks.slice(trackIdx+1));
