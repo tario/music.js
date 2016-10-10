@@ -12886,6 +12886,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   },100);
 
   $scope.$on("trackChanged", function(track) {
+    computeMeasureCount();
     $scope.fileChanged();
   });
 
