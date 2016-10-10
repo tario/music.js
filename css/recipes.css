@@ -11,6 +11,10 @@
   white-space: normal !important;
 }
 
+.contextual-tooltip.cap-right {
+  right: 0;
+}
+
 .contextual-tooltip {
   display: none;
   white-space: normal !important;
