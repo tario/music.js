@@ -6,30 +6,37 @@
           <div class="span6">
             <p class="serie-label">Measure beats</p>
           </div>
-          <div class="span2">
+          <div class="span2 show-contextual-tooltip">
             <input type="number" class="smallinput" min=1 max=50 ng-model="file.measure" ng-change="fileChanged()"/>
+
+            <div class="help-tooltip contextual-tooltip">Amount of beats per measure. Make sure this value match the measure length of the patterns</div>
           </div>
 
       </div>
     </div>
     <div class="span6 player-controls pull-right">
       <div class="row-fluid">
-        <button recipe-blink="'song_play'" class="player btn btn-primary" ng-click="play(); recipe.raise('song_play_click')">
+        <button recipe-blink="'song_play'" class="player btn btn-primary show-contextual-tooltip" ng-click="play(); recipe.raise('song_play_click')">
           Play
           <recipe-tooltip rt-id="'song_play'"></recipe-tooltip>
+          <div class="help-tooltip contextual-tooltip cap-right">Click to play the song</div>
         </button>
-        <button class="player btn btn-primary" ng-click="stop()">
+        <button class="player btn btn-primary show-contextual-tooltip" ng-click="stop()">
           Stop
+          <div class="help-tooltip contextual-tooltip cap-right">Click to stop playing the song</div>
         </button>
-        <button recipe-blink="'song_rec'" class="player btn btn-primary" ng-click="record(); recipe.raise('song_rec_click')" ng-class="{recording: currentRec}">
+        <button recipe-blink="'song_rec'" class="player btn btn-primary show-contextual-tooltip" ng-click="record(); recipe.raise('song_rec_click')" ng-class="{recording: currentRec}">
           Rec.
           <recipe-tooltip rt-id="'song_rec'"></recipe-tooltip>
+          <div class="help-tooltip contextual-tooltip cap-right">Click to record the song and download the audio file</div>
         </button>
       </div>
       <div class="row-fluid"> 
           <div class="span1 pull-right"></div>
-          <div class="span3 pull-right">
+          <div class="span3 pull-right show-contextual-tooltip">
             <input type="number" class="smallinput" min=1 ng-model="file.bpm" ng-change="fileChanged()"/>
+
+            <div class="help-tooltip contextual-tooltip cap-right">Playing speed, number of beats per minute</div>
           </div>
           <div class="span2 pull-right">
             <p class="serie-label">Bpm</p>
@@ -50,21 +57,27 @@
           recipe-blink="'song_pattern_dropzone_' + trackIdx + '_' + $index">
 
 
-          <p ng-show="block">
+          <div ng-show="block" class="show-contextual-tooltip">
+            <p>
             Drop pattern here
-          </p>
+            </p>
+            <div class="help-tooltip contextual-tooltip">Drop zone for patterns, drop here a pattern from the panel on the left</div>
+          </div>
 
 
           <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap:file.measure) + '%'}">
             <span class="fa fa-music"></span>
-            <p ng-show="block">
-              {{block | block_name:indexMap}}
-            </p>
-
+            <div class="overlay text-container">
+              <p ng-show="block">
+                {{block | block_name:indexMap}}
+              </p>
+            </div>
             <div class="overlay">
-              <span class="pattern-mini-button fa fa-remove" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
+              <span class="pattern-mini-button fa fa-remove show-contextual-tooltip" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
+                <div class="help-tooltip contextual-tooltip">Click here to remove the pattern and leave the block empty</div>
               </span>
-              <span class="pattern-mini-button fa fa-play" ng-click="patternPlay(block)" ng-mousedown="$event.stopPropagation()">
+              <span class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block)" ng-mousedown="$event.stopPropagation()">
+                <div class="help-tooltip contextual-tooltip">Click here to play this block only</div>
               </span>
             </div>
           </div>

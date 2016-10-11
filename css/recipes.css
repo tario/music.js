@@ -52,6 +52,9 @@
   text-align: left;
   padding: 5px;
   white-space: pre-wrap;
+
+  font-family: DOS,Monaco,Menlo,Consolas,"Courier New",monospace;
+  line-height: 20px;
 }
 
 .show-recipe-tooltip.recipe-tooltip {

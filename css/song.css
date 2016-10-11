@@ -14,27 +14,33 @@
   white-space: nowrap;
 }
 
+.pattern-block:hover {
+  z-index:9999;
+}
+
 .pattern-block {
   height: 60px;
   width: 150px;
   background-color: black;
   display: inline-block;
   position: relative;
-  margin: 0px;
+  margin: 2px;
   overflow: visible;
   white-space: normal;
+}
+
+.block-content div.text-container {
+  overflow: hidden;
+}
+
+.block-content div.text-container p {
+  padding-top: 20px;
 }
 
 .block-content {
   background-color: white;
   color: black;
-  overflow: hidden;
   z-index:1000;
-
-  border-width: 2px;
-  border-style: solid;
-  margin: -2px;
-  border-color: #aaaaaa;
 }
 
 .pattern-block.drag-enter {
