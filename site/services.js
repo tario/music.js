@@ -441,12 +441,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
       return $q.all(result.data.map(function(entry) {
-        return $q.all({
-          fileId: createFile({type: entry.type, name: entry.name}),
-          contents: $http.get(entry.uri)
-        }).then(function(r) {
-          return updateFile(r.fileId, r.contents.data);
-        });
+        return $http.get(entry.uri)
+          .then(function(r) {
+            var hash = new jsSHA("SHA-1", "TEXT");
+            hash.update(JSON.stringify(r.data));
+            var fileId = hash.getHash("HEX");
+
+            return createFile({type: entry.type, name: entry.name, id: fileId, contents: r.data});
+          });
       }));
     });
 
@@ -513,10 +515,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var createFile = function(options) {
     genericStateEmmiter.emit("changed");
 
-    var newid = createId();
+    var newid = options.id || createId();
 
     createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
-    createdFiles[newid] = defaultFile[options.type] ||{};
+    createdFiles[newid] = options.contents || defaultFile[options.type] || {};
 
     hist[newid] = Historial();
     hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
@@ -549,36 +551,15 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     },
     updateFile: updateFile,
     getFile: function(id) {
-
-      var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
-      if (localFile) {
-        return $q.resolve({
-          index: {name: localFile.name, id: localFile.id},
-          contents: JSON.parse(JSON.stringify(createdFiles[id]))
-        });
-      };
-
-      /*return exampleList
-        .then(function(examples) {
-          localFile = examples.data.filter(function(x){ return x.id === id})[0];
-          var uri = localFile.uri;
-          return $http.get(uri).then(function(r) {
-            return {
-              index:  {name: localFile.name, id: localFile.id},
-              contents: {
-                type: "stack",
-                data: {
-                  array: [{
-                    type: "script",
-                    data: {
-                      code: r.data.replace(/\r\n/g, "\n")
-                    }
-                  }]
-                }
-              }
-            };
+      return exampleList.then(function() {
+        var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
+        if (localFile) {
+          return $q.resolve({
+            index: {name: localFile.name, id: localFile.id},
+            contents: JSON.parse(JSON.stringify(createdFiles[id]))
           });
-        });*/
+        };
+      });
     },
 
     search: function(keyword) {
