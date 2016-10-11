@@ -411,6 +411,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   };
 
   $scope.onDropComplete = function(instrument,event) {
+    if (instrument.type !== 'instrument') return;
+
     var trackNo = $scope.file.selectedTrack;
 
     $scope.file.tracks = $scope.file.tracks || [];
