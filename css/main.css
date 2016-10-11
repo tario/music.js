@@ -1,3 +1,7 @@
+body.modal-open .contextual-help-switch {
+  color: #555555;
+}
+
 .contextual-help-switch {
   color: white;
   background-color: black;
