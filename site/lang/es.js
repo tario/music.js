@@ -49,6 +49,5 @@ var esTranslations = {
 musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
   // add translation table
   $translateProvider
-    .translations('es', esTranslations)
-    .use('es');
+    .translations('es', esTranslations);
 }]);

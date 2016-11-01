@@ -34,10 +34,14 @@ gulp.task('build-site-dev', function(cb) {
             "site/lib/*.js", 
             "site/lib/*/*.js", 
             "site/app.js", 
-            "site/*.js", 
-            "site/lang/*.js", 
+            "site/lang/*.js",
+            "site/langSettings.js",
+            "site/routes.js", 
+            "site/directives.js", 
             "site/directives/*.js", 
+            "site/services.js", 
             "site/services/*.js", 
+            "site/controllers.js", 
             "site/controllers/*.js", 
             "site/lib/codemirror/**/*.js"])
             .pipe(concat("site.js"))
