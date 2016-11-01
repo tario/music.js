@@ -73,7 +73,7 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
         };
       };
 
-      return $http.get("/recipes/" + name +".json")
+      return $http.get("recipes/" + name +".json")
         .then(function(result) {
           var recipeData = result.data;
 
