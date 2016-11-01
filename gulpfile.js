@@ -35,6 +35,7 @@ gulp.task('build-site-dev', function(cb) {
             "site/lib/*/*.js", 
             "site/app.js", 
             "site/*.js", 
+            "site/lang/*.js", 
             "site/directives/*.js", 
             "site/services/*.js", 
             "site/controllers/*.js", 

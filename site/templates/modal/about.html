@@ -1,37 +1,34 @@
-<div class="modal-header musicapp">
-    About Music.js: 8bit Edition
+<div class="modal-header musicapp"  translate="about.title">
 </div>
 
 <div class="modal-body musicapp">
   <div class="row-fluid">
     <div class="span12">
-      <p>
-        Music.js is a web application that allows the composition of melodies powered (optionally) by javascript programming
+      <p translate="welcome.p1">
       </p>
-      <p>
-        This first basic edition, is fully oriented towards retro/8bit music by providing elemental oscillators, noise generators and basic modulation patterns
+      <p translate="welcome.p2">
       </p>
-      <p>
-        In the long term, the goal of music.js is to cover all the layers needed between HTML5 Web Audio API provided by browsers and fully usable music composition application similar to known ones like FL Studio
+      <p translate="about.p3">
+        
       </p>
     </div>
   </div>
 
-  <h3>AUTHORS</h3>
+  <h3>{{'about.authors' | translate}}</h3>
   <p>
-    I am Dario Seminara, but also I should give credit to some key library authors:
+    {{'about.i_am' | translate}}
     <ul>
-      <li>@mohayonao (Author of Timbre.js)</li>
-      <li>@higuma (Author of WebAudioRecorder) </li>
-      <li>@kristopolous (Author of BOOTSTRA.386 Bootstrap Template)</li>
+      <li translate="about.credit.mohayonao"></li>
+      <li translate="about.credit.higuma"></li>
+      <li translate="about.credit.kristopolous"></li>
     </ul>
   </p>
 
-  <h3>CONTRIBUTE</h3>
+  <h3 translate='about.contribute'></h3>
   <p>
-    Contact me at github <a href="http://github.com/tario/music.js">http://github.com/tario/music.js</a>
+    {{'about.contact_me' | translate}} <a href="http://github.com/tario/music.js">http://github.com/tario/music.js</a>
   </p>
 </div>
 <div class="modal-footer musicapp">
-    <button class="btn btn-primary" type="button" ng-click="dismiss()">Dismiss</button>
+    <button class="btn btn-primary" type="button" ng-click="dismiss()" translate="common.dismiss"></button>
 </div>

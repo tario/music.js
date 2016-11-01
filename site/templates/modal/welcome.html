@@ -1,18 +1,14 @@
-<div class="modal-header musicapp">
-    Welcome to Music.js: 8bit Edition
+<div class="modal-header musicapp" translate="welcome.title">
 </div>
 
 <div class="modal-body musicapp">
   <div class="row-fluid">
     <div class="span12">
-      <p>
-        Music.js is a web application that allows the composition of melodies powered (optionally) by javascript programming
+      <p translate="welcome.p1">
       </p>
-      <p>
-        This first basic edition, is fully oriented towards retro/8bit music by providing elemental oscillators, noise generators and basic modulation patterns
+      <p translate="welcome.p2">
       </p>
-      <p>
-        Do you want a basic tour?
+      <p translate="welcome.p3">
       </p>
     </div>
   </div>
@@ -20,12 +16,12 @@
     <div class="span2">
       <input type="checkbox" ng-model="dontshowagain" class="pull-right regular-checkbox" />
     </div>
-    <div class="span10">
-      Never show this message again
+    <div class="span10" translate="welcome.nevershow">
+      
     </div>
   </div>
 </div>
 <div class="modal-footer musicapp">
-    <button class="btn btn-primary" type="button" ng-click="tutorial()">Yes</button>
-    <button class="btn btn-primary" type="button" ng-click="dismiss()">No</button>
+    <button class="btn btn-primary" type="button" ng-click="tutorial()" translate="common.yes">Yes</button>
+    <button class="btn btn-primary" type="button" ng-click="dismiss()" translate="common.no">No</button>
 </div>

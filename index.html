@@ -37,7 +37,7 @@
     </script>
 
       <div class="contextual-help-switch" ng-click="contextualHelp = !contextualHelp">
-        ? {{contextualHelp ? 'Disable': 'Enable' }} Contextual Help
+        ? {{ (contextualHelp ? 'contextual_help.disable': 'contextual_help.enable') |translate }}
       </div>
 
     <!-- TODO: Move to directive  -->
@@ -50,15 +50,16 @@
                   <div class="nav-collapse collapse">
                     <ul class="nav">
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_new'" ng-click="recipe.raise('menu_new_click')">
-                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">New</a>
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.new"></a>
+
                          <ul class="dropdown-menu">
-                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')">Instrument</a>
+                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')" translate="menu.new_instrument">Instrument</a>
                               <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
                             </li>
-                            <li recipe-blink="'menu_new_pattern'"><a href="" ng-click="newPattern(); recipe.raise('menu_new_pattern_click')">Pattern</a>
+                            <li recipe-blink="'menu_new_pattern'"><a href="" ng-click="newPattern(); recipe.raise('menu_new_pattern_click')" translate="menu.new_pattern">Pattern</a>
                               <recipe-tooltip rt-id="'menu_new_pattern'"></recipe-tooltip>
                             </li>
-                            <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')">Song</a>
+                            <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')" translate="menu.new_song">Song</a>
                               <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
                             </li>
                          </ul>
@@ -66,9 +67,9 @@
                          <div class="help-tooltip contextual-tooltip">You can create new blank items from this option</div>
                       </li>
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_preferences'">
-                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tools</a>
+                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.tools"></a>
                           <ul class="dropdown-menu">
-                            <li><a href="" ng-click="todo()">Preferences</a></li>
+                            <li><a href="" ng-click="todo()" translate="menu.tools_preferences">Preferences</a></li>
                           </ul>
                           <recipe-tooltip rt-id="'menu_preferences'"></recipe-tooltip>
                           <div class="help-tooltip contextual-tooltip">You can edit your preferences here</div>
@@ -76,25 +77,25 @@
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_help'" ng-click="recipe.raise('menu_help_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
                          <ul class="dropdown-menu">
-                            <li><a href="" ng-click="help()" recipe-blink="'menu_help_help'">View Help</a>
+                            <li><a href="" ng-click="help()" recipe-blink="'menu_help_help'" translate="menu.help_view_help">View Help</a>
                               <recipe-tooltip rt-id="'menu_help_help'"></recipe-tooltip>
                             </li>
                             <li class="dropdown-submenu" recipe-blink="'menu_help_recipes'">
-                              <a class="keep-color" tabindex="-1" href="#" onclick="return false;">Recipes<span class="fa fa-caret-right pull-right"></span></a>
+                              <a class="keep-color" tabindex="-1" href="#" onclick="return false;">{{'menu.help_recipes'|translate}}<span class="fa fa-caret-right pull-right"></span></a>
                               <ul class="dropdown-menu">
-                                <li><a href="" ng-click="recipe('intro')">Basic intro tour</a></li>
-                                <li><a href="" ng-click="recipe('create_a_song')">How to create a song</a></li>
+                                <li><a href="" ng-click="recipe('intro')" translate="menu.help_recipes_intro"></a></li>
+                                <li><a href="" ng-click="recipe('create_a_song')"  translate="menu.help_recipes_howto_create_song"></a></li>
                               </ul>
                               <recipe-tooltip rt-id="'menu_help_recipes'"></recipe-tooltip>
                             </li>
-                            <li><a href="" ng-click="contextualHelp = !contextualHelp" recipe-blink="'menu_help_contextual_switch'">Contextual Help</a>
+                            <li><a href="" ng-click="contextualHelp = !contextualHelp" recipe-blink="'menu_help_contextual_switch'" translate="menu.help_contextual_help"></a>
                               <recipe-tooltip rt-id="'menu_help_contextual_help'"></recipe-tooltip>
                             </li>
                             <li class="divider"></li>
-                            <li><a href="" ng-click="welcome()" recipe-blink="'menu_help_welcome'">Welcome!</a>
+                            <li><a href="" ng-click="welcome()" recipe-blink="'menu_help_welcome'" translate="menu.help_welcome"></a>
                               <recipe-tooltip rt-id="'menu_help_welcome'"></recipe-tooltip>
                             </li>
-                            <li><a href="" ng-click="about()"  recipe-blink="'menu_help_about'">About Music.js</a>
+                            <li><a href="" ng-click="about()"  recipe-blink="'menu_help_about'" translate="menu.help_about"></a>
                               <recipe-tooltip rt-id="'menu_help_about'"></recipe-tooltip>
                             </li>
                          </ul>
