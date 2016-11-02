@@ -39,11 +39,37 @@ var esTranslations = {
     contribute: 'CONTRIBUIR',
     contact_me: 'Contactame a travez de github'
   },
+  pattern: {
+    drop_instrument: 'suelte un instrumento aqui'
+  },
   common: {
     yes: 'Si',
     no: 'No',
     dismiss: 'Cerrar',
-    language: 'Idioma:'
+    language: 'Idioma:',
+    HELP: 'AYUDA',
+    more: 'mas'
+  },
+  help: {
+    FLOW: 'FLUJO DE MUSIC.JS',
+    RECIPES: 'RECETAS',
+    p1: 'Para crear una cancion, tienes que ensamblarla, asi como sus componentes',
+    p2: 'Hay tres tipos de recursos que se pueden crear: instrumentos, patrones y canciones',
+    p3: 'Mientras que la seccion de la izquierda, muestra el elemento que se esta creando, la seccion de la derecha muestra los materiales que se pueden usar',
+    p4: 'Puedes arrastrar y soltar esos materiales en las zonas indicadas',
+    p5: 'Para usar algun recurso en algun elemento que estes creando, lo tienes que arrastrar a esas zonas',
+    p6: 'Siguiendo este principio, puedes usar instrumentos para componer patrones, y finalmente, los patrones para componer las canciones',
+    p7: 'Ademas, puedes crear tus propios instrumentos, combinando varios efectos:',
+    p8: 'No te preocupes si no lo entiendes ahora mismo, existen recetas y ayuda contextual que puedes usar',
+    recipes: {
+      p1: 'Las recetas, son mini-tutoriales interactivos que explican como crear algo (por ejemplo, una cancion)',
+      p2: 'Algunos tutoriales (Como por ejemplo \'Recorrido Introductorio\') solo explican algunas cosas de la interfaz principal',
+      p3: 'Te recomiendo que sigas estas recetas si no sabes que hacer o como empezar a usar la aplicacion. Puedes acceder a las recetas desde el menu de ayuda (?)'
+    },
+    CONTEXTUAL_HELP: "AYUDA CONTEXTUAL",
+    contextual_help: {
+      p1: 'Hay una serie de tooltips que explican detalladamente las distintas funcionalidades de la aplicacion. Puedes activar o desactivar estas ayudas clickeando en el recuadro que aparece en la esquina inferior izquierda de la pantalla'
+    }
   },
   BUTTON_LANG_EN: 'Ingles',
   BUTTON_LANG_ES: 'Español'

@@ -1,17 +1,11 @@
-<div class="modal-header musicapp">
-    HELP
+<div class="modal-header musicapp" translate="common.HELP">
 </div>
 
 <div class="modal-body musicapp">
-  <h3>MUSIC.JS FLOW</h3>
-    <p>
-    In order to create a song, you need to craft it, and craft the materials.
-    </p>
-    <p>
-    Actually, there are three types of craftable resources: instruments, patterns and songs
-    </p>
-
-    <p>While the right section shows the item being crafted. The left pannel shows the crafting materials
+  <h3 translate="help.FLOW"></h3>
+    <p translate="help.p1"></p>
+    <p translate="help.p2"></p>
+    <p translate="help.p3"></p>
 
     <div class="pseudo-body">
         <ul class="nav nav-list bs-docs-sidenav examplelist">
@@ -19,29 +13,29 @@
           <li><a href=""><span class="fa fa-keyboard-o"></span>Square+ADSR</a></li>
           <li><a href=""><span class="fa fa-music"></span>4/4 Noise Rythm</a></li>
           <li><a href=""><span class="fa fa-magic"></span>lowpass</a></li>
-          <li> ... (32 more) ...</li>
+          <li> ... (32 {{'common.more' | translate}}) ...</li>
         </ul>
     </div>
 
     <br/>
     <br/>
-    <p>You can drop resources (instruments or patterns) into drop zones, when applicable</p>
+    <p translate="help.p4"></p>
 
     <div class="pseudo-body">
       <div class="row-fluid">
         <div class="span4">
           <div class="pattern-drop-lateral">
-            <p>drop instrument here</p>
+            <p translate="pattern.drop_instrument"></p>
           </div>
         </div>
       </div>
     </div>
 
-    <p>To use the resource on the item being crafted, you need to drag it to any of the dropzones</p>
+    <p translate="help.p5"></p>
 
-    <p>Following this principle, you can use instruments to compose patterns, and finally, patterns to compose songs</p>
+    <p translate="help.p6"></p>
 
-    <p>Furthermore, you can compose your custom instruments, from a range of effects:</p>
+    <p translate="help.p7"></p>
     <div class="pseudo-body">
       <ul class="nav nav-list bs-docs-sidenav examplelist">
         <li><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> </li>
@@ -50,33 +44,32 @@
         <li><a href=""><span class="fa fa-magic"></span>reverb</a></li>
         <li><a href=""><span class="fa fa-magic"></span>lowpass</a></li>
         <li><a href=""><span class="fa fa-magic"></span>highpass</a></li>
-        <li> ... (32 more) ...</li>
+        <li> ... (32 {{'common.more' | translate}}) ...</li>
       </ul>
     </div>
 
       <br/>
 
-      <p>
-      Don't worry, if you don't get it at first, there are recipes and contextual help at your disposal
+      <p translate="help.p8">
+      
       </p>
 
-  <h3>RECIPES</h3>
-  <p>
-    Recipes are interactive mini-tutorials on how to craft anything here (example: a song)
+  <h3 translate="help.RECIPES"></h3>
+  <p translate="help.recipes.p1">
+    
   </p>
-  <p>
-    Some tutorials (such as 'intro') only explain a few things about the main interface
+  <p translate="help.recipes.p2">
+    
   </p>
-  <p>
-    It's recommended to follow these recipes if you don't know what to do or how to start using the app. 
-    The recipes are reachable from the help menu (?)
+  <p translate="help.recipes.p3">
+    
   </p>
 
-  <h3>CONTEXTUAL HELP</h3>
-  <p>
-    There is a series of tooltips explaining on detail the different features of the app. You can enable or disable these tooltips by clicking on the box in the left-bottom corner of the screen
+  <h3 translate="help.CONTEXTUAL_HELP"></h3>
+  <p translate="help.contextual_help.p1">
+    
   </p>
 </div>
 <div class="modal-footer musicapp">
-    <button class="btn btn-primary" type="button" ng-click="dismiss()">Dismiss</button>
+    <button class="btn btn-primary" type="button" ng-click="dismiss()" translate='common.dismiss'></button>
 </div>

@@ -43,7 +43,33 @@ var enTranslations = {
     yes: 'Yes',
     no: 'No',
     dismiss: 'Dismiss',
-    language: 'Language:'
+    language: 'Language:',
+    HELP: 'HELP',
+    more: 'more'
+  },
+  pattern: {
+    drop_instrument: 'drop instrument here'
+  },
+  help: {
+    FLOW: 'MUSIC.JS FLOW',
+    RECIPES: 'RECIPES',
+    p1: 'In order to create a song, you need to craft it, and craft the materials.',
+    p2: 'Actually, there are three types of craftable resources: instruments, patterns and songs',
+    p3: 'While the right section shows the item being crafted. The left pannel shows the crafting materials',
+    p4: 'You can drop resources (instruments or patterns) into drop zones, when applicable',
+    p5: 'To use the resource on the item being crafted, you need to drag it to any of the dropzones',
+    p6: 'Following this principle, you can use instruments to compose patterns, and finally, patterns to compose songs',
+    p7: 'Furthermore, you can compose your custom instruments, from a range of effects:',
+    p8: 'Don\'t worry, if you don\'t get it at first, there are recipes and contextual help at your disposal',
+    recipes: {
+      p1: 'Recipes are interactive mini-tutorials on how to craft anything here (example: a song)',
+      p2: 'Some tutorials (such as \'intro\') only explain a few things about the main interface',
+      p3: 'It\'s recommended to follow these recipes if you don\'t know what to do or how to start using the app. The recipes are reachable from the help menu (?)'
+    },
+    CONTEXTUAL_HELP: "CONTEXTUAL HELP",
+    contextual_help: {
+      p1: 'There is a series of tooltips explaining on detail the different features of the app. You can enable or disable these tooltips by clicking on the box in the left-bottom corner of the screen'
+    }
   },
   BUTTON_LANG_EN: 'English',
   BUTTON_LANG_ES: 'Spanish'
