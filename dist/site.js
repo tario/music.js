@@ -12573,667 +12573,158 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngR
 musicShowCaseApp.constant("MUSIC", MUSIC);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-
-musicShowCaseApp.filter("block_name", function() {
-  return function(block, indexMap) {
-    if (block.id) {
-      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
-    } else {
-      return "Drop pattern here";
-    }
-  };
-});
-
-musicShowCaseApp.filter("block_length", ["Pattern", function(Pattern) {
-  return function(block, indexMap, measure) {
-    if (!block.id) return 1;
-    if (!indexMap[block.id]) return 1;
-    if (!indexMap[block.id].contents) return 1;
-
-    return Pattern.computeMeasureCount(indexMap[block.id].contents, measure);
-  };
-}]);
-
-musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", "Recipe", function($scope, $uibModalInstance, Recipe) {
-  $scope.numChannels = 2;
-  $scope.encoding = "wav";
-  $scope.recipe = Recipe.start;
-
-  $scope.cancel = function() {
-    $uibModalInstance.dismiss();
-  };
-
-  $scope.start = function() {
-    $scope.recipe.raise("song_rec_confirm");
-
-    $uibModalInstance.close({
-      encoding: $scope.encoding,
-      numChannels: $scope.numChannels
-    });
-  };
-}]);
-
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
-  $scope.indexMap = {};
-  var music = new MUSIC.Context();
-
-  var id = $routeParams.id;
-
-  var instSet = InstrumentSet(music);
-
-  $scope.remove = function(block) {
-    delete block.id;
-    checkPayload();
-    $scope.fileChanged();
-  };
-
-  $scope.currentRec = null;
-
-  $scope.record = function() {
-    $scope.stop();
-
-    var modalIns = $uibModal.open({
-      templateUrl: "site/templates/modal/recordOptions.html",
-      controller: "recordOptionsCtrl"
-    });
-
-    modalIns.result.then(function(encodingOptions) {
-      $scope.currentRec = music.record({
-        encoding: encodingOptions.encoding, 
-        numChannels: encodingOptions.numChannels
-      }, function(blob) {
-        var a = document.createElement("a");
-        document.body.appendChild(a);
-        a.style = "display: none";
-
-        var url  = window.URL.createObjectURL(blob);
-        a.href = url;
-        a.download = $scope.fileIndex.name + "." + encodingOptions.encoding;
-        a.click();
-        window.URL.revokeObjectURL(url);
-
-        $scope.recipe.raise('song_rec_stop');
-      });
-
-      $scope.play();
-    });
-  };
-
-  $scope.stop = function() {
-    if (playing) playing.stop();
-    $scope.recipe.raise("song_play_stopped");
-    playing = null;
-  };
-
-  var playing = null;
-
-  $scope.play = function() {
-    $scope.stop();
-    $q.all(instSet.all)
-      .then(function(instruments){
-        var patterns = {};
-
-        var createPattern = function(id) {
-          if (!id) return null;
-          if (patterns[id]) return patterns[id];
-
-          var pattern = $scope.indexMap[id].contents;
-          var changedBpm = Object.create(pattern);
-          changedBpm.bpm = $scope.file.bpm;
-
-          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {});
-
-          return patterns[id];
-        };        
-
-        var scale = 600 / $scope.file.bpm;
-        var measure = 100 * $scope.file.measure * scale;
-        var song = new MUSIC.Song(
-          $scope.file.tracks.map(function(track) {
-            return track.blocks.map(function(block) {
-              return createPattern(block.id);
-            });
-          })
-        , {measure: measure});
-
-        playing = song.play({
-          onStop: function() {
-            $scope.recipe.raise("song_play_stopped");
-            playing = null;
-            if ($scope.currentRec) $scope.currentRec.stop();
-            $scope.currentRec = null;
-            $timeout(function() {});
-          }
-        });
-
-      });
-
-
-  };
-
-  $scope.patternPlay = function(block) {
-    var pattern = $scope.indexMap[block.id].contents;
-    var doNothing = function() {};
-
-    var loader = {};
-
-    pattern.tracks.forEach(function(track) {
-      if (track.instrument) loader[track.instrument.id] = instSet.load(track.instrument.id);
-    });
-    $q.all(loader)
-      .then(function(instruments) {
-        $scope.stop();
-
-        var changedBpm = Object.create(pattern);
-        changedBpm.bpm = $scope.file.bpm;
-
-        playing = Pattern.patternCompose(changedBpm, instruments, function() {
-          playing = null;
-        }).play();
-      });
-  };
-
-  $scope.indexChanged = function() {
-    FileRepository.updateIndex(id, $scope.fileIndex);
-  };
-
-  $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
-  },100);;
-
-  var checkPayload = function() {
-    var maxblocks = 0;
-    var maxTrackIndex = 0;
-
-    if (!$scope.file) return;
-    if (!$scope.file.tracks) return;
-
-    $scope.file.tracks.forEach(function(track, trackIndex) {
-      for (var i=0;i<track.blocks.length;i++) {
-        if (track.blocks[i].id){
-          var mCount = Pattern.computeMeasureCount($scope.indexMap[track.blocks[i].id].contents, $scope.file.measure);
-          if (i+mCount>maxblocks) maxblocks=i+mCount;
-          if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
-        }
-      }
-    });
-
-    if ($scope.file.tracks.length < maxTrackIndex+2) {
-      $scope.file.tracks.push({
-        blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
-      });
-    } else {
-      $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
-    }
-
-    var target = maxblocks + 1;
-    $scope.file.tracks.forEach(function(track) {
-      if (target > track.blocks.length) {
-        var payload = target-track.blocks.length;
-        for (var i=0;i<payload;i++) {
-          track.blocks.push({});
-        }
-      } else {
-        track.blocks = track.blocks.slice(0, target);
-      }
-    });
-    $scope.fileChanged();
-  };
-  $scope.$watch("file.measure", checkPayload);
-
-  $scope.onDropComplete = function($data,$event,block) {
-    if ($data.fromBlock) {
-
-      var swapId = block.id;
-      block.id = $data.fromBlock.id;
-      $data.fromBlock.id = swapId;
-
-      checkPayload();
-      return;
-    }
-    if ($data.type !== 'pattern') return;
-
-    block.id = $data.id;
-    FileRepository.getFile($data.id)
-      .then(function(f) {
-        f.contents.tracks.forEach(function(track) {
-          if (track.instrument) instSet.load(track.instrument.id);
-        });
-
-        $scope.indexMap[$data.id] = f;
-        checkPayload();
-        $scope.fileChanged();
-
-        $scope.recipe.raise('song_pattern_dropped');
-      });
-    
-  };
-
-  var updateFromRepo = function() {
-    var block_ids = {};
-
-    FileRepository.getFile(id).then(function(file) {
-      if (file) {
-        file.contents.tracks.forEach(function(track) {
-          track.blocks.forEach(function(block){
-            if (block && block.id) {
-              if (!block_ids[block.id]){
-                block_ids[block.id] = FileRepository.getFile(block.id);
-              }
-            }
-          })
-        });
-      };
-
-      return $q.all(block_ids)
-        .then(function(indexMap) {
-          $scope.indexMap = indexMap;
-
-          for (var blockId in indexMap) {
-            var pattern = indexMap[blockId].contents;
-            pattern.tracks.forEach(function(track) {
-              if (track.instrument) instSet.load(track.instrument.id);
-            });
-          }
-        })
-        .then(function() {
-          $timeout(function() {
-            var outputFile = {};
-            $scope.fileIndex = file.index;
-            $scope.file = file.contents;
-          });
-        });
-    });
-  };
-
-  updateFromRepo();
-
-  var keyDownHandler = function(evt) {
-    if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id);
-      updateFromRepo();
-    }
-
-    if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id);
-      updateFromRepo();
-    }
-  };
-
-  $(document).bind("keydown", keyDownHandler);
-  $scope.$on("$destroy", function() {
-    $(document).unbind("keydown", keyDownHandler);
-    instSet.dispose();
-  });  
-}]);
-
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
-  var id = $routeParams.id;
+var enTranslations = {
+  menu: {
+    'new': 'File',
+    new_instrument: 'New Instrument',
+    new_pattern: 'New Pattern',
+    new_song: 'New Song',
+    tools: 'Tools',
+    tools_preferences: 'Preferences',
+    help_view_help: 'View Help',
+    help_recipes: 'Recipes',
+    help_recipes_intro: 'Basic intro tour',
+    help_recipes_howto_create_song: 'How to create a song',
+    help_contextual_help: 'Contextual Help',
+    help_welcome: 'Welcome!',
+    help_about: 'About Music.js'
+  },
+  contextual_help: {
+    enable: 'Enable Contextual Help',
+    disable: 'Disable Contextual Help'
+  },
+  welcome: {
+    title: 'Welcome to Music.js: 8bit Edition',
+    p1: 'Music.js is a web application that allows the composition of melodies powered (optionally) by javascript programming',
+    p2: 'This first basic edition, is fully oriented towards retro/8bit music by providing elemental oscillators, noise generators and basic modulation patterns',
+    p3: 'Do you want a basic tour?',
+    nevershow: 'Never show this message again'
+  },
+  about: {
+    title: 'About Music.js: 8bit Edition',
+    p3: 'In the long term, the goal of music.js is to cover all the layers needed between HTML5 Web Audio API provided by browsers and fully usable music composition application similar to known ones like FL Studio',
+    authors: 'AUTHORS',
+    i_am: 'I am Dario Seminara, but also I should give credit to some key library authors:',
+    credit: {
+      mohayonao: '@mohayonao (Author of Timbre.js)',
+      higuma: '@higuma (Author of WebAudioRecorder)',
+      kristopolous: '@kristopolous (Author of BOOTSTRA.386 Bootstrap Template)'
+    },
+    contribute: 'CONTRIBUTE',
+    contact_me: 'Contact me at github'
+  },
+  common: {
+    yes: 'Yes',
+    no: 'No',
+    dismiss: 'Dismiss',
+    language: 'Language:'
+  },
+  BUTTON_LANG_EN: 'English',
+  BUTTON_LANG_ES: 'Spanish'
   
-  $scope.beatWidth = 10;
-  $scope.zoomLevel = 8;
-  $scope.selectedTrack = 0;
+};
 
-  var playing = null;
-  var instSet = InstrumentSet();
+musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
+  // add translation table
+  $translateProvider
+    .translations('en', enTranslations)
+    .fallbackLanguage('en');
+}]);
 
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+var esTranslations = {
+  menu: {
+    'new': 'Archivo',
+    new_instrument: 'Nuevo Instrumento',
+    new_pattern: 'Nuevo Patron',
+    new_song: 'Nueva Cancion',
+    tools: 'Herramientas',
+    tools_preferences: 'Preferencias',
+    help_view_help: 'Ver Pagina de Ayuda',
+    help_recipes: 'Recetas',
+    help_recipes_intro: 'Recorrido Introductorio',
+    help_recipes_howto_create_song: 'Como crear una cancion',
+    help_contextual_help: 'Ayuda Contextual',
+    help_welcome: '¡Bienvenido!',
+    help_about: 'Acerca de Music.js'
+  },
+  contextual_help: {
+    enable: 'Activar Ayuda Contextual',
+    disable: 'Desactivar Ayuda Contextual'
+  },
+  welcome: {
+    title: 'Bienvenido a Music.js: Edicion de 8bit',
+    p1: 'Music.js es una aplicacion web que permite componer musica con el poder de javascript (opcional)',
+    p2: 'La primera version esta totalmente orientada a la musica retro/8bit mediante osciladores elementales, generadores de ruido y patrones de modulacion',
+    p3: '¿Quieres realizar un recorrido basico?',
+    nevershow: 'Nunca mostrar este mensaje de nuevo'
+  },
+  about: {
+    title: 'Acerca de Music.js: Edicion de 8bit',
+    p3: 'A largo plazo, el objetivo de music.js es cubrir todas las capas necesarias entre el API de Web Audio provista pòr los navegadores y una solucion completa de composicion musical similar a las mas conocidas como por ej FL Studio',
+    authors: 'AUTORES',
+    i_am: 'Yo soy Dario Seminara, pero tambien tengo que dar credito a autores de varias librerias que son clave:',
+    credit: {
+      mohayonao: '@mohayonao (Autor de Timbre.js)',
+      higuma: '@higuma (Autor de WebAudioRecorder)',
+      kristopolous: '@kristopolous (Autor de la plantilla de bootstrap BOOTSTRA.386)'
+    },
+    contribute: 'CONTRIBUIR',
+    contact_me: 'Contactame a travez de github'
+  },
+  common: {
+    yes: 'Si',
+    no: 'No',
+    dismiss: 'Cerrar',
+    language: 'Idioma:'
+  },
+  BUTTON_LANG_EN: 'Ingles',
+  BUTTON_LANG_ES: 'Español'
+};
 
-  $scope.removeTrack = function(trackIdx) {
-    $scope.file.tracks = 
-      $scope.file.tracks.slice(0, trackIdx)
-        .concat($scope.file.tracks.slice(trackIdx+1));
+musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
+  // add translation table
+  $translateProvider
+    .translations('es', esTranslations);
+}]);
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-    $scope.file.selectedTrack = $scope.file.selectedTrack % $scope.file.tracks.length;
-
-    $scope.fileChanged();
+musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
+  var getBrowserLanguage = function() {
+    if (!$translateProvider.resolveClientLocale()) return 'en'
+    var langCode = $translateProvider.resolveClientLocale().split("-")[0];
+    if (!langCode) return 'en';
+    return $translateProvider.translations()[langCode] ? langCode : 'en';
   };
 
-  $scope.addTrack = function() {
-    $scope.file.tracks.push({
-      events: [],
-      scroll: 1000
-    });
-
-    $scope.file.selectedTrack = $scope.file.tracks.length - 1;
-    $scope.fileChanged();
-  };
-
-  $scope.stop = function() {
-    if (playing) playing.stop();
-    $scope.recipe.raise("pattern_play_stopped");
-    playing = null;
-  };
-
-  $scope.play = function() {
-    var instruments = {};
-    $scope.file.tracks.forEach(function(track) {
-      if (track.instrument) {
-        instruments[track.instrument.id] = instrument.get(track);
-      }
-    });
-
-    playing = Pattern.patternCompose($scope.file, instruments, function() {
-      $scope.recipe.raise("pattern_play_stopped");
-      playing = null;
-    }).play();
-  };
-
-  $scope.zoomIn = function() {
-    $scope.zoomLevel = $scope.zoomLevel * 2;
-    if ($scope.zoomLevel > 32) $scope.zoomLevel = 32;
-  };
-
-  $scope.zoomOut = function() {
-    $scope.zoomLevel = $scope.zoomLevel / 2;
-    if ($scope.zoomLevel < 1) $scope.zoomLevel = 1;
-  };
-
-  $scope.indexChanged = function() {
-    FileRepository.updateIndex(id, $scope.fileIndex);
-  };
-
-  $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
-  },100);
-
-  $scope.$on("trackChanged", function(track) {
-    computeMeasureCount();
-    $scope.fileChanged();
-  });
-
-  var beep = function(instrument, n) {
-      if (!instrument) return;
-      if (lastPlaying) lastPlaying.stop();
-      lastPlaying = instrument.note(n).play();
-
-      setTimeout(function(){
-        if (lastPlaying) lastPlaying.stop();
-        lastPlaying = null;
-      },50);
-  };
-
-  var computeMeasureCount = function() {
-    if (!$scope.file) return;
-    if (!$scope.file.tracks[0]) return;
-
-    $scope.file.measureCount = Pattern.computeMeasureCount($scope.file, $scope.file.measure);
-  };
-
-  var lastPlaying;
-  $scope.$on("eventChanged", function(evt, data) {
-    computeMeasureCount();
-
-    if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
-  });
-
-  $scope.$on("eventSelected", function(evt, data) {
-    beep(instrument.get(data.track), data.evt.n);
-  });
-
-  $scope.$watch("file.measure", computeMeasureCount);
-
-  var instrument = new WeakMap();
-  $scope.updateInstrument = function(trackNo) {
-    if (!$scope.file.tracks[trackNo]) return;
-    if (!$scope.file.tracks[trackNo].instrument) return;
-
-    return instSet.load($scope.file.tracks[trackNo].instrument.id)
-      .then(function(musicObject) {
-        instrument.set($scope.file.tracks[trackNo], musicObject);
-        return musicObject;
-      });
-  };
-
-  $scope.onDropComplete = function(instrument,event) {
-    if (instrument.type !== 'instrument') return;
-
-    var trackNo = $scope.file.selectedTrack;
-
-    $scope.file.tracks = $scope.file.tracks || [];
-    $scope.file.tracks[trackNo] = $scope.file.tracks[trackNo] || {};
-    $scope.file.tracks[trackNo].instrument = instrument;
-
-    FileRepository.updateFile(id, $scope.file);
-    $scope.updateInstrument(trackNo)
-      .then(function(musicObject) {
-        beep(musicObject, 36);
-      });
-  };
-
-  var updateFromRepo = function() {
-    FileRepository.getFile(id).then(function(file) {
-      $timeout(function() {
-        var outputFile = {};
-        $scope.fileIndex = file.index;
-        $scope.file = file.contents;
-        if (!$scope.file.tracks) $scope.file.tracks=[{}];
-
-        $scope.file.tracks.forEach(function(track, idx) {
-          track.events = track.events || [];
-          $scope.updateInstrument(idx);
-        });
-      });
-    });
-  };
-
-  updateFromRepo();
-
-  // undo & redo
-
-  var keyDownHandler = function(evt) {
-    if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id);
-      updateFromRepo();
-    }
-
-    if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id);
-      updateFromRepo();
-    }
-  };
-
-  $(document).bind("keydown", keyDownHandler);
-  $scope.$on("$destroy", function() {
-    $(document).unbind("keydown", keyDownHandler);
-    instSet.dispose();
-  });
-
+  var currentLanguage = localStorage.getItem("lang");
+  $translateProvider
+    .preferredLanguage(currentLanguage || getBrowserLanguage());
 
 }]);
 
-musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
-  var id = $routeParams.id;
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-  var lastObj;
-  var fileChanged = fn.debounce(function(newFile) {
-    if (!$scope.file) return;
-    
-    MusicObjectFactory($scope.file)
-      .then(function(obj) {
-          if (!obj) {
-            $scope.instruments = [];
-            $scope.playables = [];
-            console.log("removed");
-            return;
-          }
-
-          if (obj !== lastObj) {
-            $scope.instruments = [];
-            $scope.playables = [];
-            if (obj.note) {
-              // instrument
-              $scope.instruments.push(obj);
-            } else if (obj.play) {
-              $scope.playables.push(obj);
-            }
-          }
-
-          FileRepository.updateFile(id, $scope.file);
-          lastObj = obj;
-      });
-  }, 50);
-  $scope.$watch('file', fileChanged, true);
-
-  $scope.export = function() {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-
-    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
-    var url  = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = $scope.fileIndex.name + ".json";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
-  $scope.indexChanged = function() {
-    FileRepository.updateIndex(id, $scope.fileIndex);
-  };
-
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
-
-      $scope.outputFile = outputFile;
-      $scope.file = file.contents;
-      $scope.fileIndex = file.index;
-      $scope.observer = {};
-
-      $scope.observer.notify = function() {
-        $timeout(function() {
-          $scope.instruments = [];
-          $scope.playables = [];
-        });
-      };
-
+musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
+  $routeProvider
+    .when('/editor/instrument/:id', {
+      templateUrl: 'site/templates/editor.html',
+      controller: 'EditorController'
+    })
+    .when('/editor/song/:id', {
+      templateUrl: 'site/templates/songEditor.html',
+      controller: 'SongEditorController'
+    })
+    .when('/editor/pattern/:id', {
+      templateUrl: 'site/templates/patternEditor.html',
+      controller: 'PatternEditorController'
     });
-  });
 
-  $scope.$on("$destroy", function() {
-    $scope.instruments.forEach(function(instrument) {
-      if (instrument.dispose) instrument.dispose();
-    });
-  });
-
-/*  $scope.$on("addFx", function(evt, args) {
-    $scope.file.data.array = [{
-      type: args.fx.name,
-      data: {}
-    }].concat($scope.file.data.array);
-  });*/
-
-  $scope.$on("$destroy", function() {
-    $scope.playables.forEach(function(playable) {
-      $scope.stopPlay(playable);
-    });
-  });
-
-  $scope.startPlay = function(playable) {
-    playable.playing = playable.play();
-  };
-
-  $scope.stopPlay = function(playable) {
-    if (!playable.playing) return;
-    playable.playing.stop();
-    playable.playing = undefined;
-  };
-
-}]);
-
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", function($scope, $timeout, $uibModal, MusicContext, FileRepository, Recipe, WelcomeMessage) {
-  var music;
-
-  $scope.welcome = function() {
-    // show welcome modal
-    var modalIns = $uibModal.open({
-      templateUrl: "site/templates/modal/welcome.html",
-      controller: "welcomeModalCtrl"
-    });
-  };
-
-  if (!WelcomeMessage.skip()) $scope.welcome();
-
-  var currentObserver = FileRepository.search().observe(function(files) {
-    $timeout(function() {
-      $scope.filesTotal = files.total;
-      $scope.files = files.results;
-    });
-  });
-
-  $scope.recipe = Recipe.start;
-
-  $scope.activate = function(example) {
-    if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {
-      document.location = "#/editor/"+example.type+"/"+example.id;
-    }
-  };
-
-  $scope.$watch("searchKeyword", fn.debounce(function() {
-    if (currentObserver) currentObserver.close();
-    currentObserver = FileRepository.search($scope.searchKeyword).observe(function(files) {
-      $scope.filesTotal = files.total;
-      $scope.files = files.results;
-    });
-  },200));
-
-  $scope.iconForType = function(type) {
-    if (type === "instrument") return "keyboard-o";
-    if (type === "song") return "th";
-    if (type === "pattern") return "music";
-    if (type === "fx") return "magic";
-    return "question";
-  }
-
-  $scope.newInstrument = function() {
-    FileRepository.createFile({type: "instrument", name: "New Instrument"})
-      .then(function(id) {
-        document.location = "#/editor/instrument/"+id;
-      });
-  };
-
-  $scope.newSong = function() {
-    FileRepository.createFile({type: "song", name: "New Song"})
-      .then(function(id) {
-        document.location = "#/editor/song/"+id;
-      });
-  };
-
-  $scope.newPattern = function() {
-    FileRepository.createFile({type: "pattern", name: "New Pattern"})
-      .then(function(id) {
-        document.location = "#/editor/pattern/"+id;
-      });
-  };
+  // configure html5 to get links working on jsfiddle
+  //$locationProvider.html5Mode(true);
+}]);;
 
 
-  $scope.about = function() {
-    $uibModal.open({
-      templateUrl: "site/templates/modal/about.html",
-      controller: "infoModalCtrl"
-    });
-  };
-
-  $scope.help = function() {
-    $uibModal.open({
-      templateUrl: "site/templates/modal/help.html",
-      controller: "infoModalCtrl"
-    });
-  };
-
-  $scope.todo = function() {
-    $uibModal.open({
-      templateUrl: "todoModal.html",
-      controller: "todoModalCtrl"
-    });
-  };
-}]);
-
-musicShowCaseApp.controller("todoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
-  $scope.dismiss = function() {
-    $uibModalInstance.dismiss();
-  };
-}]);
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
@@ -14010,27 +13501,86 @@ musicShowCaseApp.directive("ngScrollTop", ["$parse", "$timeout", function($parse
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse, $timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var recipeBlinkGetter = $parse(attrs.recipeBlink);
+      var blinkElementId = recipeBlinkGetter(scope);
 
-musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
-  $routeProvider
-    .when('/editor/instrument/:id', {
-      templateUrl: 'site/templates/editor.html',
-      controller: 'EditorController'
-    })
-    .when('/editor/song/:id', {
-      templateUrl: 'site/templates/songEditor.html',
-      controller: 'SongEditorController'
-    })
-    .when('/editor/pattern/:id', {
-      templateUrl: 'site/templates/patternEditor.html',
-      controller: 'PatternEditorController'
-    });
+      if (!Array.isArray(blinkElementId)) blinkElementId = [blinkElementId];
 
-  // configure html5 to get links working on jsfiddle
-  //$locationProvider.html5Mode(true);
-}]);;
+      var registerEvent = function(blinkElementId) {
+        scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
+          $timeout(function() {
+            $(element).addClass('blink');
+          })
+        });
+
+        scope.$on("_blink_disable_" + blinkElementId, function() {
+          $(element).removeClass('blink');
+        });
+
+        scope.$on("__blink_disable_all", function() {
+          $(element).removeClass('blink');
+        });
+      };
+      blinkElementId.forEach(registerEvent);
+    }
+  };
+}]);
 
 
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($parse, $timeout) {
+  return {
+    restrict: 'E',
+    scope: {},
+    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="help-tooltip recipe-tooltip"><p>{{text}}</p></div>',
+    link: function(scope, element, attrs) {
+      var rtIdGetter = $parse(attrs.rtId);
+      var tooltipElementId = rtIdGetter(scope.$parent);
+
+      scope.tooltipEnabled = false;
+      scope.onClick = function(e) {
+        scope.$parent.recipe.raise("tooltip_click");
+        e.stopImmediatePropagation();
+      };
+
+      scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
+        $timeout(function() {
+          var windowWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+          var el = element[0];
+          var offset = windowWidth - el.getBoundingClientRect().left;
+
+          scope.capRight = offset < 300;
+
+          scope.text = args.text;
+          scope.tooltipEnabled = true;
+        })
+      });
+
+      scope.$on("_tooltip_hide_" + tooltipElementId, function() {
+        scope.tooltipEnabled = false;
+      });
+
+      scope.$on("__tooltip_hide_all", function() {
+        scope.tooltipEnabled = false;
+      });
+    }
+  };
+}]);
+
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("recipeWizard", ["$timeout", function($timeout) {
+  return {
+    restrict: 'E',
+    template: '<div class="recipe-wizard"><p>{{text}}</p></div>',
+    link: function(scope, element, attrs) {
+    }
+  };
+}]);
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
@@ -14693,197 +14243,6 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-var enTranslations = {
-  menu: {
-    'new': 'File',
-    new_instrument: 'New Instrument',
-    new_pattern: 'New Pattern',
-    new_song: 'New Song',
-    tools: 'Tools',
-    tools_preferences: 'Preferences',
-    help_view_help: 'View Help',
-    help_recipes: 'Recipes',
-    help_recipes_intro: 'Basic intro tour',
-    help_recipes_howto_create_song: 'How to create a song',
-    help_contextual_help: 'Contextual Help',
-    help_welcome: 'Welcome!',
-    help_about: 'About Music.js'
-  },
-  contextual_help: {
-    enable: 'Enable Contextual Help',
-    disable: 'Disable Contextual Help'
-  },
-  welcome: {
-    title: 'Welcome to Music.js: 8bit Edition',
-    p1: 'Music.js is a web application that allows the composition of melodies powered (optionally) by javascript programming',
-    p2: 'This first basic edition, is fully oriented towards retro/8bit music by providing elemental oscillators, noise generators and basic modulation patterns',
-    p3: 'Do you want a basic tour?',
-    nevershow: 'Never show this message again'
-  },
-  about: {
-    title: 'About Music.js: 8bit Edition',
-    p3: 'In the long term, the goal of music.js is to cover all the layers needed between HTML5 Web Audio API provided by browsers and fully usable music composition application similar to known ones like FL Studio',
-    authors: 'AUTHORS',
-    i_am: 'I am Dario Seminara, but also I should give credit to some key library authors:',
-    credit: {
-      mohayonao: '@mohayonao (Author of Timbre.js)',
-      higuma: '@higuma (Author of WebAudioRecorder)',
-      kristopolous: '@kristopolous (Author of BOOTSTRA.386 Bootstrap Template)'
-    },
-    contribute: 'CONTRIBUTE',
-    contact_me: 'Contact me at github'
-  },
-  common: {
-    yes: 'Yes',
-    no: 'No',
-    dismiss: 'Dismiss'
-  }
-};
-
-musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
-  // add translation table
-  $translateProvider
-    .translations('en', enTranslations)
-    .fallbackLanguage('en');
-}]);
-var musicShowCaseApp = angular.module("MusicShowCaseApp");
-var esTranslations = {
-  menu: {
-    'new': 'Archivo',
-    new_instrument: 'Nuevo Instrumento',
-    new_pattern: 'Nuevo Patron',
-    new_song: 'Nueva Cancion',
-    tools: 'Herramientas',
-    tools_preferences: 'Preferencias',
-    help_view_help: 'Ver Pagina de Ayuda',
-    help_recipes: 'Recetas',
-    help_recipes_intro: 'Recorrido Introductorio',
-    help_recipes_howto_create_song: 'Como crear una cancion',
-    help_contextual_help: 'Ayuda Contextual',
-    help_welcome: '¡Bienvenido!',
-    help_about: 'Acerca de Music.js'
-  },
-  contextual_help: {
-    enable: 'Activar Ayuda Contextual',
-    disable: 'Desactivar Ayuda Contextual'
-  },
-  welcome: {
-    title: 'Bienvenido a Music.js: Edicion de 8bit',
-    p1: 'Music.js es una aplicacion web que permite componer musica con el poder de javascript (opcional)',
-    p2: 'La primera version esta totalmente orientada a la musica retro/8bit mediante osciladores elementales, generadores de ruido y patrones de modulacion',
-    p3: '¿Quieres realizar un recorrido basico?',
-    nevershow: 'Nunca mostrar este mensaje de nuevo'
-  },
-  about: {
-    title: 'Acerca de Music.js: Edicion de 8bit',
-    p3: 'A largo plazo, el objetivo de music.js es cubrir todas las capas necesarias entre el API de Web Audio provista pòr los navegadores y una solucion completa de composicion musical similar a las mas conocidas como por ej FL Studio',
-    authors: 'AUTORES',
-    i_am: 'Yo soy Dario Seminara, pero tambien tengo que dar credito a autores de varias librerias que son clave:',
-    credit: {
-      mohayonao: '@mohayonao (Autor de Timbre.js)',
-      higuma: '@higuma (Autor de WebAudioRecorder)',
-      kristopolous: '@kristopolous (Autor de la plantilla de bootstrap BOOTSTRA.386)'
-    },
-    contribute: 'CONTRIBUIR',
-    contact_me: 'Contactame a travez de github'
-  },
-  common: {
-    yes: 'Si',
-    no: 'No',
-    dismiss: 'Cerrar'
-  }
-};
-
-musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
-  // add translation table
-  $translateProvider
-    .translations('es', esTranslations)
-    .use('es');
-}]);
-var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse, $timeout) {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var recipeBlinkGetter = $parse(attrs.recipeBlink);
-      var blinkElementId = recipeBlinkGetter(scope);
-
-      if (!Array.isArray(blinkElementId)) blinkElementId = [blinkElementId];
-
-      var registerEvent = function(blinkElementId) {
-        scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
-          $timeout(function() {
-            $(element).addClass('blink');
-          })
-        });
-
-        scope.$on("_blink_disable_" + blinkElementId, function() {
-          $(element).removeClass('blink');
-        });
-
-        scope.$on("__blink_disable_all", function() {
-          $(element).removeClass('blink');
-        });
-      };
-      blinkElementId.forEach(registerEvent);
-    }
-  };
-}]);
-
-
-var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($parse, $timeout) {
-  return {
-    restrict: 'E',
-    scope: {},
-    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="help-tooltip recipe-tooltip"><p>{{text}}</p></div>',
-    link: function(scope, element, attrs) {
-      var rtIdGetter = $parse(attrs.rtId);
-      var tooltipElementId = rtIdGetter(scope.$parent);
-
-      scope.tooltipEnabled = false;
-      scope.onClick = function(e) {
-        scope.$parent.recipe.raise("tooltip_click");
-        e.stopImmediatePropagation();
-      };
-
-      scope.$on("_tooltip_display_" + tooltipElementId, function(event, args) {
-        $timeout(function() {
-          var windowWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-          var el = element[0];
-          var offset = windowWidth - el.getBoundingClientRect().left;
-
-          scope.capRight = offset < 300;
-
-          scope.text = args.text;
-          scope.tooltipEnabled = true;
-        })
-      });
-
-      scope.$on("_tooltip_hide_" + tooltipElementId, function() {
-        scope.tooltipEnabled = false;
-      });
-
-      scope.$on("__tooltip_hide_all", function() {
-        scope.tooltipEnabled = false;
-      });
-    }
-  };
-}]);
-
-
-var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recipeWizard", ["$timeout", function($timeout) {
-  return {
-    restrict: 'E',
-    template: '<div class="recipe-wizard"><p>{{text}}</p></div>',
-    link: function(scope, element, attrs) {
-    }
-  };
-}]);
-
-
-var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function($timeout, $rootScope, $http) {
     var currentRecipe = {
       steps: [],
@@ -14998,6 +14357,675 @@ musicShowCaseApp.factory("WelcomeMessage", ['$cookies', function($cookies) {
       skip: skip
     };
 }]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+
+musicShowCaseApp.filter("block_name", function() {
+  return function(block, indexMap) {
+    if (block.id) {
+      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
+    } else {
+      return "Drop pattern here";
+    }
+  };
+});
+
+musicShowCaseApp.filter("block_length", ["Pattern", function(Pattern) {
+  return function(block, indexMap, measure) {
+    if (!block.id) return 1;
+    if (!indexMap[block.id]) return 1;
+    if (!indexMap[block.id].contents) return 1;
+
+    return Pattern.computeMeasureCount(indexMap[block.id].contents, measure);
+  };
+}]);
+
+musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance", "Recipe", function($scope, $uibModalInstance, Recipe) {
+  $scope.numChannels = 2;
+  $scope.encoding = "wav";
+  $scope.recipe = Recipe.start;
+
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss();
+  };
+
+  $scope.start = function() {
+    $scope.recipe.raise("song_rec_confirm");
+
+    $uibModalInstance.close({
+      encoding: $scope.encoding,
+      numChannels: $scope.numChannels
+    });
+  };
+}]);
+
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
+  $scope.indexMap = {};
+  var music = new MUSIC.Context();
+
+  var id = $routeParams.id;
+
+  var instSet = InstrumentSet(music);
+
+  $scope.remove = function(block) {
+    delete block.id;
+    checkPayload();
+    $scope.fileChanged();
+  };
+
+  $scope.currentRec = null;
+
+  $scope.record = function() {
+    $scope.stop();
+
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/recordOptions.html",
+      controller: "recordOptionsCtrl"
+    });
+
+    modalIns.result.then(function(encodingOptions) {
+      $scope.currentRec = music.record({
+        encoding: encodingOptions.encoding, 
+        numChannels: encodingOptions.numChannels
+      }, function(blob) {
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.style = "display: none";
+
+        var url  = window.URL.createObjectURL(blob);
+        a.href = url;
+        a.download = $scope.fileIndex.name + "." + encodingOptions.encoding;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        $scope.recipe.raise('song_rec_stop');
+      });
+
+      $scope.play();
+    });
+  };
+
+  $scope.stop = function() {
+    if (playing) playing.stop();
+    $scope.recipe.raise("song_play_stopped");
+    playing = null;
+  };
+
+  var playing = null;
+
+  $scope.play = function() {
+    $scope.stop();
+    $q.all(instSet.all)
+      .then(function(instruments){
+        var patterns = {};
+
+        var createPattern = function(id) {
+          if (!id) return null;
+          if (patterns[id]) return patterns[id];
+
+          var pattern = $scope.indexMap[id].contents;
+          var changedBpm = Object.create(pattern);
+          changedBpm.bpm = $scope.file.bpm;
+
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {});
+
+          return patterns[id];
+        };        
+
+        var scale = 600 / $scope.file.bpm;
+        var measure = 100 * $scope.file.measure * scale;
+        var song = new MUSIC.Song(
+          $scope.file.tracks.map(function(track) {
+            return track.blocks.map(function(block) {
+              return createPattern(block.id);
+            });
+          })
+        , {measure: measure});
+
+        playing = song.play({
+          onStop: function() {
+            $scope.recipe.raise("song_play_stopped");
+            playing = null;
+            if ($scope.currentRec) $scope.currentRec.stop();
+            $scope.currentRec = null;
+            $timeout(function() {});
+          }
+        });
+
+      });
+
+
+  };
+
+  $scope.patternPlay = function(block) {
+    var pattern = $scope.indexMap[block.id].contents;
+    var doNothing = function() {};
+
+    var loader = {};
+
+    pattern.tracks.forEach(function(track) {
+      if (track.instrument) loader[track.instrument.id] = instSet.load(track.instrument.id);
+    });
+    $q.all(loader)
+      .then(function(instruments) {
+        $scope.stop();
+
+        var changedBpm = Object.create(pattern);
+        changedBpm.bpm = $scope.file.bpm;
+
+        playing = Pattern.patternCompose(changedBpm, instruments, function() {
+          playing = null;
+        }).play();
+      });
+  };
+
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  $scope.fileChanged = fn.debounce(function() {
+    FileRepository.updateFile(id, $scope.file);
+  },100);;
+
+  var checkPayload = function() {
+    var maxblocks = 0;
+    var maxTrackIndex = 0;
+
+    if (!$scope.file) return;
+    if (!$scope.file.tracks) return;
+
+    $scope.file.tracks.forEach(function(track, trackIndex) {
+      for (var i=0;i<track.blocks.length;i++) {
+        if (track.blocks[i].id){
+          var mCount = Pattern.computeMeasureCount($scope.indexMap[track.blocks[i].id].contents, $scope.file.measure);
+          if (i+mCount>maxblocks) maxblocks=i+mCount;
+          if (trackIndex > maxTrackIndex) maxTrackIndex = trackIndex;
+        }
+      }
+    });
+
+    if ($scope.file.tracks.length < maxTrackIndex+2) {
+      $scope.file.tracks.push({
+        blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
+      });
+    } else {
+      $scope.file.tracks = $scope.file.tracks.slice(0,maxTrackIndex+2);
+    }
+
+    var target = maxblocks + 1;
+    $scope.file.tracks.forEach(function(track) {
+      if (target > track.blocks.length) {
+        var payload = target-track.blocks.length;
+        for (var i=0;i<payload;i++) {
+          track.blocks.push({});
+        }
+      } else {
+        track.blocks = track.blocks.slice(0, target);
+      }
+    });
+    $scope.fileChanged();
+  };
+  $scope.$watch("file.measure", checkPayload);
+
+  $scope.onDropComplete = function($data,$event,block) {
+    if ($data.fromBlock) {
+
+      var swapId = block.id;
+      block.id = $data.fromBlock.id;
+      $data.fromBlock.id = swapId;
+
+      checkPayload();
+      return;
+    }
+    if ($data.type !== 'pattern') return;
+
+    block.id = $data.id;
+    FileRepository.getFile($data.id)
+      .then(function(f) {
+        f.contents.tracks.forEach(function(track) {
+          if (track.instrument) instSet.load(track.instrument.id);
+        });
+
+        $scope.indexMap[$data.id] = f;
+        checkPayload();
+        $scope.fileChanged();
+
+        $scope.recipe.raise('song_pattern_dropped');
+      });
+    
+  };
+
+  var updateFromRepo = function() {
+    var block_ids = {};
+
+    FileRepository.getFile(id).then(function(file) {
+      if (file) {
+        file.contents.tracks.forEach(function(track) {
+          track.blocks.forEach(function(block){
+            if (block && block.id) {
+              if (!block_ids[block.id]){
+                block_ids[block.id] = FileRepository.getFile(block.id);
+              }
+            }
+          })
+        });
+      };
+
+      return $q.all(block_ids)
+        .then(function(indexMap) {
+          $scope.indexMap = indexMap;
+
+          for (var blockId in indexMap) {
+            var pattern = indexMap[blockId].contents;
+            pattern.tracks.forEach(function(track) {
+              if (track.instrument) instSet.load(track.instrument.id);
+            });
+          }
+        })
+        .then(function() {
+          $timeout(function() {
+            var outputFile = {};
+            $scope.fileIndex = file.index;
+            $scope.file = file.contents;
+          });
+        });
+    });
+  };
+
+  updateFromRepo();
+
+  var keyDownHandler = function(evt) {
+    if (evt.keyCode === 90 && evt.ctrlKey) {
+      FileRepository.undo(id);
+      updateFromRepo();
+    }
+
+    if (evt.keyCode === 89 && evt.ctrlKey) {
+      FileRepository.redo(id);
+      updateFromRepo();
+    }
+  };
+
+  $(document).bind("keydown", keyDownHandler);
+  $scope.$on("$destroy", function() {
+    $(document).unbind("keydown", keyDownHandler);
+    instSet.dispose();
+  });  
+}]);
+
+musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+  var id = $routeParams.id;
+  
+  $scope.beatWidth = 10;
+  $scope.zoomLevel = 8;
+  $scope.selectedTrack = 0;
+
+  var playing = null;
+  var instSet = InstrumentSet();
+
+
+  $scope.removeTrack = function(trackIdx) {
+    $scope.file.tracks = 
+      $scope.file.tracks.slice(0, trackIdx)
+        .concat($scope.file.tracks.slice(trackIdx+1));
+
+    $scope.file.selectedTrack = $scope.file.selectedTrack % $scope.file.tracks.length;
+
+    $scope.fileChanged();
+  };
+
+  $scope.addTrack = function() {
+    $scope.file.tracks.push({
+      events: [],
+      scroll: 1000
+    });
+
+    $scope.file.selectedTrack = $scope.file.tracks.length - 1;
+    $scope.fileChanged();
+  };
+
+  $scope.stop = function() {
+    if (playing) playing.stop();
+    $scope.recipe.raise("pattern_play_stopped");
+    playing = null;
+  };
+
+  $scope.play = function() {
+    var instruments = {};
+    $scope.file.tracks.forEach(function(track) {
+      if (track.instrument) {
+        instruments[track.instrument.id] = instrument.get(track);
+      }
+    });
+
+    playing = Pattern.patternCompose($scope.file, instruments, function() {
+      $scope.recipe.raise("pattern_play_stopped");
+      playing = null;
+    }).play();
+  };
+
+  $scope.zoomIn = function() {
+    $scope.zoomLevel = $scope.zoomLevel * 2;
+    if ($scope.zoomLevel > 32) $scope.zoomLevel = 32;
+  };
+
+  $scope.zoomOut = function() {
+    $scope.zoomLevel = $scope.zoomLevel / 2;
+    if ($scope.zoomLevel < 1) $scope.zoomLevel = 1;
+  };
+
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  $scope.fileChanged = fn.debounce(function() {
+    FileRepository.updateFile(id, $scope.file);
+  },100);
+
+  $scope.$on("trackChanged", function(track) {
+    computeMeasureCount();
+    $scope.fileChanged();
+  });
+
+  var beep = function(instrument, n) {
+      if (!instrument) return;
+      if (lastPlaying) lastPlaying.stop();
+      lastPlaying = instrument.note(n).play();
+
+      setTimeout(function(){
+        if (lastPlaying) lastPlaying.stop();
+        lastPlaying = null;
+      },50);
+  };
+
+  var computeMeasureCount = function() {
+    if (!$scope.file) return;
+    if (!$scope.file.tracks[0]) return;
+
+    $scope.file.measureCount = Pattern.computeMeasureCount($scope.file, $scope.file.measure);
+  };
+
+  var lastPlaying;
+  $scope.$on("eventChanged", function(evt, data) {
+    computeMeasureCount();
+
+    if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
+  });
+
+  $scope.$on("eventSelected", function(evt, data) {
+    beep(instrument.get(data.track), data.evt.n);
+  });
+
+  $scope.$watch("file.measure", computeMeasureCount);
+
+  var instrument = new WeakMap();
+  $scope.updateInstrument = function(trackNo) {
+    if (!$scope.file.tracks[trackNo]) return;
+    if (!$scope.file.tracks[trackNo].instrument) return;
+
+    return instSet.load($scope.file.tracks[trackNo].instrument.id)
+      .then(function(musicObject) {
+        instrument.set($scope.file.tracks[trackNo], musicObject);
+        return musicObject;
+      });
+  };
+
+  $scope.onDropComplete = function(instrument,event) {
+    if (instrument.type !== 'instrument') return;
+
+    var trackNo = $scope.file.selectedTrack;
+
+    $scope.file.tracks = $scope.file.tracks || [];
+    $scope.file.tracks[trackNo] = $scope.file.tracks[trackNo] || {};
+    $scope.file.tracks[trackNo].instrument = instrument;
+
+    FileRepository.updateFile(id, $scope.file);
+    $scope.updateInstrument(trackNo)
+      .then(function(musicObject) {
+        beep(musicObject, 36);
+      });
+  };
+
+  var updateFromRepo = function() {
+    FileRepository.getFile(id).then(function(file) {
+      $timeout(function() {
+        var outputFile = {};
+        $scope.fileIndex = file.index;
+        $scope.file = file.contents;
+        if (!$scope.file.tracks) $scope.file.tracks=[{}];
+
+        $scope.file.tracks.forEach(function(track, idx) {
+          track.events = track.events || [];
+          $scope.updateInstrument(idx);
+        });
+      });
+    });
+  };
+
+  updateFromRepo();
+
+  // undo & redo
+
+  var keyDownHandler = function(evt) {
+    if (evt.keyCode === 90 && evt.ctrlKey) {
+      FileRepository.undo(id);
+      updateFromRepo();
+    }
+
+    if (evt.keyCode === 89 && evt.ctrlKey) {
+      FileRepository.redo(id);
+      updateFromRepo();
+    }
+  };
+
+  $(document).bind("keydown", keyDownHandler);
+  $scope.$on("$destroy", function() {
+    $(document).unbind("keydown", keyDownHandler);
+    instSet.dispose();
+  });
+
+
+}]);
+
+musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+  var id = $routeParams.id;
+
+  var lastObj;
+  var fileChanged = fn.debounce(function(newFile) {
+    if (!$scope.file) return;
+    
+    MusicObjectFactory($scope.file)
+      .then(function(obj) {
+          if (!obj) {
+            $scope.instruments = [];
+            $scope.playables = [];
+            console.log("removed");
+            return;
+          }
+
+          if (obj !== lastObj) {
+            $scope.instruments = [];
+            $scope.playables = [];
+            if (obj.note) {
+              // instrument
+              $scope.instruments.push(obj);
+            } else if (obj.play) {
+              $scope.playables.push(obj);
+            }
+          }
+
+          FileRepository.updateFile(id, $scope.file);
+          lastObj = obj;
+      });
+  }, 50);
+  $scope.$watch('file', fileChanged, true);
+
+  $scope.export = function() {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
+    var url  = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = $scope.fileIndex.name + ".json";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  $scope.indexChanged = function() {
+    FileRepository.updateIndex(id, $scope.fileIndex);
+  };
+
+  FileRepository.getFile(id).then(function(file) {
+    $timeout(function() {
+      var outputFile = {};
+
+      $scope.outputFile = outputFile;
+      $scope.file = file.contents;
+      $scope.fileIndex = file.index;
+      $scope.observer = {};
+
+      $scope.observer.notify = function() {
+        $timeout(function() {
+          $scope.instruments = [];
+          $scope.playables = [];
+        });
+      };
+
+    });
+  });
+
+  $scope.$on("$destroy", function() {
+    $scope.instruments.forEach(function(instrument) {
+      if (instrument.dispose) instrument.dispose();
+    });
+  });
+
+/*  $scope.$on("addFx", function(evt, args) {
+    $scope.file.data.array = [{
+      type: args.fx.name,
+      data: {}
+    }].concat($scope.file.data.array);
+  });*/
+
+  $scope.$on("$destroy", function() {
+    $scope.playables.forEach(function(playable) {
+      $scope.stopPlay(playable);
+    });
+  });
+
+  $scope.startPlay = function(playable) {
+    playable.playing = playable.play();
+  };
+
+  $scope.stopPlay = function(playable) {
+    if (!playable.playing) return;
+    playable.playing.stop();
+    playable.playing = undefined;
+  };
+
+}]);
+
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage) {
+  var music;
+  
+  $scope.changeLanguage = function (langKey) {
+    localStorage.setItem('lang', langKey);
+    $translate.use(langKey);
+  };
+
+  $scope.welcome = function() {
+    // show welcome modal
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/welcome.html",
+      controller: "welcomeModalCtrl"
+    });
+  };
+
+  if (!WelcomeMessage.skip()) $scope.welcome();
+
+  var currentObserver = FileRepository.search().observe(function(files) {
+    $timeout(function() {
+      $scope.filesTotal = files.total;
+      $scope.files = files.results;
+    });
+  });
+
+  $scope.recipe = Recipe.start;
+
+  $scope.activate = function(example) {
+    if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {
+      document.location = "#/editor/"+example.type+"/"+example.id;
+    }
+  };
+
+  $scope.$watch("searchKeyword", fn.debounce(function() {
+    if (currentObserver) currentObserver.close();
+    currentObserver = FileRepository.search($scope.searchKeyword).observe(function(files) {
+      $scope.filesTotal = files.total;
+      $scope.files = files.results;
+    });
+  },200));
+
+  $scope.iconForType = function(type) {
+    if (type === "instrument") return "keyboard-o";
+    if (type === "song") return "th";
+    if (type === "pattern") return "music";
+    if (type === "fx") return "magic";
+    return "question";
+  }
+
+  $scope.newInstrument = function() {
+    FileRepository.createFile({type: "instrument", name: "New Instrument"})
+      .then(function(id) {
+        document.location = "#/editor/instrument/"+id;
+      });
+  };
+
+  $scope.newSong = function() {
+    FileRepository.createFile({type: "song", name: "New Song"})
+      .then(function(id) {
+        document.location = "#/editor/song/"+id;
+      });
+  };
+
+  $scope.newPattern = function() {
+    FileRepository.createFile({type: "pattern", name: "New Pattern"})
+      .then(function(id) {
+        document.location = "#/editor/pattern/"+id;
+      });
+  };
+
+
+  $scope.about = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/about.html",
+      controller: "infoModalCtrl"
+    });
+  };
+
+  $scope.help = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/help.html",
+      controller: "infoModalCtrl"
+    });
+  };
+
+  $scope.todo = function() {
+    $uibModal.open({
+      templateUrl: "todoModal.html",
+      controller: "todoModalCtrl"
+    });
+  };
+}]);
+
+musicShowCaseApp.controller("todoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
+  $scope.dismiss = function() {
+    $uibModalInstance.dismiss();
+  };
+}]);
+
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.controller("infoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {

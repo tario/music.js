@@ -42,8 +42,11 @@ var esTranslations = {
   common: {
     yes: 'Si',
     no: 'No',
-    dismiss: 'Cerrar'
-  }
+    dismiss: 'Cerrar',
+    language: 'Idioma:'
+  },
+  BUTTON_LANG_EN: 'Ingles',
+  BUTTON_LANG_ES: 'Español'
 };
 
 musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {

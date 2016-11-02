@@ -8,6 +8,8 @@ musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
     return $translateProvider.translations()[langCode] ? langCode : 'en';
   };
 
+  var currentLanguage = localStorage.getItem("lang");
   $translateProvider
-    .use(getBrowserLanguage());
+    .preferredLanguage(currentLanguage || getBrowserLanguage());
+
 }]);

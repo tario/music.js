@@ -567,8 +567,13 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", function($scope, $timeout, $uibModal, MusicContext, FileRepository, Recipe, WelcomeMessage) {
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage) {
   var music;
+  
+  $scope.changeLanguage = function (langKey) {
+    localStorage.setItem('lang', langKey);
+    $translate.use(langKey);
+  };
 
   $scope.welcome = function() {
     // show welcome modal

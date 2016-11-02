@@ -36,8 +36,19 @@
         </div>
     </script>
 
-      <div class="contextual-help-switch" ng-click="contextualHelp = !contextualHelp">
-        ? {{ (contextualHelp ? 'contextual_help.disable': 'contextual_help.enable') |translate }}
+      <div class="lower-left-corner-menu">
+        <div class="container">
+          <div class="row">
+            <div class="contextual-help-switch" ng-click="contextualHelp = !contextualHelp">
+              ? {{ (contextualHelp ? 'contextual_help.disable': 'contextual_help.enable') |translate }}
+            </div>
+            <div class="language-buttons">
+              <p translate="common.language"></p>
+              <button class="btn btn-primary" ng-click="changeLanguage('en')" translate="BUTTON_LANG_EN"></button>
+              <button class="btn btn-primary" ng-click="changeLanguage('es')" translate="BUTTON_LANG_ES"></button>
+            </div>
+          </div>
+        </div>
       </div>
 
     <!-- TODO: Move to directive  -->

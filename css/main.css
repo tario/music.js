@@ -2,16 +2,39 @@ body.modal-open .contextual-help-switch {
   color: #555555;
 }
 
+.language-buttons {
+  background-color: black;
+  height: 100px;
+  color: white;
+  margin-left: 4px;
+}
+
+.language-buttons button {
+  display: block;
+  margin: 5px;
+}
+
+.lower-left-corner-menu .row,
+.lower-left-corner-menu .container {
+  margin-left: 0;
+}
+
+.lower-left-corner-menu .row > div {
+  float: left;
+}
+
+.lower-left-corner-menu {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+}
+
 .contextual-help-switch {
   color: white;
   background-color: black;
   cursor: pointer;
-  position: fixed;
   width: 100px;
   height: 100px;
-  z-index: 99999;
-  left: 0;
-  bottom: 0;
 }
 
 .contextual-help-enabled .contextual-help-switch {
