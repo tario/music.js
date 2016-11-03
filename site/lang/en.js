@@ -45,10 +45,15 @@ var enTranslations = {
     dismiss: 'Dismiss',
     language: 'Language:',
     HELP: 'HELP',
-    more: 'more'
-  },
-  pattern: {
-    drop_instrument: 'drop instrument here'
+    more: 'more',
+    remove: 'Remove',
+    play: 'Play',
+    stop: 'Stop',
+    bpm: 'Bpm',
+    add: 'Add',
+    tooltip: {
+      playing_speed: 'Playing speed, number of beats per minute'
+    }
   },
   help: {
     FLOW: 'MUSIC.JS FLOW',
@@ -71,9 +76,53 @@ var enTranslations = {
       p1: 'There is a series of tooltips explaining on detail the different features of the app. You can enable or disable these tooltips by clicking on the box in the left-bottom corner of the screen'
     }
   },
+  stack: {
+    drop_elements_here: "drop new elements here",
+    tooltip: {
+      you_can_drop_new_effects_here: 'You can drop new effects from the object index here',
+      remove: 'Removes the effect element from the pipeline',
+      up: 'Changes the order of the element, to execute it AFTER',
+      down: 'Changes the order of the element, to execute it BEFORE',
+      expand: 'Expand/Shrink the display of advanced options for the element'
+    }
+  },
+  editor: {
+    keyboard_instructions: 'Use ZXCVBNM keys to play instrument, or hover mouse on virtual keyboard',
+    tooltip: {
+      test_instrument_here: 'Test the instrument here, using mouse or keyboard',
+      type_here_instrument: 'Type here the name of the instrument'
+    }
+  },
+  pattern: {
+    measure_beats: 'Measure beats',
+    amount_beats: 'Amount of beats per measure',
+    measure_count: 'Measure count',
+    zoom_level: 'Zoom level',
+    total_measures: 'Total count of measures on pattern',
+    tracks: 'Tracks',
+    drop_instrument: 'drop instrument here',
+    tooltip: {
+      change_name: 'Change the pattern name',
+      zoom_level: 'Zoom level for all tracks',
+      play: 'Click to play the pattern',
+      stop: 'Click to stop playing',
+      remove_track: 'Click to remove track',
+      compact_view_p1: 'Track compact view: see the notes without having to expand the track.',
+      compact_view_p2: 'Click here to expand the track',
+      drop_zone: 'Instrument drop zone, drop instruments from the left panel to use it on the track',
+      editor_notes_p1: 'Note area, add the notes here:',
+      editor_notes_p2: 'Click to add a new one, and drag to change value/time',
+      editor_notes_p3: 'CTRL+Z to undo changes',
+      editor_notes_p4: 'CTRL+Y to redo changes',
+      add_track: 'Click this button to add new empty tracks',
+      note_event_p1: 'Note event. Drag from the right edge to change the duration or press delete key to remove',
+      note_event_p2: 'Drag to change the value and/or starting time',
+      note_event_p3: 'Note event. Click to select and edit it'
+    }
+  },
   BUTTON_LANG_EN: 'English',
   BUTTON_LANG_ES: 'Spanish'
-  
+
 };
 
 musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {

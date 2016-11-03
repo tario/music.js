@@ -30,13 +30,13 @@
         </div>
 
         <div ng-show="selected===evt" class="help-tooltip contextual-tooltip long-tooltip event-note-tooltip">
-          Note event. Drag from the right edge to change the duration or press delete key to remove<br/>
-          Drag to change the value and/or starting time
+          {{'pattern.tooltip.note_event_p1' | translate}}<br/>
+          {{'pattern.tooltip.note_event_p2' | translate}}
         </div>        
 
         <div ng-show="selected!==evt" class="help-tooltip contextual-tooltip long-tooltip event-note-tooltip">
-          Note event. Click to select and edit it<br/>
-          Drag to change the value and/or starting time
+          {{'pattern.tooltip.note_event_p3' | translate}}<br/>
+          {{'pattern.tooltip.note_event_p2' | translate}}
         </div>        
       </div>
     </div>

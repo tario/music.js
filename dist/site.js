@@ -12619,10 +12619,15 @@ var enTranslations = {
     dismiss: 'Dismiss',
     language: 'Language:',
     HELP: 'HELP',
-    more: 'more'
-  },
-  pattern: {
-    drop_instrument: 'drop instrument here'
+    more: 'more',
+    remove: 'Remove',
+    play: 'Play',
+    stop: 'Stop',
+    bpm: 'Bpm',
+    add: 'Add',
+    tooltip: {
+      playing_speed: 'Playing speed, number of beats per minute'
+    }
   },
   help: {
     FLOW: 'MUSIC.JS FLOW',
@@ -12645,9 +12650,53 @@ var enTranslations = {
       p1: 'There is a series of tooltips explaining on detail the different features of the app. You can enable or disable these tooltips by clicking on the box in the left-bottom corner of the screen'
     }
   },
+  stack: {
+    drop_elements_here: "drop new elements here",
+    tooltip: {
+      you_can_drop_new_effects_here: 'You can drop new effects from the object index here',
+      remove: 'Removes the effect element from the pipeline',
+      up: 'Changes the order of the element, to execute it AFTER',
+      down: 'Changes the order of the element, to execute it BEFORE',
+      expand: 'Expand/Shrink the display of advanced options for the element'
+    }
+  },
+  editor: {
+    keyboard_instructions: 'Use ZXCVBNM keys to play instrument, or hover mouse on virtual keyboard',
+    tooltip: {
+      test_instrument_here: 'Test the instrument here, using mouse or keyboard',
+      type_here_instrument: 'Type here the name of the instrument'
+    }
+  },
+  pattern: {
+    measure_beats: 'Measure beats',
+    amount_beats: 'Amount of beats per measure',
+    measure_count: 'Measure count',
+    zoom_level: 'Zoom level',
+    total_measures: 'Total count of measures on pattern',
+    tracks: 'Tracks',
+    drop_instrument: 'drop instrument here',
+    tooltip: {
+      change_name: 'Change the pattern name',
+      zoom_level: 'Zoom level for all tracks',
+      play: 'Click to play the pattern',
+      stop: 'Click to stop playing',
+      remove_track: 'Click to remove track',
+      compact_view_p1: 'Track compact view: see the notes without having to expand the track.',
+      compact_view_p2: 'Click here to expand the track',
+      drop_zone: 'Instrument drop zone, drop instruments from the left panel to use it on the track',
+      editor_notes_p1: 'Note area, add the notes here:',
+      editor_notes_p2: 'Click to add a new one, and drag to change value/time',
+      editor_notes_p3: 'CTRL+Z to undo changes',
+      editor_notes_p4: 'CTRL+Y to redo changes',
+      add_track: 'Click this button to add new empty tracks',
+      note_event_p1: 'Note event. Drag from the right edge to change the duration or press delete key to remove',
+      note_event_p2: 'Drag to change the value and/or starting time',
+      note_event_p3: 'Note event. Click to select and edit it'
+    }
+  },
   BUTTON_LANG_EN: 'English',
   BUTTON_LANG_ES: 'Spanish'
-  
+
 };
 
 musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
@@ -12698,16 +12747,21 @@ var esTranslations = {
     contribute: 'CONTRIBUIR',
     contact_me: 'Contactame a travez de github'
   },
-  pattern: {
-    drop_instrument: 'suelte un instrumento aqui'
-  },
   common: {
     yes: 'Si',
     no: 'No',
     dismiss: 'Cerrar',
     language: 'Idioma:',
     HELP: 'AYUDA',
-    more: 'mas'
+    more: 'mas',
+    remove: 'Elimi.',
+    play: 'Reprod.',
+    stop: 'Detener',
+    bpm: 'Ppm',
+    add: 'Agreg.',
+    tooltip: {
+      playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto'
+    }
   },
   help: {
     FLOW: 'FLUJO DE MUSIC.JS',
@@ -12728,6 +12782,51 @@ var esTranslations = {
     CONTEXTUAL_HELP: "AYUDA CONTEXTUAL",
     contextual_help: {
       p1: 'Hay una serie de tooltips que explican detalladamente las distintas funcionalidades de la aplicacion. Puedes activar o desactivar estas ayudas clickeando en el recuadro que aparece en la esquina inferior izquierda de la pantalla'
+    }
+  },
+  editor: {
+    keyboard_instructions: 'Usa las teclas ZXCVBNM para tocar el instrumento, o pasa el puntero del mouse sobre el teclado virtual',
+    tooltip: {
+      test_instrument_here: 'Prueba el instrumento aqui, usando el teclado o el mouse',
+      type_here_instrument: 'Escribe aqui el nombre para el instrumento'
+    }
+  },
+  pattern: {
+    measure_beats: 'Pulsos/compas',
+    measure_count: 'Cant. de compases',
+    zoom_level: 'Nivel de zoom',
+    tracks: 'Pistas',
+    drop_instrument: 'Suelta el instrumento aqui',
+    tooltip: {
+      amount_beats: 'Cantidad de pulsos por compas',
+      total_measures: 'Cantidad total de compases en el patron',
+      change_name: 'Cambia el nombre del patron',
+      zoom_level: 'Nivel de zoom para todas las pistas',
+      play: 'Click para reproducir el patron',
+      stop: 'Click para detener la reproduccion',
+      remove_track: 'Click para eliminar la pista',
+      compact_view_p1: 'Vista compacta de la pista: muestra las notas sin necesidad de expandir la pista.',
+      compact_view_p2: 'Clickea aqui para expandir la pista',
+      drop_zone: 'Zona para soltar el instrumento, arrastra aqui instrumentos del panel izquierdo para usarlos en la pista',
+      editor_notes_p1: 'Area de notas, puedes agregar las notas aqui:',
+      editor_notes_p2: 'Clickea para agregar una nueva nota, y arrastralas para cambiar su valor y su tiempo de inicio en la secuencia',
+      editor_notes_p3: 'CTRL+Z para deshacer cambios',
+      editor_notes_p4: 'CTRL+Y para rehacer cambios',
+      add_track: 'Clickea este boton para agregar una nueva pista vacia',
+
+      note_event_p1: 'Evento de nota. Arrastra desde el borde derecho para cambiar su duracion, o presiona la tecla SUPR. para eliminarlo',
+      note_event_p2: 'Arrastra para cambiar el valor o el tiempo de comienzo en la secuencia',
+      note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo'
+    }
+  },
+  stack: {
+    drop_elements_here: "suelta nuevos elementos aqui",
+    tooltip: {
+      you_can_drop_new_effects_here: 'Puedes soltar nuevos efectos del indice aqui',
+      remove: 'Elimina el efecto de la secuencia',
+      up: 'Cambia el orden del elemento, para que se ejecute DESPUES',
+      down: 'Cambia el orden del elemento, para que se ejecute ANTES',
+      expand: 'Expande/Comprime la vista avanzada del elemento'
     }
   },
   BUTTON_LANG_EN: 'Ingles',
