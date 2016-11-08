@@ -1,5 +1,20 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  index: {
+    not_implemented: 'Disculpa, funcionalidad no implementada',
+    filter: 'Tipea aqui las palabras clave para filtrar los objetos',
+    tooltip: {
+      type: {
+        instrument: 'Este es un recurso del tipo instrumento',
+        pattern: 'Este es un recurso del tipo patron',
+        song: 'Este es un recurso del tipo cancion',
+        fx: 'Este es un recurso del tipo fx (efecto)'
+      },
+      type_p1: 'Para usar este recurso, arrastralo desde aqui hasta tu creacion',
+      type_p2: 'Para, en lugar de eso, editarlo, haz doble click en el',
+      index: 'Este es el indice de objetos, puedes encontrar tus materiales y productos listados aqui'
+    }
+  },
   menu: {
     'new': 'Archivo',
     new_instrument: 'Nuevo Instrumento',

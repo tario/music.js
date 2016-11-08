@@ -12574,6 +12574,21 @@ musicShowCaseApp.constant("MUSIC", MUSIC);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  index: {
+    not_implemented: 'Sorry. Not implemented Yet :P',
+    filter: 'Type here the word to filter objects',
+    tooltip: {
+      type: {
+        instrument: 'This is a resource object of type instrument',
+        pattern: 'This is a resource object of type pattern',
+        song: 'This is a resource object of type song',
+        fx: 'This is a resource object of type fx'
+      },
+      type_p1: 'To use the resource, drag them from here into your creation on the right',
+      type_p2: 'To instead, *edit* the resource, double click it',
+      index: 'This is the object index, you can find here your crafting outputs and inputs'
+    }
+  },
   menu: {
     'new': 'File',
     new_instrument: 'New Instrument',
@@ -12587,7 +12602,12 @@ var enTranslations = {
     help_recipes_howto_create_song: 'How to create a song',
     help_contextual_help: 'Contextual Help',
     help_welcome: 'Welcome!',
-    help_about: 'About Music.js'
+    help_about: 'About Music.js',
+    tooltip: {
+      'new': 'You can create new blank items from this option',
+      preferences: 'You can edit your preferences here',
+      help: 'Menu to access help options and about'
+    }
   },
   contextual_help: {
     enable: 'Enable Contextual Help',
@@ -12721,6 +12741,21 @@ musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  index: {
+    not_implemented: 'Disculpa, funcionalidad no implementada',
+    filter: 'Tipea aqui las palabras clave para filtrar los objetos',
+    tooltip: {
+      type: {
+        instrument: 'Este es un recurso del tipo instrumento',
+        pattern: 'Este es un recurso del tipo patron',
+        song: 'Este es un recurso del tipo cancion',
+        fx: 'Este es un recurso del tipo fx (efecto)'
+      },
+      type_p1: 'Para usar este recurso, arrastralo desde aqui hasta tu creacion',
+      type_p2: 'Para, en lugar de eso, editarlo, haz doble click en el',
+      index: 'Este es el indice de objetos, puedes encontrar tus materiales y productos listados aqui'
+    }
+  },
   menu: {
     'new': 'Archivo',
     new_instrument: 'Nuevo Instrumento',

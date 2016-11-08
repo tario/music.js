@@ -1,5 +1,20 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  index: {
+    not_implemented: 'Sorry. Not implemented Yet :P',
+    filter: 'Type here the word to filter objects',
+    tooltip: {
+      type: {
+        instrument: 'This is a resource object of type instrument',
+        pattern: 'This is a resource object of type pattern',
+        song: 'This is a resource object of type song',
+        fx: 'This is a resource object of type fx'
+      },
+      type_p1: 'To use the resource, drag them from here into your creation on the right',
+      type_p2: 'To instead, *edit* the resource, double click it',
+      index: 'This is the object index, you can find here your crafting outputs and inputs'
+    }
+  },
   menu: {
     'new': 'File',
     new_instrument: 'New Instrument',
@@ -13,7 +28,12 @@ var enTranslations = {
     help_recipes_howto_create_song: 'How to create a song',
     help_contextual_help: 'Contextual Help',
     help_welcome: 'Welcome!',
-    help_about: 'About Music.js'
+    help_about: 'About Music.js',
+    tooltip: {
+      'new': 'You can create new blank items from this option',
+      preferences: 'You can edit your preferences here',
+      help: 'Menu to access help options and about'
+    }
   },
   contextual_help: {
     enable: 'Enable Contextual Help',

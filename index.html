@@ -28,11 +28,11 @@
         <div class="modal-header musicapp">
             // TODO
         </div>
-        <div class="modal-body musicapp">
-            Sorry. Not implemented Yet :P
+        <div class="modal-body musicapp" translate="index.not_implemented">
+            
         </div>
         <div class="modal-footer musicapp">
-            <button class="btn btn-primary" type="button" ng-click="dismiss()">Dismiss</button>
+            <button class="btn btn-primary" type="button" ng-click="dismiss()" translate="common.dismiss"></button>
         </div>
     </script>
 
@@ -64,31 +64,31 @@
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.new"></a>
 
                          <ul class="dropdown-menu">
-                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')" translate="menu.new_instrument">Instrument</a>
+                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')" translate="menu.new_instrument"></a>
                               <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
                             </li>
-                            <li recipe-blink="'menu_new_pattern'"><a href="" ng-click="newPattern(); recipe.raise('menu_new_pattern_click')" translate="menu.new_pattern">Pattern</a>
+                            <li recipe-blink="'menu_new_pattern'"><a href="" ng-click="newPattern(); recipe.raise('menu_new_pattern_click')" translate="menu.new_pattern"></a>
                               <recipe-tooltip rt-id="'menu_new_pattern'"></recipe-tooltip>
                             </li>
-                            <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')" translate="menu.new_song">Song</a>
+                            <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')" translate="menu.new_song"></a>
                               <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
                             </li>
                          </ul>
                          <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
-                         <div class="help-tooltip contextual-tooltip">You can create new blank items from this option</div>
+                         <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.new"></div>
                       </li>
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_preferences'">
                           <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.tools"></a>
                           <ul class="dropdown-menu">
-                            <li><a href="" ng-click="todo()" translate="menu.tools_preferences">Preferences</a></li>
+                            <li><a href="" ng-click="todo()" translate="menu.tools_preferences"></a></li>
                           </ul>
                           <recipe-tooltip rt-id="'menu_preferences'"></recipe-tooltip>
-                          <div class="help-tooltip contextual-tooltip">You can edit your preferences here</div>
+                          <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.preferences"></div>
                       </li>
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_help'" ng-click="recipe.raise('menu_help_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">?</a>
                          <ul class="dropdown-menu">
-                            <li><a href="" ng-click="help()" recipe-blink="'menu_help_help'" translate="menu.help_view_help">View Help</a>
+                            <li><a href="" ng-click="help()" recipe-blink="'menu_help_help'" translate="menu.help_view_help"></a>
                               <recipe-tooltip rt-id="'menu_help_help'"></recipe-tooltip>
                             </li>
                             <li class="dropdown-submenu" recipe-blink="'menu_help_recipes'">
@@ -111,7 +111,7 @@
                             </li>
                          </ul>
                           <recipe-tooltip rt-id="'menu_help'"></recipe-tooltip>
-                          <div class="help-tooltip contextual-tooltip">Menu to access help options and about</div>                         
+                          <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.help"></div>                         
                       </li>
                     </ul>
                   </div>
@@ -127,19 +127,17 @@
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li class="show-contextual-tooltip"><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> 
                     <div class="help-tooltip contextual-tooltip">
-                      <p>
-                        Type here the word to filter objects
-                      </p>
+                      <p translate="index.filter"></p>
                     </div>
                   </li>
                   <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']" class="show-contextual-tooltip">
                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                     <recipe-tooltip rt-id="file.name"></recipe-tooltip>
                     <div class="help-tooltip contextual-tooltip long-tooltip">
-                      <p>This is a resource object of type {{file.type}}
+                      <p>{{'index.tooltip.type.' + file.type | translate}}
                         <ul>
-                          <li>To use the resource, drag them from here into your creation on the right</li>
-                          <li>To instead, *edit* the resource, double click them (only applicable to instruments, patterns and songs)</li>
+                          <li translate="index.tooltip.type_p1"></li>
+                          <li ng-if="file.type=='instrument'||file.type=='song'||file.type=='pattern'" translate="index.tooltip.type_p2"></li>
                         </ul>
                       </p>
                     </div>
@@ -148,8 +146,8 @@
                 </ul>
 
                 <recipe-tooltip rt-id="'object_index_panel'"></recipe-tooltip>
-                <div class="help-tooltip contextual-tooltip long-tooltip"><p>
-                  This is the object index, you can find here your crafting outputs and inputs
+                <div class="help-tooltip contextual-tooltip long-tooltip"><p translate="index.tooltip.index">
+                  
                 </p></div>
             </div>
 
