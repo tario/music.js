@@ -90,7 +90,10 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
   this.disconnect = function() {
     if (disconnected) return;
     disconnected = true;
-    scriptNode.disconnect(next._destination);
+    
+    setTimeout(function() { // this hack prevents a bug in current version of chrome
+      scriptNode.disconnect(next._destination);
+    });
   };
 
   this.dispose = this.disconnect;
