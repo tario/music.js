@@ -49,6 +49,7 @@ var enTranslations = {
     remove: 'Remove',
     play: 'Play',
     stop: 'Stop',
+    record: 'Rec.',
     bpm: 'Bpm',
     add: 'Add',
     tooltip: {
@@ -118,6 +119,18 @@ var enTranslations = {
       note_event_p1: 'Note event. Drag from the right edge to change the duration or press delete key to remove',
       note_event_p2: 'Drag to change the value and/or starting time',
       note_event_p3: 'Note event. Click to select and edit it'
+    }
+  },
+  song: {
+    drop_pattern: "Drop pattern here",
+    tooltip: {
+      measure_beats: "Amount of beats per measure. Make sure this value match the measure length of the patterns",
+      play: "Click to play the song",
+      stop: "Click to stop playing the song",
+      download: "Click to record the song and download the audio file",
+      drop_pattern: "Drop zone for patterns, drop here a pattern from the panel on the left",
+      remove_block: "Click here to remove the pattern and leave the block empty",
+      play_block: "Click here to play this block only"
     }
   },
   BUTTON_LANG_EN: 'English',

@@ -49,6 +49,7 @@ var esTranslations = {
     remove: 'Elimi.',
     play: 'Reprod.',
     stop: 'Detener',
+    record: 'Rec.',
     bpm: 'Ppm',
     add: 'Agreg.',
     tooltip: {
@@ -99,7 +100,7 @@ var esTranslations = {
       remove_track: 'Click para eliminar la pista',
       compact_view_p1: 'Vista compacta de la pista: muestra las notas sin necesidad de expandir la pista.',
       compact_view_p2: 'Clickea aqui para expandir la pista',
-      drop_zone: 'Zona para soltar el instrumento, arrastra aqui instrumentos del panel izquierdo para usarlos en la pista',
+      drop_zone: 'Area para soltar el instrumento, arrastra aqui instrumentos del panel izquierdo para usarlos en la pista',
       editor_notes_p1: 'Area de notas, puedes agregar las notas aqui:',
       editor_notes_p2: 'Clickea para agregar una nueva nota, y arrastralas para cambiar su valor y su tiempo de inicio en la secuencia',
       editor_notes_p3: 'CTRL+Z para deshacer cambios',
@@ -109,6 +110,18 @@ var esTranslations = {
       note_event_p1: 'Evento de nota. Arrastra desde el borde derecho para cambiar su duracion, o presiona la tecla SUPR. para eliminarlo',
       note_event_p2: 'Arrastra para cambiar el valor o el tiempo de comienzo en la secuencia',
       note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo'
+    }
+  },
+  song: {
+    drop_pattern: "Suelta el patron aqui",
+    tooltip: {
+      measure_beats: "Pulsos/Compas. Tiene que coincidir con el de los patrones que se usan",
+      play: "Click para reproducir la cancion",
+      stop: "Click para detener la reproduccion",
+      download: "Click para grabar la cancion a un archivo de audio y descargarlo",
+      drop_pattern: "Area para soltar los patrones, arrastra aqui patrones desde el panel izquierdo",
+      remove_block: "Click aqui para eliminar el patron y dejar el bloque vacio",
+      play_block: "Click aqui para reproducir este bloque aislado"
     }
   },
   stack: {
