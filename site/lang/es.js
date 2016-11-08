@@ -153,8 +153,4 @@ var esTranslations = {
   BUTTON_LANG_ES: 'Español'
 };
 
-musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
-  // add translation table
-  $translateProvider
-    .translations('es', esTranslations);
-}]);
+musicShowCaseApp.constant("esTranslations", esTranslations);

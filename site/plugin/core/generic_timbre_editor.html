@@ -1,4 +1,4 @@
 <div ng-repeat="parameter in parameters" class="generic-parameter show-contextual-tooltip">
 {{parameter.data.uiName || parameter.data.name}}: <input type="text" ng-model="parameter.value"></input>
-  <div ng-if="parameter.data.tooltip" class="help-tooltip contextual-tooltip">{{parameter.data.tooltip}}</div>
+  <div ng-if="parameter.data.tooltip" class="help-tooltip contextual-tooltip">{{parameter.data.tooltip | translate}}</div>
 </div>

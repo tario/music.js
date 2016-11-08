@@ -12732,12 +12732,7 @@ var enTranslations = {
 
 };
 
-musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
-  // add translation table
-  $translateProvider
-    .translations('en', enTranslations)
-    .fallbackLanguage('en');
-}]);
+musicShowCaseApp.constant("enTranslations", enTranslations);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
@@ -12894,11 +12889,8 @@ var esTranslations = {
   BUTTON_LANG_ES: 'Español'
 };
 
-musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
-  // add translation table
-  $translateProvider
-    .translations('es', esTranslations);
-}]);
+musicShowCaseApp.constant("esTranslations", esTranslations);
+
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
@@ -12912,6 +12904,12 @@ musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
   var currentLanguage = localStorage.getItem("lang");
   $translateProvider
     .preferredLanguage(currentLanguage || getBrowserLanguage());
+
+  $translateProvider
+    .fallbackLanguage('en');
+
+  $translateProvider.useSanitizeValueStrategy(null);
+  $translateProvider.useLoader('translationsLoader');
 
 }]);
 
@@ -14053,8 +14051,13 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
   var plugins = ["core"];
   var types = [];
+  var translation = {};
   var m = function(pluginName) {
     return {
+      lang: function(key, translateData) {
+        translation[key] =translation[key]||{};
+        translation[key][pluginName] = translateData;
+      },
       type: function(typeName, options, constructor) {
         types.push({
           templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
@@ -14109,9 +14112,17 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
       });
   };
 
+  var loadTranslations = function(options) {
+    return pluginsLoaded
+      .then(function() {
+        return translation[options.key]||{};
+      });
+  };
+
   return {
     getTypes: getTypes,
-    getType: getType
+    getType: getType,
+    loadTranslations: loadTranslations
   };
 
 }]);
@@ -14547,6 +14558,34 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
       start: start,
       step: runRecipeStep,
       handleEvent: handleEvent
+    };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslations', 'enTranslations', function($q, TypeService, esTranslations, enTranslations) {
+    return function(options) {
+      var baseTranslation = {}
+
+      if (options.key==='es') {
+        baseTranslation = esTranslations;
+      }
+
+      if (options.key==='en') {
+        baseTranslation = enTranslations;
+      }
+
+      return TypeService.loadTranslations(options)
+        .then(function(tr) {
+          for (var k in tr) {
+            baseTranslation[k] = tr[k];
+          }
+
+          return baseTranslation;
+        })
+
+      var deferred = $q.defer();
+      deferred.resolve(baseTranslation);
+      return deferred.promise;
     };
 }]);
 

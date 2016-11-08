@@ -1,4 +1,137 @@
 module.export = function(m) {
+
+  m.lang("en", {
+    adsr: {
+      description: 'ADSR Envelope signal'
+    },
+    noise: {
+      description: 'White noise generator'
+    },
+    pink_noise: {
+      description: 'pink noise generator'
+    },
+    red_noise: {
+      description: 'Red noise generator'
+    },
+    arpeggiator: {
+      description: 'Note Arpeggiator'
+    },
+    reverb: {
+      tooltip: {
+        room: 'room size',
+        damp: 'reverb HF damp',
+        mix: 'dry/wet balance'
+      },
+      description: 'Reverb powered by timbre.js'
+    },
+    gain: {
+      tooltip: {
+        gain: 'volume gain value, 0.0 = silence, 1.0 = keep the signal, >1.0 = amplify'
+      },
+      description: 'Increase or decrease the amp. of signal'
+    },
+    filter: {
+      tooltip: {
+        cut: 'cut frequency for the filter',
+        detune: 'detune (cents) to alter the frequency',
+        quality: 'quality factor for the filter'
+      }
+    },
+    echo: {
+      description: 'Single echo effect',
+      tooltip: {
+        gain: 'amplification level between repetitions',
+        delay: 'time separation (in seconds) between repetitions'
+      }
+    },
+    scale: {
+      tooltip: {
+        base: 'base signal target level',
+        top: 'top signal target level'
+      },
+      description: 'Scale signal'
+    },
+    transpose: {
+      description: 'Transpose by N semitones',
+      tooltip: {
+        amount: 'amount of *semitones* to add to note number (e.g. 12 semitones = 1 octave)'
+      }
+    },
+    rise: {
+      description: 'Rise signal to target',
+      tooltip: {
+        time: 'time in seconds to get from zero to the target',
+        target: 'target signal level to reach'
+      }
+    }
+  });
+
+  m.lang("es", {
+    adsr: {
+      description: 'Señal de envoltura ADSR'
+    },
+    noise: {
+      description: 'Generador de ruido blanco'
+    },
+    pink_noise: {
+      description: 'Generador de ruido rosa'
+    },
+    red_noise: {
+      description: 'Generador de ruido rojo'
+    },
+    arpeggiator: {
+      description: 'Arpegiador de Notas'
+    },
+    reverb: {
+      tooltip: {
+        room: 'Tamaño de la habitacion',
+        damp: 'Humedad de la reverberacion',
+        mix: 'Balance entre seco y humedo'
+      },
+      description: 'Reverberacion, provista por timbre.js'
+    },    
+    gain: {
+      tooltip: {
+        gain: 'Valor de ganancia, 0.0 = silencio, 1.0 = mantener la señal, >1.0 = amplificar'
+      },
+      description: 'Aumenta o reduce la amplitud de la señal'
+    },
+    filter: {
+      tooltip: {
+        cut: 'Frecuencia de corte para el filtro',
+        detune: 'Desplazamiento (centimos) para alterar la frecuencia',
+        quality: 'Factor de calidad para el filtro'
+      }
+    },
+    echo: {
+      description: 'Efecto de eco simple',
+      tooltip: {
+        gain: 'Nivel de amplificacion entre las repeticiones',
+        delay: 'Separacion en el tiempo (en segundos) entre las repeticiones'
+      }
+    },
+    scale: {
+      tooltip: {
+        base: 'nivel base objetivo de la señal',
+        top: 'nivel superior objetivo de la señal'
+      },
+      description: 'Escala la señal'
+    },
+    transpose: {
+      description: 'Transpone N semitonos',
+      tooltip: {
+        amount: 'Cantidad de *semitonos* a agregar al valor de la nota (12 semitonos = 1 octava)'
+      }
+    },
+    rise: {
+      description: 'Eleva gradualmente una señal hasta un objetivo',
+      tooltip: {
+        time: 'tiempo en segundos para llegar desde cero hasta el objetivo',
+        target: 'nivel de señal objetivo al que llegar'
+      }
+    }
+  });
+
   var DisposableAudioContextWrapper = function(context) {
     this.context = context;
     this.disposeList = [];
@@ -251,10 +384,10 @@ module.export = function(m) {
   m.type("rise", {
         template: "generic_wrapper_editor", 
         parameters: [
-          {name: "time", value: 1, tooltip: 'time in seconds to get from zero to the target'},
-          {name: "target", value: 1, tooltip: 'target signal level to reach'}
+          {name: "time", value: 1, tooltip: 'core.rise.tooltip.time'},
+          {name: "target", value: 1, tooltip: 'core.rise.tooltip.target'}
         ], 
-        description: "Rise signal to target",
+        description: "core.rise.description",
   }, function(data, subobjects) {
     var fallTime = 1;
     var target = 1;
@@ -282,7 +415,7 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("adsr", {template: "adsr", description: "ADSR Envelope signal", _default: {
+  m.type("adsr", {template: "adsr", description: "core.adsr.description", _default: {
     attackTime: 0.4,
     decayTime: 0.4,
     sustainLevel: 0.8,
@@ -430,9 +563,9 @@ module.export = function(m) {
       {
           template: "generic_wrapper_editor", 
           parameters: [
-            {name: "amount", value: 0, tooltip: 'amount of *semitones* to add to note number (e.g. 12 semitones = 1 octave)'}
+            {name: "amount", value: 0, tooltip: 'core.transpose.tooltip.amount'}
           ], 
-          description: "Transpose by N semitones"
+          description: "core.transpose.description"
 
       },  function(data, subobjects) {
         if (!subobjects) return;
@@ -550,38 +683,38 @@ module.export = function(m) {
   genericType("scale",
   {
     parameters: [
-      {name: 'base', value: -1, tooltip: 'base signal level'},
-      {name: 'top', value: 1, tooltip: 'top signal level'},
+      {name: 'base', value: -1, tooltip: 'core.scale.tooltip.base'},
+      {name: 'top', value: 1, tooltip: 'core.scale.tooltip.top'},
     ],
-    description: "Scale signal"
+    description: "core.scale.description"
   });
 
   genericType("gain", 
       {
         parameters: [
-          {name: "gain", value: 0.8, tooltip: 'volume gain value, 0.0 = silence, 1.0 = keep the signal, >1.0 = amplify'}
+          {name: "gain", value: 0.8, tooltip: 'core.gain.tooltip.gain'}
         ], 
         components: ["gain"],
         singleParameter: true,
-        description: "Increase or decrease the amp. of signal"
+        description: "core.gain.description"
       });
 
   genericType("echo", 
       {
         parameters: [
-          {name: "gain", value: 0.6, tooltip: 'amplification level between repetitions'},
-          {name: "delay", value: 0.1, tooltip: 'time separation (in seconds) between repetitions'}
+          {name: "gain", value: 0.6, tooltip: 'core.echo.tooltip.gain'},
+          {name: "delay", value: 0.1, tooltip: 'core.echo.tooltip.delay'}
         ], 
-        description: "Single echo effect"
+        description: "core.echo.description"
       });
 
   ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"].forEach(function(filterName) {
     genericType(filterName, 
         {
           parameters: [
-            {name: "frequency", value: 350, tooltip: 'cut frequency for the filter'},
-            {name: "detune", value: 0, tooltip: 'detune (cents) to alter the frequency'},
-            {name: "Q", value: 1, tooltip: 'quality factor for the filter'}
+            {name: "frequency", value: 350, tooltip: 'core.filter.tooltip.cut'},
+            {name: "detune", value: 0, tooltip: 'core.filter.tooltip.detune'},
+            {name: "Q", value: 1, tooltip: 'core.filter.tooltip.quality'}
           ],
           components: ["frequency", "detune", "Q"],
           description: filterName
@@ -620,11 +753,11 @@ module.export = function(m) {
 
   genericTimbreType("reverb", {
     parameters: [
-      {name: 'room', value: 0.35, tooltip: 'room size'},
-      {name: 'damp', value: 0.1, tooltip: 'reverb HF damp'},
-      {name: 'mix', value: 0.75, tooltip: 'dry/wet balance'}
+      {name: 'room', value: 0.35, tooltip: 'core.reverb.tooltip.room'},
+      {name: 'damp', value: 0.1, tooltip: 'core.reverb.tooltip.damp'},
+      {name: 'mix', value: 0.75, tooltip: 'core.reverb.tooltip.mix'}
     ],
-    description: "Reverb powered by timbre.js"
+    description: 'core.reverb.description'
   });
 
 
@@ -653,17 +786,17 @@ module.export = function(m) {
 
   playableType("noise", "noise", {
     template: "generic_wrapper_editor", 
-    description: "White noise generator"
+    description: "core.noise.description"
   });
 
   playableType("pink noise", "pink_noise", {
     template: "generic_wrapper_editor", 
-    description: "Pink noise generator"
+    description: "core.pink_noise.description"
   });
 
   playableType("red noise", "red_noise", {
     template: "generic_wrapper_editor", 
-    description: "Red noise generator"
+    description: "core.red_noise.description"
   });
 
   /*
@@ -675,7 +808,7 @@ module.export = function(m) {
   m.type("arpeggiator", 
     {
       template: "arpeggiator", 
-      description: "Note arpeggiator", _default: {
+      description: "core.arpeggiator.description", _default: {
     scale: 0, interval: 2, duration: 100, gap: 0
   }}, function(data, subobjects) {
       if (!subobjects) return;

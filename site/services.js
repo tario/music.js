@@ -256,8 +256,13 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
 
   var plugins = ["core"];
   var types = [];
+  var translation = {};
   var m = function(pluginName) {
     return {
+      lang: function(key, translateData) {
+        translation[key] =translation[key]||{};
+        translation[key][pluginName] = translateData;
+      },
       type: function(typeName, options, constructor) {
         types.push({
           templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
@@ -312,9 +317,17 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
       });
   };
 
+  var loadTranslations = function(options) {
+    return pluginsLoaded
+      .then(function() {
+        return translation[options.key]||{};
+      });
+  };
+
   return {
     getTypes: getTypes,
-    getType: getType
+    getType: getType,
+    loadTranslations: loadTranslations
   };
 
 }]);

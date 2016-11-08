@@ -12,4 +12,10 @@ musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
   $translateProvider
     .preferredLanguage(currentLanguage || getBrowserLanguage());
 
+  $translateProvider
+    .fallbackLanguage('en');
+
+  $translateProvider.useSanitizeValueStrategy(null);
+  $translateProvider.useLoader('translationsLoader');
+
 }]);

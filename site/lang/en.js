@@ -158,9 +158,4 @@ var enTranslations = {
 
 };
 
-musicShowCaseApp.config(['$translateProvider', function ($translateProvider) {
-  // add translation table
-  $translateProvider
-    .translations('en', enTranslations)
-    .fallbackLanguage('en');
-}]);
+musicShowCaseApp.constant("enTranslations", enTranslations);
