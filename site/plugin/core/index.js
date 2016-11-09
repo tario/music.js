@@ -2,7 +2,13 @@ module.export = function(m) {
 
   m.lang("en", {
     adsr: {
-      description: 'ADSR Envelope signal'
+      description: 'ADSR Envelope signal',
+      tooltip: {
+        attack: 'The time in seconds for the first phase (attack) where the gain rise from 0 to 1',
+        decay: 'The time in seconds for the second phase (decay) where the gain drops from 1 to sustain level',
+        release: 'The time in seconds for the final phase where the gain drops from the sustain level to zero when you release the note',
+        sustain: 'The sustain level, should be a value between 0 and 1'
+      }
     },
     noise: {
       description: 'White noise generator'
@@ -14,7 +20,25 @@ module.export = function(m) {
       description: 'Red noise generator'
     },
     arpeggiator: {
-      description: 'Note Arpeggiator'
+      description: 'Note Arpeggiator',
+      notes: 'Notes',
+      arpeggio: 'Arpeggio',
+      scale: 'scale',
+      semitone: 'semitone',
+      interval: 'interval',
+      total: 'total',
+      loop: 'loop',
+      duration: 'duration',
+      gap: 'gap',
+      tooltip: {
+        semitone: 'Enable this to use a tone scale instead of the default tone scale',
+        scale: 'Define the scale, by choosing the initial semitone. You can see the result on the right',
+        interval: 'The increment between notes (applies for both, tone and semitone arpeggiators)',
+        total: 'Total ammout of notes for the arpeggiator',
+        loop: 'Enable this option, if you want the arpeggiator to loop after the sequence is completed, otherwise, the note will keep playing the sound of the last note after the sequence is completed',
+        duration: 'Duration of this note of the sequence, in milliseconds',
+        gap: 'Duration of silence gap between notes, in milliseconds'
+      }
     },
     reverb: {
       tooltip: {
@@ -68,7 +92,13 @@ module.export = function(m) {
 
   m.lang("es", {
     adsr: {
-      description: 'Señal de envoltura ADSR'
+      description: 'Señal de envoltura ADSR',
+      tooltip: {
+        attack: 'Tiempo en segundos para la primera fase (ataque) donde la ganancia de volumen aumenta de 0 a 1',
+        decay: 'Tiempo en segundos para la segunda fase (decaimiento) done la ganancia de volumen cae de 1 hasta el nivel de *sustain*',
+        release: 'Tiempo en segundos para la fase final donde la ganancia de volumen cae desde el nivel de sustain hasta cero',
+        sustain: 'Nivel de sustain, debe ser un valor entre 0 y 1'
+      }
     },
     noise: {
       description: 'Generador de ruido blanco'
@@ -80,7 +110,25 @@ module.export = function(m) {
       description: 'Generador de ruido rojo'
     },
     arpeggiator: {
-      description: 'Arpegiador de Notas'
+      description: 'Arpegiador de Notas',
+      notes: 'Notas',
+      arpeggio: 'Arpegio',
+      scale: 'escala',
+      semitone: 'semitono',
+      interval: 'intervalo',
+      total: 'total',
+      loop: 'bucle',
+      duration: 'duracion',
+      gap: 'brecha',
+      tooltip: {
+        semitone: 'Activa esta opcion para usar una escala por semitonos en lugar de la escala por tonos por defecto',
+        scale: 'Define la escala segun su semitono inicial. Puedes ver el resultado a la derecha',
+        interval: 'Incremento de valor entre notas (aplica tanto a escalas por tono como por semitono)',
+        total: 'Cantidad total de notas en la secuencia',
+        loop: 'Activa esta opcion, si quieres que el arpegiador vuelva a comenzar la secuencia cuando termine, de otra forma, la ultima nota se mantendra reproduciendose cuando la secuencia se complete',
+        duration: 'Duration de los notas, en milisegundos',
+        gap: 'Duracion de la brecha de silencio entre notas, en milisegundos'
+      }      
     },
     reverb: {
       tooltip: {
