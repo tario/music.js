@@ -10,6 +10,51 @@ module.export = function(m) {
         sustain: 'The sustain level, should be a value between 0 and 1'
       }
     },
+    oscillator: {
+      osc_type: 'Osc. type',
+      preset: 'Preset',
+      waveform: 'Waveform',
+      serie: 'Serie',
+      terms: 'Terms',
+      fixed_frequency: 'Fixed frequency',
+      modl: {
+        detune: 'Detune modulation'
+      },
+      type: {
+        sine: 'sine',
+        cosine: 'cosine',
+        sawtooth: 'sawtooth',
+        triangle: 'triangle',
+        square: 'square',
+        square20: 'square 20%',
+        custom: 'custom...',
+        triangle_square: 'triangle square',
+        triangle_sine: 'triangle sine'
+      },
+      tooltip: {
+        osc_type: 'Oscillator type (waveform), if you choose \'custom\', you will be able to config a lot of extra options to customize the waveform',
+        preset: 'Preset config, you can use it as starting point to build your custom configs',
+        formula: 'Waveform mathematic formula, it should take as input a time value t between 0 and 1, and return the signal level, a number between -1 and 1',
+        samples: 'Number of samples taken to build the fourier terms. Small values implies lower resolutions',
+        serie_a: 'a(n) series expression, function of n. These are the coefficients for Cos(n*t). If you change this, it would reset the waveform parameters, you can only choose one of both',
+        serie_b: 'b(n) series expression, function of n. These are the coefficients for Sin(n*t). If you change this, it would reset the waveform parameters, you can only choose one of both',
+        coefficient: 'Cos and sin coefficient values for each TERM given n. You can modify these values by hand, but these would be recalculated if you change the options above',
+        graph: 'This box shows a graph for the final waveform result',
+        fixed_frequency: 'Enable this, if you want to fix the frequency of the oscillator to a given value',
+        modl: {
+          detune: 'You can setup the effects for detune modulation here. If you leave it empty, there will be no modulation at all'
+        }
+      }
+    },
+    script: {
+      tooltip: 'This is the source code window, you can write your script here'
+    },
+    notesplit: {
+      stop_delay: 'Stop delay',
+      tooltip: {
+        stop_delay: 'Stop delay in seconds, this can be useful to avoid cutting envelope effects'
+      }
+    },
     noise: {
       description: 'White noise generator'
     },
@@ -98,6 +143,51 @@ module.export = function(m) {
         decay: 'Tiempo en segundos para la segunda fase (decaimiento) done la ganancia de volumen cae de 1 hasta el nivel de *sustain*',
         release: 'Tiempo en segundos para la fase final donde la ganancia de volumen cae desde el nivel de sustain hasta cero',
         sustain: 'Nivel de sustain, debe ser un valor entre 0 y 1'
+      }
+    },
+    oscillator: {
+      osc_type: 'Tipo de Osc.',
+      preset: 'Preset',
+      waveform: 'Forma de onda',
+      serie: 'Serie',
+      terms: 'Terminos',
+      fixed_frequency: 'Fijar frecuencia',
+      modl: {
+        detune: 'Modulacion del detune'
+      },      
+      type: {
+        sine: 'senoidal',
+        cosine: 'cosenoidal',
+        sawtooth: 'diente de sierra',
+        triangle: 'triangular',
+        square: 'cuadrada',
+        square20: 'cuadrada al 20%',
+        custom: 'personalizada...',
+        triangle_square: 'triangular y cuadrada',
+        triangle_sine: 'triangular y senoidal'
+      },
+      tooltip: {
+        osc_type: 'Tipo de oscilador (forma de onda), si seleccionas \'custom\', podras configurar muchas opciones extra para personalizar la forma de onda',
+        preset: 'Configuracion preestablecida, puedes usarla como punto de partida para personalizar tus propias opciones',
+        formula: 'Formula matematica para la forma de onda, debe tomar como entrada un valor de tiempo entre 0 y 1 y devolver un nivel de señal entre -1 y 1',
+        samples: 'Cantidad de muestras a usar para calcular los terminos de fourier. Valores mas pequeños implican menores resoluciones',
+        serie_a: 'Expresion de a(n), en funcion de n. Estos son los coeficientes para Cos(n*t). Si los cambias, se reiniciaran los parametros de la forma de onda, solo puedes optar por definir uno de ambos',
+        serie_b: 'Expresion de b(n), en funcion de n. Estos son los coeficientes para Sin(n*t). Si los cambias, se reiniciaran los parametros de la forma de onda, solo puedes optar por definir uno de ambos',
+        coefficient: 'Valores de los coeficientes para cos y sin de cada termino dado un n. Puedes modificar estos valores a mano, pero ten en cuenta que seran recalculados si modificas las opciones de arriba',
+        graph: 'Esta caja contiene un grafico de la forma de onda que se obtiene con las configuraciones',
+        fixed_frequency: 'Activa esto, si quieres que la frecuencia del oscilador sea fija a un determinado valor',
+        modl: {
+          detune: 'Puedes determinar los efectos para modular el *detune* aqui. Si dejas esto vacio, no habra ninguna modulacion'
+        }
+      }
+    },
+    script: {
+      tooltip: 'Esta es la ventana de codigo fuente, puedes escribir to script aqui'
+    },
+    notesplit: {
+      stop_delay: 'Demora al detenerse',
+      tooltip: {
+        stop_delay: 'Demora al detenerse en segundos, puede ser util para evitar cortar efectos de envolventes'
       }
     },
     noise: {

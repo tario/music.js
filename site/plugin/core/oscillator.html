@@ -1,41 +1,41 @@
 <div class="generic-parameter oscillator">
-<div style="display: inherit" class="show-contextual-tooltip">Osc type: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="type for type in ['square', 'sine', 'sawtooth', 'triangle', 'custom']">
+<div style="display: inherit" class="show-contextual-tooltip">{{'core.oscillator.osc_type' | translate}}: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="('core.oscillator.type.'+type)|translate for type in ['square', 'sine', 'sawtooth', 'triangle', 'custom']">
 </select>
-  <div class="help-tooltip contextual-tooltip">Oscillator type (waveform), if you choose 'custom', you will be able to config a lot of extra options to customize the waveform</div>
+  <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.osc_type"></div>
 </div>
 
 <div ng-if="file.data.oscillatorType == 'custom'">
-<h1>Preset</h1>
+<h1 translate="core.oscillator.preset"></h1>
 
 <div class="show-contextual-tooltip">
 <select class="preset" ng-model="file.data.waveform" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms, resolution); file.data.serie.sin = '0'; file.data.serie.cos = '0'">
-    <option value="Math.sin(2*Math.PI*t)">sine</option>
-    <option value="Math.cos(2*Math.PI*t)">cosine</option>
-    <option value="t*2 - 1">sawtooth</option>
-    <option value="t > 0.5 ? t*4 - 1 : -t*4 + 3">triangle</option>
-    <option value="t > 0.5 ? 1 : -1">square</option>
-    <option value="t > 0.2 ? 1 : -1">square %20</option>
-    <option value="t > 0.5 ? t*4 - 1 : -1">triangle square</option>
-    <option value="t > 0.5 ? t*4 - 1 : Math.sin(2*Math.PI*t)">triangle sin</option>
+    <option value="Math.sin(2*Math.PI*t)" translate="core.oscillator.type.sine"></option>
+    <option value="Math.cos(2*Math.PI*t)" translate="core.oscillator.type.cosine"></option>
+    <option value="t*2 - 1" translate="core.oscillator.type.sawtooth"></option>
+    <option value="t > 0.5 ? t*4 - 1 : -t*4 + 3" translate="core.oscillator.type.triangle"></option>
+    <option value="t > 0.5 ? 1 : -1" translate="core.oscillator.type.square"></option>
+    <option value="t > 0.2 ? 1 : -1" translate="core.oscillator.type.square20"></option>
+    <option value="t > 0.5 ? t*4 - 1 : -1" translate="core.oscillator.type.triangle_square"></option>
+    <option value="t > 0.5 ? t*4 - 1 : Math.sin(2*Math.PI*t)" translate="core.oscillator.type.triangle_sine"></option>
 </select>
-<div class="help-tooltip contextual-tooltip">Preset config, you can use it as starting point to build your custom configs</div>
+<div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.preset"></div>
 </div>
 
-<h1>Waveform</h1>
+<h1 translate="core.oscillator.waveform"></h1>
 <div class="row-fluid" ng-init="file.data.waveform = file.data.waveform || '0'">
   <div class="span1">
     <p class="serie-label">f(t)= </p>
   </div>
   <div class="span9 show-contextual-tooltip" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
     <input ng-class='{"invalid-text": invalidWaveform}' class="serie" type="text" ng-model="file.data.waveform" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms, resolution); file.data.serie.sin = '0'; file.data.serie.cos = '0'" />
-    <div class="help-tooltip contextual-tooltip">Waveform mathematic formula, it should take as input a time value t between 0 and 1, and return the signal level, a number between -1 and 1</div>
+    <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.formula"></div>
   </div>
   <div class="span1">
     <p class="serie-label">res= </p>
   </div>
   <div class="span1 show-contextual-tooltip">
     <input class="serie" type="number" min="8" max="2048" ng-init="resolution=resolution||128" ng-model="resolution" ng-change="oscTermsUpdateFromWaveForm(file.data.waveform, file.data.terms, resolution); file.data.serie.sin = '0'; file.data.serie.cos = '0'"/>
-    <div style="right: 0" class="help-tooltip contextual-tooltip">Number of samples taken to build the fourier terms. Small values implies lower resolutions</div>
+    <div style="right: 0" class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.samples"></div>
   </div>
 </div>
 <div class="row-fluid invalid-text">
@@ -46,7 +46,7 @@
   </div>
 </div>
 
-<h1>Serie</h1>
+<h1 translate="core.oscillator.serie"></h1>
 <div class="row-fluid" ng-init="file.data.serie = file.data.serie ||{}">
   <div class="span1">
     <p class="serie-label">a(n)=</p>
@@ -54,14 +54,14 @@
   <div class="span5 show-contextual-tooltip" ng-init="file.data.serie.cos = file.data.serie.cos || '0'">
     <input ng-class='{"invalid-text": invalidA}' class="serie" type="text" ng-model="file.data.serie.cos" ng-change="oscTermsUpdate(file.data.serie.cos, file.data.terms.cos, 'invalidA'); file.data.waveform = '0'" />
 
-    <div class="help-tooltip contextual-tooltip">a(n) series expression, function of n. These are the coefficients for Cos(n*t). If you change this, it would reset the waveform parameters, you can only choose one of both</div>
+    <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.serie_a"></div>
   </div>
   <div class="span1">
     <p class="serie-label">b(n)=</p>
   </div>
   <div class="span5 show-contextual-tooltip" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
     <input ng-class='{"invalid-text": invalidB}' class="serie" type="text" ng-model="file.data.serie.sin" ng-change="oscTermsUpdate(file.data.serie.sin, file.data.terms.sin, 'invalidB')" />
-    <div class="help-tooltip contextual-tooltip">b(n) series expression, function of n. These are the coefficients for Sin(n*t). If you change this, it would reset the waveform parameters, you can only choose one of both</div>
+    <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.serie_b"></div>
   </div>
 </div>
 <div class="row-fluid invalid-text">
@@ -81,7 +81,7 @@
   </div>
 </div>
 
-<h1>Terms</h1>
+<h1 translate="core.oscillator.terms"></h1>
 <div class="row-fluid">
   <div class="span1">
     <table class="terms">
@@ -110,7 +110,7 @@
         </tr>
       </tbody>
     </table>
-    <div class="help-tooltip contextual-tooltip">Cos and sin coefficient values for each TERM given n. You can modify these values by hand, but these would be recalculated if you change the options above</div>
+    <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.coefficient"></div>
   </div>
 </div>
 
@@ -120,7 +120,7 @@
   <div class="span8 show-contextual-tooltip">
     <custom-osc-graph terms="file.data.terms"></custom-osc-graph>
 
-    <div class="help-tooltip contextual-tooltip">This box shows a graph for the final waveform result</div>
+    <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.graph"></div>
   </div>
 </div>
 
@@ -129,19 +129,19 @@
 <br/>
 
 <div class="row-fluid show-contextual-tooltip">
-  <input type="checkbox" class="regular-checkbox showable-switch" ng-model="file.data.fixed_frequency" /> Fixed frequency
+  <input type="checkbox" class="regular-checkbox showable-switch" ng-model="file.data.fixed_frequency" /> {{'core.oscillator.fixed_frequency' | translate}}
   <div class="showable margin10 inlinetable">
   <input type="text" class="hzinput" ng-model='file.data.frequency' />
   hz
   </div>
-  <div class="help-tooltip contextual-tooltip">Enable this, if you want to fix the frequency of the oscillator to a given value</div>
+  <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.fixed_frequency"></div>
 </div>
 
 <div ng-repeat="modulation in modulations">
 <div class="show-contextual-tooltip">
-  <h1>{{modulation.name}} modulation</h1>
+  <h1>{{('core.oscillator.modl.' + modulation.name)|translate}}</h1>
   <div class="music-object-editor" music-stack init-file="modulation.value"></div>
-  <div class="help-tooltip contextual-tooltip">You can setup the effects for {{modulation.name}} modulation here. If you leave it empty, there will be no modulation at all</div>
+  <div class="help-tooltip contextual-tooltip">{{('core.oscillator.tooltip.modl.' + modulation.name)|translate}}</div>
 </div>
 </div>
 

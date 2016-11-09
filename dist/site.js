@@ -12764,7 +12764,12 @@ var esTranslations = {
     help_recipes_howto_create_song: 'Como crear una cancion',
     help_contextual_help: 'Ayuda Contextual',
     help_welcome: '¡Bienvenido!',
-    help_about: 'Acerca de Music.js'
+    help_about: 'Acerca de Music.js',
+    tooltip: {
+      'new': 'Puedes crear nuevos items en blanco desde esta opcion',
+      preferences: 'Puedes editar tus preferencias aqui',
+      help: 'Menu para acceder a las opciones de ayuda y *Acerca De*'
+    }
   },
   contextual_help: {
     enable: 'Activar Ayuda Contextual',
