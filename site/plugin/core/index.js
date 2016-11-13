@@ -223,7 +223,7 @@ module.export = function(m) {
     reverb: {
       tooltip: {
         room: 'Tamaño de la habitacion',
-        damp: 'Humedad de la reverberacion',
+        damp: 'Disminucion en la reverberacion',
         mix: 'Balance entre seco y humedo'
       },
       description: 'Reverberacion, provista por timbre.js'
