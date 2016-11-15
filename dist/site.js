@@ -13751,7 +13751,7 @@ musicShowCaseApp.directive("recipeTooltip", ["$parse", "$timeout", function($par
   return {
     restrict: 'E',
     scope: {},
-    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="help-tooltip recipe-tooltip"><p>{{text}}</p></div>',
+    template: '<div ng-click="onClick($event)" ng-class="{\'show-recipe-tooltip\': tooltipEnabled, \'cap-right\': capRight}" class="help-tooltip recipe-tooltip"><p>{{text|translate}}</p></div>',
     link: function(scope, element, attrs) {
       var rtIdGetter = $parse(attrs.rtId);
       var tooltipElementId = rtIdGetter(scope.$parent);
@@ -14471,7 +14471,10 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function($timeout, $rootScope, $http) {
+musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', function($q, $timeout, $rootScope, $http) {
+
+    var recipeList = ['intro', 'create_a_song'];
+
     var currentRecipe = {
       steps: [],
       currentStep: 0
@@ -14527,6 +14530,10 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
       };
     };
 
+    var getLocaleName = function(stepIndex, tooltipName) {
+       return "s"+stepIndex+"_tooltip_" + tooltipName;
+    };
+
     var start = function(name) {
       var loadEventHandler = function(eventHandlerData) {
         if (eventHandlerData.next_step_on) {
@@ -14536,10 +14543,16 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
         }
       };
 
-      var loadStep = function(stepData) {
+      var loadStep = function(stepData, stepIndex) {
+
+        var tr = {};
+        for (var k in stepData.tooltip) {
+          tr[k] = "recipe" + "." + name + "." + getLocaleName(stepIndex, k);
+        }
+
         return {
           blink: stepData.blink,
-          tooltip: stepData.tooltip,
+          tooltip: tr,
           eventHandler: loadEventHandler(stepData.eventHandler),
           duration: stepData.duration
         };
@@ -14559,15 +14572,62 @@ musicShowCaseApp.factory("Recipe", ['$timeout', '$rootScope', '$http', function(
       handleEvent(name);
     };
 
+    var loadTranslations = function(options) {
+      var key = options.key;
+
+      var loadRecipeTranslation = function(name) {
+        return $http.get("recipes/" + name +".json")
+          .then(function(result) {
+            var recipeData = result.data;
+            if (!recipeData.lang) return {};
+
+            var langIndex = recipeData.lang.indexOf(key);
+            if (langIndex === -1) return {}
+
+            var data = {};
+            recipeData.steps.forEach(function(step, stepIndex) {
+              if (step.tooltip) {
+                for (var k in step.tooltip) {
+                  var tp = step.tooltip[k];
+                  var localeName = getLocaleName(stepIndex, k);
+                  if (Array.isArray(tp)) {
+                    data[localeName] = tp[langIndex];
+                  } else {
+                    if (langIndex===0) {
+                      data[localeName] = tp;
+                    }
+                  }
+                }
+              }
+            });
+
+            return data;
+          });
+      };
+
+      var actions = {};
+      recipeList.forEach(function(recipeId) {
+        actions[recipeId] = loadRecipeTranslation(recipeId);
+      });
+
+      return $q.all(actions)
+        .then(function(recipeTranslationData) {
+          return {
+            recipe: recipeTranslationData
+          };
+        })
+    };
+
     return {
       start: start,
       step: runRecipeStep,
-      handleEvent: handleEvent
+      handleEvent: handleEvent,
+      loadTranslations: loadTranslations
     };
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslations', 'enTranslations', function($q, TypeService, esTranslations, enTranslations) {
+musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslations', 'enTranslations', 'Recipe', function($q, TypeService, esTranslations, enTranslations, Recipe) {
     return function(options) {
       var baseTranslation = {}
 
@@ -14579,18 +14639,22 @@ musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslat
         baseTranslation = enTranslations;
       }
 
-      return TypeService.loadTranslations(options)
-        .then(function(tr) {
-          for (var k in tr) {
-            baseTranslation[k] = tr[k];
-          }
+      var addTranslations = function(tr) {
+        for (var k in tr) {
+          baseTranslation[k] = tr[k];
+        }
+      };
+
+      return $q.all({
+        typeTranslations: TypeService.loadTranslations(options),
+        recipeTranslations: Recipe.loadTranslations(options)
+      })
+        .then(function(result) {
+          addTranslations(result.typeTranslations);
+          addTranslations(result.recipeTranslations);
 
           return baseTranslation;
         })
-
-      var deferred = $q.defer();
-      deferred.resolve(baseTranslation);
-      return deferred.promise;
     };
 }]);
 

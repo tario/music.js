@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslations', 'enTranslations', function($q, TypeService, esTranslations, enTranslations) {
+musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslations', 'enTranslations', 'Recipe', function($q, TypeService, esTranslations, enTranslations, Recipe) {
     return function(options) {
       var baseTranslation = {}
 
@@ -11,17 +11,21 @@ musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslat
         baseTranslation = enTranslations;
       }
 
-      return TypeService.loadTranslations(options)
-        .then(function(tr) {
-          for (var k in tr) {
-            baseTranslation[k] = tr[k];
-          }
+      var addTranslations = function(tr) {
+        for (var k in tr) {
+          baseTranslation[k] = tr[k];
+        }
+      };
+
+      return $q.all({
+        typeTranslations: TypeService.loadTranslations(options),
+        recipeTranslations: Recipe.loadTranslations(options)
+      })
+        .then(function(result) {
+          addTranslations(result.typeTranslations);
+          addTranslations(result.recipeTranslations);
 
           return baseTranslation;
         })
-
-      var deferred = $q.defer();
-      deferred.resolve(baseTranslation);
-      return deferred.promise;
     };
 }]);

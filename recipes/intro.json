@@ -1,65 +1,93 @@
 {
+  "lang": ["en", "es"],
   "steps": [
     {
       "blink": ["object_index_panel"],
       "tooltip": {
-        "object_index_panel": "This is the Object Index Panel, you can browse and search here all craft inputs and results. \nE.g. musical instruments, melodic patterns, composed songs and instruments effects. \n\nClick on this message to continue"
+        "object_index_panel": [
+          "This is the Object Index Panel, you can browse and search here all craft inputs and results. \nE.g. musical instruments, melodic patterns, composed songs and instruments effects. \n\nClick on this message to continue",
+          "Este es el Panel de Objetos, puedes navegar y buscar aqui cualquier material o producto. \nEj: instrumentos musicales, patrones melodicos, canciones y efectos para instrumentos. \n\nClickea este mensaje para continuar"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["navbar"],
       "tooltip": {
-        "navbar": "This is the menu bar, from this menu you can access to all the main features actually offered by music.js"
+        "navbar": [
+          "This is the menu bar, from this menu you can access to all the main features actually offered by music.js",
+          "Esta es la barra de menu, desde este menu puedes acceder a las funcionalidades principales de music.js"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["menu_new"],
       "tooltip": {
-        "menu_new": "From this option, you can start new creations: song compositions, pattern compositions and custom instruments"
+        "menu_new": [
+          "From this option, you can start new creations: song compositions, pattern compositions and custom instruments",
+          "Desde esta opcion, puedes empezar creaciones nuevas: composiciones de canciones, composiciones de patrones e instrumentos personalizados"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["menu_preferences"],
       "tooltip": {
-        "menu_preferences": "From this another option, you can access to complementary features not directly related with crafting. (Not available yet, sorry)"
+        "menu_preferences": [
+          "From this another option, you can access to complementary features not directly related with crafting. (Not available yet, sorry)",
+          "Desde esta otra opcion, puedes acceder a funcionalidades complementarias no directamente relacionadas con la construccion. (Disculpa, no disponible aun)"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["menu_help"],
       "tooltip": {
-        "menu_help": "This is the most important option for novice users.\nFrom this help menu, you can access a variety of help options in order to get best understanding of the application. \n\nClick on ? menu to review the available options"
+        "menu_help": [
+          "This is the most important option for novice users.\nFrom this help menu, you can access a variety of help options in order to get best understanding of the application. \n\nClick on ? menu to review the available options",
+          "Esta es la opcion mas importante para usuarios novatos.\nDesde este menu de ayuda, puedes acceder a una variedad de opciones que te serviran para entender mejor la aplicacion. \n\nClickea en el menu '?' para ver las opciones disponibles"
+        ]
       },
       "eventHandler": {"next_step_on": "menu_help_click"}
     },
     {
       "blink": ["menu_help_help"],
       "tooltip": {
-        "menu_help_help": "This option, is to view a general useful help text"
+        "menu_help_help": [
+          "This option, is to view a general useful help text",
+          "Esta opcion, es para ver un texto de ayuda general"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["menu_help_recipes"],
       "tooltip": {
-        "menu_help_recipes": "This another option, is to access a list of the available recipes"
+        "menu_help_recipes": [
+          "This another option, is to access a list of the available recipes",
+          "Esta otra opcion, da acceso a la lista de recetas disponibles"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["menu_help_welcome"],
       "tooltip": {
-        "menu_help_welcome": "Displays the welcome message"
+        "menu_help_welcome": [
+          "Displays the welcome message",
+          "Muestra la ventana de bienvenida"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["menu_help_about"],
       "tooltip": {
-        "menu_help_about": "General info about the application"
+        "menu_help_about": [
+          "General info about the application",
+          "Informacion general acerca de la aplicacion"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     }
