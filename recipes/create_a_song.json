@@ -1,74 +1,111 @@
 {
+  "lang": ["en", "es"],
   "steps": [
     {
       "blink": ["menu_new"],
       "tooltip": {
-        "menu_new": "Click \"new\" menu option"
+        "menu_new": [
+          "Click \"File\" menu option",
+          "Haz click en la opcion \"Archivo\""
+        ]
       },
       "eventHandler": {"next_step_on": "menu_new_click"}
     },
     { 
       "blink": ["menu_new_pattern"],
       "tooltip": {
-        "menu_new_pattern": "Click \"Pattern\" menu option to create a new melodic pattern"
+        "menu_new_pattern": [
+          "Click \"New Pattern\" menu option to create a new melodic pattern",
+          "Haz click en la opcion \"Nuevo Patron\" para crear un nuevo patron melodico"
+        ]
       },
       "eventHandler": {"delay": 500, "inner": {"next_step_on": "menu_new_pattern_click"}}
     },
     { 
       "blink": ["pattern_instrument_dropzone", "Square+ADSR"],
       "tooltip": {
-        "pattern_instrument_dropzone": "this is the instrument dropzone",
-        "Square+ADSR": "To start with, you will need to drag the instrument to the drop zone"
+        "pattern_instrument_dropzone": [
+          "this is the instrument dropzone",
+          "Esta es la seccion a donde se puede arrastrar el instrumento"
+        ],
+        "Square+ADSR": [
+          "To start with, you will need to drag the instrument to the drop zone",
+          "Para empezar, tienes que arrastrar el instrumento a la seccion indicada"
+        ]
       },
       "eventHandler": {"next_step_on": "instrument_dropped"}
     },
     {
       "tooltip": {
-        "pattern_instrument_dropzone": "perfect! you just assigned the instrument to the track. Click this tooltip to continue"
+        "pattern_instrument_dropzone": [
+          "perfect! you just assigned the instrument to the track. Click this tooltip to continue",
+          "¡Perfecto! acabas de asignar el instrumento a la pista. Haz click en este mensaje para continuar"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "tooltip": {
-        "pattern_track_event_area": "Now, you can add musical notes. Click the area above to insert a new note"
+        "pattern_track_event_area": [
+          "Now, you can add musical notes. Click the area above to insert a new note",
+          "Ahora, puedes agregar notas musicales. Haz click en el area de arriba para insertar una nueva nota"
+        ]
       },
       "eventHandler": {"delay": 100, "inner": {"next_step_on": "pattern_note_added"}}
     },
     {
       "tooltip": {
-        "pattern_track_event_area": "Great!, now, try to add another one"
+        "pattern_track_event_area": [
+          "Great!, now, try to add another one",
+          "¡Bien! ahora, prueba agregar otra"
+        ]
       },
       "eventHandler": {"delay": 100, "inner": {"next_step_on": "pattern_note_added"}}
     },
     {
       "tooltip": {
-        "pattern_track_event_area": "Awesome!, you can drag them to re-assign value and position, move one of the notes you just created"
+        "pattern_track_event_area": [
+          "Awesome!, you can drag them to re-assign value and position, move one of the notes you just created",
+          "¡Impresionante!, puedes arrastrarla para reasignar su valor o posicion, mueve una de las notas que acabas de crear"
+        ]
       },
       "eventHandler": {"next_step_on": "pattern_note_drag"}
     },
     {
       "blink": ["pattern_play"],
       "tooltip": {
-        "pattern_track_event_area": "Also, you can change the duration of the event by dragging from the right edge (like resizing), feel free to try it, or click play button to hear your creation and continue the tutorial"
+        "pattern_track_event_area": [
+          "Also, you can change the duration of the event by dragging it from the right edge (like resizing), feel free to try it, or click play button to hear your creation and continue the tutorial",
+          "Tambien, puedes cambiar la duracion del evento, arrastrandolo desde el border derecho (como redimiensionandolo), puedes probar hacerlo, o Haz click en el boton 'Reproducir' para escuchar tu creacion y continuar con el tutorial"
+        ]
       },
       "eventHandler": {"next_step_on": "pattern_play_click"}
     },
     {
       "tooltip": {
-        "pattern_play": "Good! the music is playing..."
+        "pattern_play": [
+          "Good! the music is playing...",
+          "¡Bien! la musica se esta reproduciendo"
+        ]
       },
       "eventHandler": {"next_step_on": "pattern_play_stopped"}
     },
     {
       "tooltip": {
-        "pattern_play": "Now, we are going to compose a song using this pattern. Click this tooltip to continue"
+        "pattern_play": [
+          "Now, we are going to compose a song using this pattern. Click this tooltip to continue",
+          "Ahora, vamos a componer una cancion usando este patron. Haz click en este mensaje para continuar"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     },
     {
       "blink": ["pattern_name_input_box"],
       "tooltip": {
-        "pattern_name_input_box": "Optionally, you can name your pattern here"
+        "pattern_name_input_box": [
+          "Optionally, you can name your pattern here",
+          "Opcionalmente, puedes darle nombre a tu patron aqui"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"},
       "duration": 7
@@ -76,27 +113,39 @@
     {
       "blink": ["menu_new"],
       "tooltip": {
-        "menu_new": "Click \"new\" menu option, this time, is to create the song"
+        "menu_new": [
+          "Click \"File\" menu option, this time, is to create the song",
+          "Haz click en la opcion \"Archivo\" del menu, esta vez sera para crear la cancion"
+        ]
       },
       "eventHandler": {"next_step_on": "menu_new_click"}
     },
     {
       "blink": ["menu_new_song"],
       "tooltip": {
-        "menu_new_song": "Click \"Song\" menu option to create a new song"
+        "menu_new_song": [
+          "Click \"New Song\" menu option to create a new song",
+          "Haz click en la opcion \"Nueva Cancion\" del menu para crear una nueva cancion"
+        ]
       },
       "eventHandler": {"delay": 500, "inner": {"next_step_on": "menu_new_song_click"}}
     },
     { 
       "blink": ["song_pattern_dropzone_0_0", "index_pattern_type"],
       "tooltip": {
-        "song_pattern_dropzone_0_0": "Drag your pattern to this block,"
+        "song_pattern_dropzone_0_0": [
+          "Drag your pattern to this block",
+          "Arrastra tu patron a este bloque"
+        ]
       },
       "eventHandler": {"next_step_on": "song_pattern_dropped"}
     },
     { 
       "tooltip": {
-        "song_pattern_dropzone_0_0": "Great!"
+        "song_pattern_dropzone_0_0": [
+          "Great!",
+          "¡Bien!"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"},
       "duration": 2
@@ -104,46 +153,67 @@
     { 
       "blink": ["song_pattern_dropzone_0_1", "index_pattern_type"],
       "tooltip": {
-        "song_pattern_dropzone_0_1": "Drag your pattern to this another block"
+        "song_pattern_dropzone_0_1": [
+          "Drag your pattern (the same) to this another block",
+          "Arrastra tu patron (el mismo que antes) a este otro bloque"
+        ]
       },
       "eventHandler": {"next_step_on": "song_pattern_dropped"}
     },
     { 
       "blink": ["song_play"],
       "tooltip": {
-        "song_play": "Click this button to hear your creation"
+        "song_play": [
+          "Click this button to hear your creation",
+          "Haz click en este boton para escuchar tu creacion"
+        ]
       },
       "eventHandler": {"next_step_on": "song_play_click"}
     },
     { 
       "tooltip": {
-        "song_play": "You should hear your pattern play twice..."
+        "song_play": [
+          "You should hear your pattern play twice...",
+          "Deberias escuchar tu patron reproducirse dos veces..."
+        ]
       },
       "eventHandler": {"next_step_on": "song_play_stopped"}
     },
     { 
       "blink": ["song_rec"],
       "tooltip": {
-        "song_rec": "Click this button to export an audio file of the song. You should get a .WAV file after playing the song"
+        "song_rec": [
+          "Click this button to export an audio file of the song. You should get a .WAV file after playing the song",
+          "Haz click en este boton para exportar un archivo de audio de la cancion. Deberias obtener un archivo .WAV despues de reproducir la cancion"
+        ]
       },
       "eventHandler": {"delay": 500, "inner": {"next_step_on": "song_rec_click"}}
     },
     { 
       "blink": ["song_rec_confirm"],
       "tooltip": {
-        "song_rec_confirm": "Review record options, and click this button when ready"
+        "song_rec_confirm": [
+          "Review record options, and click this button when ready",
+          "Revisa las opciones de grabacion, y Haz click en este boton cuando estes listo"
+        ]
       },
       "eventHandler": {"next_step_on": "song_rec_confirm"}  
     },
     { 
       "tooltip": {
-        "song_rec": "Your song is being recorded, please wait until it ends..."
+        "song_rec": [
+          "Your song is being recorded, please wait until it ends...",
+          "Tu cancion esta siendo grabada, por favor espera hasta que finalize..."
+        ]
       },
       "eventHandler": {"next_step_on": "song_rec_stop"}
     },
     { 
       "tooltip": {
-        "song_rec": "Congratulations! you learned how to create a song using music.js.\n\n Click this tooltip to dismiss"
+        "song_rec": [
+          "Congratulations! you learned how to create a song using music.js.\n\n Click this tooltip to dismiss",
+          "¡Felicitaciones! Haz aprendido como crear una cancion usando music.js.\n\n Haz click en este mensaje para terminar"
+        ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
     }

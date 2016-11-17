@@ -6,7 +6,7 @@
       "tooltip": {
         "object_index_panel": [
           "This is the Object Index Panel, you can browse and search here all craft inputs and results. \nE.g. musical instruments, melodic patterns, composed songs and instruments effects. \n\nClick on this message to continue",
-          "Este es el Panel de Objetos, puedes navegar y buscar aqui cualquier material o producto. \nEj: instrumentos musicales, patrones melodicos, canciones y efectos para instrumentos. \n\nClickea este mensaje para continuar"
+          "Este es el Panel de Objetos, puedes navegar y buscar aqui cualquier material o producto. \nEj: instrumentos musicales, patrones melodicos, canciones y efectos para instrumentos. \n\nHaz click en este mensaje para continuar"
         ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
@@ -46,7 +46,7 @@
       "tooltip": {
         "menu_help": [
           "This is the most important option for novice users.\nFrom this help menu, you can access a variety of help options in order to get best understanding of the application. \n\nClick on ? menu to review the available options",
-          "Esta es la opcion mas importante para usuarios novatos.\nDesde este menu de ayuda, puedes acceder a una variedad de opciones que te serviran para entender mejor la aplicacion. \n\nClickea en el menu '?' para ver las opciones disponibles"
+          "Esta es la opcion mas importante para usuarios novatos.\nDesde este menu de ayuda, puedes acceder a una variedad de opciones que te serviran para entender mejor la aplicacion. \n\nHaz click en en el menu '?' para ver las opciones disponibles"
         ]
       },
       "eventHandler": {"next_step_on": "menu_help_click"}
