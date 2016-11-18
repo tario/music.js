@@ -48,6 +48,10 @@
   color: black;
 }
 
+.pattern-mini-button.fa.playing {
+  color: #0f0;
+}
+
 .pattern-mini-button.fa {
   color: black;
   background-color: #aaaaaa;

@@ -142,6 +142,15 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     pattern.tracks.forEach(function(track) {
       if (track.instrument) loader[track.instrument.id] = instSet.load(track.instrument.id);
     });
+
+
+    block.playing = true;
+    var playDone = function() {
+      $timeout(function() {
+        block.playing = false;
+      });
+    };
+
     $q.all(loader)
       .then(function(instruments) {
         $scope.stop();
@@ -151,7 +160,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
         playing = Pattern.patternCompose(changedBpm, instruments, function() {
           playing = null;
+          playDone();
         }).play();
+
+        var stop = playing.stop;
+        playing.stop = function() {
+          playDone();
+          stop();
+        };
       });
   };
 
