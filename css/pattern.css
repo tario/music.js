@@ -80,7 +80,6 @@ input.smallinput {
   border-left-color: white;
   border-left-style: solid;
   border-left-width: 2px;
-  margin-left: -2px;
   overflow: visible;
 }
 
