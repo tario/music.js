@@ -56,7 +56,7 @@ var esTranslations = {
       higuma: '@higuma (Autor de WebAudioRecorder)',
       kristopolous: '@kristopolous (Autor de la plantilla de bootstrap BOOTSTRA.386)'
     },
-    contribute: 'CONTRIBUIR',
+    contribute: 'COMO CONTRIBUIR',
     contact_me: 'Contactame a travez de github'
   },
   common: {
