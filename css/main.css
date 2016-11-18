@@ -17,6 +17,7 @@ body.modal-open .contextual-help-switch {
 .lower-left-corner-menu .row,
 .lower-left-corner-menu .container {
   margin-left: 0;
+  width: 100%;
 }
 
 .lower-left-corner-menu .row > div {
@@ -27,6 +28,7 @@ body.modal-open .contextual-help-switch {
   position: fixed;
   left: 0;
   bottom: 0;
+  width: 250px;
 }
 
 .contextual-help-switch {
