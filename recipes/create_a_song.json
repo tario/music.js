@@ -203,7 +203,7 @@
       "tooltip": {
         "song_rec": [
           "Your song is being recorded, please wait until it ends...",
-          "Tu cancion esta siendo grabada, por favor espera hasta que finalize..."
+          "Tu cancion esta siendo grabada, por favor espera hasta que finalice..."
         ]
       },
       "eventHandler": {"next_step_on": "song_rec_stop"}
