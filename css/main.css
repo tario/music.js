@@ -453,3 +453,16 @@ body.modal-open .main-window h6 {
   margin-right: -15px;
   background-color: #0000ff;
 }
+
+.dropdown-menu {
+  margin-top: 5px;
+}
+
+.navbar .nav>li>.dropdown-menu:before {
+  content: none !important;
+}
+
+.navbar .nav>li>.dropdown-menu:after {
+  content: none !important;
+}
+
