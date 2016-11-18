@@ -12648,7 +12648,10 @@ var enTranslations = {
     add: 'Add',
     tooltip: {
       playing_speed: 'Playing speed, number of beats per minute'
-    }
+    },
+    new_instrument: 'New Instrument',
+    new_pattern: 'New Pattern',
+    new_song: 'New Song',
   },
   help: {
     FLOW: 'MUSIC.JS FLOW',
@@ -12810,7 +12813,10 @@ var esTranslations = {
     add: 'Agreg.',
     tooltip: {
       playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto'
-    }
+    },
+    new_instrument: 'Nuevo Instrumento',
+    new_pattern: 'Nuevo Patron',
+    new_song: 'Nueva Cancion'
   },
   help: {
     FLOW: 'FLUJO DE MUSIC.JS',
@@ -14682,11 +14688,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
-    if (block.id) {
-      return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
-    } else {
-      return "Drop pattern here";
-    }
+    return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
   };
 });
 
@@ -15297,21 +15299,30 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   }
 
   $scope.newInstrument = function() {
-    FileRepository.createFile({type: "instrument", name: "New Instrument"})
+    $translate("common.new_instrument")
+      .then(function(name) {
+        return FileRepository.createFile({type: "instrument", name: name});
+      })
       .then(function(id) {
         document.location = "#/editor/instrument/"+id;
       });
   };
 
   $scope.newSong = function() {
-    FileRepository.createFile({type: "song", name: "New Song"})
+    $translate("common.new_song")
+      .then(function(name) {
+        return FileRepository.createFile({type: "song", name: name});
+      })
       .then(function(id) {
         document.location = "#/editor/song/"+id;
       });
   };
 
   $scope.newPattern = function() {
-    FileRepository.createFile({type: "pattern", name: "New Pattern"})
+    $translate("common.new_pattern")
+      .then(function(name) {
+        return FileRepository.createFile({type: "pattern", name: name});
+      })
       .then(function(id) {
         document.location = "#/editor/pattern/"+id;
       });

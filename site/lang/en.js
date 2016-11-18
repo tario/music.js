@@ -74,7 +74,10 @@ var enTranslations = {
     add: 'Add',
     tooltip: {
       playing_speed: 'Playing speed, number of beats per minute'
-    }
+    },
+    new_instrument: 'New Instrument',
+    new_pattern: 'New Pattern',
+    new_song: 'New Song',
   },
   help: {
     FLOW: 'MUSIC.JS FLOW',

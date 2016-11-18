@@ -66,7 +66,9 @@
           <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap:file.measure) + '%'}">
             <span class="fa fa-music"></span>
             <div class="overlay text-container">
-              <p ng-show="block">
+              <p ng-show="!(block && block.id)" translate="song.tooltip.drop_pattern">
+              </p>
+              <p ng-show="block && block.id">
                 {{block | block_name:indexMap}}
               </p>
             </div>

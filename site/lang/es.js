@@ -74,7 +74,10 @@ var esTranslations = {
     add: 'Agreg.',
     tooltip: {
       playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto'
-    }
+    },
+    new_instrument: 'Nuevo Instrumento',
+    new_pattern: 'Nuevo Patron',
+    new_song: 'Nueva Cancion'
   },
   help: {
     FLOW: 'FLUJO DE MUSIC.JS',
