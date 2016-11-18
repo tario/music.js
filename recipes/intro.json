@@ -36,7 +36,7 @@
       "tooltip": {
         "menu_preferences": [
           "From this another option, you can access to complementary features not directly related with crafting. (Not available yet, sorry)",
-          "Desde esta otra opcion, puedes acceder a funcionalidades complementarias no directamente relacionadas con la construccion. (Disculpa, no disponible aun)"
+          "Desde esta otra opcion, puedes acceder a funcionalidades complementarias no directamente relacionadas con la construccion. (Disculpa, opcion no disponible por el momento)"
         ]
       },
       "eventHandler": {"next_step_on": "tooltip_click"}
