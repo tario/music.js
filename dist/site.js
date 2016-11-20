@@ -13520,13 +13520,12 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMove = function() {};
       };
 
-      var moveEvent = function(evt) {
+      var moveEvent = function(evt, offsetX) {
         return function(event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
           if (!event.target.classList.contains("event-list")) return;
-          evt.s = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
-
+          evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * 100;
           if (evt.s < 0) evt.s = 0;
 
           var oldN = evt.n;
@@ -13537,10 +13536,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         };
       };
 
-      var moveEventFromEvent = function(evt) {
+      var moveEventFromEvent = function(evt, offsetX) {
         return function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
-          evt.s = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+          evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * 100;
           evt.n = dragevt.n;
           if (evt.s < 0) evt.s = 0;
           scope.$emit("trackChanged", scope.track);
@@ -13570,8 +13569,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.$emit("trackChanged", scope.track);
         scope.$emit("eventChanged", {oldevt:{}, evt:newEvt, track: scope.track});
 
-        scope.mouseMove = moveEvent(newEvt);
-        scope.mouseMoveEvent = moveEventFromEvent(newEvt);
+        scope.mouseMove = moveEvent(newEvt, 0);
+        scope.mouseMoveEvent = moveEventFromEvent(newEvt, 0);
 
         scope.mouseLeave = function() {
           cancelMove();
@@ -13588,8 +13587,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.$emit("eventSelected", {evt: evt, track: scope.track});
         scope.selected = evt;
 
-        scope.mouseMove = moveEvent(evt);
-        scope.mouseMoveEvent = moveEventFromEvent(evt);
+        scope.mouseMove = moveEvent(evt, event.offsetX);
+        scope.mouseMoveEvent = moveEventFromEvent(evt, event.offsetX);
 
         scope.mouseLeave = function() {
           cancelMove();
