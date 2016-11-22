@@ -43,20 +43,20 @@
   </div>
 </div>
 
-<div class="row" ng-enabled="selected">
+<div class="row">
   <div class="span6"></div>
-  <div class="span1"><p class="serie-label">start</p></div>
+  <div class="span1"><p class="serie-label pull-right">start</p></div>
   <div class="span1">
-    <input type="number" min="0" max="{{measureCount*measure*TICKS_PER_BEAT - selected.l}}" class="responsive-input" ng-model="selected.s"></input>
+    <input ng-disabled="!selected" type="number" min="0" max="{{measureCount*measure*TICKS_PER_BEAT - selected.l}}" class="responsive-input" ng-model="selected.s"></input>
   </div>
 
-  <div class="span1"><p class="serie-label">len.</p></div>
+  <div class="span1"><p class="serie-label pull-right">len.</p></div>
   <div class="span1">
-    <input type="number" min="6" max="{{measureCount*measure*TICKS_PER_BEAT - selected.s}}" class="responsive-input" ng-model="selected.l"></input>
+    <input ng-disabled="!selected" type="number" min="6" max="{{measureCount*measure*TICKS_PER_BEAT - selected.s}}" class="responsive-input" ng-model="selected.l"></input>
   </div>
 
-  <div class="span1"><p class="serie-label">n</p></div>
+  <div class="span1"><p class="serie-label pull-right">n</p></div>
   <div class="span1">
-    <input type="number" class="responsive-input" ng-model="selected.n"></input>
+    <input min="0" max="119" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="$emit('eventChanged', {oldevt: {n:-1},evt: selected, track: track})"></input>
   </div>
 </div>
