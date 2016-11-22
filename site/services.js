@@ -362,19 +362,19 @@ musicShowCaseApp.service("Historial", [function() {
   };
 }]);
 
-musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
+musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, TICKS_PER_BEAT) {
   var noteseq = function(file, track, onStop) {
     var noteseq = new MUSIC.NoteSequence();
     var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
-    var scale = 600 / file.bpm;
+    var scale = 60000 / file.bpm / TICKS_PER_BEAT;
 
     for (var i=0; i<events.length; i++) {
       var evt = track.events[i];
       noteseq.push([evt.n, evt.s * scale, evt.l * scale]);
     }
 
-    noteseq.paddingTo(100 * file.measureCount * file.measure * scale);
-    noteseq.pushCallback([100*file.measureCount * file.measure * scale, onStop]);
+    noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
+    noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
 
     return noteseq;
   };
@@ -401,7 +401,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
       }).reduce(higher, 0)
     }).reduce(higher,0);
 
-    var measureLength = measure * 100;
+    var measureLength = measure * TICKS_PER_BEAT;
     var measureCount = Math.floor((endTime-1)/measureLength) + 1;
     if (measureCount<1) return 1;
     return measureCount;

@@ -35,7 +35,7 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT) {
   $scope.indexMap = {};
   var music = new MUSIC.Context();
 
@@ -108,8 +108,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           return patterns[id];
         };        
 
-        var scale = 600 / $scope.file.bpm;
-        var measure = 100 * $scope.file.measure * scale;
+        var scale = 60000 / $scope.file.bpm / TICKS_PER_BEAT;
+        var measure = TICKS_PER_BEAT * $scope.file.measure * scale;
         var song = new MUSIC.Song(
           $scope.file.tracks.map(function(track) {
             return track.blocks.map(function(block) {

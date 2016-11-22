@@ -472,7 +472,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
 }]);
 
 
-musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
       /* Current track */
@@ -486,6 +486,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($tim
     },
     templateUrl: "site/templates/directives/patternTrackCompactView.html",
     link: function(scope) {
+      scope.TICKS_PER_BEAT = TICKS_PER_BEAT;
       var semitoneToNote = function(n) {
         return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
       };
@@ -511,7 +512,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($tim
   };
 }]);
 
-musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
       /* Current track */
@@ -526,7 +527,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
     },
     templateUrl: "site/templates/directives/musicEventEditor.html",
     link: function(scope, element, attrs) {
-      var defaultL = 100;
+      scope.TICKS_PER_BEAT = TICKS_PER_BEAT;
+      var defaultL = TICKS_PER_BEAT;
 
       var semitoneToNote = function(n) {
         return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
@@ -575,7 +577,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
           if (!event.target.classList.contains("event-list")) return;
-          evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * 100;
+          evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
+          evt.s = Math.floor(evt.s);
           if (evt.s < 0) evt.s = 0;
 
           var oldN = evt.n;
@@ -589,7 +592,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
       var moveEventFromEvent = function(evt, offsetX) {
         return function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
-          evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * 100;
+          evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
+          evt.s = Math.floor(evt.s);
           evt.n = dragevt.n;
           if (evt.s < 0) evt.s = 0;
           scope.$emit("trackChanged", scope.track);
@@ -607,9 +611,11 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         if (!event.target.classList.contains("event-list")) return;
         var newEvt = {
           n: Math.floor(120 - event.offsetY / 20),
-          s: Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100,
+          s: Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT,
           l: defaultL
         };
+
+        newEvt.s = Math.floor(newEvt.s);
 
         scope.selected = newEvt;
 
@@ -663,9 +669,11 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
           if (!event.target.classList.contains("event-list")) return;
-          var refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+          var refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
           evt.l = refs - evt.s;
-          if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
+          evt.l = Math.floor(evt.l);
+
+          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
 
           defaultL = evt.l;
           scope.$emit("trackChanged", scope.track);
@@ -675,9 +683,11 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMoveEvent = function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
-          var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+          var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
           evt.l = refs - evt.s;
-          if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
+          evt.l = Math.floor(evt.l);
+
+          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
 
           defaultL = evt.l;
 

@@ -155,3 +155,7 @@ input.smallinput {
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+input.responsive-input {
+  width: 100%;
+}

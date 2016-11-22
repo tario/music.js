@@ -12571,6 +12571,7 @@ var e=c.find(".active:last a"),f=a.Event("hide.bs.tab",{relatedTarget:b[0]}),g=a
 var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngRoute', 'ui.bootstrap', 'ngDraggable', 'ngCookies', 'pascalprecht.translate']);
 
 musicShowCaseApp.constant("MUSIC", MUSIC);
+musicShowCaseApp.constant("TICKS_PER_BEAT", 96);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
@@ -13422,7 +13423,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
 }]);
 
 
-musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
       /* Current track */
@@ -13436,6 +13437,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($tim
     },
     templateUrl: "site/templates/directives/patternTrackCompactView.html",
     link: function(scope) {
+      scope.TICKS_PER_BEAT = TICKS_PER_BEAT;
       var semitoneToNote = function(n) {
         return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
       };
@@ -13461,7 +13463,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", function($tim
   };
 }]);
 
-musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
       /* Current track */
@@ -13476,7 +13478,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
     },
     templateUrl: "site/templates/directives/musicEventEditor.html",
     link: function(scope, element, attrs) {
-      var defaultL = 100;
+      scope.TICKS_PER_BEAT = TICKS_PER_BEAT;
+      var defaultL = TICKS_PER_BEAT;
 
       var semitoneToNote = function(n) {
         return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
@@ -13525,7 +13528,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
           if (!event.target.classList.contains("event-list")) return;
-          evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * 100;
+          evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
+          evt.s = Math.floor(evt.s);
           if (evt.s < 0) evt.s = 0;
 
           var oldN = evt.n;
@@ -13539,7 +13543,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
       var moveEventFromEvent = function(evt, offsetX) {
         return function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
-          evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * 100;
+          evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
+          evt.s = Math.floor(evt.s);
           evt.n = dragevt.n;
           if (evt.s < 0) evt.s = 0;
           scope.$emit("trackChanged", scope.track);
@@ -13557,9 +13562,11 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         if (!event.target.classList.contains("event-list")) return;
         var newEvt = {
           n: Math.floor(120 - event.offsetY / 20),
-          s: Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100,
+          s: Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT,
           l: defaultL
         };
+
+        newEvt.s = Math.floor(newEvt.s);
 
         scope.selected = newEvt;
 
@@ -13613,9 +13620,11 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
           if (!event.target.classList.contains("event-list")) return;
-          var refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+          var refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
           evt.l = refs - evt.s;
-          if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
+          evt.l = Math.floor(evt.l);
+
+          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
 
           defaultL = evt.l;
           scope.$emit("trackChanged", scope.track);
@@ -13625,9 +13634,11 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", function($timeout) {
         scope.mouseMoveEvent = function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
-          var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * 100;
+          var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
           evt.l = refs - evt.s;
-          if (evt.l<100/scope.zoomLevel) evt.l=100/scope.zoomLevel;
+          evt.l = Math.floor(evt.l);
+
+          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
 
           defaultL = evt.l;
 
@@ -14167,19 +14178,19 @@ musicShowCaseApp.service("Historial", [function() {
   };
 }]);
 
-musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
+musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, TICKS_PER_BEAT) {
   var noteseq = function(file, track, onStop) {
     var noteseq = new MUSIC.NoteSequence();
     var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
-    var scale = 600 / file.bpm;
+    var scale = 60000 / file.bpm / TICKS_PER_BEAT;
 
     for (var i=0; i<events.length; i++) {
       var evt = track.events[i];
       noteseq.push([evt.n, evt.s * scale, evt.l * scale]);
     }
 
-    noteseq.paddingTo(100 * file.measureCount * file.measure * scale);
-    noteseq.pushCallback([100*file.measureCount * file.measure * scale, onStop]);
+    noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
+    noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
 
     return noteseq;
   };
@@ -14206,7 +14217,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", function(MUSIC) {
       }).reduce(higher, 0)
     }).reduce(higher,0);
 
-    var measureLength = measure * 100;
+    var measureLength = measure * TICKS_PER_BEAT;
     var measureCount = Math.floor((endTime-1)/measureLength) + 1;
     if (measureCount<1) return 1;
     return measureCount;
@@ -14720,7 +14731,7 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT) {
   $scope.indexMap = {};
   var music = new MUSIC.Context();
 
@@ -14793,8 +14804,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           return patterns[id];
         };        
 
-        var scale = 600 / $scope.file.bpm;
-        var measure = 100 * $scope.file.measure * scale;
+        var scale = 60000 / $scope.file.bpm / TICKS_PER_BEAT;
+        var measure = TICKS_PER_BEAT * $scope.file.measure * scale;
         var song = new MUSIC.Song(
           $scope.file.tracks.map(function(track) {
             return track.blocks.map(function(block) {
