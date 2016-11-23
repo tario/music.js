@@ -287,6 +287,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   updateFromRepo();
 
   var keyDownHandler = function(evt) {
+    if (document.activeElement.tagName.toLowerCase() === "input") return;
+    
     if (evt.keyCode === 90 && evt.ctrlKey) {
       FileRepository.undo(id);
       updateFromRepo();
@@ -459,6 +461,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   // undo & redo
 
   var keyDownHandler = function(evt) {
+    if (document.activeElement.tagName.toLowerCase() === "input") return;
+
     if (evt.keyCode === 90 && evt.ctrlKey) {
       FileRepository.undo(id);
       updateFromRepo();

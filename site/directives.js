@@ -359,6 +359,8 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
       };
 
       var keyDownHandler = function(e) {
+        if (document.activeElement.tagName.toLowerCase() === "input") return;
+
         var keyCode = e.keyCode;
         var noteName = keyCodeToNote[keyCode];
         if (!noteName) return;
@@ -639,6 +641,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
 
       scope.mouseDownEvent = function(evt, event) {
         event.preventDefault();
+        document.activeElement.blur();
 
         scope.$emit("eventSelected", {evt: evt, track: scope.track});
         scope.selected = evt;
@@ -701,6 +704,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
       };
 
       var keyDownHandler = function(e) {
+        if (document.activeElement.tagName.toLowerCase() === "input") return;
+
         if (e.keyCode == 46) {
           $timeout(function() {
             scope.track.events = scope.track.events.filter(function(evt) { return evt !== scope.selected; });
