@@ -477,6 +477,8 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
 musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
+      /* Current pattern */
+      pattern: "=pattern",
       /* Current track */
       track: "=track",
       /* Display params */
@@ -487,7 +489,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
       measureCount: "=measureCount"
     },
     templateUrl: "site/templates/directives/patternTrackCompactView.html",
-    link: function(scope) {
+    link: function(scope, element) {
       scope.TICKS_PER_BEAT = TICKS_PER_BEAT;
       var semitoneToNote = function(n) {
         return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
@@ -505,10 +507,14 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
           return notation7(note7);
         }
       };
+      
       var updateGrid = function() {
-        scope.mainGridStyle = {"background-size": (scope.measure*scope.beatWidth*scope.zoomLevel) + "px 240px"};
+        scope.mainGridStyle = {
+          "background-size": (scope.measure*scope.beatWidth*scope.zoomLevel) + "px 240px",
+          "background-position": -scope.pattern.scrollLeft + "px"
+        };
       };
-      scope.$watch("[measure, beatWidth, zoomLevel]", updateGrid);
+      scope.$watch("[measure, beatWidth, zoomLevel, pattern.scrollLeft]", updateGrid);
 
     }
   };
@@ -517,6 +523,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
+      /* Current pattern */
+      pattern: "=pattern",
       /* Current track */
       track: "=track",
       /* Display params */
@@ -778,6 +786,26 @@ musicShowCaseApp.directive("ngScrollTop", ["$parse", "$timeout", function($parse
       element.on('scroll', function() {
         $timeout(function() {
           scrollVarSetter(scope, $(element).scrollTop());
+        });
+      });
+    }
+  };
+}]);
+
+musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($parse, $timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollVarGetter = $parse(attrs.ngScrollLeft);
+      var scrollVarSetter = scrollVarGetter.assign;
+
+      scope.$watch(attrs.ngScrollLeft, function() {
+        $(element).scrollLeft(scrollVarGetter(scope));
+      });
+
+      element.on('scroll', function() {
+        $timeout(function() {
+          scrollVarSetter(scope, $(element).scrollLeft());
         });
       });
     }
