@@ -106,7 +106,7 @@ describe("Music.NoteSequence", function() {
             var playing;
 
             beforeEach(function() {
-              playable = new MUSIC.NoteSequence.Playable(noteSeq, baseContext);
+              playable = new MUSIC.NoteSequence.Playable(noteSeq, fakeInstrument);
 
               fakeInstrument.note = function() {
                 return notePlayable;
@@ -120,6 +120,7 @@ describe("Music.NoteSequence", function() {
               };
 
               playing = playable.play();
+              playing._context = baseContext;
               fakeFunSeq.push.calls.argsFor(0)[0].f(baseContext);
             });
 
@@ -154,19 +155,23 @@ describe("Music.NoteSequence", function() {
             };
             noteSeq.push([12,0,100]); // noteNum, startTime, duration
             noteSeq.push([14,0,100]); // noteNum, startTime, duration
+            baseContext = MUSIC.NoteSequence.context(fakeInstrument);
             playableNoteSeq = noteSeq.makePlayable(fakeInstrument);
-            baseContext = playableNoteSeq._context;
           });
 
           describe("when called start event on both", function() {
+            var playing;
             beforeEach(function() {
+              playing = playableNoteSeq.play();
+              playing._context = baseContext;
+
               fakeFunSeq.push.calls.argsFor(0)[0].f(baseContext);
               fakeFunSeq.push.calls.argsFor(2)[0].f(baseContext);
             });
 
             describe("when called stop on noteseq", function() {
               beforeEach(function() {
-                playableNoteSeq.play().stop();
+                playing.stop();
               });
 
               it("should stop first playing note", function() {

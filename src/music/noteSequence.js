@@ -85,7 +85,7 @@ MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
 };
 
 MUSIC.NoteSequence.context = function(instrument) {
-  var playingNotes = [];
+  var playingNotes = {};
   var setPlaying = function(noteid, p) {
     playingNotes[noteid] = p.play();
   };
@@ -93,14 +93,16 @@ MUSIC.NoteSequence.context = function(instrument) {
     var playing = playingNotes[noteid]; 
     if (playing) {
       playing.stop();
-      playingNotes[noteid] = undefined;
+      delete playingNotes[noteid];
     }
   };
 
   var stop = function() {
-    for (var i = 0; i<playingNotes.length; i++) {
-      if(playingNotes[i]) playingNotes[i].stop();
+    for (var noteid in playingNotes) {
+      playingNotes[noteid].stop();
     }
+
+    playingNotes = {};
   };
 
   return {
