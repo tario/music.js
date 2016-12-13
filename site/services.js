@@ -2,6 +2,9 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function(MusicContext, $q, TypeService, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
   var nextId = 0;
+  var __cache = new WeakMap();
+  var last_type = new WeakMap();
+
   var getConstructor = function(descriptor) {
       return TypeService.getType(descriptor.type)
         .then(function(type) {
@@ -37,25 +40,25 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                   components[obj.name] = obj.obj;
                 });
 
-                if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
+                if (last_type[descriptor] === descriptor.type) {
                   if (subobjects.length === 1) {
-                    if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                    if (__cache[descriptor] && __cache[descriptor][subobjects[0].id]) {
                       return $q(function(resolve) {
-                        resolve(descriptor.__cache[subobjects[0].id]
+                        resolve(__cache[descriptor][subobjects[0].id]
                               .update(descriptor.data, components));
                       });
                     }
                   } else if (subobjects.length === 0) {
-                    if (descriptor.__cache && descriptor.__cache.noid) {
+                    if (__cache[descriptor] && __cache[descriptor].noid) {
                       return $q(function(resolve) {
-                        resolve(descriptor.__cache.noid
+                        resolve(__cache[descriptor].noid
                               .update(descriptor.data, components));
                       });
                     }
                   }
                 }
 
-                descriptor.last_type = descriptor.type;
+                last_type[descriptor] = descriptor.type;
 
 
                 var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
@@ -63,11 +66,11 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                 ret.id = nextId;
 
                 if (subobjects.length === 1) {
-                  descriptor.__cache = descriptor.__cache || {};
-                  descriptor.__cache[subobjects[0].id] = ret;
+                  __cache[descriptor] = __cache[descriptor] || {};
+                  __cache[descriptor][subobjects[0].id] = ret;
                 } else if (subobjects.length === 0) {
-                  descriptor.__cache = descriptor.__cache || {};
-                  descriptor.__cache.noid = ret;
+                  __cache[descriptor] = __cache[descriptor] || {};
+                  __cache[descriptor].noid = ret;
                 }
 
                 return ret;
@@ -510,15 +513,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var updateFile = function(id, contents) {
     var obj = JSON.parse(JSON.stringify(contents));
-
-    if (obj && obj.data && obj.data.array) {
-      obj.data.array.forEach(function(elem) {
-        delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
-        delete elem.__cache;
-        delete elem.last_type;
-      });
-    }
-
     createdFiles[id] = obj;
     hist[id].registerVersion(JSON.stringify(obj));
 
