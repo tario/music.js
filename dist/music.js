@@ -14435,7 +14435,28 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
 })();
 
 
-JSONSerializer = {};
-JSONSerializer.serialize = function(type, obj) {
+MUSIC = MUSIC ||{};
+MUSIC.Formats = MUSIC.Formats||{};
+MUSIC.Formats.JSONSerializer = {};
+
+MUSIC.Formats.JSONSerializer.serialize = function(type, obj) {
   return JSON.stringify(obj);
 };
+
+MUSIC = MUSIC ||{};
+MUSIC.Formats = MUSIC.Formats||{};
+MUSIC.Formats.MultiSerializer = {};
+(function() {
+
+var serializerArray = [];
+
+MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
+  var output = serializerArray[0].serializer.serialize(type, obj)
+  return serializerArray[0].base.concat(output);
+};
+
+MUSIC.Formats.MultiSerializer.setSerializers = function(array) {
+  serializerArray = array;
+};
+
+})();

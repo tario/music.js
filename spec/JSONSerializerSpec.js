@@ -13,7 +13,7 @@ describe("JSONSerializer", function() {
     });
 
     beforeEach(function() {
-      this.output = JSONSerializer.serialize(inputType, inputFake);
+      this.output = MUSIC.Formats.JSONSerializer.serialize(inputType, inputFake);
     });
 
     it ("should call JSON.stringify", function() {
