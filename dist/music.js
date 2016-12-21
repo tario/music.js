@@ -14434,3 +14434,8 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
 
 })();
 
+
+JSONSerializer = {};
+JSONSerializer.serialize = function(type, obj) {
+  return JSON.stringify(obj);
+};

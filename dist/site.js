@@ -14362,15 +14362,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var updateFile = function(id, contents) {
     var obj = JSON.parse(JSON.stringify(contents));
-
-    if (obj && obj.data && obj.data.array) {
-      obj.data.array.forEach(function(elem) {
-        delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
-        delete elem.__cache;
-        delete elem.last_type;
-      });
-    }
-
     createdFiles[id] = obj;
     hist[id].registerVersion(JSON.stringify(obj));
 
