@@ -14455,6 +14455,10 @@ MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
   return serializerArray[0].base.concat(output);
 };
 
+MUSIC.Formats.MultiSerializer.deserialize = function(type, obj) {
+  return serializerArray[0].serializer.deserialize(type, obj.slice(1));
+};
+
 MUSIC.Formats.MultiSerializer.setSerializers = function(array) {
   serializerArray = array;
 };
