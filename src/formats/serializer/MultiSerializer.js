@@ -11,7 +11,9 @@ MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
 };
 
 MUSIC.Formats.MultiSerializer.deserialize = function(type, obj) {
-  return serializerArray[0].serializer.deserialize(type, obj.slice(1));
+  for (var i=0;i<serializerArray.length;i++) {
+    if (obj[0]===serializerArray[i].base) return serializerArray[i].serializer.deserialize(type, obj.slice(1));
+  }
 };
 
 MUSIC.Formats.MultiSerializer.setSerializers = function(array) {
