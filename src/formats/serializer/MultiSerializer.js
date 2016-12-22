@@ -5,15 +5,24 @@ MUSIC.Formats.MultiSerializer = {};
 
 var serializerArray = [];
 
+MUSIC.Formats.MultiSerializer.selector = function() {
+ // TODO
+};
+
 MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
-  var output = serializerArray[0].serializer.serialize(type, obj)
-  return serializerArray[0].base.concat(output);
+  return MUSIC.Formats.MultiSerializer.selector(
+    serializerArray.map(function(s) {
+      return s.base.concat(s.serializer.serialize(type, obj));
+    })
+  );
 };
 
 MUSIC.Formats.MultiSerializer.deserialize = function(type, obj) {
   for (var i=0;i<serializerArray.length;i++) {
     if (obj[0]===serializerArray[i].base) return serializerArray[i].serializer.deserialize(type, obj.slice(1));
   }
+
+  throw new Error("Unsupported format");
 };
 
 MUSIC.Formats.MultiSerializer.setSerializers = function(array) {
