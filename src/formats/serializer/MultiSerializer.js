@@ -11,10 +11,10 @@ MUSIC.Formats.MultiSerializer.match = function(a, b) {
 
 MUSIC.Formats.MultiSerializer.wrapSerializer = function(serializer) {
   return {
-    serialize: function(obj) {
+    serialize: function(type, obj) {
       try {
-        var output = serializer.serialize(obj);
-        var recoveredInput = serializer.deserialize(output);
+        var output = serializer.serialize(type, obj);
+        var recoveredInput = serializer.deserialize(type, output);
         return MUSIC.Formats.MultiSerializer.match(obj, recoveredInput) ? output : null;
       }catch(e) {
         return null; // failed serializations are discarded

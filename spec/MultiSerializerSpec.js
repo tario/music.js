@@ -57,9 +57,11 @@ describe("MultiSerializer", function() {
       beforeEach(function() {
         var fakeSerializerOutput = {};
         var fakeObj = {};
+        var fakeType = {};
+        this.fakeType = fakeType;
         this.fakeObj = fakeObj;
 
-        this.fakeDeserializerFunction = function(){return fakeObj; };
+        this.fakeDeserializerFunction = sinon.spy(function(){return fakeObj; });
         this.fakeSerializerOutput = fakeSerializerOutput;
 
         this.fakeInnerSerializer = {
@@ -91,7 +93,37 @@ describe("MultiSerializer", function() {
           });
 
           beforeEach(function() {
-            this.serializedOutput = this.output.serialize(this.fakeObj);
+            this.serializedOutput = this.output.serialize(this.fakeType, this.fakeObj);
+          });
+
+          describe("arg 0", function() {
+            it("should be the same type", function() {
+              expect(this.fakeInnerSerializer.serialize.args[0][0]).to.be(this.fakeType);
+            });
+          });
+
+          describe("arg 1", function() {
+            it("should be the same object", function() {
+              expect(this.fakeInnerSerializer.serialize.args[0][1]).to.be(this.fakeObj);
+            });
+          });
+
+          describe("deserializer", function() {
+            it("should call deserializer", function() {
+              expect(this.fakeDeserializerFunction.called).to.be(true);
+            });
+
+            describe("arg 0", function() {
+              it("should be the same type", function() {
+                expect(this.fakeDeserializerFunction.args[0][0]).to.be(this.fakeType);
+              });
+            });
+
+            describe("arg 1", function() {
+              it("should be the same object", function() {
+                expect(this.fakeDeserializerFunction.args[0][1]).to.be(this.fakeSerializerOutput);
+              });
+            });
           });
 
           describe("output", function() {
@@ -106,7 +138,7 @@ describe("MultiSerializer", function() {
             this.fakeInnerSerializer.serialize = function() {
               throw new Error();
             };
-            this.serializedOutput = this.output.serialize(this.fakeObj);
+            this.serializedOutput = this.output.serialize(this.fakeType, this.fakeObj);
           });
 
           describe("output", function() {
@@ -131,7 +163,7 @@ describe("MultiSerializer", function() {
             this.fakeInnerSerializer.deserialize = function() {
               return {};
             };
-            this.serializedOutput = this.output.serialize(this.fakeObj);
+            this.serializedOutput = this.output.serialize(this.fakeType, this.fakeObj);
           });
 
           describe("output", function() {
