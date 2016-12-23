@@ -14450,8 +14450,36 @@ MUSIC.Formats.MultiSerializer = {};
 
 var serializerArray = [];
 
-MUSIC.Formats.MultiSerializer.selector = function() {
- // TODO
+MUSIC.Formats.MultiSerializer.match = function(a, b) {
+  return JSON.stringify(a)===JSON.stringify(b);
+};
+
+MUSIC.Formats.MultiSerializer.wrapSerializer = function(serializer) {
+  return {
+    serialize: function(obj) {
+      try {
+        var output = serializer.serialize(obj);
+        var recoveredInput = serializer.deserialize(output);
+        return MUSIC.Formats.MultiSerializer.match(obj, recoveredInput) ? output : null;
+      }catch(e) {
+        return null; // failed serializations are discarded
+      }
+    },
+    deserialize: serializer.deserialize
+  };
+};
+
+var smallest = function(a, b) {
+  return a.length < b.length ? a : b;
+};
+
+var truthy = function(a) { return !!a };
+
+MUSIC.Formats.MultiSerializer.selector = function(array) {
+  array = array.filter(truthy);
+  if (array.length) return array.filter(truthy).reduce(smallest);
+
+  throw new Error("serialization not found");
 };
 
 MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
@@ -14471,7 +14499,12 @@ MUSIC.Formats.MultiSerializer.deserialize = function(type, obj) {
 };
 
 MUSIC.Formats.MultiSerializer.setSerializers = function(array) {
-  serializerArray = array;
+  serializerArray = array.map(function(entry) {
+    return {
+      serializer: MUSIC.Formats.MultiSerializer.wrapSerializer(entry.serializer),
+      base: entry.base
+    };
+  });
 };
 
 })();

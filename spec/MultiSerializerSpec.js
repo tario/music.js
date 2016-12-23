@@ -1,4 +1,193 @@
 describe("MultiSerializer", function() {
+  describe("match", function() {
+    var jsonstringifyFakeOutput1 = {};
+    var jsonstringifyFakeOutput2 = {};
+    var object1 = {}, object2 = {};
+
+    beforeEach(function() {
+      this.object1 = object1;
+      this.object2 = object2;
+      this.jsonstringifyFakeOutput1 = jsonstringifyFakeOutput1;
+      this.jsonstringifyFakeOutput2 = jsonstringifyFakeOutput2;
+    });
+
+    var origStr = JSON.stringify;
+    beforeEach(function() {
+      origStr = JSON.stringify;
+    });
+
+    describe("when JSON.stringify outputs are the same", function() {
+      describe("when called .match", function() {
+        beforeEach(function() {
+          JSON.stringify = sinon.spy(function(x) {
+            return jsonstringifyFakeOutput1;
+          });
+          this.output = MUSIC.Formats.MultiSerializer.match(object1, object2);
+        });
+
+        it("should return true", function() {
+          expect(this.output).to.be(true);
+        });
+      });
+    });
+
+    describe("when JSON.stringify outputs are the different", function() {
+      describe("when called .match", function() {
+        beforeEach(function() {
+          JSON.stringify = sinon.spy(function(x) {
+            if (x===object1) return jsonstringifyFakeOutput1;
+            if (x===object2) return jsonstringifyFakeOutput2;
+          });
+          this.output = MUSIC.Formats.MultiSerializer.match(object1, object2);
+        });
+
+        it("should return false", function() {
+          expect(this.output).to.be(false);
+        });
+      });
+    });
+
+    afterEach(function() {
+      JSON.stringify = origStr;
+    })
+  });
+
+  describe("wrapSerializer", function() {
+    describe("when called wrapSerializer", function() {
+      beforeEach(function() {
+        var fakeSerializerOutput = {};
+        var fakeObj = {};
+        this.fakeObj = fakeObj;
+
+        this.fakeDeserializerFunction = function(){return fakeObj; };
+        this.fakeSerializerOutput = fakeSerializerOutput;
+
+        this.fakeInnerSerializer = {
+          serialize: sinon.spy(function() {
+            return fakeSerializerOutput;
+          }),
+          deserialize: this.fakeDeserializerFunction
+        };
+
+        this.output = MUSIC.Formats.MultiSerializer.wrapSerializer(this.fakeInnerSerializer);
+      });
+
+      describe("deserializer function", function() {
+        it("should be the same", function() {
+          expect(this.output.deserialize).to.be(this.fakeDeserializerFunction);
+        });
+      })
+
+      describe("when called serializer.serialize", function() {
+        describe("when inner serializer returns normally", function() {
+          var orig;
+          beforeEach(function() {
+            orig = MUSIC.Formats.MultiSerializer.match;
+            MUSIC.Formats.MultiSerializer.match = function() { return true; };
+          });
+
+          afterEach(function() {
+            MUSIC.Formats.MultiSerializer.match = orig;
+          });
+
+          beforeEach(function() {
+            this.serializedOutput = this.output.serialize(this.fakeObj);
+          });
+
+          describe("output", function() {
+            it("should be the same from inner serializer", function() {
+              expect(this.serializedOutput).to.be(this.fakeSerializerOutput);
+            });
+          });
+        });
+
+        describe("when inner serializer throws", function() {
+          beforeEach(function() {
+            this.fakeInnerSerializer.serialize = function() {
+              throw new Error();
+            };
+            this.serializedOutput = this.output.serialize(this.fakeObj);
+          });
+
+          describe("output", function() {
+            it("should be null", function() {
+              expect(this.serializedOutput).to.be(null);
+            });
+          });
+        });
+
+        describe("when deserialize result does not match input", function() {
+          var orig;
+          beforeEach(function() {
+            orig = MUSIC.Formats.MultiSerializer.match;
+            MUSIC.Formats.MultiSerializer.match = function() { return false; };
+          });
+
+          afterEach(function() {
+            MUSIC.Formats.MultiSerializer.match = orig;
+          });
+
+          beforeEach(function() {
+            this.fakeInnerSerializer.deserialize = function() {
+              return {};
+            };
+            this.serializedOutput = this.output.serialize(this.fakeObj);
+          });
+
+          describe("output", function() {
+            it("should be null", function() {
+              expect(this.serializedOutput).to.be(null);
+            });
+          });
+        });
+
+      });
+
+    });
+  });
+
+  describe("selector", function() {
+    var testSelectorError = function(array) {
+      describe("when selector " + JSON.stringify(array), function() {
+        it("should throw error", function() {
+          expect(function() {
+            this.selected = MUSIC.Formats.MultiSerializer.selector(array);
+          }.bind(this)).to.throwError(/serialization not found/);
+        });
+      });
+    };
+    var testSelector = function(array, expected) {
+      describe("when selector " + JSON.stringify(array), function() {
+        beforeEach(function() {
+          this.selected = MUSIC.Formats.MultiSerializer.selector(array);
+        });
+
+        it("should result on " + expected, function() {
+          expect(this.selected).to.be(expected);
+        });
+      });
+    }; 
+
+    var l1 = {length:1};
+    var l2 = {length:2};
+    var l10 = {length:10};
+    var l21 = {length:21};
+
+    testSelector([l1], l1);
+    testSelector([l10], l10);
+    testSelector([l1, l2], l1);
+    testSelector([l2, l1], l1);
+    testSelector([null, l1], l1);
+    testSelector([undefined, l1], l1);
+    testSelector([l21, l1], l1);
+    testSelector([l21, l10], l10);
+    testSelector([l2, l10], l2);
+
+    testSelectorError([]);
+    testSelectorError([undefined]);
+    testSelectorError([undefined, undefined]);
+  });
+
   describe("serialize", function() {
     describe("when using MultiSerializer with two serializers", function() {
       var inputObj = {};
@@ -12,6 +201,7 @@ describe("MultiSerializer", function() {
       var possibleOutput2 = {};
 
       var magic1, magic2;
+      var orig;
 
       beforeEach(function() {
         magic1 = {concat: sinon.spy(function() {
@@ -31,10 +221,24 @@ describe("MultiSerializer", function() {
             return innerOutputFake2;
           })
         };
+
+        var fakeSerializer1 = this.fakeSerializer1;
+        var fakeSerializer2 = this.fakeSerializer2;
+
+        orig = MUSIC.Formats.MultiSerializer.wrapSerializer;
+        MUSIC.Formats.MultiSerializer.wrapSerializer = function(obj) {
+          if (obj.ser === 1) return fakeSerializer1;
+          if (obj.ser === 2) return fakeSerializer2;
+        };
+
         MUSIC.Formats.MultiSerializer.setSerializers([
-          {serializer: this.fakeSerializer1, base: magic1},
-          {serializer: this.fakeSerializer2, base: magic2}
+          {serializer: {ser: 1}, base: magic1},
+          {serializer: {ser: 2}, base: magic2}
         ]);
+      });
+
+      afterEach(function() {
+        MUSIC.Formats.MultiSerializer.wrapSerializer = orig;
       });
 
       describe("when called MultiSerializer.serialize", function() {
@@ -118,6 +322,7 @@ describe("MultiSerializer", function() {
       var outputFake = {};
       var innerOutputFake = {};
       var selected = {};
+      var orig;
 
       beforeEach(function() {
         this.fakeBase = {
@@ -131,9 +336,20 @@ describe("MultiSerializer", function() {
             return innerOutputFake;
           })
         };
+
+        var fakeSerializer = this.fakeSerializer;
+        orig = MUSIC.Formats.MultiSerializer.wrapSerializer;
+        MUSIC.Formats.MultiSerializer.wrapSerializer = function() {
+          return fakeSerializer;                    
+        };
+
         MUSIC.Formats.MultiSerializer.setSerializers([
-          {serializer: this.fakeSerializer, base: this.fakeBase}
+          {serializer: {}, base: this.fakeBase}
         ]);
+      });
+
+      afterEach(function() {
+        MUSIC.Formats.MultiSerializer.wrapSerializer = orig;
       });
 
       describe("when called MultiSerializer.serialize", function() {
