@@ -32,4 +32,10 @@ describe("JSONSerializer", function() {
       JSON.stringify = origStr;
     })
   });
+
+  var serializerv0 = function(type, obj) {
+    return JSON.stringify(obj);
+  };
+
+  DeserializerTest.test(serializerv0, MUSIC.Formats.JSONSerializer.deserialize);
 });
