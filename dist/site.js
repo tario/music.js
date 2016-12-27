@@ -14723,6 +14723,12 @@ musicShowCaseApp.factory("WelcomeMessage", ['$cookies', function($cookies) {
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
+musicShowCaseApp.filter("instrument_name", function() {
+  return function(instrumentId, instrumentMap) {
+    return instrumentMap[instrumentId] && instrumentMap[instrumentId] ? instrumentMap[instrumentId].name : instrumentId;
+  };
+});
+
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
@@ -15030,9 +15036,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 
+  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
   var id = $routeParams.id;
   
+  $scope.instrumentMap = {};
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
   $scope.selectedTrack = 0;
@@ -15139,12 +15147,14 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $scope.updateInstrument = function(trackNo) {
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
-
-    return instSet.load($scope.file.tracks[trackNo].instrument.id)
-      .then(function(musicObject) {
-        instrument.set($scope.file.tracks[trackNo], musicObject);
-        return musicObject;
-      });
+    return $q.all({
+      musicObject: instSet.load($scope.file.tracks[trackNo].instrument),
+      index: FileRepository.getIndex($scope.file.tracks[trackNo].instrument)
+    }).then(function(result) {
+        $scope.instrumentMap[$scope.file.tracks[trackNo].instrument] = result.index;
+        instrument.set($scope.file.tracks[trackNo], result.musicObject);
+        return result.musicObject;
+    });
   };
 
   $scope.onDropComplete = function(instrument,event) {
@@ -15154,7 +15164,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
     $scope.file.tracks = $scope.file.tracks || [];
     $scope.file.tracks[trackNo] = $scope.file.tracks[trackNo] || {};
-    $scope.file.tracks[trackNo].instrument = instrument;
+    $scope.file.tracks[trackNo].instrument = instrument.id;
 
     FileRepository.updateFile(id, $scope.file);
     $scope.updateInstrument(trackNo)

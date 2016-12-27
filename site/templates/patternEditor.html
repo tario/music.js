@@ -92,7 +92,7 @@
         <!-- Instrument drop zone -->
             <div recipe-blink="'pattern_instrument_dropzone'" class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event); recipe.raise('instrument_dropped')">
               <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard-o"></span>
-              <p>{{file.tracks[file.selectedTrack].instrument ? file.tracks[file.selectedTrack].instrument.name : ('pattern.drop_instrument' | translate) }}</p>
+              <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
               <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
             </div>
 
