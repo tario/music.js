@@ -1,55 +1,27 @@
 describe("MultiSerializer", function() {
   describe("match", function() {
-    var jsonstringifyFakeOutput1 = {};
-    var jsonstringifyFakeOutput2 = {};
-    var object1 = {}, object2 = {};
-
-    beforeEach(function() {
-      this.object1 = object1;
-      this.object2 = object2;
-      this.jsonstringifyFakeOutput1 = jsonstringifyFakeOutput1;
-      this.jsonstringifyFakeOutput2 = jsonstringifyFakeOutput2;
-    });
-
-    var origStr = JSON.stringify;
-    beforeEach(function() {
-      origStr = JSON.stringify;
-    });
-
-    describe("when JSON.stringify outputs are the same", function() {
-      describe("when called .match", function() {
+    var shouldMatch = function(a, b, result) {
+      describe("when matching " + JSON.stringify(a) + " with " + JSON.stringify(b), function() {
         beforeEach(function() {
-          JSON.stringify = sinon.spy(function(x) {
-            return jsonstringifyFakeOutput1;
-          });
-          this.output = MUSIC.Formats.MultiSerializer.match(object1, object2);
-        });
+          this.output = MUSIC.Formats.MultiSerializer.match(a, b);
+        })
 
-        it("should return true", function() {
-          expect(this.output).to.be(true);
+        it ("should return " + result, function() {
+          expect(this.output).to.be(result);
         });
-      });
-    });
+      })
+    }
 
-    describe("when JSON.stringify outputs are the different", function() {
-      describe("when called .match", function() {
-        beforeEach(function() {
-          JSON.stringify = sinon.spy(function(x) {
-            if (x===object1) return jsonstringifyFakeOutput1;
-            if (x===object2) return jsonstringifyFakeOutput2;
-          });
-          this.output = MUSIC.Formats.MultiSerializer.match(object1, object2);
-        });
-
-        it("should return false", function() {
-          expect(this.output).to.be(false);
-        });
-      });
-    });
-
-    afterEach(function() {
-      JSON.stringify = origStr;
-    })
+    // not really good TDD :(, but tests *seems* enough
+    shouldMatch({},{}, true);
+    shouldMatch({},[], false);
+    shouldMatch([],{}, false);
+    shouldMatch([1],[1], true);
+    shouldMatch([1,2,3],[1,2,3], true);
+    shouldMatch([1,2],[1,2,3], false);
+    shouldMatch([1,2,3],[1,2,4], false);
+    shouldMatch({a:1, b:2},{b:2, a:1}, true);
+    shouldMatch({a:1, b:2},{a:1, b:5}, false);
   });
 
   describe("wrapSerializer", function() {

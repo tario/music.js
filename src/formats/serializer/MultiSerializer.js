@@ -5,9 +5,28 @@ MUSIC.Formats.MultiSerializer = {};
 
 var serializerArray = [];
 
-MUSIC.Formats.MultiSerializer.match = function(a, b) {
-  return JSON.stringify(a)===JSON.stringify(b);
+var match = function(a, b) {
+  if (typeof a !== typeof b) return false;
+
+  if (Array.isArray(a) && !Array.isArray(b)) return false;
+  if (Array.isArray(b) && !Array.isArray(a)) return false;
+
+  if (Array.isArray(a)) {
+    if (a.length !== b.length) return false;
+    for (var i=0; i<a.length; i++) {
+      if (!match(a[i], b[i])) return false;
+    }
+    return true;
+  } else if (typeof a === 'object') {
+    return Object.keys(a).every(function(key) {
+      return match(a[key], b[key]);
+    });
+  } else {
+    return a === b;
+  }
 };
+
+MUSIC.Formats.MultiSerializer.match = match;
 
 MUSIC.Formats.MultiSerializer.wrapSerializer = function(serializer) {
   return {
