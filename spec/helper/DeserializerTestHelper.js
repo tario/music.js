@@ -3,9 +3,9 @@ DeserializerTest = {};
 
 var patterns = [];
 
-var track1 = {"scroll":1000,"events":[{"n":66,"s":48,"l":96},{"n":64,"s":216,"l":96}]};
+var track1 = {"scroll":1000,"instrument": "8a3bcf2aadc59f6ee6d983d31d461a87", "events":[{"n":66,"s":48,"l":96},{"n":64,"s":216,"l":96}]};
 var track2 = {"scroll":653,"events":[{"n":6,"s":48,"l":961},{"n":640,"s":2160,"l":960}]}
-var track3 = {"scroll":6665, "events":[]}
+var track3 = {"scroll":6665,"instrument": "2a3bcf2aadc59f6AAAA321141BBC1a14", "events":[]}
 
 patterns.push({"measure":5,"measureCount":1,"bpm":140,"selectedTrack":0,"tracks":[track1],"scrollLeft":0});
 patterns.push({"measure":15,"measureCount":1,"bpm":240,"selectedTrack":0,"tracks":[track2],"scrollLeft":10});
