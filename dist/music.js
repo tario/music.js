@@ -14527,7 +14527,7 @@ var objToArrayPacker = function(keys) {
       if (Array.isArray(key)) {
         array.push(key[1].pack(obj[key[0]]));
       } else {
-        array.push(obj[key]);
+        if (obj[key]!==null && obj[key]!==undefined) array.push(obj[key]);
       }
     }
     return array;
@@ -14540,7 +14540,7 @@ var objToArrayPacker = function(keys) {
       if (Array.isArray(key)) {
         obj[key[0]] = key[1].unpack(array[i]);
       } else {
-        obj[key] = array[i];
+        if (array[i]!==null && array[i]!==undefined) obj[key] = array[i];
       }
     }
     return obj;
@@ -14561,25 +14561,61 @@ var array = function(innerPacker) {
   return {pack: pack, unpack: unpack};
 };
 
+var concat = function(a, b){return a.concat(b); };
+var flatten = function(innerPacker, size) {
+  var pack = function(obj) {
+    var ret = innerPacker.pack(obj);
+    return ret.reduce(concat, []);
+  };
+
+  var unpack = function(array) {
+    var deflatted = [];
+    for (var i=0; i<array.length; i+=size) {
+      deflatted.push(array.slice(i,i+size));
+    }
+    return innerPacker.unpack(deflatted);
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
 var patternPacker = objToArrayPacker([
   "measure",
   "measureCount",
   "bpm",
   "selectedTrack",
   "scrollLeft",
-  ["tracks", array(
-    objToArrayPacker(["scroll",["events", array(objToArrayPacker(["n","s","l"]))]])
-  )]
+  ["tracks", flatten(array(
+    objToArrayPacker(["scroll",["events", flatten(array(objToArrayPacker(["n","s","l"])),3)]])
+  ),2)]
 ]);
 
+var songPacker = objToArrayPacker([
+  "measure",
+  "bpm",
+  ["tracks", flatten(array(objToArrayPacker([
+    ["blocks", array(objToArrayPacker(["id"]))]
+  ])),1)]
+]);
+
+var packer = {
+  pattern: patternPacker,
+  song: songPacker
+};
 
 MUSIC.Formats.PackedJSONSerializer.serialize = function(type, obj) {
-  if (type === "pattern") return JSON.stringify(patternPacker.pack(obj));
+  if (packer[type]) {
+    var str = JSON.stringify(packer[type].pack(obj));
+    str = str.slice(1, str.length-1);
+    return str
+  }
   return JSON.stringify(obj);
 };
 
 MUSIC.Formats.PackedJSONSerializer.deserialize = function(type, str) {
-  if (type === "pattern") return patternPacker.unpack(JSON.parse(str));
+  if (packer[type]) {
+    return packer[type].unpack(JSON.parse('['+str+']'));
+  }
   return JSON.parse(str);
 };
 
