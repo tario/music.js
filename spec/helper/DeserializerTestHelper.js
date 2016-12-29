@@ -24,6 +24,7 @@ var blockline2=[{"id":"8a3bcf2aadc59f6ee6d983d31d461a87"},{}];
 var blockline3=[{},{"id":"8a3bcf2aadc59f6ee6d983d31d461a87"}];
 var blockline4=[];
 var blockline5=[{},{"id":"8a3bcf2aadc59f6ee6d983d31d461a87"},{"id":"8a3bcf2aadc59f6ee6d983d31d461a87"}];
+var blockline6=[{},{"id":"fe88881777aaab1a8100009328"},{"id":"8a3bcf2aadc59f6ee6d983d31d461a87"}];
 
 songs.push({"measure":4,"bpm":140,"tracks":[{"blocks":blockline1},{"blocks":blockline1}]});
 songs.push({"measure":6,"bpm":160,"tracks":[{"blocks":blockline1},{"blocks":blockline1}]});
@@ -34,6 +35,7 @@ songs.push({"measure":4,"bpm":140,"tracks":[]});
 songs.push({"measure":3,"bpm":100,"tracks":[{"blocks":blockline5},{"blocks":blockline5}]});
 songs.push({"measure":3,"bpm":100,"tracks":[{"blocks":blockline5}]});
 songs.push({"measure":8,"bpm":200,"tracks":[{"blocks":blockline1}]});
+songs.push({"measure":3,"bpm":100,"tracks":[{"blocks":blockline6},{"blocks":blockline5}]});
 
 var instruments = [];
 

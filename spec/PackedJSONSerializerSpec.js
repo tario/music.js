@@ -71,13 +71,65 @@ describe("PackedJSONSerializer", function() {
     ),3)]
   ]);
 
-  var songPacker = objToArrayPacker([
+  var patternIndexPacker = function(inner) {
+    var pack = function(obj) {
+      var patterns = [];
+      var convertBlocks = function(block) {
+        if(block.id) {
+          if (patterns.indexOf(block.id)===-1) patterns.push(block.id);
+          return {id: patterns.indexOf(block.id)+1};
+        } else {
+          return {id: 0};
+        }
+      };
+
+      var convertTrack = function(track) {
+        return {
+          blocks: track.blocks.map(convertBlocks)
+        };
+      };
+
+      var newObject = {
+        patterns: patterns,
+        measure: obj.measure,
+        bpm: obj.bpm,
+        tracks: obj.tracks.map(convertTrack)
+      };
+
+      return inner.pack(newObject);
+    };
+
+    var unpack = function(obj) {
+      var ret = inner.unpack(obj);
+      ret.tracks.forEach(function(track) {
+        track.blocks.forEach(function(block) {
+          if (block.id === 0) {
+            delete block.id;
+          } else {
+            block.id = ret.patterns[block.id-1];
+          }
+        });
+      });
+
+      return {
+        measure: ret.measure,
+        bpm: ret.bpm,
+        tracks: ret.tracks
+      };
+    };
+
+    return {pack: pack, unpack: unpack};
+  };
+
+
+  var songPacker = patternIndexPacker(objToArrayPacker([
+    "patterns",
     "measure",
     "bpm",
     ["tracks", flatten(array(objToArrayPacker([
       ["blocks", array(objToArrayPacker(["id"]))]
     ])),1)]
-  ]);
+  ]));
 
   var packer = {
     pattern: patternPacker,
