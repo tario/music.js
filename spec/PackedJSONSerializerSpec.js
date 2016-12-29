@@ -121,13 +121,12 @@ describe("PackedJSONSerializer", function() {
     return {pack: pack, unpack: unpack};
   };
 
-
   var songPacker = patternIndexPacker(objToArrayPacker([
     "patterns",
     "measure",
     "bpm",
     ["tracks", flatten(array(objToArrayPacker([
-      ["blocks", array(objToArrayPacker(["id"]))]
+      ["blocks", flatten(array(objToArrayPacker(["id"])),1)]
     ])),1)]
   ]));
 
