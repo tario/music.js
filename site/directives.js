@@ -174,8 +174,8 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       scope.$watch("modulations", function(newValue) {
         if (!scope.modulations) return;
-        scope.file.data.modulation = scope.file.data.modulation||{};
         scope.modulations.forEach(function(modulation) {
+          scope.file.data.modulation = scope.file.data.modulation||{};
           scope.file.data.modulation[modulation.name] = modulation.value;
         }); 
         scope.$emit("objectChanged");

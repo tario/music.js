@@ -13125,8 +13125,8 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       scope.$watch("modulations", function(newValue) {
         if (!scope.modulations) return;
-        scope.file.data.modulation = scope.file.data.modulation||{};
         scope.modulations.forEach(function(modulation) {
+          scope.file.data.modulation = scope.file.data.modulation||{};
           scope.file.data.modulation[modulation.name] = modulation.value;
         }); 
         scope.$emit("objectChanged");
@@ -14359,6 +14359,15 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var updateFile = function(id, contents) {
     var obj = JSON.parse(JSON.stringify(contents));
+
+    if (obj && obj.data && obj.data.array) {
+      obj.data.array.forEach(function(elem) {
+        delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
+        delete elem.__cache;
+        delete elem.last_type;
+      });
+    }
+
     createdFiles[id] = obj;
     hist[id].registerVersion(JSON.stringify(obj));
 

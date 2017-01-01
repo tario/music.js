@@ -14760,6 +14760,7 @@ var envelopePacker = objToArrayPacker(["attackTime","decayTime","sustainLevel","
 var oscillatorPacker = objToArrayPacker([
   ["oscillatorType", substitution(["sine", "square", "sawtooth", "triangle", "custom"])],
   ["fixed_frequency", booleanPacker],
+  ["frequency", nullable()],
   ["waveform", nullable()],
   ["serie", nullable(objToArrayPacker(["sin", "cos"]))],
   ["terms", nullable(objToArrayPacker(["sin", "cos"]))],
