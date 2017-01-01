@@ -14307,7 +14307,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           .then(function(r) {
             var hash = new jsSHA("SHA-1", "TEXT");
             hash.update(JSON.stringify(r.data));
-            var fileId = hash.getHash("HEX");
+            var fileId = hash.getHash("HEX").toLowerCase();
 
             return createFile({type: entry.type, name: entry.name, id: fileId, contents: r.data});
           });
