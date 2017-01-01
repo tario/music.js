@@ -14782,8 +14782,13 @@ var frequencyFilterPacker = objToArrayPacker([
 
 var noParametersPacker = objToArrayPacker([]);
 
+var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
+"envelope","transpose","scale","gain","echo","lowpass",
+"highpass","bandpass","lowshelf","highshelf","peaking",
+"notch","allpass","reverb","noise","pink_noise","red_noise","arpeggiator","stack"];
+
 var instrumentPacker = objToArrayPacker([
-  ["type", substitution(['oscillator','envelope'])],
+  ["type", substitution(typeNames)],
   ["data", switchPacker('type', {
       script: objToArrayPacker(["code"]),
       'null': noParametersPacker,
