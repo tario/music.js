@@ -10,7 +10,7 @@ var objToArrayPacker = function(keys) {
     for (var i=0; i<keys.length; i++) {
       var key = keys[i];
       if (Array.isArray(key)) {
-        array.push(key[1].pack(obj[key[0]]));
+        array.push(key[1].pack(obj[key[0]], obj));
       } else {
         if (obj[key]!==null && obj[key]!==undefined) array.push(obj[key]);
       }
@@ -23,7 +23,7 @@ var objToArrayPacker = function(keys) {
     for (var i=0; i<keys.length; i++) {
       var key = keys[i];
       if (Array.isArray(key)) {
-        obj[key[0]] = key[1].unpack(array[i]);
+        obj[key[0]] = key[1].unpack(array[i], obj);
       } else {
         if (array[i]!==null && array[i]!==undefined) obj[key] = array[i];
       }
@@ -125,6 +125,79 @@ var patternIndexPacker = function(inner) {
   return {pack: pack, unpack: unpack};
 };
 
+var substitution = function(keys) {
+  var pack = function(obj) {
+    var idx = keys.indexOf(obj);
+    if (idx === -1) return obj;
+    return idx;
+  };
+
+  var unpack = function(obj) {
+    if (isNaN(obj)) return obj;
+    return keys[obj];
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var switchPacker = function(selectAttribute, packers) {
+
+  var pack = function(obj, parent) {
+    var innerPacker = packers[parent[selectAttribute]];
+    if (!innerPacker) {
+      return obj;
+    }
+
+    return innerPacker.pack(obj);
+  };
+
+  var unpack = function(obj, parent) {
+    var innerPacker = packers[parent[selectAttribute]];
+    if (!innerPacker) {
+      return obj;
+    }
+
+    return innerPacker.unpack(obj);
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var booleanPacker = {
+  pack: function(obj) {
+    if (obj === undefined) return 3;
+    if (obj === null) return 4;
+
+    return !!obj ? 1 : 0;
+  },
+
+  unpack: function(obj) {
+    if (obj===3) return undefined;
+    if (obj===4) return null;
+
+    return obj === 1 ? true : false
+  }
+};
+
+var nullable = function(innerPacker) {
+  var pack = function(obj) {
+    if (obj === undefined) return 0;
+    if (obj === null) return 1;
+
+    return innerPacker? innerPacker.pack(obj) : obj;
+  };
+
+  var unpack = function(obj) {
+    if (obj===0) return undefined;
+    if (obj===1) return null;
+
+    return innerPacker ? innerPacker.unpack(obj) : obj;
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+
 
 var songPacker = patternIndexPacker(objToArrayPacker([
   "patterns",
@@ -135,9 +208,81 @@ var songPacker = patternIndexPacker(objToArrayPacker([
   ])),1)]
 ]));
 
+var recursiveInstrumentPacker = {
+  pack: function(obj) {
+    return instrumentPacker.pack(obj);
+  },
+
+  unpack: function(obj) {
+    return instrumentPacker.unpack(obj);
+  }
+};
+
+var stackPacker = objToArrayPacker([
+  ["array", array(recursiveInstrumentPacker)]
+]);
+
+var envelopePacker = objToArrayPacker(["attackTime","decayTime","sustainLevel","releaseTime"]);
+var oscillatorPacker = objToArrayPacker([
+  ["oscillatorType", substitution(["sine", "square", "sawtooth", "triangle", "custom"])],
+  ["fixed_frequency", booleanPacker],
+  ["waveform", nullable()],
+  ["serie", nullable(objToArrayPacker(["sin", "cos"]))],
+  ["terms", nullable(objToArrayPacker(["sin", "cos"]))],
+  ["modulation", nullable(objToArrayPacker([
+    ["detune", recursiveInstrumentPacker]
+  ]))]
+]);
+
+var frequencyFilterPacker = objToArrayPacker([
+  "frequency",
+  "detune",
+  "Q",
+  ["modulation", objToArrayPacker([
+    ["frequency", recursiveInstrumentPacker],
+    ["detune", recursiveInstrumentPacker],
+    ["Q", recursiveInstrumentPacker]
+  ])]
+]);
+
+var noParametersPacker = objToArrayPacker([]);
+
+var instrumentPacker = objToArrayPacker([
+  ["type", substitution(['oscillator','envelope'])],
+  ["data", switchPacker('type', {
+      script: objToArrayPacker(["code"]),
+      'null': noParametersPacker,
+      oscillator: oscillatorPacker,
+      notesplit: objToArrayPacker(["delay"]),
+      rise: objToArrayPacker(["time", "target"]),
+      adsr: envelopePacker,
+      envelope: envelopePacker,
+      transpose: objToArrayPacker(["amount"]),
+      scale: objToArrayPacker(["base", "top"]),
+      gain: objToArrayPacker(["gain"]),
+      echo: objToArrayPacker(["gain", "delay"]),
+      lowpass: frequencyFilterPacker,
+      highpass: frequencyFilterPacker,
+      bandpass: frequencyFilterPacker,
+      lowshelf: frequencyFilterPacker,
+      highshelf: frequencyFilterPacker,
+      peaking: frequencyFilterPacker,
+      notch: frequencyFilterPacker,
+      allpass: frequencyFilterPacker,
+      reverb: objToArrayPacker(["room", "damp", "mix"]),
+      noise: noParametersPacker,
+      pink_noise: noParametersPacker,
+      red_noise: noParametersPacker,
+      arpeggiator: objToArrayPacker(["scale", "interval", "duration", "gap"]),
+      stack: stackPacker
+    }
+  )],
+]);
+
 var packer = {
   pattern: patternPacker,
-  song: songPacker
+  song: songPacker,
+  instrument: instrumentPacker
 };
 
 MUSIC.Formats.PackedJSONSerializer.serialize = function(type, obj) {
@@ -146,6 +291,7 @@ MUSIC.Formats.PackedJSONSerializer.serialize = function(type, obj) {
     str = str.slice(1, str.length-1);
     return str
   }
+
   return JSON.stringify(obj);
 };
 
@@ -153,6 +299,7 @@ MUSIC.Formats.PackedJSONSerializer.deserialize = function(type, str) {
   if (packer[type]) {
     return packer[type].unpack(JSON.parse('['+str+']'));
   }
+
   return JSON.parse(str);
 };
 
