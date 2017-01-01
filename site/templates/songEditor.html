@@ -48,10 +48,10 @@
 
   <div class="pattern-block-area-container">
     <div class="pattern-block-area">
-      <div class="track" ng-repeat="track in file.tracks track by $index" ng-init="trackIdx = $index">
+      <div class="track" ng-repeat="track in file.tracks" ng-init="trackIdx = $index">
         <div 
           class="pattern-block"
-          ng-repeat="block in track.blocks track by $index"
+          ng-repeat="block in track.blocks"
           ng-drop="true"
           ng-drop-success="onDropComplete($data,$event,block)",
           recipe-blink="'song_pattern_dropzone_' + trackIdx + '_' + $index">

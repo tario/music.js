@@ -2,7 +2,7 @@
   {{'stack.drop_elements_here' | translate}}
   <div class="help-tooltip contextual-tooltip" translate="stack.tooltip.you_can_drop_new_effects_here"></div>
 </div>
-<div ng-repeat="subfile in file.array track by $index" class="stack-element" ng-if="file">
+<div ng-repeat = "subfile in file.array" class="stack-element" ng-if="file">
   <button class="btn btn-primary show-contextual-tooltip" ng-click="remove($index)">{{'common.remove'|translate}}<div class="help-tooltip contextual-tooltip" translate='stack.tooltip.remove'></div></button>
   <button class="btn btn-primary show-contextual-tooltip" ng-show="$index>0" ng-click="up($index)">↑<div class="help-tooltip contextual-tooltip" translate="stack.tooltip.up"></div></button>
   <button class="btn btn-primary show-contextual-tooltip" ng-show="$index<file.array.length-1" ng-click="down($index)">↓<div class="help-tooltip contextual-tooltip" translate="stack.tooltip.down"></div></button>

@@ -12,7 +12,7 @@
     <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">
       <div 
         draggable="false"
-        ng-repeat="evt in track.events track by $index"
+        ng-repeat="evt in track.events" 
         class="note show-contextual-tooltip" ng-class="{selected: selected===evt}"
         ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT+'px', 'bottom': evt.n*20+'px'}"
         >

@@ -1,5 +1,5 @@
 <div class="track-compact-view event-area" ng-style="mainGridStyle">
-  <div ng-repeat="evt in track.events track by $index" class="note" ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':(evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT - pattern.scrollLeft)+'px', 'z-index': evt.s}">
+  <div ng-repeat="evt in track.events" class="note" ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':(evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT - pattern.scrollLeft)+'px', 'z-index': evt.s}">
     <div>{{noteName(evt.n)}}</div>
   </div>
 </div>
