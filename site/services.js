@@ -454,6 +454,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 }]);
 
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
+
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
       return $q.all(result.data.map(function(entry) {
@@ -463,7 +464,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
             hash.update(JSON.stringify(r.data));
             var fileId = hash.getHash("HEX").toLowerCase();
 
-            return createFile({type: entry.type, name: entry.name, id: fileId, contents: r.data});
+            createdFiles[fileId] = r.data;
+            createdFilesIndex = createdFilesIndex ||[];
+            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId});
           });
       }));
     });
@@ -505,69 +508,132 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       selectedTrack: 0,
       tracks:[
         {scroll: 1000, events: []}
-      ]
+      ],
+      scrollLeft: 0
     }
   };
 
   var hist = new WeakMap();
 
-  var updateFile = function(id, contents) {
-    var obj = JSON.parse(JSON.stringify(contents));
+  var updateFile = function(id, contents, options) {
+    return storageIndex
+      .then(function(index) {
+        var localFile = index.filter(function(x){ return x.id === id})[0];  
+        if (localFile) {
+          var serialized = MUSIC.Formats.MultiSerializer.serialize(localFile.type, contents);
 
-    createdFiles[id] = obj;
-    hist[id].registerVersion(JSON.stringify(obj));
+          if (!options || !options.noHistory) {
+            hist[id] = hist[id] || Historial();
+            hist[id].registerVersion(JSON.stringify(contents));
+          }
 
-    return $q.resolve();
+          return localforage.setItem(id, serialized);
+        }
+      });
   };
 
   var createFile = function(options) {
-    genericStateEmmiter.emit("changed");
-
     var newid = options.id || createId();
 
-    createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
-    createdFiles[newid] = options.contents || defaultFile[options.type] || {};
+    // wait for storageIndex to be loaded
+    return storageIndex
+      .then(function(index) {
+        var contents = options.contents || defaultFile[options.type] || {};
 
-    hist[newid] = Historial();
-    hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
+        hist[newid] = hist[newid] || Historial();
+        hist[newid].registerVersion(JSON.stringify(contents));
 
-    return $q.resolve(newid);
+        var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
+        return localforage.setItem(newid, serialized)
+          .then(function() {
+            if (!index) index=[];
+            index.push({type: options.type, name: options.name, id: newid});
+            return localforage.setItem("index", index);
+          });
+      })
+      .then(function() {
+        storageIndex = localforage.getItem("index");
+        return storageIndex;
+      })
+      .then(function() {
+        genericStateEmmiter.emit("changed");
+        return newid;
+      });
+
   };
+
+  MUSIC.Formats.MultiSerializer.setSerializers([
+    {serializer: MUSIC.Formats.JSONSerializer, base: '0'},
+    {serializer: MUSIC.Formats.PackedJSONSerializer, base: '1'},
+    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.JSONSerializer), base: '2'},
+    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.PackedJSONSerializer), base: '3'}
+  ]);
+
+  var storageIndex;
+  var reloadStorageIndex = function() {
+    // load stoargeIndex
+    storageIndex = localforage.getItem("index");
+  };
+
+  reloadStorageIndex();
 
   return {
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
 
-      createdFiles[id] = JSON.parse(oldVer);
+      return updateFile(id, JSON.parse(oldVer), {noHistory: true});
     },
     redo: function(id) {
       var nextVer = hist[id].redo();
       if (!nextVer) return;
 
-      createdFiles[id] = JSON.parse(nextVer);
+      return updateFile(id, JSON.parse(nextVer), {noHistory: true});
     },
     createFile: createFile,
     updateIndex: function(id, attributes) {
-      var localFile =  createdFilesIndex.filter(function(x){ return x.id === id})[0];
-      if (!localFile) return;
+      return storageIndex.then(function(index) {
+        var localFile = createdFilesIndex.concat(index).filter(function(x) { return x.id === id; })[0];
+        localFile.name = attributes.name;
 
-      localFile.name = attributes.name;
+        return localforage.setItem("index", index);
+      }).then(function() {
+        genericStateEmmiter.emit("changed");
+      });
     },
     getIndex: function(id) {
-      return $q.resolve(createdFilesIndex.filter(function(x){ return x.id === id})[0]);
+      return storageIndex.then(function(index) {
+        return createdFilesIndex.concat(index).filter(function(x) { return x.id === id; })[0];
+      });
     },
     updateFile: updateFile,
     getFile: function(id) {
-      return exampleList.then(function() {
-        var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
-        if (localFile) {
-          return $q.resolve({
-            index: {name: localFile.name, id: localFile.id},
-            contents: JSON.parse(JSON.stringify(createdFiles[id]))
-          });
-        };
-      });
+      return storageIndex
+        .then(function(index) {
+          var localFile = index.filter(function(x){ return x.id === id})[0];  
+
+          if (localFile) {
+            return localforage.getItem(id)
+              .then(function(serialized) {
+                var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
+                return {
+                  index: {name: localFile.name, id: localFile.id},
+                  contents: contents
+                };
+              });
+          } else {
+            return exampleList.then(function() {
+              var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
+              if (localFile) {
+                return $q.resolve({
+                  index: {name: localFile.name, id: localFile.id},
+                  contents: JSON.parse(JSON.stringify(createdFiles[id]))
+                });
+              };
+            });
+          }
+
+        })
     },
 
     search: function(keyword) {
@@ -581,11 +647,13 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       var ee = new EventEmitter();
       var updateSearch = function() {
         $q.all([
+          storageIndex,
           createdFilesIndex,
           TypeService.getTypes(keyword)
         ]).then(function(result) {
-          var res = result[0];
-          res = res.concat(result[1].map(convertType));
+          var res = result[0]||[];
+          if (result[1]) res = res.concat(result[1]);
+          res = res.concat(result[2].map(convertType));
           res = res.filter(hasKeyword);
 
           ee.emit("changed", {
@@ -594,7 +662,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           });
         });
       };
-
 
       return {
         observe: function(cb) {

@@ -14571,7 +14571,9 @@ MUSIC.Formats.MultiSerializer.selector = function(array) {
 MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
   return MUSIC.Formats.MultiSerializer.selector(
     serializerArray.map(function(s) {
-      return s.base.concat(s.serializer.serialize(type, obj));
+      var serialized = s.serializer.serialize(type, obj);
+      if (!serialized) return serialized;
+      return s.base.concat(serialized);
     })
   );
 };

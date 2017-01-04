@@ -316,6 +316,70 @@ describe("MultiSerializer", function() {
         });
 
       });
+
+
+      describe("when output2 is null", function() {
+        var orig;
+        var selected = {};
+
+        beforeEach(function() {
+          innerOutputFake2 = null;
+
+          orig = MUSIC.Formats.MultiSerializer.selector;
+          MUSIC.Formats.MultiSerializer.selector = sinon.spy(function() {
+            return selected;
+          });
+
+          this.output = MUSIC.Formats.MultiSerializer.serialize(inputType, inputObj);          
+        });
+
+        it ("should call Serializer1.serialize", function() {
+          expect(this.fakeSerializer1.serialize.called).to.be(true);
+        });
+
+        it ("should call Serializer2.serialize", function() {
+          expect(this.fakeSerializer2.serialize.called).to.be(true);
+        });
+
+        it ("should call MultiSerializer.selector", function() {
+          expect(MUSIC.Formats.MultiSerializer.selector.called).to.be(true);
+        });
+
+        it ("should call MultiSerializer.selector with array length 2", function() {
+          expect(MUSIC.Formats.MultiSerializer.selector.args[0][0].length).to.be(2);
+        });
+
+        it ("should call MultiSerializer.selector with array[0] = innerOutputFake1", function() {
+          expect(MUSIC.Formats.MultiSerializer.selector.args[0][0][0]).to.be(possibleOutput1);
+        });
+
+        it ("should call MultiSerializer.selector with array[0] = innerOutputFake2", function() {
+          expect(MUSIC.Formats.MultiSerializer.selector.args[0][0][1]).to.be(null);
+        });
+
+        describe("magic1.concat", function() {
+          it ("should be called once", function() {
+            expect(magic1.concat.calledOnce).to.be(true);
+          });
+
+          describe("first parameter", function() {
+            it ("should be the inner serialization", function() {
+              expect(magic1.concat.args[0][0]).to.be(innerOutputFake1);
+            });
+          });
+        });
+
+        describe("magic2.concat", function() {
+          it ("should be called once", function() {
+            expect(magic2.concat.notCalled).to.be(true);
+          });
+        });
+
+        afterEach(function() {
+          MUSIC.Formats.MultiSerializer.selector = orig;
+        });        
+      });
+
     });
 
     describe("when using MultiSerializer with only one serializer", function() {

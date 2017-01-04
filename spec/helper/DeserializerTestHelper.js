@@ -16,6 +16,7 @@ patterns.push({"measure":7,"measureCount":1,"bpm":440,"selectedTrack":0,"tracks"
 patterns.push({"measure":7,"measureCount":1,"bpm":440,"selectedTrack":0,"tracks":[track1, track1, track1, track1, track1, track1],"scrollLeft":1000});
 patterns.push({"measure":7,"measureCount":1,"bpm":240,"selectedTrack":0,"tracks":[track3, track3],"scrollLeft":1000});
 patterns.push({"measure":7,"measureCount":1,"bpm":240,"selectedTrack":0,"tracks":[track3],"scrollLeft":100});
+patterns.push({measure: 4,measureCount: 1,bpm: 140,selectedTrack: 0,tracks:[{scroll: 1000, events: []}], scrollLeft: 0});
 
 var songs = [];
 

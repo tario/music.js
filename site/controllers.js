@@ -296,13 +296,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     if (document.activeElement.tagName.toLowerCase() === "input") return;
     
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id);
-      updateFromRepo();
+      FileRepository.undo(id).then(updateFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id);
-      updateFromRepo();
+      FileRepository.redo(id).then(updateFromRepo);
     }
   };
 
@@ -474,13 +472,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     if (document.activeElement.tagName.toLowerCase() === "input") return;
 
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id);
-      updateFromRepo();
+      FileRepository.undo(id).then(updateFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id);
-      updateFromRepo();
+      FileRepository.redo(id).then(updateFromRepo);
     }
   };
 
@@ -649,6 +645,9 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       })
       .then(function(id) {
         document.location = "#/editor/instrument/"+id;
+      })
+      .catch(function(err) {
+        debugger;
       });
   };
 
