@@ -532,6 +532,26 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       });
   };
 
+  var destroyFile = function(id) {
+    return storageIndex
+      .then(function(index) {
+        var localFile = index.filter(function(x) { return x.id === id; })[0];
+
+        if (localFile) {
+          return localforage.removeItem(id)
+            .then(function() {
+              index = index.filter(function(x) { return x.id !== id; });
+              return localforage.setItem("index", index); 
+            })
+            .then(reloadStorageIndex)
+            .then(function() {
+              genericStateEmmiter.emit("changed");
+            });
+        }
+      });
+
+  };
+
   var createFile = function(options) {
     var newid = options.id || createId();
 
@@ -590,6 +610,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       return updateFile(id, JSON.parse(nextVer), {noHistory: true});
     },
+    destroyFile: destroyFile,
     createFile: createFile,
     updateIndex: function(id, attributes) {
       return storageIndex.then(function(index) {

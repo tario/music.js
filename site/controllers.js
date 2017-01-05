@@ -49,6 +49,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
   var instSet = InstrumentSet(music);
 
+  $scope.removeItem = function() {
+    FileRepository.destroyFile(id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
+
   $scope.remove = function(block) {
     delete block.id;
     checkPayload();
@@ -323,6 +330,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   var playing = null;
   var instSet = InstrumentSet();
 
+  $scope.removeItem = function() {
+    FileRepository.destroyFile(id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
 
   $scope.removeTrack = function(trackIdx) {
     $scope.file.tracks = 
@@ -491,6 +504,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
 
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
+
+  $scope.removeItem = function() {
+    FileRepository.destroyFile(id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
 
   var lastObj;
   var fileChanged = fn.debounce(function(newFile) {

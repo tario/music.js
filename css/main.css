@@ -466,3 +466,6 @@ body.modal-open .main-window h6 {
   content: none !important;
 }
 
+.width100 {
+  width: 100%;
+}
