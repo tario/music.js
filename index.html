@@ -130,7 +130,7 @@
                       <p translate="index.filter"></p>
                     </div>
                   </li>
-                  <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']" class="show-contextual-tooltip">
+                  <li ng-repeat="file in files track by $index" recipe-blink="[file.name, 'index_' + file.type +'_type']" class="show-contextual-tooltip">
                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                     <recipe-tooltip rt-id="file.name"></recipe-tooltip>
                     <div class="help-tooltip contextual-tooltip long-tooltip">

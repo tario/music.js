@@ -354,7 +354,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     var instruments = {};
     $scope.file.tracks.forEach(function(track) {
       if (track.instrument) {
-        instruments[track.instrument.id] = instrument.get(track);
+        instruments[track.instrument] = instrument.get(track);
       }
     });
 
