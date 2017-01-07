@@ -13510,6 +13510,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
         return ["C","D","E","F","G","A","B"][n % 7];
       };
 
+      scope.raiseEventChanged = function(oldevt, evt, track) {
+        scope.$emit('eventChanged', {oldevt: oldevt,evt: evt, track: track})
+      };
+
       scope.noteName = function(n) {
         var note7 = semitoneToNote(n);
 
@@ -14610,6 +14614,69 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q, $timeout, localforage) {
+
+  return function(indexName) {
+    var storageIndex;
+    var reload = function() {
+      // load stoargeIndex
+      storageIndex = localforage.getItem(indexName);
+      return storageIndex;
+    };
+
+    var removeEntry = function(id) {
+      return storageIndex
+        .then(function(index) {
+          index = index.filter(function(x) { return x.id !== id; });
+          return localforage.setItem("index", index);
+        })
+        .then(reload);
+    };
+
+    var getEntry = function(id) {
+      return storageIndex
+        .then(function(index) {
+          return index.filter(function(x) { return x.id === id; })[0];
+        });
+    };
+
+    var createEntry = function(data) {
+      return storageIndex
+        .then(function(index) {
+          index.push(data);
+          return localforage.setItem("index", index);
+        })
+        .then(reload);
+    };
+
+    var updateEntry = function(id, attributes) {
+      return storageIndex
+        .then(function(index) {
+          var localFile = index.filter(function(x) { return x.id === id; })[0];
+          localFile.name = attributes.name;
+          return localforage.setItem("index", index);
+        })
+        .then(reload);
+    };
+
+    var getAll = function() {
+      return storageIndex;
+    };
+
+    reload();
+
+    return {
+      reload: reload,
+      removeEntry: removeEntry,
+      getEntry: getEntry,
+      createEntry: createEntry,
+      updateEntry: updateEntry,
+      getAll: getAll
+    };
+  };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', function($q, $timeout, $rootScope, $http) {
 
     var recipeList = ['intro', 'create_a_song'];
@@ -15242,6 +15309,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     computeMeasureCount();
 
     if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
+
+    $scope.fileChanged();
   });
 
   $scope.$on("eventSelected", function(evt, data) {

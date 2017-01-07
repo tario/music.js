@@ -552,6 +552,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
         return ["C","D","E","F","G","A","B"][n % 7];
       };
 
+      scope.raiseEventChanged = function(oldevt, evt, track) {
+        scope.$emit('eventChanged', {oldevt: oldevt,evt: evt, track: track})
+      };
+
       scope.noteName = function(n) {
         var note7 = semitoneToNote(n);
 

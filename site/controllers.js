@@ -423,6 +423,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     computeMeasureCount();
 
     if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
+
+    $scope.fileChanged();
   });
 
   $scope.$on("eventSelected", function(evt, data) {
