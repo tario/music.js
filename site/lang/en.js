@@ -67,6 +67,7 @@ var enTranslations = {
     HELP: 'HELP',
     more: 'more',
     remove: 'Remove',
+    reset: 'Reset',
     play: 'Play',
     stop: 'Stop',
     record: 'Rec.',

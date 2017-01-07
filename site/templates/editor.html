@@ -4,7 +4,7 @@
     <div class="help-tooltip contextual-tooltip" translate="editor.tooltip.type_here_instrument"></div>
   </div>
 
-  <button class="btn btn-primary pull-right" translate="common.remove" ng-click="removeItem()"></button>
+  <button ng-show="fileIndex && (!fileIndex.builtIn || fileIndex.updated)" class="btn btn-primary pull-right" ng-click="removeItem()">{{(fileIndex.builtIn ? 'common.reset':'common.remove') | translate}}</button>
 </div>
 
 <div class="music-object-editor" music-stack init-file="file" output-file="outputFile">

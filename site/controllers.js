@@ -50,7 +50,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   var instSet = InstrumentSet(music);
 
   $scope.removeItem = function() {
-    FileRepository.destroyFile(id)
+    FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
       });
@@ -331,7 +331,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   var instSet = InstrumentSet();
 
   $scope.removeItem = function() {
-    FileRepository.destroyFile(id)
+    FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
       });
@@ -508,14 +508,24 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
   var id = $routeParams.id;
 
   $scope.removeItem = function() {
-    FileRepository.destroyFile(id)
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
+    FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
       });
   };
 
   var lastObj;
-  var fileChanged = fn.debounce(function(newFile) {
+  var fileChanged = fn.debounce(function(newFile, oldFile) {
     if (!$scope.file) return;
     
     MusicObjectFactory($scope.file)
@@ -538,7 +548,10 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
             }
           }
 
-          FileRepository.updateFile(id, $scope.file);
+          if (oldFile) {
+            FileRepository.updateFile(id, $scope.file);
+            $scope.fileIndex.updated = true;
+          }
           lastObj = obj;
       });
   }, 50);
@@ -561,24 +574,28 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
+  var reloadFromRepo = function() {
+    FileRepository.getFile(id).then(function(file) {
+      $timeout(function() {
+        var outputFile = {};
 
-      $scope.outputFile = outputFile;
-      $scope.file = file.contents;
-      $scope.fileIndex = file.index;
-      $scope.observer = {};
+        $scope.outputFile = outputFile;
+        $scope.file = file.contents;
+        $scope.fileIndex = file.index;
+        $scope.observer = {};
 
-      $scope.observer.notify = function() {
-        $timeout(function() {
-          $scope.instruments = [];
-          $scope.playables = [];
-        });
-      };
+        $scope.observer.notify = function() {
+          $timeout(function() {
+            $scope.instruments = [];
+            $scope.playables = [];
+          });
+        };
 
+      });
     });
-  });
+  };
+
+  reloadFromRepo();
 
   $scope.$on("$destroy", function() {
     $scope.instruments.forEach(function(instrument) {

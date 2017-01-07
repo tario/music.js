@@ -12579,6 +12579,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngR
 
 musicShowCaseApp.constant("MUSIC", MUSIC);
 musicShowCaseApp.constant("TICKS_PER_BEAT", 96);
+musicShowCaseApp.constant("localforage", localforage);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
@@ -12649,6 +12650,7 @@ var enTranslations = {
     HELP: 'HELP',
     more: 'more',
     remove: 'Remove',
+    reset: 'Reset',
     play: 'Play',
     stop: 'Stop',
     record: 'Rec.',
@@ -12814,6 +12816,7 @@ var esTranslations = {
     HELP: 'AYUDA',
     more: 'mas',
     remove: 'Elimi.',
+    reset: 'Fabr.',
     play: 'Reprod.',
     stop: 'Detener',
     record: 'Rec.',
@@ -14313,7 +14316,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   };
 }]);
 
-musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "localforage", function($http, $q, TypeService, Historial, Index, localforage) {
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -14376,9 +14379,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var hist = new WeakMap();
 
   var updateFile = function(id, contents, options) {
-    return storageIndex
-      .then(function(index) {
-        var localFile = index.filter(function(x){ return x.id === id})[0];  
+    return $q.when()
+      .then(function() {
+        var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
+        if (localFile) return localFile;
+
+        return storageIndex.getEntry(id);
+      })
+      .then(function(localFile) {
         if (localFile) {
           var serialized = MUSIC.Formats.MultiSerializer.serialize(localFile.type, contents);
 
@@ -14393,53 +14401,44 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   };
 
   var destroyFile = function(id) {
-    return storageIndex
-      .then(function(index) {
-        var localFile = index.filter(function(x) { return x.id === id; })[0];
+    return localforage.removeItem(id)
+      .then(function() {
+        return $q.all({r: recycleIndex.removeEntry(id), l: storageIndex.removeEntry(id)});
+      })
+  };
 
+  var moveToRecycleBin = function(id) {
+    return storageIndex.getEntry(id)
+      .then(function(localFile) {
         if (localFile) {
-          return localforage.removeItem(id)
-            .then(function() {
-              index = index.filter(function(x) { return x.id !== id; });
-              return localforage.setItem("index", index); 
-            })
-            .then(reloadStorageIndex)
-            .then(function() {
-              genericStateEmmiter.emit("changed");
-            });
+          return $q.all({
+            r: storageIndex.removeEntry(id),
+            a: recycleIndex.createEntry(localFile)
+          })
+          .then(function() {
+            genericStateEmmiter.emit("changed");
+          });
         }
       });
-
   };
 
   var createFile = function(options) {
     var newid = options.id || createId();
 
-    // wait for storageIndex to be loaded
-    return storageIndex
-      .then(function(index) {
-        var contents = options.contents || defaultFile[options.type] || {};
+    var contents = options.contents || defaultFile[options.type] || {};
 
-        hist[newid] = hist[newid] || Historial();
-        hist[newid].registerVersion(JSON.stringify(contents));
+    hist[newid] = hist[newid] || Historial();
+    hist[newid].registerVersion(JSON.stringify(contents));
 
-        var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
-        return localforage.setItem(newid, serialized)
-          .then(function() {
-            if (!index) index=[];
-            index.push({type: options.type, name: options.name, id: newid});
-            return localforage.setItem("index", index);
-          });
-      })
+    var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
+    return localforage.setItem(newid, serialized)
       .then(function() {
-        storageIndex = localforage.getItem("index");
-        return storageIndex;
+        return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
       })
       .then(function() {
         genericStateEmmiter.emit("changed");
         return newid;
       });
-
   };
 
   MUSIC.Formats.MultiSerializer.setSerializers([
@@ -14449,13 +14448,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.PackedJSONSerializer), base: '3'}
   ]);
 
-  var storageIndex;
-  var reloadStorageIndex = function() {
-    // load stoargeIndex
-    storageIndex = localforage.getItem("index");
-  };
-
-  reloadStorageIndex();
+  var storageIndex = Index("index");
+  var recycleIndex = Index("recycle");
 
   return {
     undo: function(id) {
@@ -14470,51 +14464,63 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       return updateFile(id, JSON.parse(nextVer), {noHistory: true});
     },
+    moveToRecycleBin: moveToRecycleBin,
     destroyFile: destroyFile,
     createFile: createFile,
     updateIndex: function(id, attributes) {
-      return storageIndex.then(function(index) {
-        var localFile = createdFilesIndex.concat(index).filter(function(x) { return x.id === id; })[0];
+      var localFile = createdFilesIndex.filter(function(x) { return x.id === id; })[0];
+      if (localFile) {
         localFile.name = attributes.name;
-
-        return localforage.setItem("index", index);
-      }).then(function() {
         genericStateEmmiter.emit("changed");
-      });
+        return $q.when(localFile);
+      }
+
+      return storageIndex.updateEntry(id, attributes)
+        .then(function() {
+          genericStateEmmiter.emit("changed");
+        });
     },
     getIndex: function(id) {
-      return storageIndex.then(function(index) {
-        return createdFilesIndex.concat(index).filter(function(x) { return x.id === id; })[0];
-      });
+      var localFile = createdFilesIndex.filter(function(x) { return x.id === id; })[0];
+      if (localFile) return $q.when(localFile);
+
+      return storageIndex.getEntry(id);
     },
     updateFile: updateFile,
     getFile: function(id) {
-      return storageIndex
-        .then(function(index) {
-          var localFile = index.filter(function(x){ return x.id === id})[0];  
-
+      var builtIn = false;
+      var changed = false;
+      return exampleList
+        .then(function() {
+          var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
           if (localFile) {
-            return localforage.getItem(id)
-              .then(function(serialized) {
-                var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
-                return {
-                  index: {name: localFile.name, id: localFile.id},
-                  contents: contents
-                };
-              });
-          } else {
-            return exampleList.then(function() {
-              var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
-              if (localFile) {
-                return $q.resolve({
-                  index: {name: localFile.name, id: localFile.id},
-                  contents: JSON.parse(JSON.stringify(createdFiles[id]))
-                });
-              };
-            });
+            builtIn = true;
+            return localFile;
           }
 
+          return storageIndex.getEntry(id);
         })
+        .then(function(localFile) {
+          return localforage.getItem(id)
+            .then(function(serialized) {
+              if (serialized) {
+                var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
+                return {
+                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, updated: true},
+                  contents: contents
+                };
+              } else {
+                if (localFile) {
+                  return {
+                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn},
+                    contents: JSON.parse(JSON.stringify(createdFiles[id]))
+                  };
+                };
+              }
+            });
+        });
+
+
     },
 
     search: function(keyword) {
@@ -14528,7 +14534,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       var ee = new EventEmitter();
       var updateSearch = function() {
         $q.all([
-          storageIndex,
+          storageIndex.getAll(),
           createdFilesIndex,
           TypeService.getTypes(keyword)
         ]).then(function(result) {
@@ -14627,8 +14633,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q,
     var removeEntry = function(id) {
       return storageIndex
         .then(function(index) {
+          if (!index) return;
           index = index.filter(function(x) { return x.id !== id; });
-          return localforage.setItem("index", index);
+          return localforage.setItem(indexName, index);
         })
         .then(reload);
     };
@@ -14636,6 +14643,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q,
     var getEntry = function(id) {
       return storageIndex
         .then(function(index) {
+          if (!index) return null;
           return index.filter(function(x) { return x.id === id; })[0];
         });
     };
@@ -14643,8 +14651,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q,
     var createEntry = function(data) {
       return storageIndex
         .then(function(index) {
+          index = index || [];
           index.push(data);
-          return localforage.setItem("index", index);
+          return localforage.setItem(indexName, index);
         })
         .then(reload);
     };
@@ -14654,7 +14663,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q,
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
-          return localforage.setItem("index", index);
+          return localforage.setItem(indexName, index);
         })
         .then(reload);
     };
@@ -14936,7 +14945,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   var instSet = InstrumentSet(music);
 
   $scope.removeItem = function() {
-    FileRepository.destroyFile(id)
+    FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
       });
@@ -15217,7 +15226,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   var instSet = InstrumentSet();
 
   $scope.removeItem = function() {
-    FileRepository.destroyFile(id)
+    FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
       });
@@ -15394,14 +15403,24 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
   var id = $routeParams.id;
 
   $scope.removeItem = function() {
-    FileRepository.destroyFile(id)
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
+    FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
       });
   };
 
   var lastObj;
-  var fileChanged = fn.debounce(function(newFile) {
+  var fileChanged = fn.debounce(function(newFile, oldFile) {
     if (!$scope.file) return;
     
     MusicObjectFactory($scope.file)
@@ -15424,7 +15443,10 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
             }
           }
 
-          FileRepository.updateFile(id, $scope.file);
+          if (oldFile) {
+            FileRepository.updateFile(id, $scope.file);
+            $scope.fileIndex.updated = true;
+          }
           lastObj = obj;
       });
   }, 50);
@@ -15447,24 +15469,28 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
+  var reloadFromRepo = function() {
+    FileRepository.getFile(id).then(function(file) {
+      $timeout(function() {
+        var outputFile = {};
 
-      $scope.outputFile = outputFile;
-      $scope.file = file.contents;
-      $scope.fileIndex = file.index;
-      $scope.observer = {};
+        $scope.outputFile = outputFile;
+        $scope.file = file.contents;
+        $scope.fileIndex = file.index;
+        $scope.observer = {};
 
-      $scope.observer.notify = function() {
-        $timeout(function() {
-          $scope.instruments = [];
-          $scope.playables = [];
-        });
-      };
+        $scope.observer.notify = function() {
+          $timeout(function() {
+            $scope.instruments = [];
+            $scope.playables = [];
+          });
+        };
 
+      });
     });
-  });
+  };
+
+  reloadFromRepo();
 
   $scope.$on("$destroy", function() {
     $scope.instruments.forEach(function(instrument) {

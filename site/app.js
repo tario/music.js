@@ -2,3 +2,4 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngR
 
 musicShowCaseApp.constant("MUSIC", MUSIC);
 musicShowCaseApp.constant("TICKS_PER_BEAT", 96);
+musicShowCaseApp.constant("localforage", localforage);
