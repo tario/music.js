@@ -39,6 +39,12 @@ var esTranslations = {
     enable: 'Activar Ayuda Contextual',
     disable: 'Desactivar Ayuda Contextual'
   },
+  recycle: {
+    p1: 'Esta es la papelera de reciclaje, desde aqui puedes restaurar los elementos que han sido eliminados',
+    p2: 'Recuerda que los elementos en la papelera se eliminaran permanentemente cuando se agote el espacio disponible',
+    p3: '* Haz doble-click en el elemento que quieras RESTAURAR',
+    title: 'Papelera de Reciclaje'
+  },
   welcome: {
     title: 'Bienvenido a Music.js: Edicion de 8bit',
     p1: 'Music.js es una aplicacion web que permite componer musica con el poder de javascript (opcional)',

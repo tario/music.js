@@ -544,6 +544,22 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       })
   };
 
+
+  var restoreFromRecycleBin = function(id) {
+    return recycleIndex.getEntry(id)
+      .then(function(localFile) {
+        if (localFile) {
+          return $q.all({
+            r: recycleIndex.removeEntry(id),
+            a: storageIndex.createEntry(localFile)
+          })
+          .then(function() {
+            genericStateEmmiter.emit("changed");
+          });
+        }
+      });
+  };
+
   var moveToRecycleBin = function(id) {
     return storageIndex.getEntry(id)
       .then(function(localFile) {
@@ -602,6 +618,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       return updateFile(id, JSON.parse(nextVer), {noHistory: true});
     },
     moveToRecycleBin: moveToRecycleBin,
+    restoreFromRecycleBin: restoreFromRecycleBin,
     destroyFile: destroyFile,
     createFile: createFile,
     updateIndex: function(id, attributes) {
@@ -659,7 +676,21 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
 
     },
+    searchRecycled: function(keyword) {
+      var hasKeyword = function() { return true };
+      if (keyword && keyword.length > 0) {
+        keyword = keyword.toLowerCase();
+        hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
 
+      return recycleIndex.getAll().then(function(index) {
+        var filtered = (index||[]).filter(hasKeyword);
+        return {
+          results: filtered.slice(0,10),
+          total: filtered.length
+        };
+      });
+    },
     search: function(keyword) {
 
       var hasKeyword = function() { return true };

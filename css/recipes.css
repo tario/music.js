@@ -25,6 +25,15 @@
   white-space: normal !important;
 }
 
+.normal-tooltip {
+  display: none;
+  white-space: normal !important;
+}
+
+.show-contextual-tooltip:hover > .normal-tooltip {
+  display: block;
+}
+
 .main-window.contextual-help-enabled .show-contextual-tooltip:hover > .contextual-tooltip {
   display: block;
 }

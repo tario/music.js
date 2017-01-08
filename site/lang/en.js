@@ -39,6 +39,12 @@ var enTranslations = {
     enable: 'Enable Contextual Help',
     disable: 'Disable Contextual Help'
   },
+  recycle: {
+    p1: 'This is the recycle bin, from here, you can restore the items that have been removed',
+    p2: 'Remember: items in the recycle bin will be permanently deleted if and when available storage space runs out',
+    p3: '* Double-click the item you want to RESTORE',
+    title: 'Recycle Bin'
+  },
   welcome: {
     title: 'Welcome to Music.js: 8bit Edition',
     p1: 'Music.js is a web application that allows the composition of melodies powered (optionally) by javascript programming',

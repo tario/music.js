@@ -644,6 +644,14 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
     });
   };
 
+  $scope.recycleBin = function() {
+    // show recycle bin modal
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/recycleBin.html",
+      controller: "recycleBinModalCtrl"
+    });
+  };
+
   if (!WelcomeMessage.skip()) $scope.welcome();
 
   var currentObserver = FileRepository.search().observe(function(files) {
