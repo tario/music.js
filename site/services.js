@@ -485,6 +485,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var createdFiles = {};
 
   var genericStateEmmiter = new EventEmitter();
+  var recycledEmmiter = new EventEmitter();
 
   var defaultFile = {
     instrument: {
@@ -557,6 +558,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
             genericStateEmmiter.emit("changed");
           });
         }
+      })
+      .then(function() {
+        recycledEmmiter.emit("changed");
       });
   };
 
@@ -572,6 +576,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
             genericStateEmmiter.emit("changed");
           });
         }
+      })
+      .then(function() {
+        recycledEmmiter.emit("changed");
       });
   };
 
@@ -603,6 +610,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var storageIndex = Index("index");
   var recycleIndex = Index("recycle");
+
+  recycleIndex.getAll().then(function() {
+    recycledEmmiter.emit("changed");
+  });
 
   return {
     undo: function(id) {
@@ -673,8 +684,15 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               }
             });
         });
+    },
+    observeRecycled: function(callback) {
+      recycledEmmiter.addListener("changed", callback);
 
-
+      return {
+        destroy: function() {
+          recycledEmmiter.removeListener("changed", callback);
+        }
+      };
     },
     searchRecycled: function(keyword) {
       var hasKeyword = function() { return true };

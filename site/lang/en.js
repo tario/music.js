@@ -43,7 +43,11 @@ var enTranslations = {
     p1: 'This is the recycle bin, from here, you can restore the items that have been removed',
     p2: 'Remember: items in the recycle bin will be permanently deleted if and when available storage space runs out',
     p3: '* Double-click the item you want to RESTORE',
-    title: 'Recycle Bin'
+    title: 'Recycle Bin',
+    compact_title: 'Recycle Bin',
+    compact_hint_restore: '* Double-click the item you want to RESTORE',
+    compact_hint_open: '* Click here to open recycle bin window',
+    EMPTY: 'EMPTY'
   },
   welcome: {
     title: 'Welcome to Music.js: 8bit Edition',
@@ -80,7 +84,8 @@ var enTranslations = {
     bpm: 'Bpm',
     add: 'Add',
     tooltip: {
-      playing_speed: 'Playing speed, number of beats per minute'
+      playing_speed: 'Playing speed, number of beats per minute',
+      remove_item: 'Removes item, you can restore it from recycle bin'
     },
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',

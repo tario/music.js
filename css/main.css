@@ -14,13 +14,7 @@ body.modal-open .contextual-help-switch {
   margin: 5px;
 }
 
-.lower-right-corner-menu span {
-  padding: 10px;
-  cursor: pointer;
-}
-
 .lower-right-corner-menu {
-  background-color: black;
   position: fixed;
   right: 0;
   bottom: 0;

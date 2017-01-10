@@ -43,7 +43,11 @@ var esTranslations = {
     p1: 'Esta es la papelera de reciclaje, desde aqui puedes restaurar los elementos que han sido eliminados',
     p2: 'Recuerda que los elementos en la papelera se eliminaran permanentemente cuando se agote el espacio disponible',
     p3: '* Haz doble-click en el elemento que quieras RESTAURAR',
-    title: 'Papelera de Reciclaje'
+    title: 'Papelera de Reciclaje',
+    compact_title: 'Papelera de R.',
+    compact_hint_restore: '* Haz doble-click en el elemento que quieras RESTAURAR',
+    compact_hint_open: '* Haz click aqui para abrir la papelera de reciclaje',
+    EMPTY: 'Vacia'
   },
   welcome: {
     title: 'Bienvenido a Music.js: Edicion de 8bit',
@@ -80,7 +84,8 @@ var esTranslations = {
     bpm: 'Ppm',
     add: 'Agreg.',
     tooltip: {
-      playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto'
+      playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto',
+      remove_item: 'Elimina el elemento, puedes restaurarlo desde la papelera de reciclaje'
     },
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',

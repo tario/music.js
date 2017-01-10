@@ -1,6 +1,10 @@
 <div class="row-fluid">
   <input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
-  <button class="btn btn-primary pull-right" translate="common.remove" ng-click="removeItem()"></button>
+  <button class="btn btn-primary pull-right show-contextual-tooltip" ng-click="removeItem()">
+    <recipe-tooltip rt-id="'song_remove'"></recipe-tooltip>
+    <div class="help-tooltip contextual-tooltip cap-right" translate="common.tooltip.remove_item"></div>
+    {{'common.remove'|translate}}
+  </button>
 </div>
 
 <div class="song-main-window">
