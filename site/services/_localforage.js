@@ -16,13 +16,17 @@ musicShowCaseApp.factory("_localforage", ['$q', 'localforage', function($q, loca
       });
   };
 
+  var clearItem = function(data) {
+    return {id: data.id, name: data.name, type: data.type};
+  };
+
   var release = function(bytes) {
     return localforage.getItem("recycle")
       .then(function(index) {
         return releaseWithIndex(index, bytes);
       })
       .then(function(newIndex) {
-        return localforage.setItem("recycle", newIndex);
+        return localforage.setItem("recycle", newIndex.map(clearItem));
       });
   };
 

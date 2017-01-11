@@ -9,12 +9,16 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       return storageIndex;
     };
 
+    var clearItem = function(data) {
+      return {id: data.id, name: data.name, type: data.type};
+    };
+
     var removeEntry = function(id) {
       return storageIndex
         .then(function(index) {
           if (!index) return;
           index = index.filter(function(x) { return x.id !== id; });
-          return localforage.setItem(indexName, index);
+          return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
@@ -32,7 +36,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           index = index || [];
           index.push(data);
-          return localforage.setItem(indexName, index);
+          return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
@@ -42,7 +46,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
-          return localforage.setItem(indexName, index);
+          return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };

@@ -76,7 +76,7 @@
       "tooltip": {
         "pattern_track_event_area": [
           "Also, you can change the duration of the event by dragging it from the right edge (like resizing), feel free to try it, or click play button to hear your creation and continue the tutorial",
-          "Tambien, puedes cambiar la duracion del evento, arrastrandolo desde el border derecho (como redimiensionandolo), puedes probar hacerlo, o Haz click en el boton 'Reproducir' para escuchar tu creacion y continuar con el tutorial"
+          "Tambien, puedes cambiar la duracion del evento, arrastrandolo desde el borde derecho (como redimiensionandolo), puedes probar hacerlo, o Haz click en el boton 'Reproducir' para escuchar tu creacion y continuar con el tutorial"
         ]
       },
       "eventHandler": {"next_step_on": "pattern_play_click"}

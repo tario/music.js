@@ -574,7 +574,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         if (localFile) {
           return recycleIndex.getAll()
             .then(function(idx) {
-              if (idx.length >= 100) {
+              if (idx && idx.length >= 100) {
                 return recycleIndex.removeEntry(idx[0].id)
                   .then(function() {
                     return localforage.removeItem(id);

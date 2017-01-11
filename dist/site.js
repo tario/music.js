@@ -14505,7 +14505,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         if (localFile) {
           return recycleIndex.getAll()
             .then(function(idx) {
-              if (idx.length >= 100) {
+              if (idx && idx.length >= 100) {
                 return recycleIndex.removeEntry(idx[0].id)
                   .then(function() {
                     return localforage.removeItem(id);
@@ -14764,12 +14764,16 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       return storageIndex;
     };
 
+    var clearItem = function(data) {
+      return {id: data.id, name: data.name, type: data.type};
+    };
+
     var removeEntry = function(id) {
       return storageIndex
         .then(function(index) {
           if (!index) return;
           index = index.filter(function(x) { return x.id !== id; });
-          return localforage.setItem(indexName, index);
+          return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
@@ -14787,7 +14791,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           index = index || [];
           index.push(data);
-          return localforage.setItem(indexName, index);
+          return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
@@ -14797,7 +14801,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
-          return localforage.setItem(indexName, index);
+          return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
@@ -15045,13 +15049,17 @@ musicShowCaseApp.factory("_localforage", ['$q', 'localforage', function($q, loca
       });
   };
 
+  var clearItem = function(data) {
+    return {id: data.id, name: data.name, type: data.type};
+  };
+
   var release = function(bytes) {
     return localforage.getItem("recycle")
       .then(function(index) {
         return releaseWithIndex(index, bytes);
       })
       .then(function(newIndex) {
-        return localforage.setItem("recycle", newIndex);
+        return localforage.setItem("recycle", newIndex.map(clearItem));
       });
   };
 
