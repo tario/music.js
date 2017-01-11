@@ -12612,6 +12612,7 @@ var enTranslations = {
     help_contextual_help: 'Contextual Help',
     help_welcome: 'Welcome!',
     help_about: 'About Music.js',
+    recycle_bin: 'Recycle Bin...',
     tooltip: {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',
@@ -12789,6 +12790,7 @@ var esTranslations = {
     help_contextual_help: 'Ayuda Contextual',
     help_welcome: '¡Bienvenido!',
     help_about: 'Acerca de Music.js',
+    recycle_bin: 'Papelera de Reciclaje...',
     tooltip: {
       'new': 'Puedes crear nuevos items en blanco desde esta opcion',
       preferences: 'Puedes editar tus preferencias aqui',
@@ -14382,7 +14384,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   };
 }]);
 
-musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -14464,6 +14466,12 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
           return localforage.setItem(id, serialized);
         }
+      })
+      .then(function() {
+        return recycleIndex.reload();
+      })
+      .then(function() {
+        recycledEmmiter.emit("changed");
       });
   };
 
@@ -14532,7 +14540,11 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
       })
       .then(function() {
+        return recycleIndex.reload();
+      })
+      .then(function() {
         genericStateEmmiter.emit("changed");
+        recycledEmmiter.emit("changed");
         return newid;
       });
   };
@@ -14742,7 +14754,7 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q, $timeout, localforage) {
+musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
 
   return function(indexName) {
     var storageIndex;
@@ -15013,6 +15025,58 @@ musicShowCaseApp.factory("WelcomeMessage", ['$cookies', function($cookies) {
       setSkip: setSkip,
       skip: skip
     };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("_localforage", ['$q', 'localforage', function($q, localforage) {
+  var getItem = localforage.getItem.bind(localforage);
+
+  var releaseWithIndex = function(index, bytes) {
+    if (index.length === 0) return $q.when(index);
+    if (bytes <= 0) return $q.when(index);
+
+    var nextEntry = index.shift();
+    return localforage.getItem(nextEntry.id)
+      .then(function(value) {
+        return localforage.removeItem(nextEntry.id)
+          .then(function() {
+             return releaseWithIndex(index, bytes - (value ? value.length : 0));
+          });
+      });
+  };
+
+  var release = function(bytes) {
+    return localforage.getItem("recycle")
+      .then(function(index) {
+        return releaseWithIndex(index, bytes);
+      })
+      .then(function(newIndex) {
+        return localforage.setItem("recycle", newIndex);
+      });
+  };
+
+  var setItem = function(key, object, isretry) {
+    return localforage.setItem(key, object)
+      .catch(function(err) {
+        if (!isretry) {
+          return release(object.length)
+            .then(function() {
+              return setItem(key, object, true);
+            });
+        }
+
+        throw err;
+      });
+  };
+
+
+  var removeItem = localforage.removeItem.bind(localforage);
+
+  return {
+    getItem: getItem,
+    setItem: setItem,
+    removeItem: removeItem
+  };
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
@@ -15550,7 +15614,6 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
           if (!obj) {
             $scope.instruments = [];
             $scope.playables = [];
-            console.log("removed");
             return;
           }
 
@@ -15660,6 +15723,15 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       controller: "welcomeModalCtrl"
     });
   };
+     
+  $scope.openRecycleBin = function() {
+    // show recycle bin modal
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/recycleBin.html",
+      controller: "recycleBinModalCtrl"
+    });
+  };
+
 
   if (!WelcomeMessage.skip()) $scope.welcome();
 
@@ -15778,26 +15850,23 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
     return "question";
   }
 
-  $scope.updateSearch = fn.debounce(function() {
+  var immediateUpdateSearch = function() {
     FileRepository.searchRecycled($scope.searchKeyword)
       .then(function(results) {
         $timeout(function() {
-          $scope.files = results.results;
+          $scope.files = results.results.reverse();
           $scope.filesTotal = results.total;
         });
       })
-  },500);
-
-  $scope.restoreFromRecycleBin = function(file) {
-    FileRepository.restoreFromRecycleBin(file.id)
-      .then(function() {
-        $scope.updateSearch();
-      });
   };
 
-  $timeout(function() {
-    $scope.updateSearch();
-  });
+  $scope.updateSearch = fn.debounce(immediateUpdateSearch,250);
+
+  $scope.restoreFromRecycleBin = function(file) {
+    FileRepository.restoreFromRecycleBin(file.id).then(immediateUpdateSearch);
+  };
+
+  immediateUpdateSearch();
 }]);
 
 

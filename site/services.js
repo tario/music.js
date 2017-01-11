@@ -453,7 +453,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   };
 }]);
 
-musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -535,6 +535,12 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
           return localforage.setItem(id, serialized);
         }
+      })
+      .then(function() {
+        return recycleIndex.reload();
+      })
+      .then(function() {
+        recycledEmmiter.emit("changed");
       });
   };
 
@@ -603,7 +609,11 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
       })
       .then(function() {
+        return recycleIndex.reload();
+      })
+      .then(function() {
         genericStateEmmiter.emit("changed");
+        recycledEmmiter.emit("changed");
         return newid;
       });
   };

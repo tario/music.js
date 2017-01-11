@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Index", ['$q', '$timeout', 'localforage', function($q, $timeout, localforage) {
+musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
 
   return function(indexName) {
     var storageIndex;

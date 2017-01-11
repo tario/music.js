@@ -533,7 +533,6 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
           if (!obj) {
             $scope.instruments = [];
             $scope.playables = [];
-            console.log("removed");
             return;
           }
 
@@ -643,6 +642,15 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       controller: "welcomeModalCtrl"
     });
   };
+     
+  $scope.openRecycleBin = function() {
+    // show recycle bin modal
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/recycleBin.html",
+      controller: "recycleBinModalCtrl"
+    });
+  };
+
 
   if (!WelcomeMessage.skip()) $scope.welcome();
 

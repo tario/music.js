@@ -29,6 +29,7 @@ var enTranslations = {
     help_contextual_help: 'Contextual Help',
     help_welcome: 'Welcome!',
     help_about: 'About Music.js',
+    recycle_bin: 'Recycle Bin...',
     tooltip: {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',

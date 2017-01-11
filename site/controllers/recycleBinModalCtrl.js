@@ -12,25 +12,22 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
     return "question";
   }
 
-  $scope.updateSearch = fn.debounce(function() {
+  var immediateUpdateSearch = function() {
     FileRepository.searchRecycled($scope.searchKeyword)
       .then(function(results) {
         $timeout(function() {
-          $scope.files = results.results;
+          $scope.files = results.results.reverse();
           $scope.filesTotal = results.total;
         });
       })
-  },500);
-
-  $scope.restoreFromRecycleBin = function(file) {
-    FileRepository.restoreFromRecycleBin(file.id)
-      .then(function() {
-        $scope.updateSearch();
-      });
   };
 
-  $timeout(function() {
-    $scope.updateSearch();
-  });
+  $scope.updateSearch = fn.debounce(immediateUpdateSearch,250);
+
+  $scope.restoreFromRecycleBin = function(file) {
+    FileRepository.restoreFromRecycleBin(file.id).then(immediateUpdateSearch);
+  };
+
+  immediateUpdateSearch();
 }]);
 
