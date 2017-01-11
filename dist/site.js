@@ -15242,7 +15242,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     var loader = {};
 
     pattern.tracks.forEach(function(track) {
-      if (track.instrument) loader[track.instrument.id] = instSet.load(track.instrument.id);
+      if (track.instrument) loader[track.instrument] = instSet.load(track.instrument);
     });
 
 
@@ -15337,7 +15337,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     FileRepository.getFile($data.id)
       .then(function(f) {
         f.contents.tracks.forEach(function(track) {
-          if (track.instrument) instSet.load(track.instrument.id);
+          if (track.instrument) instSet.load(track.instrument);
         });
 
         $scope.indexMap[$data.id] = f;
@@ -15372,7 +15372,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           for (var blockId in indexMap) {
             var pattern = indexMap[blockId].contents;
             pattern.tracks.forEach(function(track) {
-              if (track.instrument) instSet.load(track.instrument.id);
+              if (track.instrument) instSet.load(track.instrument);
             });
           }
         })
