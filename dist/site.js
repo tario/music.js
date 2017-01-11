@@ -14479,16 +14479,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     return recycleIndex.getEntry(id)
       .then(function(localFile) {
         if (localFile) {
-          return $q.all({
-            r: recycleIndex.removeEntry(id),
-            a: storageIndex.createEntry(localFile)
-          })
-          .then(function() {
-            genericStateEmmiter.emit("changed");
-          });
+          return recycleIndex.removeEntry(id)
+            .then(function() {
+              return storageIndex.createEntry(localFile);
+            });
         }
       })
       .then(function() {
+        genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
       });
   };
@@ -14497,16 +14495,25 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     return storageIndex.getEntry(id)
       .then(function(localFile) {
         if (localFile) {
-          return $q.all({
-            r: storageIndex.removeEntry(id),
-            a: recycleIndex.createEntry(localFile)
-          })
-          .then(function() {
-            genericStateEmmiter.emit("changed");
-          });
+          return recycleIndex.getAll()
+            .then(function(idx) {
+              if (idx.length >= 100) {
+                return recycleIndex.removeEntry(idx[0].id)
+                  .then(function() {
+                    return localforage.removeItem(id);
+                  });
+              }
+            })
+            .then(function() {
+              return storageIndex.removeEntry(id);
+            })
+            .then(function() {
+              return recycleIndex.createEntry(localFile);
+            });
         }
       })
       .then(function() {
+        genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
       });
   };
