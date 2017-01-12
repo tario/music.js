@@ -742,21 +742,24 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       var ee = new EventEmitter();
       var updateSearch = function() {
-        $q.all([
-          storageIndex.getAll(),
-          createdFilesIndex,
-          TypeService.getTypes(keyword)
-        ]).then(function(result) {
-          var res = result[0]||[];
-          if (result[1]) res = res.concat(result[1]);
-          res = res.concat(result[2].map(convertType));
-          res = res.filter(hasKeyword);
+        exampleList
+          .then(function() {
+            $q.all([
+              storageIndex.getAll(),
+              createdFilesIndex,
+              TypeService.getTypes(keyword)
+            ]).then(function(result) {
+              var res = result[0]||[];
+              if (result[1]) res = res.concat(result[1]);
+              res = res.concat(result[2].map(convertType));
+              res = res.filter(hasKeyword);
 
-          ee.emit("changed", {
-            results: res.slice(0,15),
-            total: res.length
+              ee.emit("changed", {
+                results: res.slice(0,15),
+                total: res.length
+              });
+            });
           });
-        });
       };
 
       return {
