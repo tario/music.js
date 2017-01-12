@@ -1,0 +1,61 @@
+.compact-recycle-bin {
+  min-width: 200px;
+  max-width: 200px;
+  height: 100px;
+  background-color: black;
+}
+
+.compact-recycle-bin .title {
+  color: black;
+  background-color: #aaaaaa;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.compact-recycle-bin ul {
+  margin: 0;
+}
+
+.compact-recycle-bin ul li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.compact-recycle-bin ul li:hover {
+  color: black;
+  background-color: white;
+}
+
+.compact-recycle-bin.drag-enter {
+  background-color: #aaaaaa;
+  color :black;
+}
+
+.hint {
+  display: none;
+  position: absolute;
+  background-color: #ffff55;
+  border-style: double;
+  border-color: black;
+  border-width: 8px;
+  color: black;
+  padding: 5px;
+  white-space: pre-wrap;
+
+}
+
+.show-hint:hover .hint {
+  display: block;
+}
+
+.show-hint-sibling:hover ~ .hint {
+  display: block;
+}
+
+.left-200 {
+  left: -330px;
+  max-width:300px;
+}
