@@ -12,7 +12,7 @@
     <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">
       <div 
         draggable="false"
-        ng-repeat="evt in track.events" 
+        ng-repeat="evt in track.events track by $index"
         class="note show-contextual-tooltip" ng-class="{selected: selected===evt}"
         ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT+'px', 'bottom': evt.n*20+'px'}"
         >
@@ -47,16 +47,16 @@
   <div class="span6"></div>
   <div class="span1"><p class="serie-label pull-right">start</p></div>
   <div class="span1">
-    <input ng-disabled="!selected" type="number" min="0" max="{{measureCount*measure*TICKS_PER_BEAT - selected.l}}" class="responsive-input" ng-model="selected.s"></input>
+    <input ng-disabled="!selected" type="number" min="0" max="{{measureCount*measure*TICKS_PER_BEAT - selected.l}}" class="responsive-input" ng-model="selected.s" ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 
   <div class="span1"><p class="serie-label pull-right">len.</p></div>
   <div class="span1">
-    <input ng-disabled="!selected" type="number" min="6" max="{{measureCount*measure*TICKS_PER_BEAT - selected.s}}" class="responsive-input" ng-model="selected.l"></input>
+    <input ng-disabled="!selected" type="number" min="6" max="{{measureCount*measure*TICKS_PER_BEAT - selected.s}}" class="responsive-input" ng-model="selected.l" ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 
   <div class="span1"><p class="serie-label pull-right">n</p></div>
   <div class="span1">
-    <input min="0" max="119" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="$emit('eventChanged', {oldevt: {n:-1},evt: selected, track: track})"></input>
+    <input min="0" max="119" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
   </div>
 </div>

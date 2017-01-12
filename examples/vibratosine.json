@@ -22,7 +22,6 @@
                   {
                     "type": "scale",
                     "data": {
-                      "modulation": {},
                       "base": "-100",
                       "top": "100"
                     }

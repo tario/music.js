@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
 <link rel="stylesheet" href="css/codemirror.css">
+<link rel="stylesheet" href="css/recycle.css">
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/pattern.css">
 <link rel="stylesheet" href="css/song.css">
@@ -51,6 +52,12 @@
         </div>
       </div>
 
+      <div class="lower-right-corner-menu">
+        <!--<span class="fa fa-trash" ng-click="recycleBin()">
+        </span>-->
+        <recycle-bin-compact-view></recycle-bin-compact-view>
+      </div>
+
     <!-- TODO: Move to directive  -->
         <div class="navbar navbar-inverse" recipe-blink="'navbar'">
               <div class="navbar-inner">
@@ -73,6 +80,8 @@
                             <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')" translate="menu.new_song"></a>
                               <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
                             </li>
+                            <li class="divider"></li>
+                            <li><a href="" ng-click="openRecycleBin(); recipe.raise('menu_open_recycle')" translate="menu.recycle_bin"></a><li>
                          </ul>
                          <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
                          <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.new"></div>
@@ -130,7 +139,7 @@
                       <p translate="index.filter"></p>
                     </div>
                   </li>
-                  <li ng-repeat="file in files" recipe-blink="[file.name, 'index_' + file.type +'_type']" class="show-contextual-tooltip">
+                  <li ng-repeat="file in files track by file.id" recipe-blink="[file.name, 'index_' + file.type +'_type']" class="show-contextual-tooltip">
                     <a ng-drag="true" ng-drag-data="file" ng-dblclick="activate(file)" href=""><span class="fa fa-{{iconForType(file.type)}}"></span>{{file.name}}</a>
                     <recipe-tooltip rt-id="file.name"></recipe-tooltip>
                     <div class="help-tooltip contextual-tooltip long-tooltip">

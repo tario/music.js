@@ -1,3 +1,19 @@
+/**
+ * Copyright (c) 2010 Wilker Lúcio
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+var Huffman;Huffman={treeFromText:function(b){var a;a=new Huffman.TreeBuilder(b);return a.build()}};Huffman.CoreHelpers={isArray:function(a){return !!(a&&a.constructor===Array)},lpad:function(a,b){b=b||8;while(a.length<b){a="0"+a}return a}};Huffman.Tree=function(a){this.root=a;this.root=this.root||new Huffman.Tree.Node();return this};Huffman.Tree.prototype.encode=function(a){return this.bitStringToString(this.encodeBitString(a))};Huffman.Tree.prototype.decode=function(j){var g,f,e,a,c,i,h,b;a=this.stringToBitString(j);i="";b=this.root;f=a.split("");for(g=0,e=f.length;g<e;g++){h=f[g];c=h==="0"?"left":"right";b=b[c];if(b.isLeaf()){i+=b.value;b=this.root}}return i};Huffman.Tree.prototype.encodeBitString=function(f){var c,b,a,d,e;e="";b=f.split("");for(c=0,a=b.length;c<a;c++){d=b[c];e+=this.bitValue(d)}return e};Huffman.Tree.prototype.bitStringToString=function(a){var d,b,f,c,e;e=8-a.length%8;for(c=0;(0<=e?c<e:c>e);(0<=e?c+=1:c-=1)){a+="0"}f=(function(){d=[];b=a.length;for(c=0;(0<=b?c<b:c>b);c+=8){d.push(String.fromCharCode(parseInt(a.substr(c,8),2)))}return d})();return f.join("")+e.toString()};Huffman.Tree.prototype.stringToBitString=function(c){var e,d,b,a,f,h,g;g=c.split("");h=parseInt(g.pop());g=(function(){e=[];b=g;for(d=0,a=b.length;d<a;d++){f=b[d];e.push(Huffman.CoreHelpers.lpad(f.charCodeAt(0).toString(2)))}return e})();g=g.join("");return g.substr(0,g.length-h)};Huffman.Tree.prototype.bitValue=function(b){var a;if(!((typeof(a=this.leafCache)!=="undefined"&&a!==null))){this.generateLeafCache()}return this.leafCache[b]};Huffman.Tree.prototype.generateLeafCache=function(a,b){this.leafCache=(typeof this.leafCache!=="undefined"&&this.leafCache!==null)?this.leafCache:{};a=a||this.root;b=b||"";if(a.isLeaf()){return(this.leafCache[a.value]=b)}else{this.generateLeafCache(a.left,b+"0");return this.generateLeafCache(a.right,b+"1")}};Huffman.Tree.prototype.encodeTree=function(){return this.root.encode()};Huffman.Tree.decodeTree=function(a){return new Huffman.Tree(Huffman.Tree.parseNode(a))};Huffman.Tree.parseNode=function(b){var a;a=new Huffman.Tree.Node();if(Huffman.CoreHelpers.isArray(b)){a.left=Huffman.Tree.parseNode(b[0]);a.right=Huffman.Tree.parseNode(b[1])}else{a.value=b}return a};Huffman.Tree.Node=function(){this.left=(this.right=(this.value=null));return this};Huffman.Tree.Node.prototype.isLeaf=function(){return(this.left===this.right)&&(this.right===null)};Huffman.Tree.Node.prototype.encode=function(){return this.value?this.value:[this.left.encode(),this.right.encode()]};var __hasProp=Object.prototype.hasOwnProperty;Huffman.TreeBuilder=function(a){this.text=a;return this};Huffman.TreeBuilder.prototype.build=function(){var a,b;b=this.buildFrequencyTable();a=this.combineTable(b);return Huffman.Tree.decodeTree(this.compressCombinedTable(a))};Huffman.TreeBuilder.prototype.buildFrequencyTable=function(){var d,c,b,a,e,h,f,g;g={};c=this.text.split("");for(d=0,b=c.length;d<b;d++){e=c[d];g[e]=(typeof g[e]!=="undefined"&&g[e]!==null)?g[e]:0;g[e]+=1}f=[];a=g;for(e in a){if(!__hasProp.call(a,e)){continue}h=a[e];f.push([h,e])}f.sort(this.frequencySorter);return f};Huffman.TreeBuilder.prototype.frequencySorter=function(d,c){return d[0]>c[0]?1:(d[0]<c[0]?-1:0)};Huffman.TreeBuilder.prototype.combineTable=function(b){var c,a;while(b.length>1){c=b.shift();a=b.shift();b.push([c[0]+a[0],[c,a]]);b.sort(this.frequencySorter)}return b[0]};Huffman.TreeBuilder.prototype.compressCombinedTable=function(a){var b;b=a[1];return Huffman.CoreHelpers.isArray(b)?[this.compressCombinedTable(b[0]),this.compressCombinedTable(b[1])]:b};
 (function(window){
 
   var WORKER_PATH = 'recorderWorker.js';
@@ -14434,3 +14450,462 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
 
 })();
 
+
+MUSIC = MUSIC ||{};
+MUSIC.Formats = MUSIC.Formats||{};
+
+(function() {
+
+MUSIC.Formats.HuffmanSerializerWrapper = function(innerSerializer) {
+  var frequencies = [
+    [",", 100],
+    ["[]", 20],
+    ["0123456789", 10],
+    ["abcdef.-{}", 4],
+    ["t+-*/()<>=? ", 1]
+  ];
+
+  var times = function(str, n) {
+    var ret = "";
+    for (var i =0;i<n; i++) ret = ret + str;
+    return ret;
+  };
+
+  var concat = function(a, b){ return a.concat(b); };
+  var text = frequencies.map(function(freq) {
+    return times(freq[0], freq[1]);
+  }).reduce(concat);
+
+  text = text + "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+  var huffman = Huffman.treeFromText(text);
+
+  var serialize = function(type, obj) {
+    var str = innerSerializer.serialize(type, obj);
+    return huffman.encode(str);
+  };
+
+  var deserialize = function(type, str) {
+    var decoded = huffman.decode(str);
+    return innerSerializer.deserialize(type, decoded);
+  };
+
+  return {
+    serialize: serialize,
+    deserialize: deserialize
+  };
+};
+
+
+})();
+
+MUSIC = MUSIC ||{};
+MUSIC.Formats = MUSIC.Formats||{};
+MUSIC.Formats.JSONSerializer = {};
+
+MUSIC.Formats.JSONSerializer.serialize = function(type, obj) {
+  return JSON.stringify(obj);
+};
+
+MUSIC.Formats.JSONSerializer.deserialize = function(type, str) {
+  return JSON.parse(str);
+};
+
+MUSIC = MUSIC ||{};
+MUSIC.Formats = MUSIC.Formats||{};
+MUSIC.Formats.MultiSerializer = {};
+(function() {
+
+var serializerArray = [];
+
+var match = function(a, b) {
+  if (typeof a !== typeof b) return false;
+
+  if (Array.isArray(a) && !Array.isArray(b)) return false;
+  if (Array.isArray(b) && !Array.isArray(a)) return false;
+
+  if (Array.isArray(a)) {
+    if (a.length !== b.length) return false;
+    for (var i=0; i<a.length; i++) {
+      if (!match(a[i], b[i])) return false;
+    }
+    return true;
+  } else if (typeof a === 'object') {
+    return Object.keys(a).every(function(key) {
+      return match(a[key], b[key]);
+    });
+  } else {
+    return a === b;
+  }
+};
+
+MUSIC.Formats.MultiSerializer.match = match;
+
+MUSIC.Formats.MultiSerializer.wrapSerializer = function(serializer) {
+  return {
+    serialize: function(type, obj) {
+      try {
+        var output = serializer.serialize(type, obj);
+        var recoveredInput = serializer.deserialize(type, output);
+        return MUSIC.Formats.MultiSerializer.match(obj, recoveredInput) ? output : null;
+      }catch(e) {
+        return null; // failed serializations are discarded
+      }
+    },
+    deserialize: serializer.deserialize
+  };
+};
+
+var smallest = function(a, b) {
+  return a.length < b.length ? a : b;
+};
+
+var truthy = function(a) { return !!a };
+
+MUSIC.Formats.MultiSerializer.selector = function(array) {
+  array = array.filter(truthy);
+  if (array.length) return array.filter(truthy).reduce(smallest);
+
+  throw new Error("serialization not found");
+};
+
+MUSIC.Formats.MultiSerializer.serialize = function(type, obj) {
+  return MUSIC.Formats.MultiSerializer.selector(
+    serializerArray.map(function(s) {
+      var serialized = s.serializer.serialize(type, obj);
+      if (!serialized) return serialized;
+      return s.base.concat(serialized);
+    })
+  );
+};
+
+MUSIC.Formats.MultiSerializer.deserialize = function(type, obj) {
+  for (var i=0;i<serializerArray.length;i++) {
+    if (obj[0]===serializerArray[i].base) return serializerArray[i].serializer.deserialize(type, obj.slice(1));
+  }
+
+  throw new Error("Unsupported format");
+};
+
+MUSIC.Formats.MultiSerializer.setSerializers = function(array) {
+  serializerArray = array.map(function(entry) {
+    return {
+      serializer: MUSIC.Formats.MultiSerializer.wrapSerializer(entry.serializer),
+      base: entry.base
+    };
+  });
+};
+
+})();
+
+MUSIC = MUSIC ||{};
+MUSIC.Formats = MUSIC.Formats||{};
+MUSIC.Formats.PackedJSONSerializer = {};
+
+(function() {
+
+var objToArrayPacker = function(keys) {
+  var pack = function(obj) {
+    var array = [];
+    for (var i=0; i<keys.length; i++) {
+      var key = keys[i];
+      if (Array.isArray(key)) {
+        array.push(key[1].pack(obj[key[0]], obj));
+      } else {
+        if (obj[key]!==null && obj[key]!==undefined) array.push(obj[key]);
+      }
+    }
+    return array;
+  };
+
+  var unpack = function(array) {
+    var obj = {};
+    for (var i=0; i<keys.length; i++) {
+      var key = keys[i];
+      if (Array.isArray(key)) {
+        obj[key[0]] = key[1].unpack(array[i], obj);
+      } else {
+        if (array[i]!==null && array[i]!==undefined) obj[key] = array[i];
+      }
+    }
+    return obj;
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var array = function(innerPacker) {
+  var pack = function(obj) {
+    return obj.map(innerPacker.pack);
+  };
+
+  var unpack = function(array) {
+    return array.map(innerPacker.unpack);
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var concat = function(a, b){return a.concat(b); };
+var flatten = function(innerPacker, size) {
+  var pack = function(obj) {
+    var ret = innerPacker.pack(obj);
+    return ret.reduce(concat, []);
+  };
+
+  var unpack = function(array) {
+    var deflatted = [];
+    for (var i=0; i<array.length; i+=size) {
+      deflatted.push(array.slice(i,i+size));
+    }
+    return innerPacker.unpack(deflatted);
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var patternPacker = objToArrayPacker([
+  "measure",
+  "measureCount",
+  "bpm",
+  "selectedTrack",
+  "scrollLeft",
+  ["tracks", flatten(array(
+    objToArrayPacker(["scroll",["events", flatten(array(objToArrayPacker(["n","s","l"])),3)], "instrument"])
+  ),3)]
+]);
+
+var patternIndexPacker = function(inner) {
+  var pack = function(obj) {
+    var patterns = [];
+    var convertBlocks = function(block) {
+      if(block.id) {
+        if (patterns.indexOf(block.id)===-1) patterns.push(block.id);
+        return {id: patterns.indexOf(block.id)+1};
+      } else {
+        return {id: 0};
+      }
+    };
+
+    var convertTrack = function(track) {
+      return {
+        blocks: track.blocks.map(convertBlocks)
+      };
+    };
+
+    var newObject = {
+      patterns: patterns,
+      measure: obj.measure,
+      bpm: obj.bpm,
+      tracks: obj.tracks.map(convertTrack)
+    };
+
+    return inner.pack(newObject);
+  };
+
+  var unpack = function(obj) {
+    var ret = inner.unpack(obj);
+    ret.tracks.forEach(function(track) {
+      track.blocks.forEach(function(block) {
+        if (block.id === 0) {
+          delete block.id;
+        } else {
+          block.id = ret.patterns[block.id-1];
+        }
+      });
+    });
+
+    return {
+      measure: ret.measure,
+      bpm: ret.bpm,
+      tracks: ret.tracks
+    };
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var substitution = function(keys) {
+  var pack = function(obj) {
+    var idx = keys.indexOf(obj);
+    if (idx === -1) return obj;
+    return idx;
+  };
+
+  var unpack = function(obj) {
+    if (isNaN(obj)) return obj;
+    return keys[obj];
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var switchPacker = function(selectAttribute, packers) {
+
+  var pack = function(obj, parent) {
+    var innerPacker = packers[parent[selectAttribute]];
+    if (!innerPacker) {
+      return obj;
+    }
+
+    return innerPacker.pack(obj);
+  };
+
+  var unpack = function(obj, parent) {
+    var innerPacker = packers[parent[selectAttribute]];
+    if (!innerPacker) {
+      return obj;
+    }
+
+    return innerPacker.unpack(obj);
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+var booleanPacker = {
+  pack: function(obj) {
+    if (obj === undefined) return 3;
+    if (obj === null) return 4;
+
+    return !!obj ? 1 : 0;
+  },
+
+  unpack: function(obj) {
+    if (obj===3) return undefined;
+    if (obj===4) return null;
+
+    return obj === 1 ? true : false
+  }
+};
+
+var nullable = function(innerPacker) {
+  var pack = function(obj) {
+    if (obj === undefined) return 0;
+    if (obj === null) return 1;
+
+    return innerPacker? innerPacker.pack(obj) : obj;
+  };
+
+  var unpack = function(obj) {
+    if (obj===0) return undefined;
+    if (obj===1) return null;
+
+    return innerPacker ? innerPacker.unpack(obj) : obj;
+  };
+
+  return {pack: pack, unpack: unpack};
+};
+
+
+
+var songPacker = patternIndexPacker(objToArrayPacker([
+  "patterns",
+  "measure",
+  "bpm",
+  ["tracks", flatten(array(objToArrayPacker([
+    ["blocks", flatten(array(objToArrayPacker(["id"])),1)]
+  ])),1)]
+]));
+
+var recursiveInstrumentPacker = {
+  pack: function(obj) {
+    return instrumentPacker.pack(obj);
+  },
+
+  unpack: function(obj) {
+    return instrumentPacker.unpack(obj);
+  }
+};
+
+var stackPacker = objToArrayPacker([
+  ["array", array(recursiveInstrumentPacker)]
+]);
+
+var envelopePacker = objToArrayPacker(["attackTime","decayTime","sustainLevel","releaseTime"]);
+var oscillatorPacker = objToArrayPacker([
+  ["oscillatorType", substitution(["sine", "square", "sawtooth", "triangle", "custom"])],
+  ["fixed_frequency", booleanPacker],
+  ["frequency", nullable()],
+  ["waveform", nullable()],
+  ["serie", nullable(objToArrayPacker(["sin", "cos"]))],
+  ["terms", nullable(objToArrayPacker(["sin", "cos"]))],
+  ["modulation", nullable(objToArrayPacker([
+    ["detune", recursiveInstrumentPacker]
+  ]))]
+]);
+
+var frequencyFilterPacker = objToArrayPacker([
+  "frequency",
+  "detune",
+  "Q",
+  ["modulation", objToArrayPacker([
+    ["frequency", recursiveInstrumentPacker],
+    ["detune", recursiveInstrumentPacker],
+    ["Q", recursiveInstrumentPacker]
+  ])]
+]);
+
+var noParametersPacker = objToArrayPacker([]);
+
+var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
+"envelope","transpose","scale","gain","echo","lowpass",
+"highpass","bandpass","lowshelf","highshelf","peaking",
+"notch","allpass","reverb","noise","pink_noise","red_noise","arpeggiator","stack"];
+
+var instrumentPacker = objToArrayPacker([
+  ["type", substitution(typeNames)],
+  ["data", switchPacker('type', {
+      script: objToArrayPacker(["code"]),
+      'null': noParametersPacker,
+      oscillator: oscillatorPacker,
+      notesplit: objToArrayPacker(["delay"]),
+      rise: objToArrayPacker(["time", "target"]),
+      adsr: envelopePacker,
+      envelope: envelopePacker,
+      transpose: objToArrayPacker(["amount"]),
+      scale: objToArrayPacker(["base", "top"]),
+      gain: objToArrayPacker(["gain"]),
+      echo: objToArrayPacker(["gain", "delay"]),
+      lowpass: frequencyFilterPacker,
+      highpass: frequencyFilterPacker,
+      bandpass: frequencyFilterPacker,
+      lowshelf: frequencyFilterPacker,
+      highshelf: frequencyFilterPacker,
+      peaking: frequencyFilterPacker,
+      notch: frequencyFilterPacker,
+      allpass: frequencyFilterPacker,
+      reverb: objToArrayPacker(["room", "damp", "mix"]),
+      noise: noParametersPacker,
+      pink_noise: noParametersPacker,
+      red_noise: noParametersPacker,
+      arpeggiator: objToArrayPacker(["scale", "interval", "duration", "gap"]),
+      stack: stackPacker
+    }
+  )],
+]);
+
+var packer = {
+  pattern: patternPacker,
+  song: songPacker,
+  instrument: instrumentPacker
+};
+
+MUSIC.Formats.PackedJSONSerializer.serialize = function(type, obj) {
+  if (packer[type]) {
+    var str = JSON.stringify(packer[type].pack(obj));
+    str = str.slice(1, str.length-1);
+    return str
+  }
+
+  return JSON.stringify(obj);
+};
+
+MUSIC.Formats.PackedJSONSerializer.deserialize = function(type, str) {
+  if (packer[type]) {
+    return packer[type].unpack(JSON.parse('['+str+']'));
+  }
+
+  return JSON.parse(str);
+};
+
+})();

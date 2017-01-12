@@ -1,9 +1,18 @@
-<div class="show-contextual-tooltip">
-  <input recipe-blink="'pattern_name_input_box'" class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
-  <recipe-tooltip rt-id="'pattern_name_input_box'"></recipe-tooltip>
+<div class="row-fluid">
+  <div class="show-contextual-tooltip span6" >
+    <input class="width100" recipe-blink="'pattern_name_input_box'" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+    <recipe-tooltip rt-id="'pattern_name_input_box'"></recipe-tooltip>
 
-  <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.change_name"></div>
+    <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.change_name"></div>
+  </div>
+
+  <button class="btn btn-primary pull-right show-contextual-tooltip" ng-click="removeItem()">
+    <recipe-tooltip rt-id="'pattern_remove'"></recipe-tooltip>
+    <div class="help-tooltip contextual-tooltip cap-right" translate="common.tooltip.remove_item"></div>
+    {{'common.remove'|translate}}
+ </button>
 </div>
+
 <div class="pattern-main-window">
   <div class="row-fluid">
     <div class="span6">
@@ -66,7 +75,7 @@
 
   <h1 translate="pattern.tracks"></h1>
 
-  <div ng-repeat="track in file.tracks">
+  <div ng-repeat="track in file.tracks track by $index">
     <div class="row-fluid">
       <div class="vertical-margin span2 show-contextual-tooltip">
         <button ng-click="removeTrack($index)" class="btn btn-primary" translate="common.remove"></button>
@@ -92,7 +101,7 @@
         <!-- Instrument drop zone -->
             <div recipe-blink="'pattern_instrument_dropzone'" class="pattern-drop-lateral" ng-drop="true" ng-drop-success="onDropComplete($data,$event); recipe.raise('instrument_dropped')">
               <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard-o"></span>
-              <p>{{file.tracks[file.selectedTrack].instrument ? file.tracks[file.selectedTrack].instrument.name : ('pattern.drop_instrument' | translate) }}</p>
+              <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
               <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
             </div>
 

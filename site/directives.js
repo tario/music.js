@@ -174,8 +174,8 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 
       scope.$watch("modulations", function(newValue) {
         if (!scope.modulations) return;
-        scope.file.data.modulation = scope.file.data.modulation||{};
         scope.modulations.forEach(function(modulation) {
+          scope.file.data.modulation = scope.file.data.modulation||{};
           scope.file.data.modulation[modulation.name] = modulation.value;
         }); 
         scope.$emit("objectChanged");
@@ -550,6 +550,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
 
       var notation7 = function(n) {
         return ["C","D","E","F","G","A","B"][n % 7];
+      };
+
+      scope.raiseEventChanged = function(oldevt, evt, track) {
+        scope.$emit('eventChanged', {oldevt: oldevt,evt: evt, track: track})
       };
 
       scope.noteName = function(n) {

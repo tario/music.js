@@ -29,6 +29,7 @@ var enTranslations = {
     help_contextual_help: 'Contextual Help',
     help_welcome: 'Welcome!',
     help_about: 'About Music.js',
+    recycle_bin: 'Recycle Bin...',
     tooltip: {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',
@@ -38,6 +39,16 @@ var enTranslations = {
   contextual_help: {
     enable: 'Enable Contextual Help',
     disable: 'Disable Contextual Help'
+  },
+  recycle: {
+    p1: 'This is the recycle bin, from here, you can restore the items that have been removed',
+    p2: 'Remember: items in the recycle bin will be permanently deleted if and when available storage space runs out',
+    p3: '* Double-click the item you want to RESTORE',
+    title: 'Recycle Bin',
+    compact_title: 'Recycle Bin',
+    compact_hint_restore: '* Double-click the item you want to RESTORE',
+    compact_hint_open: '* Click here to open recycle bin window',
+    EMPTY: 'EMPTY'
   },
   welcome: {
     title: 'Welcome to Music.js: 8bit Edition',
@@ -67,13 +78,15 @@ var enTranslations = {
     HELP: 'HELP',
     more: 'more',
     remove: 'Remove',
+    reset: 'Reset',
     play: 'Play',
     stop: 'Stop',
     record: 'Rec.',
     bpm: 'Bpm',
     add: 'Add',
     tooltip: {
-      playing_speed: 'Playing speed, number of beats per minute'
+      playing_speed: 'Playing speed, number of beats per minute',
+      remove_item: 'Removes item, you can restore it from recycle bin'
     },
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',

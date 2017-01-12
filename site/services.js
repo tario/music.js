@@ -2,6 +2,10 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function(MusicContext, $q, TypeService, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
   var nextId = 0;
+
+  var last_type = new WeakMap();
+  var __cache = new WeakMap();
+
   var getConstructor = function(descriptor) {
       return TypeService.getType(descriptor.type)
         .then(function(type) {
@@ -37,37 +41,36 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                   components[obj.name] = obj.obj;
                 });
 
-                if (!descriptor.last_type||descriptor.last_type === descriptor.type) {
+                if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
                   if (subobjects.length === 1) {
-                    if (descriptor.__cache && descriptor.__cache[subobjects[0].id]) {
+                    if (__cache.has(descriptor) && __cache.get(descriptor)[subobjects[0].id]) {
                       return $q(function(resolve) {
-                        resolve(descriptor.__cache[subobjects[0].id]
+                        resolve(__cache.get(descriptor)[subobjects[0].id]
                               .update(descriptor.data, components));
                       });
                     }
                   } else if (subobjects.length === 0) {
-                    if (descriptor.__cache && descriptor.__cache.noid) {
+                    if (__cache.has(descriptor) && __cache.get(descriptor).noid) {
                       return $q(function(resolve) {
-                        resolve(descriptor.__cache.noid
+                        resolve(__cache.get(descriptor).noid
                               .update(descriptor.data, components));
                       });
                     }
                   }
                 }
 
-                descriptor.last_type = descriptor.type;
-
+                last_type.set(descriptor, descriptor.type);
 
                 var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
                 nextId++;
                 ret.id = nextId;
 
                 if (subobjects.length === 1) {
-                  descriptor.__cache = descriptor.__cache || {};
-                  descriptor.__cache[subobjects[0].id] = ret;
+                  if (!__cache.has(descriptor)) __cache.set(descriptor, {});
+                  __cache.get(descriptor)[subobjects[0].id] = ret;
                 } else if (subobjects.length === 0) {
-                  descriptor.__cache = descriptor.__cache || {};
-                  descriptor.__cache.noid = ret;
+                  if (!__cache.has(descriptor)) __cache.set(descriptor, {});
+                  __cache.get(descriptor).noid = ret;
                 }
 
                 return ret;
@@ -381,9 +384,9 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
   var patternCompose = function(file, instruments, onStop) {
     var playableArray = file.tracks.filter(function(track) {
-      return !!track.instrument && !!track.instrument.id;
+      return !!track.instrument;
     }).map(function(track) {
-      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument.id]);
+      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument]);
     });
 
     return new MUSIC.MultiPlayable(playableArray);
@@ -450,7 +453,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   };
 }]);
 
-musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", function($http, $q, TypeService, Historial) {
+musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
       return $q.all(result.data.map(function(entry) {
@@ -458,9 +462,11 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           .then(function(r) {
             var hash = new jsSHA("SHA-1", "TEXT");
             hash.update(JSON.stringify(r.data));
-            var fileId = hash.getHash("HEX");
+            var fileId = hash.getHash("HEX").toLowerCase();
 
-            return createFile({type: entry.type, name: entry.name, id: fileId, contents: r.data});
+            createdFiles[fileId] = r.data;
+            createdFilesIndex = createdFilesIndex ||[];
+            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId});
           });
       }));
     });
@@ -479,6 +485,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var createdFiles = {};
 
   var genericStateEmmiter = new EventEmitter();
+  var recycledEmmiter = new EventEmitter();
 
   var defaultFile = {
     instrument: {
@@ -502,41 +509,132 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       selectedTrack: 0,
       tracks:[
         {scroll: 1000, events: []}
-      ]
+      ],
+      scrollLeft: 0
     }
   };
 
   var hist = new WeakMap();
 
-  var updateFile = function(id, contents) {
-    var obj = JSON.parse(JSON.stringify(contents));
+  var updateFile = function(id, contents, options) {
+    return $q.when()
+      .then(function() {
+        var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
+        if (localFile) return localFile;
 
-    if (obj && obj.data && obj.data.array) {
-      obj.data.array.forEach(function(elem) {
-        delete elem.$$hashKey; // TODO prevent this tmp variables on music object factory service
-        delete elem.__cache;
-        delete elem.last_type;
+        return storageIndex.getEntry(id);
+      })
+      .then(function(localFile) {
+        if (localFile) {
+          var serialized = MUSIC.Formats.MultiSerializer.serialize(localFile.type, contents);
+
+          if (!options || !options.noHistory) {
+            hist[id] = hist[id] || Historial();
+            hist[id].registerVersion(JSON.stringify(contents));
+          }
+
+          return localforage.setItem(id, serialized);
+        }
+      })
+      .then(function() {
+        return recycleIndex.reload();
+      })
+      .then(function() {
+        recycledEmmiter.emit("changed");
       });
-    }
+  };
 
-    createdFiles[id] = obj;
-    hist[id].registerVersion(JSON.stringify(obj));
+  var destroyFile = function(id) {
+    return localforage.removeItem(id)
+      .then(function() {
+        return $q.all({r: recycleIndex.removeEntry(id), l: storageIndex.removeEntry(id)});
+      })
+  };
 
-    return $q.resolve();
+
+  var restoreFromRecycleBin = function(id) {
+    return recycleIndex.getEntry(id)
+      .then(function(localFile) {
+        if (localFile) {
+          return recycleIndex.removeEntry(id)
+            .then(function() {
+              return storageIndex.createEntry(localFile);
+            });
+        }
+      })
+      .then(function() {
+        genericStateEmmiter.emit("changed");
+        recycledEmmiter.emit("changed");
+      });
+  };
+
+  var moveToRecycleBin = function(id) {
+    return storageIndex.getEntry(id)
+      .then(function(localFile) {
+        if (localFile) {
+          return recycleIndex.getAll()
+            .then(function(idx) {
+              if (idx && idx.length >= 100) {
+                return recycleIndex.removeEntry(idx[0].id)
+                  .then(function() {
+                    return localforage.removeItem(id);
+                  });
+              }
+            })
+            .then(function() {
+              return storageIndex.removeEntry(id);
+            })
+            .then(function() {
+              return recycleIndex.createEntry(localFile);
+            });
+        }
+      })
+      .then(function() {
+        genericStateEmmiter.emit("changed");
+        recycledEmmiter.emit("changed");
+      });
   };
 
   var createFile = function(options) {
-    genericStateEmmiter.emit("changed");
-
     var newid = options.id || createId();
 
-    createdFilesIndex.push({"type": options.type, "name": options.name, "id": newid});
-    createdFiles[newid] = options.contents || defaultFile[options.type] || {};
+    var contents = options.contents || defaultFile[options.type] || {};
 
-    hist[newid] = Historial();
-    hist[newid].registerVersion(JSON.stringify(createdFiles[newid]));
+    hist[newid] = hist[newid] || Historial();
+    hist[newid].registerVersion(JSON.stringify(contents));
 
-    return $q.resolve(newid);
+    var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
+    return localforage.setItem(newid, serialized)
+      .then(function() {
+        return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
+      })
+      .then(function() {
+        return recycleIndex.reload();
+      })
+      .then(function() {
+        genericStateEmmiter.emit("changed");
+        recycledEmmiter.emit("changed");
+        return newid;
+      });
+  };
+
+  MUSIC.Formats.MultiSerializer.setSerializers([
+    {serializer: MUSIC.Formats.JSONSerializer, base: '0'},
+    {serializer: MUSIC.Formats.PackedJSONSerializer, base: '1'},
+    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.JSONSerializer), base: '2'},
+    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.PackedJSONSerializer), base: '3'}
+  ]);
+
+  var storageIndex = Index("index");
+  var recycleIndex = Index("recycle");
+
+  recycleIndex.getAll().then(function() {
+    recycledEmmiter.emit("changed");
+  });
+
+  var changed = function() {
+    genericStateEmmiter.emit("changed");
+    recycledEmmiter.emit("changed");
   };
 
   return {
@@ -544,37 +642,96 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       var oldVer = hist[id].undo();
       if (!oldVer) return;
 
-      createdFiles[id] = JSON.parse(oldVer);
+      return updateFile(id, JSON.parse(oldVer), {noHistory: true});
     },
     redo: function(id) {
       var nextVer = hist[id].redo();
       if (!nextVer) return;
 
-      createdFiles[id] = JSON.parse(nextVer);
+      return updateFile(id, JSON.parse(nextVer), {noHistory: true});
     },
+    moveToRecycleBin: moveToRecycleBin,
+    restoreFromRecycleBin: restoreFromRecycleBin,
+    destroyFile: destroyFile,
     createFile: createFile,
+    changed: changed,
     updateIndex: function(id, attributes) {
-      var localFile =  createdFilesIndex.filter(function(x){ return x.id === id})[0];
-      if (!localFile) return;
+      var localFile = createdFilesIndex.filter(function(x) { return x.id === id; })[0];
+      if (localFile) {
+        localFile.name = attributes.name;
+        genericStateEmmiter.emit("changed");
+        return $q.when(localFile);
+      }
 
-      localFile.name = attributes.name;
+      return storageIndex.updateEntry(id, attributes)
+        .then(function() {
+          genericStateEmmiter.emit("changed");
+        });
     },
     getIndex: function(id) {
-      return $q.resolve(createdFilesIndex.filter(function(x){ return x.id === id})[0]);
+      var localFile = createdFilesIndex.filter(function(x) { return x.id === id; })[0];
+      if (localFile) return $q.when(localFile);
+
+      return storageIndex.getEntry(id);
     },
     updateFile: updateFile,
     getFile: function(id) {
-      return exampleList.then(function() {
-        var localFile = createdFilesIndex.filter(function(x){ return x.id === id})[0];
-        if (localFile) {
-          return $q.resolve({
-            index: {name: localFile.name, id: localFile.id},
-            contents: JSON.parse(JSON.stringify(createdFiles[id]))
-          });
+      var builtIn = false;
+      var changed = false;
+      return exampleList
+        .then(function() {
+          var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
+          if (localFile) {
+            builtIn = true;
+            return localFile;
+          }
+
+          return storageIndex.getEntry(id);
+        })
+        .then(function(localFile) {
+          return localforage.getItem(id)
+            .then(function(serialized) {
+              if (serialized) {
+                var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
+                return {
+                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, updated: true},
+                  contents: contents
+                };
+              } else {
+                if (localFile) {
+                  return {
+                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn},
+                    contents: JSON.parse(JSON.stringify(createdFiles[id]))
+                  };
+                };
+              }
+            });
+        });
+    },
+    observeRecycled: function(callback) {
+      recycledEmmiter.addListener("changed", callback);
+
+      return {
+        destroy: function() {
+          recycledEmmiter.removeListener("changed", callback);
+        }
+      };
+    },
+    searchRecycled: function(keyword) {
+      var hasKeyword = function() { return true };
+      if (keyword && keyword.length > 0) {
+        keyword = keyword.toLowerCase();
+        hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
+
+      return recycleIndex.getAll().then(function(index) {
+        var filtered = (index||[]).filter(hasKeyword);
+        return {
+          results: filtered.slice(0,10),
+          total: filtered.length
         };
       });
     },
-
     search: function(keyword) {
 
       var hasKeyword = function() { return true };
@@ -586,11 +743,13 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       var ee = new EventEmitter();
       var updateSearch = function() {
         $q.all([
+          storageIndex.getAll(),
           createdFilesIndex,
           TypeService.getTypes(keyword)
         ]).then(function(result) {
-          var res = result[0];
-          res = res.concat(result[1].map(convertType));
+          var res = result[0]||[];
+          if (result[1]) res = res.concat(result[1]);
+          res = res.concat(result[2].map(convertType));
           res = res.filter(hasKeyword);
 
           ee.emit("changed", {
@@ -599,7 +758,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           });
         });
       };
-
 
       return {
         observe: function(cb) {

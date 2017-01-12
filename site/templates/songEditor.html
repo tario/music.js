@@ -1,4 +1,12 @@
-<input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+<div class="row-fluid">
+  <input class="span6" ng-change="indexChanged()" ng-model="fileIndex.name"/>
+  <button class="btn btn-primary pull-right show-contextual-tooltip" ng-click="removeItem()">
+    <recipe-tooltip rt-id="'song_remove'"></recipe-tooltip>
+    <div class="help-tooltip contextual-tooltip cap-right" translate="common.tooltip.remove_item"></div>
+    {{'common.remove'|translate}}
+  </button>
+</div>
+
 <div class="song-main-window">
   <div class="row-fluid">
     <div class="span6">
@@ -48,10 +56,10 @@
 
   <div class="pattern-block-area-container">
     <div class="pattern-block-area">
-      <div class="track" ng-repeat="track in file.tracks" ng-init="trackIdx = $index">
+      <div class="track" ng-repeat="track in file.tracks track by $index" ng-init="trackIdx = $index">
         <div 
           class="pattern-block"
-          ng-repeat="block in track.blocks"
+          ng-repeat="block in track.blocks track by $index"
           ng-drop="true"
           ng-drop-success="onDropComplete($data,$event,block)",
           recipe-blink="'song_pattern_dropzone_' + trackIdx + '_' + $index">

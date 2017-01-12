@@ -14,6 +14,12 @@ body.modal-open .contextual-help-switch {
   margin: 5px;
 }
 
+.lower-right-corner-menu {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+}
+
 .lower-left-corner-menu .row,
 .lower-left-corner-menu .container {
   margin-left: 0;
@@ -466,3 +472,17 @@ body.modal-open .main-window h6 {
   content: none !important;
 }
 
+.width100 {
+  width: 100%;
+}
+
+
+.modal-body.musicapp.recycle {
+  background-color:#aaaaaa;
+}
+
+.bordered-square {
+  border-style: double;
+  border-color: black;
+  padding: 5px;
+}

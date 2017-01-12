@@ -1,5 +1,11 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
+musicShowCaseApp.filter("instrument_name", function() {
+  return function(instrumentId, instrumentMap) {
+    return instrumentMap[instrumentId] && instrumentMap[instrumentId] ? instrumentMap[instrumentId].name : instrumentId;
+  };
+});
+
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
@@ -42,6 +48,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   var id = $routeParams.id;
 
   var instSet = InstrumentSet(music);
+
+  $scope.removeItem = function() {
+    FileRepository.moveToRecycleBin(id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
 
   $scope.remove = function(block) {
     delete block.id;
@@ -140,7 +153,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     var loader = {};
 
     pattern.tracks.forEach(function(track) {
-      if (track.instrument) loader[track.instrument.id] = instSet.load(track.instrument.id);
+      if (track.instrument) loader[track.instrument] = instSet.load(track.instrument);
     });
 
 
@@ -235,7 +248,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     FileRepository.getFile($data.id)
       .then(function(f) {
         f.contents.tracks.forEach(function(track) {
-          if (track.instrument) instSet.load(track.instrument.id);
+          if (track.instrument) instSet.load(track.instrument);
         });
 
         $scope.indexMap[$data.id] = f;
@@ -270,7 +283,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           for (var blockId in indexMap) {
             var pattern = indexMap[blockId].contents;
             pattern.tracks.forEach(function(track) {
-              if (track.instrument) instSet.load(track.instrument.id);
+              if (track.instrument) instSet.load(track.instrument);
             });
           }
         })
@@ -290,13 +303,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     if (document.activeElement.tagName.toLowerCase() === "input") return;
     
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id);
-      updateFromRepo();
+      FileRepository.undo(id).then(updateFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id);
-      updateFromRepo();
+      FileRepository.redo(id).then(updateFromRepo);
     }
   };
 
@@ -307,9 +318,11 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 
+  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
   var id = $routeParams.id;
   
+  $scope.instrumentMap = {};
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
   $scope.selectedTrack = 0;
@@ -317,6 +330,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   var playing = null;
   var instSet = InstrumentSet();
 
+  $scope.removeItem = function() {
+    FileRepository.moveToRecycleBin(id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
 
   $scope.removeTrack = function(trackIdx) {
     $scope.file.tracks = 
@@ -348,7 +367,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     var instruments = {};
     $scope.file.tracks.forEach(function(track) {
       if (track.instrument) {
-        instruments[track.instrument.id] = instrument.get(track);
+        instruments[track.instrument] = instrument.get(track);
       }
     });
 
@@ -404,6 +423,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     computeMeasureCount();
 
     if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
+
+    $scope.fileChanged();
   });
 
   $scope.$on("eventSelected", function(evt, data) {
@@ -416,12 +437,14 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
   $scope.updateInstrument = function(trackNo) {
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
-
-    return instSet.load($scope.file.tracks[trackNo].instrument.id)
-      .then(function(musicObject) {
-        instrument.set($scope.file.tracks[trackNo], musicObject);
-        return musicObject;
-      });
+    return $q.all({
+      musicObject: instSet.load($scope.file.tracks[trackNo].instrument),
+      index: FileRepository.getIndex($scope.file.tracks[trackNo].instrument)
+    }).then(function(result) {
+        $scope.instrumentMap[$scope.file.tracks[trackNo].instrument] = result.index;
+        instrument.set($scope.file.tracks[trackNo], result.musicObject);
+        return result.musicObject;
+    });
   };
 
   $scope.onDropComplete = function(instrument,event) {
@@ -431,7 +454,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 
     $scope.file.tracks = $scope.file.tracks || [];
     $scope.file.tracks[trackNo] = $scope.file.tracks[trackNo] || {};
-    $scope.file.tracks[trackNo].instrument = instrument;
+    $scope.file.tracks[trackNo].instrument = instrument.id;
 
     FileRepository.updateFile(id, $scope.file);
     $scope.updateInstrument(trackNo)
@@ -464,13 +487,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
     if (document.activeElement.tagName.toLowerCase() === "input") return;
 
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id);
-      updateFromRepo();
+      FileRepository.undo(id).then(updateFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id);
-      updateFromRepo();
+      FileRepository.redo(id).then(updateFromRepo);
     }
   };
 
@@ -486,8 +507,25 @@ musicShowCaseApp.controller("PatternEditorController", ["$scope", "$timeout", "$
 musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
 
+  $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
+    FileRepository.moveToRecycleBin(id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
+
   var lastObj;
-  var fileChanged = fn.debounce(function(newFile) {
+  var fileChanged = fn.debounce(function(newFile, oldFile) {
     if (!$scope.file) return;
     
     MusicObjectFactory($scope.file)
@@ -495,7 +533,6 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
           if (!obj) {
             $scope.instruments = [];
             $scope.playables = [];
-            console.log("removed");
             return;
           }
 
@@ -510,7 +547,10 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
             }
           }
 
-          FileRepository.updateFile(id, $scope.file);
+          if (oldFile) {
+            FileRepository.updateFile(id, $scope.file);
+            $scope.fileIndex.updated = true;
+          }
           lastObj = obj;
       });
   }, 50);
@@ -533,24 +573,28 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
-  FileRepository.getFile(id).then(function(file) {
-    $timeout(function() {
-      var outputFile = {};
+  var reloadFromRepo = function() {
+    FileRepository.getFile(id).then(function(file) {
+      $timeout(function() {
+        var outputFile = {};
 
-      $scope.outputFile = outputFile;
-      $scope.file = file.contents;
-      $scope.fileIndex = file.index;
-      $scope.observer = {};
+        $scope.outputFile = outputFile;
+        $scope.file = file.contents;
+        $scope.fileIndex = file.index;
+        $scope.observer = {};
 
-      $scope.observer.notify = function() {
-        $timeout(function() {
-          $scope.instruments = [];
-          $scope.playables = [];
-        });
-      };
+        $scope.observer.notify = function() {
+          $timeout(function() {
+            $scope.instruments = [];
+            $scope.playables = [];
+          });
+        };
 
+      });
     });
-  });
+  };
+
+  reloadFromRepo();
 
   $scope.$on("$destroy", function() {
     $scope.instruments.forEach(function(instrument) {
@@ -598,6 +642,15 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       controller: "welcomeModalCtrl"
     });
   };
+     
+  $scope.openRecycleBin = function() {
+    // show recycle bin modal
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/recycleBin.html",
+      controller: "recycleBinModalCtrl"
+    });
+  };
+
 
   if (!WelcomeMessage.skip()) $scope.welcome();
 
@@ -639,6 +692,9 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
       })
       .then(function(id) {
         document.location = "#/editor/instrument/"+id;
+      })
+      .catch(function(err) {
+        debugger;
       });
   };
 
