@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', function($q, $timeout, $rootScope, $http) {
+musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'Index', 'FileRepository', function($q, $timeout, $rootScope, $http, Index, FileRepository) {
 
     var recipeList = ['intro', 'create_a_song'];
 
@@ -21,7 +21,13 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', fun
       var step = currentRecipe.steps[currentStep];
       $rootScope.$broadcast("__blink_disable_all");
       $rootScope.$broadcast("__tooltip_hide_all");
-      if (!step) return;
+      if (!step) {
+        // recipe ends
+        Index.isolatedContext = null;
+        FileRepository.changed();
+
+        return;
+      }
 
       (step.blink||[]).forEach(function(blink_id) {
         $rootScope.$broadcast("_blink_enable_" + blink_id);
@@ -89,6 +95,11 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', fun
       return $http.get("recipes/" + name +".json")
         .then(function(result) {
           var recipeData = result.data;
+
+          if (result.data.isolatedContext) {
+            Index.isolatedContext = result.data.isolatedContext + Math.floor(Date.now() / 1000);
+            FileRepository.changed();
+          }
 
           currentRecipe.steps = recipeData.steps.map(loadStep);
           currentRecipe.currentStep = 0;

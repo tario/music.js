@@ -14563,6 +14563,11 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     recycledEmmiter.emit("changed");
   });
 
+  var changed = function() {
+    genericStateEmmiter.emit("changed");
+    recycledEmmiter.emit("changed");
+  };
+
   return {
     undo: function(id) {
       var oldVer = hist[id].undo();
@@ -14580,6 +14585,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     restoreFromRecycleBin: restoreFromRecycleBin,
     destroyFile: destroyFile,
     createFile: createFile,
+    changed: changed,
     updateIndex: function(id, attributes) {
       var localFile = createdFilesIndex.filter(function(x) { return x.id === id; })[0];
       if (localFile) {
@@ -14756,7 +14762,7 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
 
-  return function(indexName) {
+  var IndexFactory = function(indexName) {
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
@@ -14765,7 +14771,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     };
 
     var clearItem = function(data) {
-      return {id: data.id, name: data.name, type: data.type};
+      var ret = {id: data.id, name: data.name, type: data.type};
+      if (data.c) ret.c=data.c;
+      return ret;
     };
 
     var removeEntry = function(id) {
@@ -14790,6 +14798,11 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       return storageIndex
         .then(function(index) {
           index = index || [];
+
+          if (IndexFactory.isolatedContext) {
+            data.c = IndexFactory.isolatedContext;
+          }
+
           index.push(data);
           return localforage.setItem(indexName, index.map(clearItem));
         })
@@ -14801,13 +14814,25 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
+
+          if (IndexFactory.isolatedContext) {
+            localFile.c = IndexFactory.isolatedContext;
+          }
+
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
 
     var getAll = function() {
-      return storageIndex;
+      return storageIndex
+        .then(function(index) {
+          var ic = IndexFactory.isolatedContext;
+          if (ic) {
+            return index.filter(function(entry) {return entry.c === ic; });
+          }
+          return index;
+        });
     };
 
     reload();
@@ -14821,10 +14846,12 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       getAll: getAll
     };
   };
+
+  return IndexFactory;
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', function($q, $timeout, $rootScope, $http) {
+musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'Index', 'FileRepository', function($q, $timeout, $rootScope, $http, Index, FileRepository) {
 
     var recipeList = ['intro', 'create_a_song'];
 
@@ -14846,7 +14873,13 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', fun
       var step = currentRecipe.steps[currentStep];
       $rootScope.$broadcast("__blink_disable_all");
       $rootScope.$broadcast("__tooltip_hide_all");
-      if (!step) return;
+      if (!step) {
+        // recipe ends
+        Index.isolatedContext = null;
+        FileRepository.changed();
+
+        return;
+      }
 
       (step.blink||[]).forEach(function(blink_id) {
         $rootScope.$broadcast("_blink_enable_" + blink_id);
@@ -14914,6 +14947,11 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', fun
       return $http.get("recipes/" + name +".json")
         .then(function(result) {
           var recipeData = result.data;
+
+          if (result.data.isolatedContext) {
+            Index.isolatedContext = result.data.isolatedContext + Math.floor(Date.now() / 1000);
+            FileRepository.changed();
+          }
 
           currentRecipe.steps = recipeData.steps.map(loadStep);
           currentRecipe.currentStep = 0;

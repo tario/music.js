@@ -1,7 +1,7 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
 
-  return function(indexName) {
+  var IndexFactory = function(indexName) {
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
@@ -10,7 +10,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     };
 
     var clearItem = function(data) {
-      return {id: data.id, name: data.name, type: data.type};
+      var ret = {id: data.id, name: data.name, type: data.type};
+      if (data.c) ret.c=data.c;
+      return ret;
     };
 
     var removeEntry = function(id) {
@@ -35,6 +37,11 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       return storageIndex
         .then(function(index) {
           index = index || [];
+
+          if (IndexFactory.isolatedContext) {
+            data.c = IndexFactory.isolatedContext;
+          }
+
           index.push(data);
           return localforage.setItem(indexName, index.map(clearItem));
         })
@@ -46,13 +53,25 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
+
+          if (IndexFactory.isolatedContext) {
+            localFile.c = IndexFactory.isolatedContext;
+          }
+
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
     };
 
     var getAll = function() {
-      return storageIndex;
+      return storageIndex
+        .then(function(index) {
+          var ic = IndexFactory.isolatedContext;
+          if (ic) {
+            return index.filter(function(entry) {return entry.c === ic; });
+          }
+          return index;
+        });
     };
 
     reload();
@@ -66,4 +85,6 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       getAll: getAll
     };
   };
+
+  return IndexFactory;
 }]);

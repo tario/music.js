@@ -632,6 +632,11 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     recycledEmmiter.emit("changed");
   });
 
+  var changed = function() {
+    genericStateEmmiter.emit("changed");
+    recycledEmmiter.emit("changed");
+  };
+
   return {
     undo: function(id) {
       var oldVer = hist[id].undo();
@@ -649,6 +654,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     restoreFromRecycleBin: restoreFromRecycleBin,
     destroyFile: destroyFile,
     createFile: createFile,
+    changed: changed,
     updateIndex: function(id, attributes) {
       var localFile = createdFilesIndex.filter(function(x) { return x.id === id; })[0];
       if (localFile) {

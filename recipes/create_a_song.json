@@ -1,5 +1,6 @@
 {
   "lang": ["en", "es"],
+  "isolatedContext": "1",
   "steps": [
     {
       "blink": ["menu_new"],
