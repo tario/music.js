@@ -709,6 +709,11 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         });
     },
     observeRecycled: function(callback) {
+      recycleIndex.reload()
+        .then(function() {
+          recycledEmmiter.emit("changed");
+        });
+
       recycledEmmiter.addListener("changed", callback);
 
       return {
