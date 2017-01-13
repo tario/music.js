@@ -12958,8 +12958,12 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       }
     }
 
+    var osc;
+    this.setFreq = function(frequency) {
+      osc.frequency.value = frequency;
+    };
+
     this.play = function(param) {
-      var osc;
       var nextNode;
       var disposeNode;
       var audioDestination;
@@ -12992,6 +12996,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       audioDestination = nextNode._destination;
       disposeNode = function() {
         osc.disconnect(audioDestination);
+        osc = null;
       };
 
       osc.connect(audioDestination);
@@ -13579,7 +13584,15 @@ MUSIC.Instrument = function(soundFactory) {
     var freq = frequency(notenum);
     return MUSIC.playablePipeExtend({
       play: function(param) {
-        var soundInstance = soundFactory.freq(freq).play(param);
+        var fr = soundFactory.freq(freq);
+        var soundInstance = fr.play(param);
+
+        if (fr.setFreq) {
+          this.setValue = function(n) {
+            fr.setFreq(frequency(n));
+          };
+        }
+
         return {
           stop: function() {
             soundInstance.stop();

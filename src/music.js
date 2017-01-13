@@ -580,8 +580,12 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       }
     }
 
+    var osc;
+    this.setFreq = function(frequency) {
+      osc.frequency.value = frequency;
+    };
+
     this.play = function(param) {
-      var osc;
       var nextNode;
       var disposeNode;
       var audioDestination;
@@ -614,6 +618,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       audioDestination = nextNode._destination;
       disposeNode = function() {
         osc.disconnect(audioDestination);
+        osc = null;
       };
 
       osc.connect(audioDestination);

@@ -76,7 +76,15 @@ MUSIC.Instrument = function(soundFactory) {
     var freq = frequency(notenum);
     return MUSIC.playablePipeExtend({
       play: function(param) {
-        var soundInstance = soundFactory.freq(freq).play(param);
+        var fr = soundFactory.freq(freq);
+        var soundInstance = fr.play(param);
+
+        if (fr.setFreq) {
+          this.setValue = function(n) {
+            fr.setFreq(frequency(n));
+          };
+        }
+
         return {
           stop: function() {
             soundInstance.stop();

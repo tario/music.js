@@ -466,6 +466,76 @@ module.export = function(m) {
     return result;
   };
 
+  m.type("monophoner", {template: "null", description: "Turns polyphonic instrument into monophonic"}, 
+    function(data, subobjects) {
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var ret = function(music) {
+      var inst = wrapped(music);
+      var lastPlaying = null;
+      var lastNoteInst = null;
+      var noteCount = 0;
+      
+      var note = function(n) {
+        var innerNote;
+
+        if (lastNoteInst && lastNoteInst.setValue) {
+          var play = function() {
+            noteCount++;
+            lastNoteInst.setValue(n);
+            return lastPlaying;
+          };
+
+          return MUSIC.playablePipeExtend({play: play});
+        } else {
+          lastNoteInst = inst.note(n);
+          innerNote = lastNoteInst;
+
+          var play = function(){
+            noteCount++;
+
+            if (lastPlaying) {
+              lastPlaying.stop();
+              if (lastPlaying) lastPlaying.stop = function(){};
+            }
+            lastPlaying = innerNote.play();
+
+            var origStop = lastPlaying.stop.bind(lastPlaying);
+            lastPlaying.stop = function() {
+              if (noteCount>0) noteCount--;
+              if (noteCount===0) {
+                if (lastPlaying) lastPlaying.stop = function(){};
+                lastNoteInst = null;
+                return origStop();
+              }
+            };
+
+            return lastPlaying;
+          };
+
+          var ret = {
+            play: play
+          };
+
+          return MUSIC.playablePipeExtend(ret);
+        }
+
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });      
+    };
+
+    ret.update = function() {
+
+    };
+
+    return ret;
+  });
+
   m.type("notesplit", {template: "notesplit", description: "Split effect stack by note", _default: {
     delay: 0.4
   }}, function(data, subobjects) {
