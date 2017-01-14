@@ -10,6 +10,9 @@ module.export = function(m) {
         sustain: 'The sustain level, should be a value between 0 and 1'
       }
     },
+    monophoner: {
+      force_note_cut: 'Force note cut'
+    },
     oscillator: {
       osc_type: 'Osc. type',
       preset: 'Preset',
@@ -144,6 +147,9 @@ module.export = function(m) {
         release: 'Tiempo en segundos para la fase final donde la ganancia de volumen cae desde el nivel de sustain hasta cero',
         sustain: 'Nivel de sustain, debe ser un valor entre 0 y 1'
       }
+    },
+    monophoner: {
+      force_note_cut: 'Forzar corte de nota'
     },
     oscillator: {
       osc_type: 'Tipo de Osc.',
@@ -466,7 +472,7 @@ module.export = function(m) {
     return result;
   };
 
-  m.type("monophoner", {template: "null", description: "Turns polyphonic instrument into monophonic"}, 
+  m.type("monophoner", {template: "monophoner", description: "Turns polyphonic instrument into monophonic"}, 
     function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
@@ -481,7 +487,7 @@ module.export = function(m) {
       var note = function(n) {
         var innerNote;
 
-        if (lastNoteInst && lastNoteInst.setValue) {
+        if (lastNoteInst && lastNoteInst.setValue && !forceNoteCut) {
           var play = function() {
             noteCount++;
             lastNoteInst.setValue(n);
@@ -505,7 +511,8 @@ module.export = function(m) {
             var origStop = lastPlaying.stop.bind(lastPlaying);
             lastPlaying.stop = function() {
               if (noteCount>0) noteCount--;
-              if (noteCount===0) {
+              if (forceNoteCut) noteCount = 0;
+              if (noteCount===0||forceNoteCut) {
                 if (lastPlaying) lastPlaying.stop = function(){};
                 lastNoteInst = null;
                 return origStop();
@@ -529,9 +536,11 @@ module.export = function(m) {
       });      
     };
 
-    ret.update = function() {
-
+    var forceNoteCut;
+    ret.update = function(data) {
+      forceNoteCut = data.force_note_cut;
     };
+    ret.update(data);
 
     return ret;
   });
