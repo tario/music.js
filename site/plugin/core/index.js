@@ -736,31 +736,51 @@ module.export = function(m) {
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var attackCurve, decayCurve, releaseCurve;
 
-    var ret = function(music){
-        var note = function(n) {
-            var baseNode = music.sfxBase();
-            var gainNode = baseNode.gain(attackTime > 0 ? 0 : sustainLevel);
-            var instance = wrapped(gainNode);
-            gainNode.setParam('gain', startCurve);
 
-            var ret = instance.note(n)
-                      .onStop(function() {
-                        baseNode.prune();
-                      })
-            if (releaseTime > 0) {
-              ret = ret.stopDelay(releaseTime * 1000)
-                      .onStop(function(){ 
-                        var currentLevel = gainNode._destination.gain.value;
-                        var releaseCurve = new MUSIC.Curve.Ramp(currentLevel, 0.0, samples).during(releaseTime)
-                        gainNode.setParam('gain', releaseCurve); 
-                      });
-            }
+    var ret = function(music) {
+      var baseNode = music.sfxBase();
+      var gainNode = baseNode.gain(0);
+      var inst = wrapped(gainNode);
 
-            return ret;
+      var noteCount = 0;
+      var note = function(n) {
+        var innerNote;
+        var noteInst = inst.note(n);
+
+        var play = function(){
+          noteCount++;
+
+          var playing = noteInst.play();
+          var currentLevel = gainNode._destination.gain.value;
+
+          attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
+          startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+          gainNode.setParam('gain', startCurve);
+
+          var origStop = playing.stop.bind(playing);
+          playing.stop = function() {
+            playing.stop = function() {};
+            origStop();
+          };
+          return playing;
         };
-        return MUSIC.instrumentExtend({
-          note: note
-        });
+
+        return MUSIC.playablePipeExtend({play: play})
+            .stopDelay(releaseTime*1000)
+            .onStop(function() {
+                noteCount--;
+                // don't release if noteCount > 0
+                if (noteCount > 0) return;
+
+                var currentLevel = gainNode._destination.gain.value;
+                var releaseCurve = new MUSIC.Curve.Ramp(currentLevel, 0.0, samples).during(releaseTime)
+                gainNode.setParam('gain', releaseCurve);
+            });
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });
     };
 
     var _def = function(val, d) {
@@ -774,10 +794,7 @@ module.export = function(m) {
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
 
-      attackCurve = new MUSIC.Curve.Ramp(0.0, 1.0, samples).during(attackTime);
       decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
-      startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-
       return this;
     };
 
