@@ -12879,6 +12879,9 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   var effects = options.effects;
   var frequency = options.frequency;
   var detune = options.detune;
+  var time_constant = options.time_constant;
+
+  if (!isFinite(time_constant) || isNaN(time_constant) || time_constant <= 0) time_constant = 0.01;
 
   this.freq = function(newFreq) {
     var newoptions = {
@@ -12887,7 +12890,8 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       f: options.f,
       frequency: options.fixed_frequency ? options.fixed_frequency : newFreq,
       detune: options.detune,
-      periodicWave: options.periodicWave
+      periodicWave: options.periodicWave,
+      time_constant: time_constant
     };
     return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
   };
@@ -12960,7 +12964,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
     var osc;
     this.setFreq = function(frequency) {
-      osc.frequency.value = frequency;
+      osc.frequency.setTargetAtTime(frequency, null, time_constant||0.1);
     };
 
     this.play = function(param) {

@@ -129,12 +129,21 @@
 <br/>
 
 <div class="row-fluid show-contextual-tooltip">
-  <input type="checkbox" class="regular-checkbox showable-switch" ng-model="file.data.fixed_frequency" /> {{'core.oscillator.fixed_frequency' | translate}}
-  <div class="showable margin10 inlinetable">
-  <input type="text" class="hzinput" ng-model='file.data.frequency' />
-  hz
+  <div class="span5">
+    <input type="checkbox" class="regular-checkbox showable-switch" ng-model="file.data.fixed_frequency" /> {{'core.oscillator.fixed_frequency' | translate}}
+    <div class="showable inlinetable">
+    <input type="text" class="hzinput" ng-model='file.data.frequency' />
+    hz
+    </div>
+    <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.fixed_frequency"></div>
   </div>
-  <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.fixed_frequency"></div>
+  <div class="span5">
+    <p class="serie-label" translate="core.oscillator.time_constant"></p>
+  </div>
+  <div class="span1 show-contextual-tooltip" ng-init="file.data.time_constant = file.data.time_constant || '0.1'">
+    <input class="serie width100" min="0" type="number" step="any" ng-model="file.data.time_constant" required/>
+    <div class="help-tooltip contextual-tooltip cap-right" translate="core.oscillator.tooltip.time_constant"></div>
+  </div>
 </div>
 
 <div ng-repeat="modulation in modulations">

@@ -11,9 +11,13 @@ module.export = function(m) {
       }
     },
     monophoner: {
-      force_note_cut: 'Force note cut'
+      force_note_cut: 'Force note cut',
+      tooltip: {
+        force_note_cut: 'If activated, uses note cut even if the notes produced by the generator supports changing values'
+      }
     },
     oscillator: {
+      time_constant: 'Time constant (freq change)',
       osc_type: 'Osc. type',
       preset: 'Preset',
       waveform: 'Waveform',
@@ -46,7 +50,8 @@ module.export = function(m) {
         fixed_frequency: 'Enable this, if you want to fix the frequency of the oscillator to a given value',
         modl: {
           detune: 'You can setup the effects for detune modulation here. If you leave it empty, there will be no modulation at all'
-        }
+        },
+        time_constant: 'Exponential time constant for frequency change, the lower the value, the faster will be the change (zero is not admitted)'
       }
     },
     script: {
@@ -149,9 +154,13 @@ module.export = function(m) {
       }
     },
     monophoner: {
-      force_note_cut: 'Forzar corte de nota'
+      force_note_cut: 'Forzar corte de nota',
+      tooltip: {
+        force_note_cut: 'Si se activa, corta las notas incluso si estas soportan cambio de valor'
+      }
     },
     oscillator: {
+      time_constant: 'Const. de tiempo (freq)',
       osc_type: 'Tipo de Osc.',
       preset: 'Preset',
       waveform: 'Forma de onda',
@@ -184,7 +193,8 @@ module.export = function(m) {
         fixed_frequency: 'Activa esto, si quieres que la frecuencia del oscilador sea fija a un determinado valor',
         modl: {
           detune: 'Puedes determinar los efectos para modular el *detune* aqui. Si dejas esto vacio, no habra ninguna modulacion'
-        }
+        },
+        time_constant: 'Determina la constante de tiempo exponencial para el cambio de frecuencias, cuanto mas bajo sea el valor el cambio sera mas rapido (no se admite cero)'
       }
     },
     script: {
@@ -450,7 +460,8 @@ module.export = function(m) {
           var props = {
             type: data.oscillatorType ||"square",
             fixed_frequency: data.fixed_frequency && data.frequency,
-            terms: data.terms
+            terms: data.terms,
+            time_constant: data.time_constant
           };
 
           if (components && components.detune) {
