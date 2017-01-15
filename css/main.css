@@ -110,6 +110,7 @@ body.modal-open .contextual-help-switch {
   position: relative;
   -webkit-appearance: none;
   margin: 0 !important;
+  outline: none !important;
 }
 
 .regular-checkbox:checked {
