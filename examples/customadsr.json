@@ -12,6 +12,12 @@
         }
       },
       {
+        "type": "monophoner",
+        "data": {
+          "force_note_cut": false
+        }
+      },
+      {
         "type": "oscillator",
         "data": {
           "modulation": {
@@ -28,6 +34,7 @@
             "sin": "0",
             "cos": "0"
           },
+          "time_constant": 0.01,
           "terms": {
             "cos": [
               1.4694837135381,

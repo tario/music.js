@@ -20,6 +20,12 @@
         }
       },
       {
+        "type": "monophoner",
+        "data": {
+          "force_note_cut": false
+        }
+      },
+      {
         "type": "oscillator",
         "data": {
           "modulation": {
@@ -30,6 +36,7 @@
               }
             }
           },
+          "time_constant": 0.01,
           "oscillatorType": "square"
         }
       }
