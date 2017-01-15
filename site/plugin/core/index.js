@@ -3,11 +3,13 @@ module.export = function(m) {
   m.lang("en", {
     adsr: {
       description: 'ADSR Envelope signal',
+      reset_on_cut: 'Reset on cut',
       tooltip: {
         attack: 'The time in seconds for the first phase (attack) where the gain rise from 0 to 1',
         decay: 'The time in seconds for the second phase (decay) where the gain drops from 1 to sustain level',
         release: 'The time in seconds for the final phase where the gain drops from the sustain level to zero when you release the note',
-        sustain: 'The sustain level, should be a value between 0 and 1'
+        sustain: 'The sustain level, should be a value between 0 and 1',
+        reset_on_cut: 'Resets to the ADS phase when a note cuts another'
       }
     },
     monophoner: {
@@ -146,11 +148,13 @@ module.export = function(m) {
   m.lang("es", {
     adsr: {
       description: 'Señal de envoltura ADSR',
+      reset_on_cut: 'Reiniciar en corte',
       tooltip: {
         attack: 'Tiempo en segundos para la primera fase (ataque) donde la ganancia de volumen aumenta de 0 a 1',
         decay: 'Tiempo en segundos para la segunda fase (decaimiento) done la ganancia de volumen cae de 1 hasta el nivel de *sustain*',
         release: 'Tiempo en segundos para la fase final donde la ganancia de volumen cae desde el nivel de sustain hasta cero',
-        sustain: 'Nivel de sustain, debe ser un valor entre 0 y 1'
+        sustain: 'Nivel de sustain, debe ser un valor entre 0 y 1',
+        reset_on_cut: "Reinicia a la fase ADS cuando una nota corta a otra"
       }
     },
     monophoner: {
