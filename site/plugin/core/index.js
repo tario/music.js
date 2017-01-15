@@ -566,7 +566,7 @@ module.export = function(m) {
   });
 
   m.type("notesplit", {template: "notesplit", description: "Split effect stack by note", _default: {
-    delay: 0.4
+    delay: 0.0
   }}, function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
