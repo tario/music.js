@@ -728,7 +728,7 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("envelope", {template: "adsr", description: "ADSR", _default: {
+  m.type("envelope", {template: "envelope", description: "ADSR", _default: {
     attackTime: 0.4,
     decayTime: 0.4,
     sustainLevel: 0.8,
@@ -740,6 +740,7 @@ module.export = function(m) {
 
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var attackCurve, decayCurve, releaseCurve;
+    var resetOnCut = false;
 
 
     var ret = function(music) {
@@ -753,14 +754,17 @@ module.export = function(m) {
         var noteInst = inst.note(n);
 
         var play = function(){
-          noteCount++;
-
           var playing = noteInst.play();
           var currentLevel = gainNode._destination.gain.value;
 
-          attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
-          startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-          gainNode.setParam('gain', startCurve);
+          if (noteCount === 0 || resetOnCut) {
+            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
+            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+            gainNode.setParam('gain', startCurve);
+          }
+
+          noteCount++;
+
 
           var origStop = playing.stop.bind(playing);
           playing.stop = function() {
@@ -798,6 +802,7 @@ module.export = function(m) {
       decayTime = parseFloat(_def(data.decayTime,0.4));
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
+      resetOnCut = data.reset_on_cut;
 
       decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
       return this;

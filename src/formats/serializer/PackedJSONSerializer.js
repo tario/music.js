@@ -20,7 +20,7 @@ var objToArrayPacker = function(keys) {
 
   var unpack = function(array) {
     var obj = {};
-    for (var i=0; i<keys.length; i++) {
+    for (var i=0; i<array.length; i++) {
       var key = keys[i];
       if (Array.isArray(key)) {
         obj[key[0]] = key[1].unpack(array[i], obj);
@@ -222,7 +222,7 @@ var stackPacker = objToArrayPacker([
   ["array", array(recursiveInstrumentPacker)]
 ]);
 
-var envelopePacker = objToArrayPacker(["attackTime","decayTime","sustainLevel","releaseTime"]);
+var envelopePacker = objToArrayPacker(["attackTime","decayTime","sustainLevel","releaseTime", ["reset_on_cut", booleanPacker]]);
 var oscillatorPacker = objToArrayPacker([
   ["oscillatorType", substitution(["sine", "square", "sawtooth", "triangle", "custom"])],
   ["fixed_frequency", booleanPacker],

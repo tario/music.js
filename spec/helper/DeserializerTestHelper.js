@@ -215,7 +215,7 @@ var deepEqual = function(obj1, obj2) {
   }
 };
 
-DeserializerTest.test = function(serializerfunc, deserializerfunc) {
+DeserializerTest.test = function(serializerfunc, deserializerfunc, extras) {
 
   var generateTests = function(type) {
     return function(obj) {
@@ -237,6 +237,9 @@ DeserializerTest.test = function(serializerfunc, deserializerfunc) {
     };
   };
 
+  var extraInstruments = [];
+  if (extras) extraInstruments = extras.instruments;
+
   describe("patterns", function() {
     patterns.forEach(generateTests('pattern'));
   });
@@ -246,7 +249,7 @@ DeserializerTest.test = function(serializerfunc, deserializerfunc) {
   });
 
   describe("instruments", function() {
-    instruments.forEach(generateTests('instrument'));
+    instruments.concat(extraInstruments).forEach(generateTests('instrument'));
   });  
 };
 
