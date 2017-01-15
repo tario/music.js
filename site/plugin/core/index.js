@@ -498,11 +498,27 @@ module.export = function(m) {
       var note = function(n) {
         var innerNote;
 
+        var createPlaying = function() {
+          return {
+            stop: function() {
+              if (noteCount > 0) noteCount--;
+              if (noteCount === 0) {
+                if (lastPlaying) lastPlaying.stop();
+                this.stop = function(){};
+                lastNoteInst = null;
+                lastPlaying = null;
+              }
+            }
+          };
+        };
+
         if (lastNoteInst && lastNoteInst.setValue && !forceNoteCut) {
           var play = function() {
+            var playing = createPlaying();
+
             noteCount++;
             lastNoteInst.setValue(n);
-            return lastPlaying;
+            return playing;
           };
 
           return MUSIC.playablePipeExtend({play: play});
@@ -512,25 +528,14 @@ module.export = function(m) {
 
           var play = function(){
             noteCount++;
-
             if (lastPlaying) {
               lastPlaying.stop();
               if (lastPlaying) lastPlaying.stop = function(){};
             }
             lastPlaying = innerNote.play();
+            var playing = createPlaying();
 
-            var origStop = lastPlaying.stop.bind(lastPlaying);
-            lastPlaying.stop = function() {
-              if (noteCount>0) noteCount--;
-              if (forceNoteCut) noteCount = 0;
-              if (noteCount===0||forceNoteCut) {
-                if (lastPlaying) lastPlaying.stop = function(){};
-                lastNoteInst = null;
-                return origStop();
-              }
-            };
-
-            return lastPlaying;
+            return playing;
           };
 
           var ret = {
