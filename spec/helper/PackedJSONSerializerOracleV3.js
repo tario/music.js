@@ -244,7 +244,7 @@ var frequencyFilterPacker = objToArrayPacker([
 var noParametersPacker = objToArrayPacker([]);
 
 var multiInstrumentPacker = objToArrayPacker([
-  ["subobjects", array(recursiveInstrumentPacker)]
+  ["subobjects", flatten(array(recursiveInstrumentPacker), 2)]
 ]);
 
 var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
