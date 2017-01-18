@@ -14865,10 +14865,14 @@ var frequencyFilterPacker = objToArrayPacker([
 
 var noParametersPacker = objToArrayPacker([]);
 
+var multiInstrumentPacker = objToArrayPacker([
+  ["subobjects", array(recursiveInstrumentPacker)]
+]);
+
 var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
 "envelope","transpose","scale","gain","echo","lowpass",
 "highpass","bandpass","lowshelf","highshelf","peaking",
-"notch","allpass","reverb","noise","pink_noise","red_noise","arpeggiator","stack"];
+"notch","allpass","reverb","noise","pink_noise","red_noise","arpeggiator","stack", "multi_instrument"];
 
 var instrumentPacker = objToArrayPacker([
   ["type", substitution(typeNames)],
@@ -14897,7 +14901,8 @@ var instrumentPacker = objToArrayPacker([
       pink_noise: noParametersPacker,
       red_noise: noParametersPacker,
       arpeggiator: objToArrayPacker(["scale", "interval", "duration", "gap"]),
-      stack: stackPacker
+      stack: stackPacker,
+      multi_instrument: multiInstrumentPacker
     }
   )],
 ]);

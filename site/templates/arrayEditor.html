@@ -1,12 +1,12 @@
 <ul class="nav nav-tabs">
-  <li ng-repeat="object in data.subobjects" ng-class="{'active': ($index == currentTab)}">
+  <li ng-repeat="object in data.subobjects track by $index" ng-class="{'active': ($index == currentTab)}">
     <a href ng-click="setCurrentTab($index)">Instrument #{{$index}}</a>
   </li>
   <li><a href ng-click="addObject()">+</a></li>
 </ul>
 
 <div class="tab-content">
-  <div ng-repeat="object in data.subobjects" class="tab-pane" ng-class="{'active': ($index == currentTab)}">
+  <div ng-repeat="object in data.subobjects track by $index" class="tab-pane" ng-class="{'active': ($index == currentTab)}">
     <div class="music-object-editor" music-stack init-file="object"></div>
   </div>
 </div>
