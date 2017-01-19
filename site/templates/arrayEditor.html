@@ -1,7 +1,25 @@
-<tabset>
-  <tab ng-repeat="object in collection.objects" heading="{{object.name}}">
-    <div style="margin:20px;" music-stack observer="stackObserver" output-file="object">
+<ul class="nav nav-tabs">
+  <li class="show-contextual-tooltip" ng-repeat="object in data.subobjects track by $index" ng-class="{'active': ($index == currentTab)}">
+    <a href ng-click="setCurrentTab($index)">Instrument #{{$index}}</a>
+    <div class="help-tooltip contextual-tooltip" translate="array_editor.tooltip.edit_item"></div>
+  </li>
+  <li class="show-contextual-tooltip"><a href ng-click="addObject()">+</a>
+    <div class="help-tooltip contextual-tooltip" translate="array_editor.tooltip.add_item"></div>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <div ng-repeat="object in data.subobjects track by $index" class="tab-pane" ng-class="{'active': ($index == currentTab)}">
+    <div class="row-fluid">
+      <button class="btn btn-primary pull-right show-contextual-tooltip" ng-click="removeObject(object)">
+        <recipe-tooltip rt-id="'array_editor_object_remove'"></recipe-tooltip>
+        <div class="help-tooltip contextual-tooltip cap-right" translate="array_editor.tooltip.remove_item"></div>
+        {{'common.remove'|translate}}
+      </button>  
     </div>
-  </tab>
-  <tab ng-if="collection.objects.length < maxElements" ng-click="addObject()" heading="+"></tab>
-</tabset>
+
+    <div class="row-fluid">
+      <div class="music-object-editor" music-stack init-file="object"></div>
+    </div>
+  </div>
+</div>

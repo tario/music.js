@@ -198,28 +198,31 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
   return {
     scope: {
-      collection: "=collection"
+      data: "=data"
     },
     templateUrl: "site/templates/arrayEditor.html",
     link: function(scope, element, attrs) {
-      scope.collection.objects=scope.collection.objects||[];
+      scope.data.subobjects=scope.data.subobjects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
+      scope.currentTab = -1;
 
       var addObject = function(newObject) {
         $timeout(function() {
-          scope.collection.objects=scope.collection.objects||[];
-          scope.collection.objects.push(newObject);
+          scope.data.subobjects=scope.data.subobjects||[];
+          scope.data.subobjects.push(newObject);
         });
       };
 
-      if (attrs.minelements) {
-        for (var i=0; i<parseInt(attrs.minelements); i++) {
-          addObject({name: "New Object", type: attrs.defaulttype || "null"});
-        }
-      }
+      scope.setCurrentTab = function(idx) {
+        scope.currentTab = idx;
+      };
+
+      scope.removeObject = function(object) {
+        scope.data.subobjects = scope.data.subobjects.filter(function(o) {return o !== object; });
+      };
 
       scope.addObject = function() {
-        addObject({name: "New Object", type: attrs.defaulttype || "null"})
+        addObject({data: {array: []}, type: "stack"})
       };
     }
   };

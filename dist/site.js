@@ -12583,6 +12583,13 @@ musicShowCaseApp.constant("localforage", localforage);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  array_editor: {
+    tooltip: {
+      remove_item: 'Removes the object from array',
+      add_item: 'Click to add a new object to array',
+      edit_item: 'Click to edit this object'
+    }
+  },
   index: {
     not_implemented: 'Sorry. Not implemented Yet :P',
     filter: 'Type here the word to filter objects',
@@ -12761,6 +12768,13 @@ musicShowCaseApp.constant("enTranslations", enTranslations);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  array_editor: {
+    tooltip: {
+      remove_item: 'Elimina el objeto de la coleccion',
+      add_item: 'Click para agregar un nuevo objeto a la coleccion',
+      edit_item: 'Click para editar este objeto'
+    }
+  },
   index: {
     not_implemented: 'Disculpa, funcionalidad no implementada',
     filter: 'Tipea aqui las palabras clave para filtrar los objetos',
@@ -13183,28 +13197,31 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
 musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
   return {
     scope: {
-      collection: "=collection"
+      data: "=data"
     },
     templateUrl: "site/templates/arrayEditor.html",
     link: function(scope, element, attrs) {
-      scope.collection.objects=scope.collection.objects||[];
+      scope.data.subobjects=scope.data.subobjects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
+      scope.currentTab = -1;
 
       var addObject = function(newObject) {
         $timeout(function() {
-          scope.collection.objects=scope.collection.objects||[];
-          scope.collection.objects.push(newObject);
+          scope.data.subobjects=scope.data.subobjects||[];
+          scope.data.subobjects.push(newObject);
         });
       };
 
-      if (attrs.minelements) {
-        for (var i=0; i<parseInt(attrs.minelements); i++) {
-          addObject({name: "New Object", type: attrs.defaulttype || "null"});
-        }
-      }
+      scope.setCurrentTab = function(idx) {
+        scope.currentTab = idx;
+      };
+
+      scope.removeObject = function(object) {
+        scope.data.subobjects = scope.data.subobjects.filter(function(o) {return o !== object; });
+      };
 
       scope.addObject = function() {
-        addObject({name: "New Object", type: attrs.defaulttype || "null"})
+        addObject({data: {array: []}, type: "stack"})
       };
     }
   };
@@ -13967,13 +13984,22 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
               });
             }
 
+            if (type.subobjects) {
+              descriptor.data.subobjects.forEach(function(value) {
+                buildComponents.push(createParametric(value));
+              });
+            }
+
             return $q.all(buildComponents)
               .then(function(objs) {
-
-                var components = {};
-                objs.forEach(function(obj) {
-                  components[obj.name] = obj.obj;
-                });
+                if (type.subobjects) {
+                  subobjects = objs;
+                } else {
+                  var components = {};
+                  objs.forEach(function(obj) {
+                    components[obj.name] = obj.obj;
+                  });
+                }
 
                 if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
                   if (subobjects.length === 1) {
@@ -14209,7 +14235,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
           composition: options.composition,
           components: options.components,
           description: options.description,
-          _default: options._default
+          _default: options._default,
+          subobjects: options.subobjects
         })
       }
     };

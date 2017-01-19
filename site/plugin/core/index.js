@@ -439,7 +439,7 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("multi_instrument", {template: "multi_instrument", description: "Multi Instrument", composition: true}, function(data, subobjects) {
+  m.type("multi_instrument", {subobjects: true, template: "multi_instrument", description: "Multi Instrument", composition: true}, function(data, subobjects) {
     if (!data) return;
     if (!subobjects) return;
     var ret = function(music){
@@ -454,6 +454,8 @@ module.export = function(m) {
       // do nothing
       return this;
     };
+
+    return ret;
   });
 
   var defaultModWrapper = function(x){return x;};

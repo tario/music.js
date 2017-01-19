@@ -33,13 +33,22 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
               });
             }
 
+            if (type.subobjects) {
+              descriptor.data.subobjects.forEach(function(value) {
+                buildComponents.push(createParametric(value));
+              });
+            }
+
             return $q.all(buildComponents)
               .then(function(objs) {
-
-                var components = {};
-                objs.forEach(function(obj) {
-                  components[obj.name] = obj.obj;
-                });
+                if (type.subobjects) {
+                  subobjects = objs;
+                } else {
+                  var components = {};
+                  objs.forEach(function(obj) {
+                    components[obj.name] = obj.obj;
+                  });
+                }
 
                 if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
                   if (subobjects.length === 1) {
@@ -275,7 +284,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
           composition: options.composition,
           components: options.components,
           description: options.description,
-          _default: options._default
+          _default: options._default,
+          subobjects: options.subobjects
         })
       }
     };
