@@ -1,5 +1,12 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  array_editor: {
+    tooltip: {
+      remove_item: 'Removes the object from array',
+      add_item: 'Click to add a new object to array',
+      edit_item: 'Click to edit this object'
+    }
+  },
   index: {
     not_implemented: 'Sorry. Not implemented Yet :P',
     filter: 'Type here the word to filter objects',

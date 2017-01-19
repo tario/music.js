@@ -12583,6 +12583,13 @@ musicShowCaseApp.constant("localforage", localforage);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  array_editor: {
+    tooltip: {
+      remove_item: 'Removes the object from array',
+      add_item: 'Click to add a new object to array',
+      edit_item: 'Click to edit this object'
+    }
+  },
   index: {
     not_implemented: 'Sorry. Not implemented Yet :P',
     filter: 'Type here the word to filter objects',
@@ -12761,6 +12768,13 @@ musicShowCaseApp.constant("enTranslations", enTranslations);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  array_editor: {
+    tooltip: {
+      remove_item: 'Elimina el objeto de la coleccion',
+      add_item: 'Click para agregar un nuevo objeto a la coleccion',
+      edit_item: 'Click para editar este objeto'
+    }
+  },
   index: {
     not_implemented: 'Disculpa, funcionalidad no implementada',
     filter: 'Tipea aqui las palabras clave para filtrar los objetos',
@@ -13200,6 +13214,10 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
 
       scope.setCurrentTab = function(idx) {
         scope.currentTab = idx;
+      };
+
+      scope.removeObject = function(object) {
+        scope.data.subobjects = scope.data.subobjects.filter(function(o) {return o !== object; });
       };
 
       scope.addObject = function() {

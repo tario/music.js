@@ -217,6 +217,10 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
         scope.currentTab = idx;
       };
 
+      scope.removeObject = function(object) {
+        scope.data.subobjects = scope.data.subobjects.filter(function(o) {return o !== object; });
+      };
+
       scope.addObject = function() {
         addObject({data: {array: []}, type: "stack"})
       };

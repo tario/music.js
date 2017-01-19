@@ -487,3 +487,7 @@ body.modal-open .main-window h6 {
   border-color: black;
   padding: 5px;
 }
+
+.nav.nav-tabs {
+  margin-top: 20px;
+}
