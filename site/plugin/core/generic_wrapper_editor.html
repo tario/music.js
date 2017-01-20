@@ -5,8 +5,10 @@
 
 <div ng-repeat="modulation in modulations">
   <div class="show-contextual-tooltip">
-    <h1>{{modulation.name}} modulation</h1>
+    <h1>{{'common.modulation'|translate:'{name: "'+modulation.name+'"}'}}</h1>
     <div class="music-object-editor" music-stack init-file="modulation.value"></div>
-    <div class="help-tooltip contextual-tooltip">You can setup the effects for {{modulation.name}} modulation here. If you leave it empty, there will be no modulation at all</div>
+    <div class="help-tooltip contextual-tooltip">
+      {{'common.tooltip.modulation'|translate:'{name: "'+modulation.name+'"}'}}
+    </div>
   </div>
 </div>

@@ -93,11 +93,13 @@ var esTranslations = {
     add: 'Agreg.',
     tooltip: {
       playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto',
-      remove_item: 'Elimina el elemento, puedes restaurarlo desde la papelera de reciclaje'
+      remove_item: 'Elimina el elemento, puedes restaurarlo desde la papelera de reciclaje',
+      modulation: 'Puedes configurar los efectos de modulacion aqui. Si lo dejas vacio, no habra modulacion'
     },
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',
-    new_song: 'Nueva Cancion'
+    new_song: 'Nueva Cancion',
+    modulation: 'Modulacion de {{name}}'
   },
   help: {
     FLOW: 'FLUJO DE MUSIC.JS',

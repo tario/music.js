@@ -93,11 +93,13 @@ var enTranslations = {
     add: 'Add',
     tooltip: {
       playing_speed: 'Playing speed, number of beats per minute',
-      remove_item: 'Removes item, you can restore it from recycle bin'
+      remove_item: 'Removes item, you can restore it from recycle bin',
+      modulation: 'You can setup the effects modulation for {{name}} here. If you leave it empty, there will be no modulation at all'
     },
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',
     new_song: 'New Song',
+    modulation: '{{name}} Modulation'
   },
   help: {
     FLOW: 'MUSIC.JS FLOW',

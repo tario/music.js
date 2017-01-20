@@ -1,6 +1,20 @@
 module.export = function(m) {
 
   m.lang("en", {
+    note_delay: {
+      description: 'Delay of note events (start and end)',
+      delay: 'Delay',
+      tooltip: {
+        delay: 'Delay of note events (start and end) expressed in seconds'
+      }
+    },
+    delay: {
+      description: 'Delay of audio signal',
+      delay: 'Delay',
+      tooltip: {
+        delay: 'Delay of audio signal in seconds'
+      }
+    },
     adsr: {
       description: 'ADSR Envelope signal',
       reset_on_cut: 'Reset on cut',
@@ -146,6 +160,20 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    note_delay: {
+      description: 'Demora de los eventos de nota (inicio y final)',
+      delay: 'Demora',
+      tooltip: {
+        delay: 'Demora de los eventos de nota (inicio y final) expresado en segundos'
+      }
+    },
+    delay: {
+      description: 'Demora de la señal de audio',
+      delay: 'Demora',
+      tooltip: {
+        delay: 'Demora de la señal de audio en segundos'
+      }
+    },
     adsr: {
       description: 'Señal de envoltura ADSR',
       reset_on_cut: 'Reiniciar en corte',
@@ -734,6 +762,51 @@ module.export = function(m) {
     return ret;
   });
 
+  m.type("note_delay", {template: 'note_delay', description: 'Note Delay', _default: {delay: 0.1}},
+      function(data, subobjects) {
+        if (!subobjects) return;
+        var wrapped = subobjects[0];
+        if (!wrapped) return;
+
+        var delay = 100; //ms
+        var ret = function(music) {
+          var inst = wrapped(music);
+
+          var note = function(n) {
+            var noteInst = inst.note(n);  
+            var play = function() {
+              var playing;
+              var _delay = delay;
+
+              setTimeout(function() {
+                playing = noteInst.play();
+              }, _delay);
+              var stop = function() {
+                setTimeout(function() {
+                  if (playing) playing.stop();
+                }, _delay);
+              };
+              return {stop: stop};
+            };
+
+            return MUSIC.playablePipeExtend({play: play});
+          };
+
+          return MUSIC.instrumentExtend({
+            note: note
+          });
+        };
+
+        ret.update = function(data) {
+          delay = data.delay * 1000;
+        };
+
+        ret.update(data);
+
+        return ret;
+
+      });
+
   m.type("envelope", {template: "envelope", description: "ADSR", _default: {
     attackTime: 0.4,
     decayTime: 0.4,
@@ -959,6 +1032,16 @@ module.export = function(m) {
         singleParameter: true,
         description: "core.gain.description"
       });
+
+  genericType("delay", 
+      {
+        parameters: [
+          {name: "delay", value: 0.2, tooltip: 'core.delay.tooltip.delay'}
+        ], 
+        components: ["delay"],
+        singleParameter: true,
+        description: "core.delay.description"
+      });  
 
   genericType("echo", 
       {
