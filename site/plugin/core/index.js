@@ -1,6 +1,11 @@
 module.export = function(m) {
 
   m.lang("en", {
+    sample_rate_reduction: {
+      tooltip: {
+        factor: 'Rate reduction factor'
+      }
+    },
     bit_crushing: {
       tooltip: {
         bits: 'Number of bits to represent each sample'
@@ -165,6 +170,11 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    sample_rate_reduction: {
+      tooltip: {
+        factor: 'Factor de reduccion de frecuencia de muestreo'
+      }
+    },
     bit_crushing: {
       tooltip: {
         bits: 'Cantidad de bits para representar cada muestra'
@@ -817,6 +827,39 @@ module.export = function(m) {
 
       });
 
+
+  m.type("sample_rate_reduction", {template: "sample_rate_reduction", description: "Sample Rate Reduction", _default: {
+    factor: 0.5
+  }}, function(data, subobjects){
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var factor = 0.5;
+    var ret = function(music) {
+      var phaser = 0;
+      var t0 = 0;
+      var f = function(t) {
+        phaser += factor;
+        if (phaser >= 1.0) {
+          phaser -= 1.0;
+          t0 = t;
+        }
+        return t0;
+      };
+
+      return wrapped(music.formula(f));
+    };
+
+    ret.update = function(data) {
+      factor = data.factor;
+      if (factor < 1/64) factor=1/64;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
 
   m.type("bit_crushing", {template: "bit_crushing", description: "Bit crushing", _default: {
     bits: 4
