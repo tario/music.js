@@ -828,6 +828,26 @@ module.export = function(m) {
       });
 
 
+  var compose = function(f1, f2) {
+    return function(s, t) {
+      return f2(f1(s, t), t);
+    };
+  };
+
+  var addFormula = function(music, f) {
+    if (music.isFormula) {
+      var functions = [];
+      var _f = f;
+      for (var node = music; node.isFormula; node = node.next()) {
+        _f = compose(node.fcn, _f);
+      }
+      music.update(_f);
+      return music;
+    } else {
+      return music.formula(f);
+    }
+  };
+
   m.type("sample_rate_reduction", {template: "sample_rate_reduction", description: "Sample Rate Reduction", _default: {
     factor: 0.5
   }}, function(data, subobjects){
@@ -848,7 +868,7 @@ module.export = function(m) {
         return t0;
       };
 
-      return wrapped(music.formula(f));
+      return wrapped(addFormula(music, f));
     };
 
     ret.update = function(data) {
@@ -875,7 +895,7 @@ module.export = function(m) {
     };
 
     var ret = function(music) {
-      return wrapped(music.formula(f));
+      return wrapped(addFormula(music,f));
     };
 
     ret.update = function(data) {

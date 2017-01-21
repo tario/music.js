@@ -13177,11 +13177,16 @@ MUSIC.Effects.Formula = function(music, next, fcn) {
 
   this.update = function(_f) {
     fcn = _f;
+    this.fcn = fcn;
   };
+
+  this.fcn = fcn;
 
   this.output = function() {
     return scriptNode;
   };
+
+  this.isFormula = true;
 }
 MUSIC.Effects.Formula.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
