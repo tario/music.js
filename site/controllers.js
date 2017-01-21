@@ -504,7 +504,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
 
 }]);
 
-musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
   var id = $routeParams.id;
 
   $scope.removeItem = function() {
@@ -525,10 +525,21 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
   };
 
   var lastObj;
+  var musicObjectFactory = MusicObjectFactory();
+
   var fileChanged = fn.debounce(function(newFile, oldFile) {
     if (!$scope.file) return;
-    
-    MusicObjectFactory($scope.file)
+   
+    $q.when(null)
+      .then(function() {
+        if ($scope.resetStack) {
+          return musicObjectFactory.destroyAll()
+        }
+      })
+      .then(function() {
+        $scope.resetStack = false;
+        return musicObjectFactory.create($scope.file)
+      })    
       .then(function(obj) {
           if (!obj) {
             $scope.instruments = [];
@@ -596,23 +607,19 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$timeout", "$routePa
 
   reloadFromRepo();
 
+  $scope.$on("stackChanged", function() {
+    $scope.resetStack = true;
+  });
+
   $scope.$on("$destroy", function() {
+    musicObjectFactory.destroyAll();
     $scope.instruments.forEach(function(instrument) {
       if (instrument.dispose) instrument.dispose();
     });
-  });
 
-/*  $scope.$on("addFx", function(evt, args) {
-    $scope.file.data.array = [{
-      type: args.fx.name,
-      data: {}
-    }].concat($scope.file.data.array);
-  });*/
-
-  $scope.$on("$destroy", function() {
     $scope.playables.forEach(function(playable) {
       $scope.stopPlay(playable);
-    });
+    });    
   });
 
   $scope.startPlay = function(playable) {

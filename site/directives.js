@@ -236,6 +236,8 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
     templateUrl: "site/templates/stack.html",
     link: function(scope, element, attrs) {
       var swap = function(idx1, idx2) {
+        scope.$emit("stackChanged");
+
         $timeout(function() {
           var tmp = scope.file.array[idx1];
           scope.file.array[idx1] = scope.file.array[idx2];
@@ -244,6 +246,8 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       };
 
       scope.onDropComplete = function(data, event) {
+        scope.$emit("stackChanged");
+
         if (data.type === "fx") {
           scope.file.array = [{
             type: data.name,
@@ -261,6 +265,8 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       };
 
       scope.remove = function(idx) {
+        scope.$emit("stackChanged");
+
         $timeout(function() {
           var oldCollection = scope.file.array;
           scope.file.array = [];
@@ -271,6 +277,8 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       };
 
       scope.add = function() {
+        scope.$emit("stackChanged");
+
         $timeout(function() {
           scope.file.array.push({data: {}, type: "null"});
         });

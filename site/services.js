@@ -1,169 +1,154 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function(MusicContext, $q, TypeService, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
-  var nextId = 0;
+  return function() {
+    var nextId = 0;
 
-  var last_type = new WeakMap();
-  var __cache = new WeakMap();
+    var last_type = new WeakMap();
+    var __cache = new WeakMap();
 
-  var getConstructor = function(descriptor) {
-      return TypeService.getType(descriptor.type)
-        .then(function(type) {
-          return function(subobjects) {
-            var buildComponents = [];
+    var getConstructor = function(descriptor) {
+        return TypeService.getType(descriptor.type)
+          .then(function(type) {
+            return function(subobjects) {
+              var buildComponents = [];
 
-            if (type.components) {
-              type.components.forEach(function(componentName) {
-                var value = descriptor.data.modulation[componentName];
-                if (!value) return;
-                if (!value.data) return;
-                if (!value.data.array) return;
-                if (value.data.array.length === 0) return;
+              if (type.components) {
+                type.components.forEach(function(componentName) {
+                  var value = descriptor.data.modulation[componentName];
+                  if (!value) return;
+                  if (!value.data) return;
+                  if (!value.data.array) return;
+                  if (value.data.array.length === 0) return;
 
-                buildComponents.push(
-                  createParametric(value)
-                    .then(function(obj) {
-                      return {
-                        name: componentName,
-                        obj: obj
-                      };
-                    })
-                );
+                  buildComponents.push(
+                    createParametric(value)
+                      .then(function(obj) {
+                        return {
+                          name: componentName,
+                          obj: obj
+                        };
+                      })
+                  );
 
-              });
-            }
+                });
+              }
 
-            if (type.subobjects) {
-              descriptor.data.subobjects.forEach(function(value) {
-                buildComponents.push(createParametric(value));
-              });
-            }
+              if (type.subobjects) {
+                descriptor.data.subobjects.forEach(function(value) {
+                  buildComponents.push(createParametric(value));
+                });
+              }
 
-            return $q.all(buildComponents)
-              .then(function(objs) {
-                if (type.subobjects) {
-                  subobjects = objs;
-                } else {
-                  var components = {};
-                  objs.forEach(function(obj) {
-                    components[obj.name] = obj.obj;
-                  });
-                }
+              return $q.all(buildComponents)
+                .then(function(objs) {
+                  if (type.subobjects) {
+                    subobjects = objs;
+                  } else {
+                    var components = {};
+                    objs.forEach(function(obj) {
+                      components[obj.name] = obj.obj;
+                    });
+                  }
 
-                if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
-                  if (subobjects.length === 1) {
-                    if (__cache.has(descriptor) && __cache.get(descriptor)[subobjects[0].id]) {
-                      return $q(function(resolve) {
-                        resolve(__cache.get(descriptor)[subobjects[0].id]
-                              .update(descriptor.data, components));
-                      });
-                    }
-                  } else if (subobjects.length === 0) {
-                    if (__cache.has(descriptor) && __cache.get(descriptor).noid) {
-                      return $q(function(resolve) {
-                        resolve(__cache.get(descriptor).noid
-                              .update(descriptor.data, components));
-                      });
+                  if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
+                    if (subobjects.length === 1) {
+                      if (__cache.has(descriptor) && __cache.get(descriptor)[subobjects[0].id]) {
+                        return $q(function(resolve) {
+                          resolve(__cache.get(descriptor)[subobjects[0].id]
+                                .update(descriptor.data, components));
+                        });
+                      }
+                    } else if (subobjects.length === 0) {
+                      if (__cache.has(descriptor) && __cache.get(descriptor).noid) {
+                        return $q(function(resolve) {
+                          resolve(__cache.get(descriptor).noid
+                                .update(descriptor.data, components));
+                        });
+                      }
                     }
                   }
-                }
 
-                last_type.set(descriptor, descriptor.type);
+                  last_type.set(descriptor, descriptor.type);
 
-                var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
-                nextId++;
-                ret.id = nextId;
+                  var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
+                  nextId++;
+                  ret.id = nextId;
 
-                if (subobjects.length === 1) {
-                  if (!__cache.has(descriptor)) __cache.set(descriptor, {});
-                  __cache.get(descriptor)[subobjects[0].id] = ret;
-                } else if (subobjects.length === 0) {
-                  if (!__cache.has(descriptor)) __cache.set(descriptor, {});
-                  __cache.get(descriptor).noid = ret;
-                }
+                  if (subobjects.length === 1) {
+                    if (!__cache.has(descriptor)) __cache.set(descriptor, {});
+                    __cache.get(descriptor)[subobjects[0].id] = ret;
+                  } else if (subobjects.length === 0) {
+                    if (!__cache.has(descriptor)) __cache.set(descriptor, {});
+                    __cache.get(descriptor).noid = ret;
+                  }
 
-                return ret;
+                  return ret;
 
-              })
-          };
-        });
-  };
-
-  var createParametric = function(descriptor) {
-    if (descriptor.type === "stack") {
-      return $q.all(descriptor.data.array.map(getConstructor))
-        .then(function(constuctors) {
-
-          if (constuctors.length === 0) {
-            return null;
-          }
-
-          var proms;
-          constuctors.reverse().forEach(function(constructor) {
-            if (proms) {
-              proms = proms.then(function(lastObj) {
-                return constructor([lastObj]);
-              });
-            } else {
-              proms = constructor([]);
-            }
+                })
+            };
           });
+    };
 
-          return proms;
-        })
-    } else {
-      return getConstructor(descriptor)
-        .then(function(constructor) {
-          return constructor([]); 
-        });
-    }
-  };
+    var createParametric = function(descriptor) {
+      if (descriptor.type === "stack") {
+        return $q.all(descriptor.data.array.map(getConstructor))
+          .then(function(constuctors) {
 
-  var create = function(descriptor, music) {
-    return createParametric(descriptor)
-      .then(function(fcn) {
-        if (!fcn) return;
-
-        if (music) return fcn(music);
-        return MusicContext.runFcn(function(music) {
-          return fcn(music);
-        });
-      });
-/*
-
-
-    if (descriptor.type === "stack") {
-      return $q.all(descriptor.data.array.map(getConstructor))
-        .then(function(constuctors) {
-
-          if (constuctors.length === 0) return null;
-
-          var proms;
-          constuctors.reverse().forEach(function(constructor) {
-            if (proms) {
-              proms = proms.then(function(lastObj) {
-                return constructor([lastObj]);
-              });
-            } else {
-              proms = constructor([]);
+            if (constuctors.length === 0) {
+              return null;
             }
-          });
 
-          return proms.then(function(lastObj) {
-            return MusicContext.runFcn(function(music) {
-              return lastObj(music);
+            var proms;
+            constuctors.reverse().forEach(function(constructor) {
+              if (proms) {
+                proms = proms.then(function(lastObj) {
+                  return constructor([lastObj]);
+                });
+              } else {
+                proms = constructor([]);
+              }
             });
-          });
-        })
-    } else {
-      return getConstructor(descriptor)
-        .then(function(constructor) {
-          return constructor([]); 
-        });
-    }*/
-  };
 
-  return create;
+            return proms;
+          })
+      } else {
+        return getConstructor(descriptor)
+          .then(function(constructor) {
+            return constructor([]); 
+          });
+      }
+    };
+
+    var destroyAll = function(obj) {
+      var last_type = new WeakMap();
+      var __cache = new WeakMap();
+
+      if (base) base.prune();
+
+      return $q.when(null);
+    };
+
+    var base;
+
+    var create = function(descriptor, music) {
+      return createParametric(descriptor)
+        .then(function(fcn) {
+          if (!fcn) return;
+
+          if (music) return fcn(music);
+          return MusicContext.runFcn(function(music) {
+            base = music.sfxBase();
+            return fcn(base);
+          });
+        });
+    };
+
+    return {
+      create: create,
+      destroyAll: destroyAll
+    };
+  };
 }]);
 
 musicShowCaseApp.service("MusicContext", function() {
@@ -436,7 +421,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
-            return MusicObjectFactory(file.contents, music);
+            return MusicObjectFactory().create(file.contents, music);
           })
           .then(function(obj){
             created.push(obj);
