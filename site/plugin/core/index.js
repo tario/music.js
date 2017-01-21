@@ -1,6 +1,11 @@
 module.export = function(m) {
 
   m.lang("en", {
+    bit_crushing: {
+      tooltip: {
+        bits: 'Number of bits to represent each sample'
+      }
+    },
     note_delay: {
       description: 'Delay of note events (start and end)',
       delay: 'Delay',
@@ -160,6 +165,11 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    bit_crushing: {
+      tooltip: {
+        bits: 'Cantidad de bits para representar cada muestra'
+      }
+    },
     note_delay: {
       description: 'Demora de los eventos de nota (inicio y final)',
       delay: 'Demora',
@@ -806,6 +816,33 @@ module.export = function(m) {
         return ret;
 
       });
+
+
+  m.type("bit_crushing", {template: "bit_crushing", description: "Bit crushing", _default: {
+    bits: 4
+  }}, function(data, subobjects){
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var factor;
+
+    var f = function(t) {
+      return Math.round(t * factor) / factor;
+    };
+
+    var ret = function(music) {
+      return wrapped(music.formula(f));
+    };
+
+    ret.update = function(data) {
+      factor = Math.pow(2, data.bits-1);
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
 
   m.type("envelope", {template: "envelope", description: "ADSR", _default: {
     attackTime: 0.4,
