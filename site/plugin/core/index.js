@@ -524,7 +524,7 @@ module.export = function(m) {
             });
           };
           var generator = music.oscillator(props);
-          return new MUSIC.Instrument(generator);
+          return new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator));
       };
   });
 

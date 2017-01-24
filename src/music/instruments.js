@@ -69,6 +69,31 @@ MUSIC.noteToNoteNum = function(noteName) {
   return notenum;
 };
 
+MUSIC.MonoNoteInstrument = function(inner) {
+  var noteInst;
+  var playingInst;
+
+  this.note = function(notenum) {
+    if (!noteInst) {
+      noteInst = inner.note(notenum);
+    }
+
+    return MUSIC.playablePipeExtend({
+      play: function(param) {
+        if (!playingInst) {
+          playingInst = noteInst.play(param);
+        }
+
+        noteInst.setValue(notenum);
+
+        return {stop: function() {}};
+      } 
+    });
+  };
+
+  instrumentExtend(this);
+};
+
 MUSIC.Instrument = function(soundFactory) {
   this.note = function(notenum) {
     if (notenum === undefined) return undefined;
