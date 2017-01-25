@@ -121,8 +121,8 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
     };
 
     var destroyAll = function(obj) {
-      var last_type = new WeakMap();
-      var __cache = new WeakMap();
+      last_type = new WeakMap();
+      __cache = new WeakMap();
 
       if (base) base.prune();
 
@@ -207,6 +207,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
   var make_mutable = function(fcn) {
     return function(object, subobjects, components) {
       var current = fcn(object, subobjects, components);
+      var instances = [];
+
       if (current.update) {
         return current;
       }
@@ -228,6 +230,9 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
             var newr = current(music, options);
             if (newr !== r && r && r.dispose) r.dispose();
             r = newr;
+
+            instances.push(newr);
+
             lastCurrent = current;
             for (var k in r) proxy(k);
         };
@@ -242,6 +247,12 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
         components = _components
         if (JSON.stringify(newobject) === lastObjData) return ret;
         lastObjData = JSON.stringify(newobject);
+
+        instances.forEach(function(instance) {
+          if(instance.dispose) instance.dispose();
+        });
+        instances = [];
+
         current = sfxBaseOneEntryCacheWrapper(pruneWrapper(fcn(newobject, subobjects, components)));
         return ret;
       };
@@ -417,7 +428,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   return function(music) {
     var set = {};
     var created = [];
-    var load = function(id) {
+     var load = function(id) {
       if (!set[id]) {
         set[id] = FileRepository.getFile(id)
           .then(function(file) {
@@ -794,7 +805,10 @@ musicShowCaseApp.factory("pruneWrapper", function() {
       fcn._wrapper = function(music, modWrapper) {
         var sfxBase = music.sfxBase();
         var obj = fcn(sfxBase, modWrapper);
+        var originalDispose = obj.dispose.bind(obj);
+
         obj.dispose = function() {
+          originalDispose();
           sfxBase.prune();
         };
         return obj;

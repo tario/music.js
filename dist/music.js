@@ -13657,6 +13657,14 @@ MUSIC.MonoNoteInstrument = function(inner) {
     });
   };
 
+  this.dispose = function() {
+    if (playingInst) {
+      playingInst.stop();
+    }
+
+    if (inner.dispose) inner.dispose();
+  };
+
   instrumentExtend(this);
 };
 

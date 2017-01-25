@@ -527,13 +527,25 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
   var lastObj;
   var musicObjectFactory = MusicObjectFactory();
 
+  var destroyAll = function() {
+    $scope.instruments.forEach(function(instrument) {
+      if (instrument.dispose) instrument.dispose();
+    });
+
+    $scope.playables.forEach(function(playable) {
+      $scope.stopPlay(playable);
+    });    
+
+    return musicObjectFactory.destroyAll();
+  };
+
   var fileChanged = fn.debounce(function(newFile, oldFile) {
     if (!$scope.file) return;
    
     $q.when(null)
       .then(function() {
         if ($scope.resetStack) {
-          return musicObjectFactory.destroyAll()
+          return destroyAll();
         }
       })
       .then(function() {
@@ -611,16 +623,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
     $scope.resetStack = true;
   });
 
-  $scope.$on("$destroy", function() {
-    musicObjectFactory.destroyAll();
-    $scope.instruments.forEach(function(instrument) {
-      if (instrument.dispose) instrument.dispose();
-    });
-
-    $scope.playables.forEach(function(playable) {
-      $scope.stopPlay(playable);
-    });    
-  });
+  $scope.$on("$destroy", destroyAll);
 
   $scope.startPlay = function(playable) {
     playable.playing = playable.play();
