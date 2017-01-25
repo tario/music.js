@@ -12963,8 +12963,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     }
 
     var osc;
+    var resetd = false;
     this.setFreq = function(frequency) {
-      osc.frequency.setTargetAtTime(frequency, null, time_constant||0.1);
+      var tc = time_constant||0.1;
+      if (resetd) tc = 0.0001;
+      osc.frequency.setTargetAtTime(frequency, null, tc);
+
+      resetd = false;
+    };
+
+    this.reset = function() {
+      resetd = true;
     };
 
     this.play = function(param) {
@@ -13624,6 +13633,7 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
 MUSIC.MonoNoteInstrument = function(inner) {
   var noteInst;
   var playingInst;
+  var count = 0;
 
   this.note = function(notenum) {
     if (!noteInst) {
@@ -13638,7 +13648,11 @@ MUSIC.MonoNoteInstrument = function(inner) {
 
         noteInst.setValue(notenum);
 
-        return {stop: function() {}};
+        count++;
+        return {stop: function() {
+          count--;
+          if (noteInst.reset && count === 0) noteInst.reset();
+        }};
       } 
     });
   };
@@ -13660,6 +13674,8 @@ MUSIC.Instrument = function(soundFactory) {
           this.setValue = function(n) {
             fr.setFreq(frequency(n));
           };
+
+          this.reset = fr.reset.bind(fr);
         }
 
         return {

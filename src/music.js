@@ -585,8 +585,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     }
 
     var osc;
+    var resetd = false;
     this.setFreq = function(frequency) {
-      osc.frequency.setTargetAtTime(frequency, null, time_constant||0.1);
+      var tc = time_constant||0.1;
+      if (resetd) tc = 0.0001;
+      osc.frequency.setTargetAtTime(frequency, null, tc);
+
+      resetd = false;
+    };
+
+    this.reset = function() {
+      resetd = true;
     };
 
     this.play = function(param) {

@@ -107,6 +107,7 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
 MUSIC.MonoNoteInstrument = function(inner) {
   var noteInst;
   var playingInst;
+  var count = 0;
 
   this.note = function(notenum) {
     if (!noteInst) {
@@ -121,7 +122,11 @@ MUSIC.MonoNoteInstrument = function(inner) {
 
         noteInst.setValue(notenum);
 
-        return {stop: function() {}};
+        count++;
+        return {stop: function() {
+          count--;
+          if (noteInst.reset && count === 0) noteInst.reset();
+        }};
       } 
     });
   };
@@ -143,6 +148,8 @@ MUSIC.Instrument = function(soundFactory) {
           this.setValue = function(n) {
             fr.setFreq(frequency(n));
           };
+
+          this.reset = fr.reset.bind(fr);
         }
 
         return {
