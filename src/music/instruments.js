@@ -69,6 +69,28 @@ MUSIC.noteToNoteNum = function(noteName) {
   return notenum;
 };
 
+MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
+  var instrumentArray = [];
+  var currentIdx = 0;
+
+  this.note = function(notenum) {
+    var playingIdx = currentIdx;
+    var instrument = instrumentArray[playingIdx];
+    if (!instrument) {
+      instrument = innerFactory();
+      instrumentArray[playingIdx] = instrument;
+    }
+
+    currentIdx = ( currentIdx + 1 ) % maxChannels();
+    return instrument.note(notenum)
+      .onStop(function() {
+        currentIdx = playingIdx;
+      });
+  };
+
+  instrumentExtend(this);
+};
+
 MUSIC.MonoNoteInstrument = function(inner) {
   var noteInst;
   var playingInst;

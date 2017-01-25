@@ -36,6 +36,12 @@ module.export = function(m) {
         reset_on_cut: 'Resets to the ADS phase when a note cuts another'
       }
     },
+    polyphoner: {
+      channels: 'Channels',
+      tooltip: {
+        channels: 'Maximum number of channels'
+      }
+    },
     monophoner: {
       force_note_cut: 'Force note cut',
       tooltip: {
@@ -203,6 +209,12 @@ module.export = function(m) {
         release: 'Tiempo en segundos para la fase final donde la ganancia de volumen cae desde el nivel de sustain hasta cero',
         sustain: 'Nivel de sustain, debe ser un valor entre 0 y 1',
         reset_on_cut: "Reinicia a la fase ADS cuando una nota corta a otra"
+      }
+    },
+    polyphoner: {
+      channels: 'Canales',
+      tooltip: {
+        channels: 'Numero maximo de canales'
       }
     },
     monophoner: {
@@ -536,6 +548,32 @@ module.export = function(m) {
     });
     return result;
   };
+
+
+  m.type("polyphoner", {template: "polyphoner", description: "Turns monophonic instrument into polyphonic"},
+    function(data, subobjects) {
+
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var maxChannels = 4;
+    var getMaxChannels = function() { return maxChannels; };
+
+    var ret = function(music) {
+      var factory = function() {
+        return wrapped(music, {nowrap: true});
+      };
+      return new MUSIC.PolyphonyInstrument(factory, getMaxChannels);
+    };
+
+    ret.update = function(data) {
+      maxChannels = data.maxChannels || 4;
+    };
+
+    return ret;
+
+  });
 
   m.type("monophoner", {template: "monophoner", description: "Turns polyphonic instrument into monophonic"}, 
     function(data, subobjects) {

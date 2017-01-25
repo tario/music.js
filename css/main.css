@@ -491,3 +491,7 @@ body.modal-open .main-window h6 {
 .nav.nav-tabs {
   margin-top: 20px;
 }
+
+.width50px {
+  width: 50px;
+}
