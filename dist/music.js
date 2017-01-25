@@ -13588,20 +13588,33 @@ MUSIC.noteToNoteNum = function(noteName) {
 
 MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
   var instrumentArray = [];
-  var currentIdx = 0;
+  var onUse = [];
+  var queue = [];
+
+  var freeIdx = function(maxChannels) {
+    for (var i=0; i<maxChannels; i++) {
+      if (!onUse[i]) return i;
+    }
+    return queue[0]||0;
+  };
 
   this.note = function(notenum) {
-    var playingIdx = currentIdx;
+    var c = maxChannels();
+    var playingIdx = freeIdx(c);
     var instrument = instrumentArray[playingIdx];
+
     if (!instrument) {
       instrument = innerFactory();
       instrumentArray[playingIdx] = instrument;
     }
 
-    currentIdx = ( currentIdx + 1 ) % maxChannels();
+    queue.push(playingIdx);
+    if (queue.length > c) queue.shift();
+
+    onUse[playingIdx] = true;
     return instrument.note(notenum)
       .onStop(function() {
-        currentIdx = playingIdx;
+        onUse[playingIdx] = false;
       });
   };
 

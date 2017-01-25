@@ -571,6 +571,8 @@ module.export = function(m) {
       maxChannels = data.maxChannels || 4;
     };
 
+    ret.update(data);
+
     return ret;
 
   });
