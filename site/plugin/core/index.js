@@ -1256,11 +1256,13 @@ module.export = function(m) {
   var playableType = function(name, method_name, options) {
     m.type(name, options, function(data, subobjects) {
       var ret = function(music) {
-        return {
+        var inst = {
           note: function() {
             return music[method_name].apply(music,[]);
           }
         };
+
+        return new MUSIC.MonoNoteInstrument(inst);
       };
 
       ret.update = function(data){};

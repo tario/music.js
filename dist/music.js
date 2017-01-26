@@ -12767,6 +12767,9 @@ MUSIC.SoundLib.PinkNoise = function(audio, nextProvider) {
     }
   };
 
+  this.setValue = function() {
+  };
+
   MUSIC.playablePipeExtend(this);
 };
 
@@ -12787,6 +12790,9 @@ MUSIC.SoundLib.RedNoise = function(audio, nextProvider) {
         noiseGenerator.disconnect(nextProvider._destination);
       }
     }
+  };
+
+  this.setValue = function() {
   };
 
   MUSIC.playablePipeExtend(this);
@@ -12816,6 +12822,9 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
         whiteNoise.disconnect(nextProvider._destination);
       }
     }
+  };
+
+  this.setValue = function() {
   };
 
   MUSIC.playablePipeExtend(this);
