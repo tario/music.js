@@ -12869,14 +12869,14 @@ MUSIC.AudioDestinationWrapper.prototype = Object.create(MUSIC.EffectsPipeline.pr
 MUSIC.modulator = function(f) {
   return {
     apply: function(currentTime, audioParam, music) {
+//      var modulator = f(modulatorFactory).play();
+
       var modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
-      var modulator = f(modulatorFactory).play();
+      var modulator = f(modulatorFactory);
 
       return {
         dispose: function() {
           modulatorFactory.prune();
-          if (modulator) modulator.stop();
-          modulator = null;
         }
       };
     }
@@ -12898,6 +12898,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       wave: options.wave,
       f: options.f,
       frequency: options.fixed_frequency ? options.fixed_frequency : newFreq,
+      fixed_frequency: options.fixed_frequency,
       detune: options.detune,
       periodicWave: options.periodicWave,
       time_constant: time_constant
@@ -12974,6 +12975,8 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     var osc;
     var resetd = false;
     this.setFreq = function(frequency) {
+      if (options.fixed_frequency) return;
+
       var tc = time_constant||0.1;
       if (resetd) tc = 0.0001;
       osc.frequency.setTargetAtTime(frequency, null, tc);
@@ -13711,6 +13714,10 @@ MUSIC.instrumentExtend = instrumentExtend;
 MUSIC.Instrument.frequency = frequency;
 
 MUSIC.MultiInstrument = function(instrumentArray) {
+  if (Array.isArray(instrumentArray)) return MUSIC.MultiInstrument.bind(this)(function() {
+    return instrumentArray;
+  });
+
   var notePlay = function(note) { return note.play(); };
   var noteStop = function(note) { return note.stop(); };
 
@@ -13726,13 +13733,18 @@ MUSIC.MultiInstrument = function(instrumentArray) {
   };
 
   this.note = function(noteNum) {
-    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray.map(function(instrument){ 
+    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
       return instrument.note(noteNum);
     })));
   };
 
-  instrumentExtend(this);
+  this.dispose = function() {
+    instrumentArray().forEach(function(i) {
+      i.dispose();
+    });
+  };
 
+  instrumentExtend(this);
 };
 
 var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];

@@ -176,6 +176,10 @@ MUSIC.instrumentExtend = instrumentExtend;
 MUSIC.Instrument.frequency = frequency;
 
 MUSIC.MultiInstrument = function(instrumentArray) {
+  if (Array.isArray(instrumentArray)) return MUSIC.MultiInstrument.bind(this)(function() {
+    return instrumentArray;
+  });
+
   var notePlay = function(note) { return note.play(); };
   var noteStop = function(note) { return note.stop(); };
 
@@ -191,13 +195,18 @@ MUSIC.MultiInstrument = function(instrumentArray) {
   };
 
   this.note = function(noteNum) {
-    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray.map(function(instrument){ 
+    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
       return instrument.note(noteNum);
     })));
   };
 
-  instrumentExtend(this);
+  this.dispose = function() {
+    instrumentArray().forEach(function(i) {
+      i.dispose();
+    });
+  };
 
+  instrumentExtend(this);
 };
 
 var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];

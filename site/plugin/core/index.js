@@ -530,13 +530,25 @@ module.export = function(m) {
             time_constant: data.time_constant
           };
 
+          var modulatorInstruments = {};
           if (components && components.detune) {
             props.detune = MUSIC.modulator(function(pl) {
-              return (options.modWrapper||defaultModWrapper)(components.detune)(pl, {nowrap: true}).note(0);
+              var inst = components.detune(pl, {nowrap: true});
+              modulatorInstruments.detune = inst;
+              return inst;
             });
           };
+
           var generator = music.oscillator(props);
-          return new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator));
+          var inner = new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator), {start: true});
+
+          return new MUSIC.MultiInstrument(function() {
+            var instrumentArray = [inner];
+            for (var k in modulatorInstruments) {
+              instrumentArray.push(modulatorInstruments[k]);
+            }
+            return instrumentArray;
+          });
       };
   });
 
@@ -1094,23 +1106,35 @@ module.export = function(m) {
           var ret = function(music, options) {
             options = options ||{};
 
-            var node = music[fcn].apply(music, [getOpt(options.modWrapper)]);
+            var modulatorInstruments = {}
+
+            var node = music[fcn].apply(music, [getOpt(modulatorInstruments)]);
             nodes.push(node)
-            return wrapped(node, options);
+            
+            var inner = wrapped(node, options);
+            return new MUSIC.MultiInstrument(function() {
+              var instrumentArray = [inner];
+              for (var k in modulatorInstruments) {
+                instrumentArray.push(modulatorInstruments[k]);
+              }
+
+              return instrumentArray;
+            });
           };
 
 
           ret.update = function(data, components) {
             if(options.singleParameter) {
-              getOpt = function(modWrapper) {
-                modWrapper = modWrapper || defaultModWrapper;
+              getOpt = function(modulatorInstruments) {
                 var opt;
                 var parameter = options.parameters[0];
 
                 var modulator = components[parameter.name];
                 if (modulator) {
                   opt = MUSIC.modulator(function(pl) {
-                    return modWrapper(modulator)(pl, {nowrap: true}).note(0);
+                    var inst = modulator(pl, {nowrap: true});
+                    if (modulatorInstruments) modulatorInstruments._main = inst;
+                    return inst;
                   });
                 } else {
                   opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
@@ -1120,14 +1144,15 @@ module.export = function(m) {
               };
 
             } else {
-              getOpt = function(modWrapper) {
-                modWrapper = modWrapper || defaultModWrapper;
+              getOpt = function(modulatorInstruments) {
                 var opt = {};
                 options.parameters.forEach(function(parameter) {
                   var modulator = components[parameter.name];
                   if (modulator) {
                     opt[parameter.name] = MUSIC.modulator(function(pl) {
-                      return modWrapper(modulator)(pl, true).note(0);
+                      var inst = modulator(pl, {nowrap: true});
+                      if (modulatorInstruments) modulatorInstruments[parameter.name] = inst;
+                      return inst;
                     });
                   } else {
                     opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
