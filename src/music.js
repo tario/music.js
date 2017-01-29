@@ -572,7 +572,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       var disposeNode;
 
       disposeNode = function() {
-        osc.disconnect(audioDestination);
+        if (osc) osc.disconnect(audioDestination);
         osc = null;
       };
 
@@ -584,7 +584,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
             appliedAudioParam.dispose();
           }
 
-          osc.stop(0);
+          if (osc) osc.stop(0);
           disposeNode();
         }
       };
