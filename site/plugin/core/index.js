@@ -760,61 +760,73 @@ module.export = function(m) {
     sustainLevel: 0.8,
     releaseTime: 0.4
   }},  function(data, subobjects) {
-    var attackTime, decayTime, sustainLevel, m, b;
+    var attackTime, decayTime, sustainLevel, releaseTime, mdecay, reset_on_cut; 
 
     var ret = function(music, options){
+      var currentPhase = 0; // = OFF 1 = ADS 2 = R
+      var prevPhase = 0
+      var d, r, t0, acc;
+      
       options = options ||{};
-
-      return {
-        note: function() {
-          var itsover = false;
-          var itsover2 = false;
-          if (options.stopped) {
-            options.stopped.then(function() {
-              itsover = true;
-            });
+      var formulaNode = music
+        .formulaGenerator(function(t) {
+          if (currentPhase===0) {
+            prevPhase = currentPhase;
+            return 0;
           }
+          if (currentPhase===1) { // ADS
+            if (prevPhase!==1) {
+              t0 = t;
+            }
+            prevPhase = currentPhase;
 
-          var tf;
-          var lastValue = sustainLevel;
-          var formulaNode = music
-                    .formulaGenerator(function(t) {
-                      if (itsover) {
-                        if (!itsover2) {
-                          itsover2 = true;
-                          tf = t;
-                        }
+            d = t-t0;
+            if (attackTime !== 0 && d < attackTime) {
+              acc = d / attackTime
+            } else if (d < attackTime + decayTime && sustainLevel < 1) {
+              d = t-(t0+attackTime);
+              acc = 1 - (d / decayTime)*(1 - sustainLevel);
+            }
+            return acc;
+          }
+          if (currentPhase===2) { // R
+            if (prevPhase!==2) {
+              t0 = t;
+            }
+            prevPhase = currentPhase;
 
-                        t-=tf;
+            r = acc * (1 - (t-t0)/releaseTime);
+            return r > 0 ? r : 0;
+          }
+        });
 
-                        if(t>releaseTime) {
-                          return 0;
-                        } else {
-                          return lastValue * (releaseTime-t) / releaseTime;
-                        }
-                      }
+      formulaNode.play();
 
-                      if (t>attackTime) {
-                        if (t>attackTime+decayTime){
-                          lastValue = sustainLevel;
-                        } else {
-                          lastValue = m*t+b;
-                        }
-                      } else {
-                        if (attackTime == 0) {
-                          lastValue = 1;
-                        } else {
-                          lastValue = t/attackTime;
-                        }
-                      }
-                      return lastValue;
-
-                    });
-
-          return formulaNode;
-
+      var noteCount = 0;
+      var stop = function() {
+        noteCount--;
+        if (noteCount===0) {
+          currentPhase=2; // change to 'release'
         }
       };
+
+      var play = function() {
+        if (noteCount===0 || reset_on_cut) {
+          // change to ads
+          prevPhase = 0;
+          currentPhase=1;
+        }
+        noteCount++;
+        return {stop: stop};
+      };
+
+      var note = function(n) {
+        return MUSIC.playablePipeExtend({play: play});
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });
     };
 
     ret.update = function(data) {
@@ -822,10 +834,7 @@ module.export = function(m) {
       decayTime = parseFloat(data.decayTime || 0.4);
       sustainLevel = parseFloat(data.sustainLevel || 0.8);
       releaseTime = parseFloat(data.releaseTime || 0.4);
-
-      // (attackTime, 1) -> (attackTime + decayTime, sustainLevel)
-      m = (sustainLevel - 1)/decayTime;
-      b = -m * attackTime + 1
+      reset_on_cut = data.reset_on_cut;
       return this;
     };
 
