@@ -13962,7 +13962,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function(MusicContext, $q, TypeService, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
+musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
   return function() {
     var nextId = 0;
 
@@ -14033,7 +14033,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
                   last_type.set(descriptor, descriptor.type);
 
-                  var ret = sfxBaseOneEntryCacheWrapper(type.constructor(descriptor.data, subobjects, components));
+                  var ret = type.constructor(descriptor.data, subobjects, components);
                   nextId++;
                   ret.id = nextId;
 
@@ -14165,7 +14165,7 @@ musicShowCaseApp.service("MusicContext", function() {
   };
 });
 
-musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBaseOneEntryCacheWrapper", function($http, $q, pruneWrapper, sfxBaseOneEntryCacheWrapper) {
+musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function($http, $q, pruneWrapper) {
   var make_mutable = function(fcn) {
     return function(object, subobjects, components) {
       var current = fcn(object, subobjects, components);
@@ -14175,7 +14175,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
         return current;
       }
 
-      current = sfxBaseOneEntryCacheWrapper(pruneWrapper(current));
+      current = pruneWrapper(current);
 
       var ret = function(music, options) {
         var r;
@@ -14215,7 +14215,7 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", "sfxBase
         });
         instances = [];
 
-        current = sfxBaseOneEntryCacheWrapper(pruneWrapper(fcn(newobject, subobjects, components)));
+        current = pruneWrapper(fcn(newobject, subobjects, components));
         return ret;
       };
 

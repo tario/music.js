@@ -1010,7 +1010,6 @@ module.export = function(m) {
         var transposeFcn = function(n) { return n+tr };
 
         var ret = function(music) {
-          //return wrapped(music).mapNote(transposeFcn);
           var wr = wrapped(music);
           var x = Object.create(wr);
 
