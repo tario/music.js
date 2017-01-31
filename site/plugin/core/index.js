@@ -735,7 +735,7 @@ module.export = function(m) {
           }
         });
 
-      formulaNode.play();
+      var playing = formulaNode.play();
 
       var noteCount = 0;
       var stop = function() {
@@ -759,8 +759,13 @@ module.export = function(m) {
         return MUSIC.playablePipeExtend({play: play});
       };
 
+      var dispose = function() {
+        playing.stop();
+      };
+
       return MUSIC.instrumentExtend({
-        note: note
+        note: note,
+        dispose: dispose
       });
     };
 
