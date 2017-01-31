@@ -13728,7 +13728,7 @@ MUSIC.MultiInstrument = function(instrumentArray) {
 
   this.dispose = function() {
     instrumentArray().forEach(function(i) {
-      i.dispose();
+      if (i.dispose) i.dispose();
     });
   };
 
