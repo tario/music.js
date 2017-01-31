@@ -12,12 +12,6 @@
         }
       },
       {
-        "type": "monophoner",
-        "data": {
-          "force_note_cut": false
-        }
-      },
-      {
         "type": "oscillator",
         "data": {
           "modulation": {
