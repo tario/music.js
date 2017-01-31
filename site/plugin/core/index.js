@@ -89,12 +89,6 @@ module.export = function(m) {
     script: {
       tooltip: 'This is the source code window, you can write your script here'
     },
-    notesplit: {
-      stop_delay: 'Stop delay',
-      tooltip: {
-        stop_delay: 'Stop delay in seconds, this can be useful to avoid cutting envelope effects'
-      }
-    },
     noise: {
       description: 'White noise generator'
     },
@@ -263,12 +257,6 @@ module.export = function(m) {
     },
     script: {
       tooltip: 'Esta es la ventana de codigo fuente, puedes escribir to script aqui'
-    },
-    notesplit: {
-      stop_delay: 'Demora al detenerse',
-      tooltip: {
-        stop_delay: 'Demora al detenerse en segundos, puede ser util para evitar cortar efectos de envolventes'
-      }
     },
     noise: {
       description: 'Generador de ruido blanco'
@@ -662,59 +650,6 @@ module.export = function(m) {
     ret.update = function(data) {
       forceNoteCut = data.force_note_cut;
     };
-    ret.update(data);
-
-    return ret;
-  });
-
-  m.type("notesplit", {template: "notesplit", description: "Split effect stack by note", _default: {
-    delay: 0.0
-  }}, function(data, subobjects) {
-    if (!subobjects) return;
-    var wrapped = subobjects[0];
-    if (!wrapped) return;
-
-    var delay;
-
-    var ret = function(music){
-        var note = function(n) {
-            var baseNode = music.sfxBase();
-            var stopped = Promise.defer();
-            var modWrapper = function(modulator) {
-              return function(music, options) {
-                return modulator(music, {nowrap: options.nowrap, stopped: stopped.promise});
-              };
-            };
-
-            var instance = wrapped(baseNode, {modWrapper: modWrapper});
-
-            if (delay > 0) {
-              return instance.note(n)
-                        .onStop(function() {
-                          baseNode.prune();
-                        })
-                        .stopDelay(delay*1000)
-                        .onStop(function() {
-                          stopped.resolve();
-                        });
-            } else {
-              return instance.note(n)
-                        .onStop(function() {
-                          stopped.resolve();
-                          if (instance.dispose) instance.dispose();
-                        });
-            }
-        };
-        return MUSIC.instrumentExtend({
-          note: note
-        });
-    };
-
-    ret.update = function(data) {
-      delay = data.delay||0;
-      return this;
-    };
-
     ret.update(data);
 
     return ret;
