@@ -1202,7 +1202,10 @@ module.export = function(m) {
           });
 
           var ret = function(music) {
-            return wrapped(music.T("reverb", opt));
+            var tnode = music.T("reverb", opt);
+            var i = wrapped(tnode);
+            i.dispose = tnode.dispose.bind(tnode);
+            return i;
           };
 
           return ret;

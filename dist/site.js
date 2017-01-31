@@ -14767,12 +14767,20 @@ musicShowCaseApp.factory("pruneWrapper", function() {
       fcn._wrapper = function(music, modWrapper) {
         var sfxBase = music.sfxBase();
         var obj = fcn(sfxBase, modWrapper);
-        var originalDispose = obj.dispose.bind(obj);
+        var originalDispose;
 
-        obj.dispose = function() {
-          originalDispose();
-          sfxBase.prune();
-        };
+        if (obj.dispose) {
+          originalDispose = obj.dispose.bind(obj); 
+          obj.dispose = function() {
+            originalDispose();
+            sfxBase.prune();
+          };
+        } else {
+          obj.dispose = function() {
+            sfxBase.prune();
+          };
+        }
+
         return obj;
       };
     }
