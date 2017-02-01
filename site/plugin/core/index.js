@@ -36,6 +36,12 @@ module.export = function(m) {
         reset_on_cut: 'Resets to the ADS phase when a note cuts another'
       }
     },
+    polyphoner: {
+      channels: 'Channels',
+      tooltip: {
+        channels: 'Maximum number of channels'
+      }
+    },
     monophoner: {
       force_note_cut: 'Force note cut',
       tooltip: {
@@ -82,12 +88,6 @@ module.export = function(m) {
     },
     script: {
       tooltip: 'This is the source code window, you can write your script here'
-    },
-    notesplit: {
-      stop_delay: 'Stop delay',
-      tooltip: {
-        stop_delay: 'Stop delay in seconds, this can be useful to avoid cutting envelope effects'
-      }
     },
     noise: {
       description: 'White noise generator'
@@ -205,6 +205,12 @@ module.export = function(m) {
         reset_on_cut: "Reinicia a la fase ADS cuando una nota corta a otra"
       }
     },
+    polyphoner: {
+      channels: 'Canales',
+      tooltip: {
+        channels: 'Numero maximo de canales'
+      }
+    },
     monophoner: {
       force_note_cut: 'Forzar corte de nota',
       tooltip: {
@@ -251,12 +257,6 @@ module.export = function(m) {
     },
     script: {
       tooltip: 'Esta es la ventana de codigo fuente, puedes escribir to script aqui'
-    },
-    notesplit: {
-      stop_delay: 'Demora al detenerse',
-      tooltip: {
-        stop_delay: 'Demora al detenerse en segundos, puede ser util para evitar cortar efectos de envolventes'
-      }
     },
     noise: {
       description: 'Generador de ruido blanco'
@@ -518,13 +518,25 @@ module.export = function(m) {
             time_constant: data.time_constant
           };
 
+          var modulatorInstruments = {};
           if (components && components.detune) {
             props.detune = MUSIC.modulator(function(pl) {
-              return (options.modWrapper||defaultModWrapper)(components.detune)(pl, {nowrap: true}).note(0);
+              var inst = components.detune(pl, {nowrap: true});
+              modulatorInstruments.detune = inst;
+              return inst;
             });
           };
+
           var generator = music.oscillator(props);
-          return new MUSIC.Instrument(generator);
+          var inner = new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator), {start: true});
+
+          return new MUSIC.MultiInstrument(function() {
+            var instrumentArray = [inner];
+            for (var k in modulatorInstruments) {
+              instrumentArray.push(modulatorInstruments[k]);
+            }
+            return instrumentArray;
+          });
       };
   });
 
@@ -536,6 +548,34 @@ module.export = function(m) {
     });
     return result;
   };
+
+
+  m.type("polyphoner", {template: "polyphoner", description: "Turns monophonic instrument into polyphonic"},
+    function(data, subobjects) {
+
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var maxChannels = 4;
+    var getMaxChannels = function() { return maxChannels; };
+
+    var ret = function(music) {
+      var factory = function() {
+        return wrapped(music, {nowrap: true});
+      };
+      return new MUSIC.PolyphonyInstrument(factory, getMaxChannels);
+    };
+
+    ret.update = function(data) {
+      maxChannels = data.maxChannels || 4;
+    };
+
+    ret.update(data);
+
+    return ret;
+
+  });
 
   m.type("monophoner", {template: "monophoner", description: "Turns polyphonic instrument into monophonic"}, 
     function(data, subobjects) {
@@ -615,59 +655,6 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("notesplit", {template: "notesplit", description: "Split effect stack by note", _default: {
-    delay: 0.0
-  }}, function(data, subobjects) {
-    if (!subobjects) return;
-    var wrapped = subobjects[0];
-    if (!wrapped) return;
-
-    var delay;
-
-    var ret = function(music){
-        var note = function(n) {
-            var baseNode = music.sfxBase();
-            var stopped = Promise.defer();
-            var modWrapper = function(modulator) {
-              return function(music, options) {
-                return modulator(music, {nowrap: options.nowrap, stopped: stopped.promise});
-              };
-            };
-
-            var instance = wrapped(baseNode, {modWrapper: modWrapper});
-
-            if (delay > 0) {
-              return instance.note(n)
-                        .onStop(function() {
-                          baseNode.prune();
-                        })
-                        .stopDelay(delay*1000)
-                        .onStop(function() {
-                          stopped.resolve();
-                        });
-            } else {
-              return instance.note(n)
-                        .onStop(function() {
-                          stopped.resolve();
-                          if (instance.dispose) instance.dispose();
-                        });
-            }
-        };
-        return MUSIC.instrumentExtend({
-          note: note
-        });
-    };
-
-    ret.update = function(data) {
-      delay = data.delay||0;
-      return this;
-    };
-
-    ret.update(data);
-
-    return ret;
-  });
-
   m.type("rise", {
         template: "generic_wrapper_editor", 
         parameters: [
@@ -708,61 +695,78 @@ module.export = function(m) {
     sustainLevel: 0.8,
     releaseTime: 0.4
   }},  function(data, subobjects) {
-    var attackTime, decayTime, sustainLevel, m, b;
+    var attackTime, decayTime, sustainLevel, releaseTime, mdecay, reset_on_cut; 
 
     var ret = function(music, options){
+      var currentPhase = 0; // = OFF 1 = ADS 2 = R
+      var prevPhase = 0
+      var d, r, t0, acc;
+      
       options = options ||{};
-
-      return {
-        note: function() {
-          var itsover = false;
-          var itsover2 = false;
-          if (options.stopped) {
-            options.stopped.then(function() {
-              itsover = true;
-            });
+      var formulaNode = music
+        .formulaGenerator(function(t) {
+          if (currentPhase===0) {
+            prevPhase = currentPhase;
+            return 0;
           }
+          if (currentPhase===1) { // ADS
+            if (prevPhase!==1) {
+              t0 = t;
+            }
+            prevPhase = currentPhase;
 
-          var tf;
-          var lastValue = sustainLevel;
-          var formulaNode = music
-                    .formulaGenerator(function(t) {
-                      if (itsover) {
-                        if (!itsover2) {
-                          itsover2 = true;
-                          tf = t;
-                        }
+            d = t-t0;
+            if (attackTime !== 0 && d < attackTime) {
+              acc = d / attackTime
+            } else if (d < attackTime + decayTime && sustainLevel < 1) {
+              d = t-(t0+attackTime);
+              acc = 1 - (d / decayTime)*(1 - sustainLevel);
+            }
+            return acc;
+          }
+          if (currentPhase===2) { // R
+            if (prevPhase!==2) {
+              t0 = t;
+            }
+            prevPhase = currentPhase;
 
-                        t-=tf;
+            r = acc * (1 - (t-t0)/releaseTime);
+            return r > 0 ? r : 0;
+          }
+        });
 
-                        if(t>releaseTime) {
-                          return 0;
-                        } else {
-                          return lastValue * (releaseTime-t) / releaseTime;
-                        }
-                      }
+      var playing = formulaNode.play();
 
-                      if (t>attackTime) {
-                        if (t>attackTime+decayTime){
-                          lastValue = sustainLevel;
-                        } else {
-                          lastValue = m*t+b;
-                        }
-                      } else {
-                        if (attackTime == 0) {
-                          lastValue = 1;
-                        } else {
-                          lastValue = t/attackTime;
-                        }
-                      }
-                      return lastValue;
-
-                    });
-
-          return formulaNode;
-
+      var noteCount = 0;
+      var stop = function() {
+        noteCount--;
+        if (noteCount===0) {
+          currentPhase=2; // change to 'release'
         }
       };
+
+      var play = function() {
+        if (noteCount===0 || reset_on_cut) {
+          // change to ads
+          prevPhase = 0;
+          currentPhase=1;
+        }
+        noteCount++;
+        return {stop: stop};
+      };
+
+      var note = function(n) {
+        return MUSIC.playablePipeExtend({play: play});
+      };
+
+      var dispose = function() {
+        playing.stop();
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note,
+        dispose: dispose
+      });
     };
 
     ret.update = function(data) {
@@ -770,10 +774,7 @@ module.export = function(m) {
       decayTime = parseFloat(data.decayTime || 0.4);
       sustainLevel = parseFloat(data.sustainLevel || 0.8);
       releaseTime = parseFloat(data.releaseTime || 0.4);
-
-      // (attackTime, 1) -> (attackTime + decayTime, sustainLevel)
-      m = (sustainLevel - 1)/decayTime;
-      b = -m * attackTime + 1
+      reset_on_cut = data.reset_on_cut;
       return this;
     };
 
@@ -1009,7 +1010,6 @@ module.export = function(m) {
         var transposeFcn = function(n) { return n+tr };
 
         var ret = function(music) {
-          //return wrapped(music).mapNote(transposeFcn);
           var wr = wrapped(music);
           var x = Object.create(wr);
 
@@ -1054,23 +1054,35 @@ module.export = function(m) {
           var ret = function(music, options) {
             options = options ||{};
 
-            var node = music[fcn].apply(music, [getOpt(options.modWrapper)]);
+            var modulatorInstruments = {}
+
+            var node = music[fcn].apply(music, [getOpt(modulatorInstruments)]);
             nodes.push(node)
-            return wrapped(node, options);
+            
+            var inner = wrapped(node, options);
+            return new MUSIC.MultiInstrument(function() {
+              var instrumentArray = [inner];
+              for (var k in modulatorInstruments) {
+                instrumentArray.push(modulatorInstruments[k]);
+              }
+
+              return instrumentArray;
+            });
           };
 
 
           ret.update = function(data, components) {
             if(options.singleParameter) {
-              getOpt = function(modWrapper) {
-                modWrapper = modWrapper || defaultModWrapper;
+              getOpt = function(modulatorInstruments) {
                 var opt;
                 var parameter = options.parameters[0];
 
                 var modulator = components[parameter.name];
                 if (modulator) {
                   opt = MUSIC.modulator(function(pl) {
-                    return modWrapper(modulator)(pl, {nowrap: true}).note(0);
+                    var inst = modulator(pl, {nowrap: true});
+                    if (modulatorInstruments) modulatorInstruments._main = inst;
+                    return inst;
                   });
                 } else {
                   opt = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
@@ -1080,14 +1092,15 @@ module.export = function(m) {
               };
 
             } else {
-              getOpt = function(modWrapper) {
-                modWrapper = modWrapper || defaultModWrapper;
+              getOpt = function(modulatorInstruments) {
                 var opt = {};
                 options.parameters.forEach(function(parameter) {
                   var modulator = components[parameter.name];
                   if (modulator) {
                     opt[parameter.name] = MUSIC.modulator(function(pl) {
-                      return modWrapper(modulator)(pl, true).note(0);
+                      var inst = modulator(pl, {nowrap: true});
+                      if (modulatorInstruments) modulatorInstruments[parameter.name] = inst;
+                      return inst;
                     });
                   } else {
                     opt[parameter.name] = data[parameter.name] ? parseFloat(data[parameter.name]) : (parameter.default || 0.0);
@@ -1188,7 +1201,10 @@ module.export = function(m) {
           });
 
           var ret = function(music) {
-            return wrapped(music.T("reverb", opt));
+            var tnode = music.T("reverb", opt);
+            var i = wrapped(tnode);
+            i.dispose = tnode.dispose.bind(tnode);
+            return i;
           };
 
           return ret;
@@ -1216,11 +1232,13 @@ module.export = function(m) {
   var playableType = function(name, method_name, options) {
     m.type(name, options, function(data, subobjects) {
       var ret = function(music) {
-        return {
+        var inst = {
           note: function() {
             return music[method_name].apply(music,[]);
           }
         };
+
+        return new MUSIC.MonoNoteInstrument(inst);
       };
 
       ret.update = function(data){};

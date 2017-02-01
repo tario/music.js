@@ -256,7 +256,13 @@ var multiInstrumentPacker = objToArrayPacker([
 var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
 "envelope","transpose","scale","gain","echo","lowpass",
 "highpass","bandpass","lowshelf","highshelf","peaking",
-"notch","allpass","reverb","noise","pink_noise","red_noise","arpeggiator","stack", "multi_instrument"];
+"notch","allpass","reverb","noise","pink_noise","red_noise",
+"arpeggiator","stack", "multi_instrument", "monophoner", "polyphoner"];
+
+var monophonerPacker = objToArrayPacker([
+  ["force_note_cut", booleanPacker]
+]);
+var polyphonerPacker = objToArrayPacker(["maxChannels"]);
 
 var instrumentPacker = objToArrayPacker([
   ["type", substitution(typeNames)],
@@ -286,7 +292,9 @@ var instrumentPacker = objToArrayPacker([
       red_noise: noParametersPacker,
       arpeggiator: objToArrayPacker(["scale", "interval", "duration", "gap"]),
       stack: stackPacker,
-      multi_instrument: multiInstrumentPacker
+      multi_instrument: multiInstrumentPacker,
+      monophoner: monophonerPacker,
+      polyphoner: polyphonerPacker
     }
   )],
 ]);

@@ -69,6 +69,79 @@ MUSIC.noteToNoteNum = function(noteName) {
   return notenum;
 };
 
+MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
+  var instrumentArray = [];
+  var onUse = [];
+  var queue = [];
+
+  var freeIdx = function(maxChannels) {
+    for (var i=0; i<maxChannels; i++) {
+      if (!onUse[i]) return i;
+    }
+    return queue[0]||0;
+  };
+
+  this.note = function(notenum) {
+    var c = maxChannels();
+    var playingIdx = freeIdx(c);
+    var instrument = instrumentArray[playingIdx];
+
+    if (!instrument) {
+      instrument = innerFactory();
+      instrumentArray[playingIdx] = instrument;
+    }
+
+    queue.push(playingIdx);
+    if (queue.length > c) queue.shift();
+
+    onUse[playingIdx] = true;
+    return instrument.note(notenum)
+      .onStop(function() {
+        onUse[playingIdx] = false;
+      });
+  };
+
+  instrumentExtend(this);
+};
+
+MUSIC.MonoNoteInstrument = function(inner) {
+  var noteInst;
+  var playingInst;
+  var count = 0;
+
+  this.note = function(notenum) {
+    if (!noteInst) {
+      noteInst = inner.note(notenum);
+    }
+
+    return MUSIC.playablePipeExtend({
+      play: function(param) {
+        if (!playingInst) {
+          playingInst = noteInst.play(param);
+        }
+
+        noteInst.setValue(notenum);
+
+        count++;
+        return {stop: function() {
+          count--;
+          if (noteInst.reset && count === 0) noteInst.reset();
+        }};
+      } 
+    });
+  };
+
+  this.dispose = function() {
+    if (playingInst) {
+      playingInst.stop();
+    }
+
+    if (inner.dispose) inner.dispose();
+  };
+
+  instrumentExtend(this);
+};
+
 MUSIC.Instrument = function(soundFactory) {
   this.note = function(notenum) {
     if (notenum === undefined) return undefined;
@@ -83,6 +156,8 @@ MUSIC.Instrument = function(soundFactory) {
           this.setValue = function(n) {
             fr.setFreq(frequency(n));
           };
+
+          this.reset = fr.reset.bind(fr);
         }
 
         return {
@@ -101,6 +176,10 @@ MUSIC.instrumentExtend = instrumentExtend;
 MUSIC.Instrument.frequency = frequency;
 
 MUSIC.MultiInstrument = function(instrumentArray) {
+  if (Array.isArray(instrumentArray)) return MUSIC.MultiInstrument.bind(this)(function() {
+    return instrumentArray;
+  });
+
   var notePlay = function(note) { return note.play(); };
   var noteStop = function(note) { return note.stop(); };
 
@@ -116,13 +195,18 @@ MUSIC.MultiInstrument = function(instrumentArray) {
   };
 
   this.note = function(noteNum) {
-    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray.map(function(instrument){ 
+    return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
       return instrument.note(noteNum);
     })));
   };
 
-  instrumentExtend(this);
+  this.dispose = function() {
+    instrumentArray().forEach(function(i) {
+      if (i.dispose) i.dispose();
+    });
+  };
 
+  instrumentExtend(this);
 };
 
 var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];

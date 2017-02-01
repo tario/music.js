@@ -389,6 +389,9 @@ MUSIC.SoundLib.PinkNoise = function(audio, nextProvider) {
     }
   };
 
+  this.setValue = function() {
+  };
+
   MUSIC.playablePipeExtend(this);
 };
 
@@ -409,6 +412,9 @@ MUSIC.SoundLib.RedNoise = function(audio, nextProvider) {
         noiseGenerator.disconnect(nextProvider._destination);
       }
     }
+  };
+
+  this.setValue = function() {
   };
 
   MUSIC.playablePipeExtend(this);
@@ -438,6 +444,9 @@ MUSIC.SoundLib.Noise = function(audio, nextProvider) {
         whiteNoise.disconnect(nextProvider._destination);
       }
     }
+  };
+
+  this.setValue = function() {
   };
 
   MUSIC.playablePipeExtend(this);
@@ -483,13 +492,11 @@ MUSIC.modulator = function(f) {
   return {
     apply: function(currentTime, audioParam, music) {
       var modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
-      var modulator = f(modulatorFactory).play();
+      var modulator = f(modulatorFactory);
 
       return {
         dispose: function() {
           modulatorFactory.prune();
-          if (modulator) modulator.stop();
-          modulator = null;
         }
       };
     }
@@ -499,23 +506,92 @@ MUSIC.modulator = function(f) {
 MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   options = options || {};
   var effects = options.effects;
-  var frequency = options.frequency;
   var detune = options.detune;
+  var frequency = options.frequency;
   var time_constant = options.time_constant;
+  var audioDestination;
+
+  audioDestination = destination._destination;
 
   if (!isFinite(time_constant) || isNaN(time_constant) || time_constant <= 0) time_constant = 0.01;
 
+  var osc;
+  osc = music.audio.createOscillator();
+  osc.connect(audioDestination);
+
+  var appliedAudioParam;
+
+  if (frequency) {
+    osc.frequency.value = frequency;
+  }    
+
+  if (detune) {
+    if (detune.apply) {
+      appliedAudioParam = detune.apply(music.audio.currentTime, osc.detune, music);
+    } else {
+      osc.detune.value = detune;
+    }
+  }
+
+  if (options.type === "custom") {
+    var real = new Float32Array(options.terms.sin || []);
+    var imag = new Float32Array(options.terms.cos || []);
+
+    var periodicWave = music.audio.createPeriodicWave(real, imag);
+    osc.setPeriodicWave(periodicWave);
+  } else {
+    osc.type = options.type;    
+  }
+
+
   this.freq = function(newFreq) {
-    var newoptions = {
-      type: options.type,
-      wave: options.wave,
-      f: options.f,
-      frequency: options.fixed_frequency ? options.fixed_frequency : newFreq,
-      detune: options.detune,
-      periodicWave: options.periodicWave,
-      time_constant: time_constant
+    var frequency = options.fixed_frequency ? options.fixed_frequency : newFreq
+
+    if (frequency) {
+      osc.frequency.value = frequency;
+    }    
+
+    var resetd = false;
+    var playable = {};
+    playable.setFreq = function(frequency) {
+      if (options.fixed_frequency) return;
+
+      var tc = time_constant||0.1;
+      if (resetd) tc = 0.0001;
+      osc.frequency.setTargetAtTime(frequency, null, tc);
+
+      resetd = false;
     };
-    return new MUSIC.SoundLib.Oscillator(music, destination, newoptions)
+
+    playable.reset = function() {
+      resetd = true;
+    };
+
+    playable.play = function(param) {
+      var nextNode;
+      var disposeNode;
+
+      disposeNode = function() {
+        if (osc) osc.disconnect(audioDestination);
+        osc = null;
+      };
+
+      osc.start(0);
+
+      return {
+        stop : function() {
+          if (appliedAudioParam && appliedAudioParam.dispose) {
+            appliedAudioParam.dispose();
+          }
+
+          if (osc) osc.stop(0);
+          disposeNode();
+        }
+      };
+    };
+
+    MUSIC.playablePipeExtend(playable);
+    return playable;
   };
 
   if (options.f) {
@@ -574,76 +650,9 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     newOptions.f = options.wave.f;
     MUSIC.SoundLib.Oscillator.bind(this)(music, destination, newOptions);
   } else {
-    var wave;
-    if (!options.periodicWave) {
-      if (options.type === "custom") {
-        var real = new Float32Array(options.terms.sin || []);
-        var imag = new Float32Array(options.terms.cos || []);
 
-        options.periodicWave = music.audio.createPeriodicWave(real, imag);
-      }
-    }
-
-    var osc;
-    this.setFreq = function(frequency) {
-      osc.frequency.setTargetAtTime(frequency, null, time_constant||0.1);
-    };
-
-    this.play = function(param) {
-      var nextNode;
-      var disposeNode;
-      var audioDestination;
-
-      osc = music.audio.createOscillator();
-
-      var appliedFrequencyParam;
-      if (frequency.apply) {
-        appliedFrequencyParam = frequency.apply(music.audio.currentTime, osc.frequency);
-      } else {
-        osc.frequency.value = frequency;
-      }
-
-      var appliedAudioParam;
-      if (detune) {
-        if (detune.apply) {
-          appliedAudioParam = detune.apply(music.audio.currentTime, osc.detune, music);
-        } else {
-          osc.detune.value = detune;
-        }
-      }
-
-      if (options.periodicWave) {
-        osc.setPeriodicWave(options.periodicWave);
-      } else {
-        osc.type = options.type;
-      }
-
-      nextNode = destination;
-      audioDestination = nextNode._destination;
-      disposeNode = function() {
-        osc.disconnect(audioDestination);
-        osc = null;
-      };
-
-      osc.connect(audioDestination);
-      osc.start(0);
-
-      return {
-        stop : function() {
-          if (appliedAudioParam && appliedAudioParam.dispose) {
-            appliedAudioParam.dispose();
-          }
-          if (appliedFrequencyParam && appliedFrequencyParam.dispose) {
-            appliedFrequencyParam.dispose();
-          }
-          osc.stop(0);
-          disposeNode();
-        }
-      };
-    };
   }
 
-  MUSIC.playablePipeExtend(this);
 };
 
 MUSIC.Loop = function(playable, times) {

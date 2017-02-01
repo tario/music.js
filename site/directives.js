@@ -246,9 +246,8 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
       };
 
       scope.onDropComplete = function(data, event) {
-        scope.$emit("stackChanged");
-
         if (data.type === "fx") {
+          scope.$emit("stackChanged");
           scope.file.array = [{
             type: data.name,
             data: {}
