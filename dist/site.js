@@ -15691,6 +15691,8 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
   var id = $routeParams.id;
 
   $scope.removeItem = function() {
+    destroyAll();
+    
     if ($scope.fileIndex.builtIn) {
       $scope.file = null;
       $scope.fileIndex = null;
@@ -15699,12 +15701,12 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
           reloadFromRepo();
         });
       return;
+    } else {
+      FileRepository.moveToRecycleBin(id)
+        .then(function() {
+          document.location = "#";
+        });
     }
-
-    FileRepository.moveToRecycleBin(id)
-      .then(function() {
-        document.location = "#";
-      });
   };
 
   var lastObj;
