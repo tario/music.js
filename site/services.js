@@ -389,10 +389,12 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, onStop) {
-    var playableArray = file.tracks.filter(function(track) {
-      return !!track.instrument;
-    }).map(function(track) {
-      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument]);
+    var playableArray = file.tracks.map(function(track, idx) {
+      if (!track.instrument) return null;
+
+      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
+    }).filter(function(track) {
+      return !!track;
     });
 
     return new MUSIC.MultiPlayable(playableArray);
@@ -428,9 +430,11 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   return function(music) {
     var set = {};
     var created = [];
-     var load = function(id) {
-      if (!set[id]) {
-        set[id] = FileRepository.getFile(id)
+    var load = function(id, trackNo) {
+      trackNo = trackNo || 0;
+      var _id = id + "_" + trackNo;
+      if (!set[_id]) {
+        set[_id] = FileRepository.getFile(id)
           .then(function(file) {
             return MusicObjectFactory().create(file.contents, music);
           })
@@ -440,7 +444,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
           });
       } 
 
-      return set[id];
+      return set[_id];
     };
 
     var dispose = function() {

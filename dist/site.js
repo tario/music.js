@@ -14351,10 +14351,12 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, onStop) {
-    var playableArray = file.tracks.filter(function(track) {
-      return !!track.instrument;
-    }).map(function(track) {
-      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument]);
+    var playableArray = file.tracks.map(function(track, idx) {
+      if (!track.instrument) return null;
+
+      return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
+    }).filter(function(track) {
+      return !!track;
     });
 
     return new MUSIC.MultiPlayable(playableArray);
@@ -14390,9 +14392,11 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
   return function(music) {
     var set = {};
     var created = [];
-     var load = function(id) {
-      if (!set[id]) {
-        set[id] = FileRepository.getFile(id)
+    var load = function(id, trackNo) {
+      trackNo = trackNo || 0;
+      var _id = id + "_" + trackNo;
+      if (!set[_id]) {
+        set[_id] = FileRepository.getFile(id)
           .then(function(file) {
             return MusicObjectFactory().create(file.contents, music);
           })
@@ -14402,7 +14406,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
           });
       } 
 
-      return set[id];
+      return set[_id];
     };
 
     var dispose = function() {
@@ -15333,12 +15337,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
-    var loader = {};
-
-    pattern.tracks.forEach(function(track) {
-      if (track.instrument) loader[track.instrument] = instSet.load(track.instrument);
+    pattern.tracks.forEach(function(track, idx) {
+      instSet.load(track.instrument, idx);
     });
-
 
     block.playing = true;
     var playDone = function() {
@@ -15347,7 +15348,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
       });
     };
 
-    $q.all(loader)
+    $q.all(instSet.all)
       .then(function(instruments) {
         $scope.stop();
 
@@ -15430,8 +15431,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     block.id = $data.id;
     FileRepository.getFile($data.id)
       .then(function(f) {
-        f.contents.tracks.forEach(function(track) {
-          if (track.instrument) instSet.load(track.instrument);
+        f.contents.tracks.forEach(function(track, idx) {
+          if (track.instrument) instSet.load(track.instrument, idx);
         });
 
         $scope.indexMap[$data.id] = f;
@@ -15465,8 +15466,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
           for (var blockId in indexMap) {
             var pattern = indexMap[blockId].contents;
-            pattern.tracks.forEach(function(track) {
-              if (track.instrument) instSet.load(track.instrument);
+            pattern.tracks.forEach(function(track, idx) {
+              if (track.instrument) instSet.load(track.instrument, idx);
             });
           }
         })
@@ -15547,17 +15548,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   };
 
   $scope.play = function() {
-    var instruments = {};
-    $scope.file.tracks.forEach(function(track) {
-      if (track.instrument) {
-        instruments[track.instrument] = instrument.get(track);
-      }
-    });
-
-    playing = Pattern.patternCompose($scope.file, instruments, function() {
-      $scope.recipe.raise("pattern_play_stopped");
-      playing = null;
-    }).play();
+    $q.all(instSet.all)
+      .then(function(instruments) {
+        playing = Pattern.patternCompose($scope.file, instruments, function() {
+          $scope.recipe.raise("pattern_play_stopped");
+          playing = null;
+        }).play();
+      });
   };
 
   $scope.zoomIn = function() {
@@ -15621,7 +15618,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
     return $q.all({
-      musicObject: instSet.load($scope.file.tracks[trackNo].instrument),
+      musicObject: instSet.load($scope.file.tracks[trackNo].instrument, trackNo),
       index: FileRepository.getIndex($scope.file.tracks[trackNo].instrument)
     }).then(function(result) {
         $scope.instrumentMap[$scope.file.tracks[trackNo].instrument] = result.index;
@@ -15692,7 +15689,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
   $scope.removeItem = function() {
     destroyAll();
-    
+
     if ($scope.fileIndex.builtIn) {
       $scope.file = null;
       $scope.fileIndex = null;

@@ -150,12 +150,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
-    var loader = {};
-
-    pattern.tracks.forEach(function(track) {
-      if (track.instrument) loader[track.instrument] = instSet.load(track.instrument);
+    pattern.tracks.forEach(function(track, idx) {
+      instSet.load(track.instrument, idx);
     });
-
 
     block.playing = true;
     var playDone = function() {
@@ -164,7 +161,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
       });
     };
 
-    $q.all(loader)
+    $q.all(instSet.all)
       .then(function(instruments) {
         $scope.stop();
 
@@ -247,8 +244,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     block.id = $data.id;
     FileRepository.getFile($data.id)
       .then(function(f) {
-        f.contents.tracks.forEach(function(track) {
-          if (track.instrument) instSet.load(track.instrument);
+        f.contents.tracks.forEach(function(track, idx) {
+          if (track.instrument) instSet.load(track.instrument, idx);
         });
 
         $scope.indexMap[$data.id] = f;
@@ -282,8 +279,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
           for (var blockId in indexMap) {
             var pattern = indexMap[blockId].contents;
-            pattern.tracks.forEach(function(track) {
-              if (track.instrument) instSet.load(track.instrument);
+            pattern.tracks.forEach(function(track, idx) {
+              if (track.instrument) instSet.load(track.instrument, idx);
             });
           }
         })
@@ -364,17 +361,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   };
 
   $scope.play = function() {
-    var instruments = {};
-    $scope.file.tracks.forEach(function(track) {
-      if (track.instrument) {
-        instruments[track.instrument] = instrument.get(track);
-      }
-    });
-
-    playing = Pattern.patternCompose($scope.file, instruments, function() {
-      $scope.recipe.raise("pattern_play_stopped");
-      playing = null;
-    }).play();
+    $q.all(instSet.all)
+      .then(function(instruments) {
+        playing = Pattern.patternCompose($scope.file, instruments, function() {
+          $scope.recipe.raise("pattern_play_stopped");
+          playing = null;
+        }).play();
+      });
   };
 
   $scope.zoomIn = function() {
@@ -438,7 +431,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
     return $q.all({
-      musicObject: instSet.load($scope.file.tracks[trackNo].instrument),
+      musicObject: instSet.load($scope.file.tracks[trackNo].instrument, trackNo),
       index: FileRepository.getIndex($scope.file.tracks[trackNo].instrument)
     }).then(function(result) {
         $scope.instrumentMap[$scope.file.tracks[trackNo].instrument] = result.index;
