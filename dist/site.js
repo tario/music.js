@@ -12579,6 +12579,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp", ['ui.codemirror', 'ngR
 
 musicShowCaseApp.constant("MUSIC", MUSIC);
 musicShowCaseApp.constant("TICKS_PER_BEAT", 96);
+musicShowCaseApp.constant("SONG_MAX_TRACKS", 32);
 musicShowCaseApp.constant("localforage", localforage);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
@@ -14350,8 +14351,9 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     return noteseq;
   };
 
-  var patternCompose = function(file, instruments, onStop) {
+  var patternCompose = function(file, instruments, base, onStop) {
     var playableArray = file.tracks.map(function(track, idx) {
+      idx = base + idx;
       if (!track.instrument) return null;
 
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
@@ -15228,7 +15230,9 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
+    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
+
   $scope.indexMap = {};
   var music = new MUSIC.Context();
 
@@ -15295,7 +15299,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
       .then(function(instruments){
         var patterns = {};
 
-        var createPattern = function(id) {
+        var createPattern = function(id, songTrackIdx) {
           if (!id) return null;
           if (patterns[id]) return patterns[id];
 
@@ -15303,7 +15307,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           var changedBpm = Object.create(pattern);
           changedBpm.bpm = $scope.file.bpm;
 
-          patterns[id] = Pattern.patternCompose(changedBpm, instruments, function() {});
+          patterns[id] = Pattern.patternCompose(changedBpm, instruments, songTrackIdx*SONG_MAX_TRACKS, function() {});
 
           return patterns[id];
         };        
@@ -15311,9 +15315,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         var scale = 60000 / $scope.file.bpm / TICKS_PER_BEAT;
         var measure = TICKS_PER_BEAT * $scope.file.measure * scale;
         var song = new MUSIC.Song(
-          $scope.file.tracks.map(function(track) {
+          $scope.file.tracks.map(function(track, songTrackIdx) {
             return track.blocks.map(function(block) {
-              return createPattern(block.id);
+              return createPattern(block.id, songTrackIdx);
             });
           })
         , {measure: measure});
@@ -15333,12 +15337,12 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
   };
 
-  $scope.patternPlay = function(block) {
+  $scope.patternPlay = function(block, songTrackIdx) {
     var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
     pattern.tracks.forEach(function(track, idx) {
-      instSet.load(track.instrument, idx);
+      instSet.load(track.instrument, songTrackIdx*SONG_MAX_TRACKS + idx);
     });
 
     block.playing = true;
@@ -15355,7 +15359,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         var changedBpm = Object.create(pattern);
         changedBpm.bpm = $scope.file.bpm;
 
-        playing = Pattern.patternCompose(changedBpm, instruments, function() {
+        playing = Pattern.patternCompose(changedBpm, instruments, songTrackIdx*SONG_MAX_TRACKS, function() {
           playing = null;
           playDone();
         }).play();
@@ -15393,7 +15397,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
       }
     });
 
-    if ($scope.file.tracks.length < maxTrackIndex+2) {
+    if ($scope.file.tracks.length < maxTrackIndex+2 && $scope.file.tracks.length < SONG_MAX_TRACKS) {
       $scope.file.tracks.push({
         blocks: $scope.file.tracks[0].blocks.map(function() {return {};})
       });
@@ -15416,7 +15420,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
   $scope.$watch("file.measure", checkPayload);
 
-  $scope.onDropComplete = function($data,$event,block) {
+  $scope.onDropComplete = function($data,$event,block,songTrackIdx) {
     if ($data.fromBlock) {
 
       var swapId = block.id;
@@ -15432,7 +15436,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     FileRepository.getFile($data.id)
       .then(function(f) {
         f.contents.tracks.forEach(function(track, idx) {
-          if (track.instrument) instSet.load(track.instrument, idx);
+          if (track.instrument) instSet.load(track.instrument, songTrackIdx*SONG_MAX_TRACKS + idx);
         });
 
         $scope.indexMap[$data.id] = f;
@@ -15449,11 +15453,17 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
     FileRepository.getFile(id).then(function(file) {
       if (file) {
-        file.contents.tracks.forEach(function(track) {
+        file.contents.tracks.forEach(function(track, idx) {
           track.blocks.forEach(function(block){
             if (block && block.id) {
               if (!block_ids[block.id]){
-                block_ids[block.id] = FileRepository.getFile(block.id);
+                block_ids[block.id] = FileRepository.getFile(block.id)
+                  .then(function(file) {
+                    return {
+                      file: file,
+                      idx: idx
+                    };
+                  });
               }
             }
           })
@@ -15462,12 +15472,15 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
       return $q.all(block_ids)
         .then(function(indexMap) {
-          $scope.indexMap = indexMap;
+          $scope.indexMap = {};
 
           for (var blockId in indexMap) {
-            var pattern = indexMap[blockId].contents;
+            var pattern = indexMap[blockId].file.contents;
+            var songTrackIdx = indexMap[blockId].idx;
+
+            $scope.indexMap[blockId] = indexMap[blockId].file;
             pattern.tracks.forEach(function(track, idx) {
-              if (track.instrument) instSet.load(track.instrument, idx);
+              if (track.instrument) instSet.load(track.instrument, songTrackIdx*SONG_MAX_TRACKS + idx);
             });
           }
         })
@@ -15550,7 +15563,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   $scope.play = function() {
     $q.all(instSet.all)
       .then(function(instruments) {
-        playing = Pattern.patternCompose($scope.file, instruments, function() {
+        playing = Pattern.patternCompose($scope.file, instruments, 0, function() {
           $scope.recipe.raise("pattern_play_stopped");
           playing = null;
         }).play();

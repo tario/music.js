@@ -388,8 +388,9 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     return noteseq;
   };
 
-  var patternCompose = function(file, instruments, onStop) {
+  var patternCompose = function(file, instruments, base, onStop) {
     var playableArray = file.tracks.map(function(track, idx) {
+      idx = base + idx;
       if (!track.instrument) return null;
 
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);

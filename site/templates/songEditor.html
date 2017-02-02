@@ -61,7 +61,7 @@
           class="pattern-block"
           ng-repeat="block in track.blocks track by $index"
           ng-drop="true"
-          ng-drop-success="onDropComplete($data,$event,block)",
+          ng-drop-success="onDropComplete($data,$event,block,trackIdx)",
           recipe-blink="'song_pattern_dropzone_' + trackIdx + '_' + $index">
 
 
@@ -84,7 +84,7 @@
               <span class="pattern-mini-button fa fa-remove show-contextual-tooltip" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
                 <div class="help-tooltip contextual-tooltip" translate="song.tooltip.remove_block"></div>
               </span>
-              <span ng-class="{'playing': block.playing}" class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block)" ng-mousedown="$event.stopPropagation()">
+              <span ng-class="{'playing': block.playing}" class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block, trackIdx)" ng-mousedown="$event.stopPropagation()">
                 <div class="help-tooltip contextual-tooltip" translate="song.tooltip.play_block"></div>
               </span>
             </div>
