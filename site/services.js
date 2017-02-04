@@ -90,15 +90,13 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
     };
 
     var createParametricFromStack = function(array, idx, channel) {
+      if (array.length === 0) return $q.when(null);
+
       var descriptor = array[idx];
       channel = channel || 0;
 
       return getConstructor(descriptor, channel)
         .then(function(constructor) {
-          if (array.length === 1) {
-            return constructor([]);
-          }
-
           if (constructor.subobjects) {
             var getObject = function(d, index) {
               var newArray = d.data.array.concat(array.slice(idx+1));
@@ -111,6 +109,10 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
               });
           }
 
+          if (array.length === 1) {
+            return constructor([]);
+          }
+
           return createParametricFromStack(array.slice(idx+1), 0, channel)
             .then(function(obj) {
               return constructor([obj]);
@@ -120,7 +122,6 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
     var createParametric = function(descriptor) {
       if (descriptor.type === "stack") {
-        if (descriptor.data.array.length===0) return $q.when(null);
         return createParametricFromStack(descriptor.data.array, 0)
       } else {
         return getConstructor(descriptor, 0)
