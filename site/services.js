@@ -120,6 +120,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
     var createParametric = function(descriptor) {
       if (descriptor.type === "stack") {
+        if (descriptor.data.array.length===0) return $q.when(null);
         return createParametricFromStack(descriptor.data.array, 0)
       } else {
         return getConstructor(descriptor, 0)

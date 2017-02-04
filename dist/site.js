@@ -14083,6 +14083,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
     var createParametric = function(descriptor) {
       if (descriptor.type === "stack") {
+        if (descriptor.data.array.length===0) return $q.when(null);
         return createParametricFromStack(descriptor.data.array, 0)
       } else {
         return getConstructor(descriptor, 0)
@@ -15736,11 +15737,11 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
   var musicObjectFactory = MusicObjectFactory();
 
   var destroyAll = function() {
-    $scope.instruments.forEach(function(instrument) {
+    ($scope.instruments||[]).forEach(function(instrument) {
       if (instrument.dispose) instrument.dispose();
     });
 
-    $scope.playables.forEach(function(playable) {
+    ($scope.playables||[]).forEach(function(playable) {
       $scope.stopPlay(playable);
     });    
 
@@ -15829,6 +15830,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
   $scope.$on("stackChanged", function() {
     $scope.resetStack = true;
+    fileChanged();
   });
 
   $scope.$on("$destroy", destroyAll);
