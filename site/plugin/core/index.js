@@ -569,6 +569,7 @@ module.export = function(m) {
 
     ret.update = function(data) {
       maxChannels = data.maxChannels || 4;
+      return this;
     };
 
     ret.update(data);
@@ -649,6 +650,7 @@ module.export = function(m) {
     var forceNoteCut;
     ret.update = function(data) {
       forceNoteCut = data.force_note_cut;
+      return this;
     };
     ret.update(data);
 
@@ -684,6 +686,8 @@ module.export = function(m) {
     ret.update = function(data) {
       fallTime = parseFloat(data.time);
       target = parseFloat(data.target);
+
+      return this;
     };
     ret.update(data);
     return ret;
@@ -820,6 +824,8 @@ module.export = function(m) {
 
         ret.update = function(data) {
           delay = data.delay * 1000;
+
+          return this;
         };
 
         ret.update(data);
@@ -875,6 +881,8 @@ module.export = function(m) {
     ret.update = function(data) {
       factor = data.factor;
       if (factor < 1/64) factor=1/64;
+
+      return this;
     };
 
     ret.update(data);
@@ -901,6 +909,8 @@ module.export = function(m) {
 
     ret.update = function(data) {
       factor = Math.pow(2, data.bits-1);
+
+      return this;
     };
 
     ret.update(data);
@@ -1241,7 +1251,7 @@ module.export = function(m) {
         return new MUSIC.MonoNoteInstrument(inst);
       };
 
-      ret.update = function(data){};
+      ret.update = function(data){ return this; };
       return ret;
     });
   };
@@ -1328,6 +1338,8 @@ module.export = function(m) {
         interval = data.interval;
         total = data.total;
         loop = data.loop;
+
+        return this;
       };
 
       ret.update(data);

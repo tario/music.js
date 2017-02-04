@@ -4,13 +4,13 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
   return function() {
     var nextId = 0;
 
-    var last_type = new WeakMap();
-    var __cache = new WeakMap();
+    var _last_type = {};
+    var ___cache = {};
 
-    var getConstructor = function(descriptor) {
+    var getConstructor = function(descriptor, channel) {
         return TypeService.getType(descriptor.type)
           .then(function(type) {
-            return function(subobjects) {
+            var ret = function(subobjects) {
               var buildComponents = [];
 
               if (type.components) {
@@ -34,22 +34,17 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                 });
               }
 
-              if (type.subobjects) {
-                descriptor.data.subobjects.forEach(function(value) {
-                  buildComponents.push(createParametric(value));
-                });
-              }
-
               return $q.all(buildComponents)
                 .then(function(objs) {
-                  if (type.subobjects) {
-                    subobjects = objs;
-                  } else {
-                    var components = {};
-                    objs.forEach(function(obj) {
-                      components[obj.name] = obj.obj;
-                    });
-                  }
+                  var components = {};
+                  objs.forEach(function(obj) {
+                    components[obj.name] = obj.obj;
+                  });
+
+                  _last_type[channel] = _last_type[channel] || new WeakMap();
+                  ___cache[channel] = ___cache[channel] || new WeakMap();
+                  var last_type = _last_type[channel];
+                  var __cache = ___cache[channel];
 
                   if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
                     if (subobjects.length === 1) {
@@ -87,33 +82,47 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
                 })
             };
+
+            ret.subobjects = type.subobjects;
+
+            return ret;
           });
+    };
+
+    var createParametricFromStack = function(array, idx, channel) {
+      var descriptor = array[idx];
+      channel = channel || 0;
+
+      return getConstructor(descriptor, channel)
+        .then(function(constructor) {
+          if (array.length === 1) {
+            return constructor([]);
+          }
+
+          if (constructor.subobjects) {
+            var getObject = function(d, index) {
+              var newArray = d.data.array.concat(array.slice(idx+1));
+              return createParametricFromStack(newArray, 0, channel*16 + index);
+            };
+
+            return $q.all(descriptor.data.subobjects.map(getObject))
+              .then(function(objs) {
+                return constructor(objs);
+              });
+          }
+
+          return createParametricFromStack(array.slice(idx+1), 0, channel)
+            .then(function(obj) {
+              return constructor([obj]);
+            });
+        });
     };
 
     var createParametric = function(descriptor) {
       if (descriptor.type === "stack") {
-        return $q.all(descriptor.data.array.map(getConstructor))
-          .then(function(constuctors) {
-
-            if (constuctors.length === 0) {
-              return null;
-            }
-
-            var proms;
-            constuctors.reverse().forEach(function(constructor) {
-              if (proms) {
-                proms = proms.then(function(lastObj) {
-                  return constructor([lastObj]);
-                });
-              } else {
-                proms = constructor([]);
-              }
-            });
-
-            return proms;
-          })
+        return createParametricFromStack(descriptor.data.array, 0)
       } else {
-        return getConstructor(descriptor)
+        return getConstructor(descriptor, 0)
           .then(function(constructor) {
             return constructor([]); 
           });
@@ -121,8 +130,12 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
     };
 
     var destroyAll = function(obj) {
-      last_type = new WeakMap();
-      __cache = new WeakMap();
+      for (var channel in _last_type) {
+        _last_type[channel] = new WeakMap();
+      }
+      for (var channel in ___cache) {
+        ___cache[channel] = new WeakMap(); 
+      }
 
       if (base) base.prune();
 

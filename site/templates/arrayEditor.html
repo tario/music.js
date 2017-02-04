@@ -3,7 +3,7 @@
     <a href ng-click="setCurrentTab($index)">Instrument #{{$index}}</a>
     <div class="help-tooltip contextual-tooltip" translate="array_editor.tooltip.edit_item"></div>
   </li>
-  <li class="show-contextual-tooltip"><a href ng-click="addObject()">+</a>
+  <li ng-show="data.subobjects.length < 16" class="show-contextual-tooltip"><a href ng-click="addObject()">+</a>
     <div class="help-tooltip contextual-tooltip" translate="array_editor.tooltip.add_item"></div>
   </li>
 </ul>
