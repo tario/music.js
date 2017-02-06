@@ -506,8 +506,20 @@ module.export = function(m) {
     return ret;
   });
 
+  var oscillatorStackAppend = function(file, data) {
+    var isEnvelope = function(data) {
+      return data.type === 'envelope';
+    };
+
+    if (!file.array.some(isEnvelope)) {
+      file.array.push({type: 'envelope', data: {}})
+    }
+
+    file.array.push({type: data.name, data: {}});
+  };
+
   var defaultModWrapper = function(x){return x;};
-  m.type("oscillator", {template: "oscillator", description: "Oscillator", 
+  m.type("oscillator", {template: "oscillator", description: "Oscillator", stackAppend: oscillatorStackAppend,
     components: ["detune"]}, function(data, subobjects, components) {
     if (!data) return;
       return function(music, options){

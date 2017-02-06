@@ -1,3 +1,3 @@
-<div class="generic-parameter show-contextual-tooltip">{{'core.note_delay.delay' | translate}}: <input type="text" ng-model="file.data.delay"></input> s
+<div recipe-blink="'note_delay_delay'" class="generic-parameter show-contextual-tooltip">{{'core.note_delay.delay' | translate}}: <input type="text" ng-model="file.data.delay" ng-change="recipe.raise('note_delay_delay_changed')"></input> s
 <div class="help-tooltip contextual-tooltip" translate="core.note_delay.tooltip.delay"></div>
 </div>

@@ -33,6 +33,7 @@ var esTranslations = {
     help_recipes: 'Recetas',
     help_recipes_intro: 'Recorrido Introductorio',
     help_recipes_howto_create_song: 'Como crear una cancion',
+    help_recipes_howto_create_instrument: 'Como crear un instrumento (cuadrada + eco a dos voces)',
     help_contextual_help: 'Ayuda Contextual',
     help_welcome: '¡Bienvenido!',
     help_about: 'Acerca de Music.js',

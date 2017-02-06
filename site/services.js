@@ -296,7 +296,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function
           components: options.components,
           description: options.description,
           _default: options._default,
-          subobjects: options.subobjects
+          subobjects: options.subobjects,
+          stackAppend: options.stackAppend
         })
       }
     };

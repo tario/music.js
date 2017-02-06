@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", function($timeout, $http, TypeService) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", function($timeout, $http, TypeService, Recipe) {
   return {
     scope: {
       file: "=file"
@@ -11,6 +11,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var types = TypeService.getTypes();
 
       scope.parameters = [];
+      scope.recipe = Recipe.start;
 
       scope.termschanged = function() {
         scope.$broadcast('termschanged');
@@ -195,7 +196,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
   };
 }]);
 
-musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("arrayEditor", ["$timeout", "Recipe", function($timeout, Recipe) {
   return {
     scope: {
       data: "=data"
@@ -204,12 +205,14 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     link: function(scope, element, attrs) {
       scope.data.subobjects=scope.data.subobjects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
-      scope.currentTab = -1;
+      scope.currentTab = 0;
+      scope.recipe = Recipe.start;
 
       var addObject = function(newObject) {
         $timeout(function() {
           scope.data.subobjects=scope.data.subobjects||[];
           scope.data.subobjects.push(newObject);
+          scope.setCurrentTab(scope.data.subobjects.length-1);
         });
       };
 
@@ -224,17 +227,24 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
       scope.addObject = function() {
         addObject({data: {array: []}, type: "stack"})
       };
+
+      if (scope.data.subobjects.length === 0) {
+        scope.addObject();
+      }
     }
   };
 }]);
 
-musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("musicStack", ["$timeout", "Recipe", "TypeService", function($timeout, Recipe, TypeService) {
   return {
     scope: {
-      initFile: "=initFile"
+      initFile: "=initFile",
+      dropzoneExtraName: "=dropzoneExtraName"
     },
     templateUrl: "site/templates/stack.html",
     link: function(scope, element, attrs) {
+      scope.recipe = Recipe.start;
+
       var swap = function(idx1, idx2) {
         scope.$emit("stackChanged");
 
@@ -245,13 +255,20 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
         });
       };
 
+      var defaultStackAppend = function(file, data) {
+        file.array = [{
+          type: data.name,
+          data: {}
+        }].concat(file.array);
+      };
+
       scope.onDropComplete = function(data, event) {
         if (data.type === "fx") {
-          scope.$emit("stackChanged");
-          scope.file.array = [{
-            type: data.name,
-            data: {}
-          }].concat(scope.file.array);
+          TypeService.getType(data.name)
+            .then(function(type) {
+              (type.stackAppend ||defaultStackAppend)(scope.file, data);
+              scope.$emit("stackChanged");
+            });
         }
       };
 

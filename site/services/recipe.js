@@ -1,7 +1,8 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'Index', 'FileRepository', function($q, $timeout, $rootScope, $http, Index, FileRepository) {
 
-    var recipeList = ['intro', 'create_a_song'];
+    var recipeList = ['intro', 'create_a_song', 'create_an_instrument'];
+    var blinks = [];
 
     var currentRecipe = {
       steps: [],
@@ -19,6 +20,9 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
       currentStep = currentStep||currentRecipe.currentStep;
 
       var step = currentRecipe.steps[currentStep];
+
+      blinks = [];
+
       $rootScope.$broadcast("__blink_disable_all");
       $rootScope.$broadcast("__tooltip_hide_all");
       if (!step) {
@@ -30,6 +34,7 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
       }
 
       (step.blink||[]).forEach(function(blink_id) {
+        blinks.push(blink_id);
         $rootScope.$broadcast("_blink_enable_" + blink_id);
       });
 
@@ -157,10 +162,15 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
         })
     };
 
+    var getBlinks = function() {
+      return blinks;
+    };
+
     return {
       start: start,
       step: runRecipeStep,
       handleEvent: handleEvent,
-      loadTranslations: loadTranslations
+      loadTranslations: loadTranslations,
+      getBlinks: getBlinks
     };
 }]);

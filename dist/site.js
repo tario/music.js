@@ -12617,6 +12617,7 @@ var enTranslations = {
     help_recipes: 'Recipes',
     help_recipes_intro: 'Basic intro tour',
     help_recipes_howto_create_song: 'How to create a song',
+    help_recipes_howto_create_instrument: 'How to create an instrument (square + 2 voices echo)',
     help_contextual_help: 'Contextual Help',
     help_welcome: 'Welcome!',
     help_about: 'About Music.js',
@@ -12804,6 +12805,7 @@ var esTranslations = {
     help_recipes: 'Recetas',
     help_recipes_intro: 'Recorrido Introductorio',
     help_recipes_howto_create_song: 'Como crear una cancion',
+    help_recipes_howto_create_instrument: 'Como crear un instrumento (cuadrada + eco a dos voces)',
     help_contextual_help: 'Ayuda Contextual',
     help_welcome: '¡Bienvenido!',
     help_about: 'Acerca de Music.js',
@@ -13004,7 +13006,7 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", function($timeout, $http, TypeService) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", function($timeout, $http, TypeService, Recipe) {
   return {
     scope: {
       file: "=file"
@@ -13015,6 +13017,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var types = TypeService.getTypes();
 
       scope.parameters = [];
+      scope.recipe = Recipe.start;
 
       scope.termschanged = function() {
         scope.$broadcast('termschanged');
@@ -13199,7 +13202,7 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
   };
 }]);
 
-musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("arrayEditor", ["$timeout", "Recipe", function($timeout, Recipe) {
   return {
     scope: {
       data: "=data"
@@ -13208,12 +13211,14 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
     link: function(scope, element, attrs) {
       scope.data.subobjects=scope.data.subobjects||[];
       scope.maxElements = attrs.maxelements ? parseInt(attrs.maxelements) : Infinity;
-      scope.currentTab = -1;
+      scope.currentTab = 0;
+      scope.recipe = Recipe.start;
 
       var addObject = function(newObject) {
         $timeout(function() {
           scope.data.subobjects=scope.data.subobjects||[];
           scope.data.subobjects.push(newObject);
+          scope.setCurrentTab(scope.data.subobjects.length-1);
         });
       };
 
@@ -13228,17 +13233,24 @@ musicShowCaseApp.directive("arrayEditor", ["$timeout", function($timeout) {
       scope.addObject = function() {
         addObject({data: {array: []}, type: "stack"})
       };
+
+      if (scope.data.subobjects.length === 0) {
+        scope.addObject();
+      }
     }
   };
 }]);
 
-musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("musicStack", ["$timeout", "Recipe", "TypeService", function($timeout, Recipe, TypeService) {
   return {
     scope: {
-      initFile: "=initFile"
+      initFile: "=initFile",
+      dropzoneExtraName: "=dropzoneExtraName"
     },
     templateUrl: "site/templates/stack.html",
     link: function(scope, element, attrs) {
+      scope.recipe = Recipe.start;
+
       var swap = function(idx1, idx2) {
         scope.$emit("stackChanged");
 
@@ -13249,13 +13261,20 @@ musicShowCaseApp.directive("musicStack", ["$timeout", function($timeout) {
         });
       };
 
+      var defaultStackAppend = function(file, data) {
+        file.array = [{
+          type: data.name,
+          data: {}
+        }].concat(file.array);
+      };
+
       scope.onDropComplete = function(data, event) {
         if (data.type === "fx") {
-          scope.$emit("stackChanged");
-          scope.file.array = [{
-            type: data.name,
-            data: {}
-          }].concat(scope.file.array);
+          TypeService.getType(data.name)
+            .then(function(type) {
+              (type.stackAppend ||defaultStackAppend)(scope.file, data);
+              scope.$emit("stackChanged");
+            });
         }
       };
 
@@ -13832,30 +13851,47 @@ musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($pars
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", function($parse, $timeout) {
+musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", "Recipe", function($parse, $timeout, Recipe) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
       var recipeBlinkGetter = $parse(attrs.recipeBlink);
       var blinkElementId = recipeBlinkGetter(scope);
 
-      if (!Array.isArray(blinkElementId)) blinkElementId = [blinkElementId];
+      if (!Array.isArray(blinkElementId)) {
+        blinkElementId = [blinkElementId];
+      }
 
-      var registerEvent = function(blinkElementId) {
-        scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
-          $timeout(function() {
-            $(element).addClass('blink');
-          })
+      var blink = function() {
+        $timeout(function() {
+          $(element).addClass('blink');
         });
+      };
 
-        scope.$on("_blink_disable_" + blinkElementId, function() {
-          $(element).removeClass('blink');
-        });
-
-        scope.$on("__blink_disable_all", function() {
+      var noblink = function() {
+        $timeout(function() {
           $(element).removeClass('blink');
         });
       };
+
+      var registerEvent = function(blinkElementId) {
+        if (Recipe.getBlinks().indexOf(blinkElementId) !== -1) {
+          blink();
+        }
+
+        scope.$on("_blink_enable_" + blinkElementId, function(event, args) {
+          blink();
+        });
+
+        scope.$on("_blink_disable_" + blinkElementId, function() {
+          noblink();
+        });
+
+        scope.$on("__blink_disable_all", function() {
+          noblink();
+        });
+      };
+
       blinkElementId.forEach(registerEvent);
     }
   };
@@ -14259,7 +14295,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function
           components: options.components,
           description: options.description,
           _default: options._default,
-          subobjects: options.subobjects
+          subobjects: options.subobjects,
+          stackAppend: options.stackAppend
         })
       }
     };
@@ -14930,7 +14967,8 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'Index', 'FileRepository', function($q, $timeout, $rootScope, $http, Index, FileRepository) {
 
-    var recipeList = ['intro', 'create_a_song'];
+    var recipeList = ['intro', 'create_a_song', 'create_an_instrument'];
+    var blinks = [];
 
     var currentRecipe = {
       steps: [],
@@ -14948,6 +14986,9 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
       currentStep = currentStep||currentRecipe.currentStep;
 
       var step = currentRecipe.steps[currentStep];
+
+      blinks = [];
+
       $rootScope.$broadcast("__blink_disable_all");
       $rootScope.$broadcast("__tooltip_hide_all");
       if (!step) {
@@ -14959,6 +15000,7 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
       }
 
       (step.blink||[]).forEach(function(blink_id) {
+        blinks.push(blink_id);
         $rootScope.$broadcast("_blink_enable_" + blink_id);
       });
 
@@ -15086,11 +15128,16 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
         })
     };
 
+    var getBlinks = function() {
+      return blinks;
+    };
+
     return {
       start: start,
       step: runRecipeStep,
       handleEvent: handleEvent,
-      loadTranslations: loadTranslations
+      loadTranslations: loadTranslations,
+      getBlinks: getBlinks
     };
 }]);
 

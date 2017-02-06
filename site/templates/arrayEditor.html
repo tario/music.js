@@ -3,8 +3,9 @@
     <a href ng-click="setCurrentTab($index)">Instrument #{{$index}}</a>
     <div class="help-tooltip contextual-tooltip" translate="array_editor.tooltip.edit_item"></div>
   </li>
-  <li ng-show="data.subobjects.length < 16" class="show-contextual-tooltip"><a href ng-click="addObject()">+</a>
+  <li ng-show="data.subobjects.length < 16" class="show-contextual-tooltip"><a recipe-blink="'array_editor_add'" href ng-click="addObject(); recipe.raise('array_editor_add_click')">+</a>
     <div class="help-tooltip contextual-tooltip" translate="array_editor.tooltip.add_item"></div>
+    <recipe-tooltip rt-id="'array_editor_add'"></recipe-tooltip>
   </li>
 </ul>
 
@@ -19,7 +20,7 @@
     </div>
 
     <div class="row-fluid">
-      <div class="music-object-editor" music-stack init-file="object"></div>
+      <div class="music-object-editor" music-stack init-file="object" dropzone-extra-name="'array_stack_effect_dropzone'"></div>
     </div>
   </div>
 </div>
