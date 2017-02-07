@@ -1,5 +1,5 @@
 <div ng-repeat="parameter in parameters" class="generic-parameter show-contextual-tooltip">
-{{parameter.data.uiName || parameter.data.name}}: <input type="text" ng-model="parameter.value" ng-change="recipe.raise('generic_parameter_changed')"></input>
+{{parameter.data.uiName || parameter.data.name}}: <input type="text" ng-model="parameter.value" ng-model-options="{debounce: 1500}" ng-change="recipe.raise('generic_parameter_changed')"></input>
   <div ng-if="parameter.data.tooltip" class="help-tooltip contextual-tooltip">{{parameter.data.tooltip | translate}}</div>
 </div>
 

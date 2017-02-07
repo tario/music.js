@@ -1,0 +1,139 @@
+{
+  "lang": ["en", "es"],
+  "isolatedContext": "2",
+  "steps": [
+    {
+      "blink": ["menu_new"],
+      "tooltip": {
+        "menu_new": [
+          "Click \"File\" menu option",
+          "Haz click en la opcion \"Archivo\""
+        ]
+      },
+      "eventHandler": {"next_step_on": "menu_new_click"}
+    },
+    { 
+      "blink": ["menu_new_instrument"],
+      "tooltip": {
+        "menu_new_instrument": [
+          "Click \"New Instrument\" menu option to create a new melodic pattern",
+          "Haz click en la opcion \"Nuevo Instrumento\" para crear un nuevo patron melodico"
+        ]
+      },
+      "eventHandler": {"delay": 500, "inner": {"next_step_on": "menu_new_instrument_click"}}
+    },
+    { 
+      "blink": ["stack_effect_dropzone", "oscillator"],
+      "tooltip": {
+        "stack_effect_dropzone": [
+          "this is the effect dropzone",
+          "Esta es la seccion a donde se puede arrastrar el efecto"
+        ],
+        "object_index_panel": [
+          "Use the search box to find the *oscillator* and drag it to the drop zone",
+          "Usa la caja de busqueda para encontrar el *oscillator* y arrastralo a la seccion indicada"
+        ]
+      },
+      "eventHandler": {"delay": 500, "inner": {"next_step_on": "stack_effect_dropped"}}
+    },
+    { 
+      "blink": ["stack_placed_envelope"],
+      "tooltip": {
+        "instrument": [
+          "The oscillator comes togheter with an envelope effect. You can play with the values and test the result using the keyboard above.\nIt is not recommended to remove it.\nClick this message when you are ready to continue",
+          "El oscillator viene acompañado de una envoltura (envelope). Puedes jugar con los valores y probar el resultado usando el teclado arriba.\nNo se recomienda eliminarlo.\nHaz click en este mensaje cuando estes listo para continuar"
+        ]
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    { 
+      "blink": ["stack_effect_dropzone", "multi_instrument"],
+      "tooltip": {
+        "object_index_panel": [
+          "Use the search box, this time, to find the *multi_instrument* and drag it to the same drop zone used for the *oscillator*",
+          "Usa la caja de busqueda, esta vez, para encontrar el *multi_instrument* y arrastralo a la misma seccion que usaste para el *oscillator*"
+        ]
+      },
+      "eventHandler": {"delay": 500, "inner": {"next_step_on": "stack_effect_dropped"}}
+    },
+    { 
+      "blink": ["stack_placed_multi_instrument"],
+      "tooltip": {
+        "instrument": [
+          "We just added a new *multi_instrument* component in order to duplicate the instrument and generate the echo. By default, the multi_instrument will not do anyting unless you configure it\nClick this message to continue",
+          "Acabamos de agregar un nuevo componente *multi_instrument* (instrumento multiple) para duplicar el instrumento y generar el eco. Por defecto, el *multi_instrument* no va a hacer nada a menos que lo configures. \nHaz click en este mensaje para continuar"
+        ]
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    },
+    { 
+      "blink": ["stack_expand_multi_instrument"],
+      "tooltip": {
+        "stack_placed_multi_instrument": [
+          "Click the indicated square at the top-right corner of the *multi_instrument* component to expand the configuration panel",
+          "Haz click en el recuadro indicado en la esquina superior derecha del componente *multi_instrument* para desplegar el panel de configuracion"
+        ]
+      },
+      "eventHandler": {"next_step_on": "stack_expand_multi_instrument_click"}
+    },
+    { 
+      "blink": ["array_editor_add"],
+      "tooltip": {
+        "array_editor_add": [
+          "Click this '+' sign to add a new instrument branch",
+          "Haz click en este signo '+' para agregar una nueva rama instrumental"
+        ]
+      },
+      "eventHandler": {"next_step_on": "array_editor_add_click"}
+    },
+    {
+      "blink": ["array_stack_effect_dropzone", "note_delay"],
+      "tooltip": {
+        "object_index_panel": [
+          "Use the search box, this time, to find the *note_delay* and drag it to the indicated drop zone inside the *multi_instrument*",
+          "Usa la caja de busqueda, esta vez, para encontrar el *note_delay* y arrastralo a la seccion indicada adentro del *multi_instrument*"
+        ]
+      },
+      "eventHandler": {"delay": 500, "inner": {"next_step_on": "stack_effect_dropped"}}
+    },
+    { 
+      "blink": ["stack_placed_note_delay"],
+      "tooltip": {
+        "stack_placed_note_delay": [
+          "Change the delay to a value of your preference. Recommended: 0.4.\nRemember the second voice should be DELAYED in order to create the echo effect",
+          "Cambia la demora a algun valor de tu preferencia. Recomendado: 0.4.\nRecuerda que la segunda voz tiene que estar DEMORADA para generar el efecto de eco"
+        ]
+      },
+      "eventHandler": {"next_step_on": "note_delay_delay_changed"}
+    },
+    { 
+      "blink": ["array_stack_effect_dropzone", "gain"],
+      "tooltip": {
+        "object_index_panel": [
+          "Now, repeat the same to add a *gain* component and lower the volume of the instrument branch",
+          "Ahora, repite lo mismo para agregar un component *gain* y reducir el volumen de esa rama instrumental"
+        ]
+      },
+      "eventHandler": {"delay": 500, "inner": {"next_step_on": "stack_effect_dropped"}}
+    },
+    { 
+      "blink": ["stack_placed_gain"],
+      "tooltip": {
+        "stack_placed_gain": [
+          "Change the gain to a value of your preference. Recommended: 0.3.\nRemember the volumne of the second voice should be LOWER in order to create the echo effect",
+          "Cambia la ganancia a algun valor de tu preferencia. Recomendado: 0.3.\nRecuerda que el volumen de la segunda voz tiene que ser MENOR para generar el efecto de eco"
+        ]
+      },
+      "eventHandler": {"next_step_on": "generic_parameter_changed"}
+    },
+    { 
+      "tooltip": {
+        "stack_placed_gain": [
+          "Great! you just created a new instrument that you can use in your patterns and songs. Click this message to dismiss",
+          "¡Bien! Acabas de crear un nuevo instrumento que puedes usar en tus patrones melodicos y canciones. Haz click en este mensaje para terminar"
+        ]
+      },
+      "eventHandler": {"next_step_on": "tooltip_click"}
+    }
+  ]
+}
