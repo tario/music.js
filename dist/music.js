@@ -12936,7 +12936,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
       var tc = time_constant||0.1;
       if (resetd) tc = 0.0001;
-      osc.frequency.setTargetAtTime(frequency, null, tc);
+      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
 
       resetd = false;
     };
