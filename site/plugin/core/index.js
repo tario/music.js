@@ -706,7 +706,7 @@ module.export = function(m) {
   });
 
   m.type("adsr", {template: "adsr", description: "core.adsr.description", _default: {
-    attackTime: 0.4,
+    attackTime: 0.01,
     decayTime: 0.4,
     sustainLevel: 0.8,
     releaseTime: 0.4
@@ -931,7 +931,7 @@ module.export = function(m) {
   });
 
   m.type("envelope", {template: "envelope", description: "ADSR", _default: {
-    attackTime: 0.4,
+    attackTime: 0.01,
     decayTime: 0.4,
     sustainLevel: 0.8,
     releaseTime: 0.4
