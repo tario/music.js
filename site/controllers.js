@@ -648,9 +648,18 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   var music;
   
   $scope.changeLanguage = function (langKey) {
-    localStorage.setItem('lang', langKey);
+    localforage.setItem('lang', langKey);
     $translate.use(langKey);
   };
+
+  localforage.getItem("lang")
+    .then(function(currentLanguage) {
+      if (currentLanguage) $scope.changeLanguage(currentLanguage);
+
+      $timeout(function() {
+        $scope.langLoaded = true;
+      });
+    });
 
   $scope.welcome = function() {
     // show welcome modal

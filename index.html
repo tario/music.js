@@ -23,7 +23,7 @@
 </script>
 </head>
 <body ng-app="MusicShowCaseApp" class="musicapp">
-    <div ng-controller="MainController" class="main-window" ng-class="{'contextual-help-enabled': contextualHelp}">
+    <div ng-controller="MainController" ng-show="langLoaded" class="main-window" ng-class="{'contextual-help-enabled': contextualHelp}">
     
     <script type="text/ng-template" id="todoModal.html">
         <div class="modal-header musicapp">
