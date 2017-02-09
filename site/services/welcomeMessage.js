@@ -1,14 +1,17 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("WelcomeMessage", ['$cookies', function($cookies) {
+musicShowCaseApp.factory("WelcomeMessage", ['localforage', function(localforage) {
     var skip = function() {
-      return !!$cookies.get("welcome_skip");
+      return localforage.getItem("welcome_skip")
+        .then(function(result) {
+          return !!result;
+        });
     };
 
     var setSkip = function(value) {
       if (value) {
-        $cookies.put("welcome_skip", value);
+        return localforage.setItem("welcome_skip", value);
       } else {
-        $cookies.remove("welcome_skip");
+        return localforage.removeItem("welcome_skip");
       }
     };
 

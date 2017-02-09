@@ -1,18 +1,25 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.controller("welcomeModalCtrl", ["$scope", "$uibModalInstance", "Recipe", "WelcomeMessage", function($scope, $uibModalInstance, Recipe, WelcomeMessage) {
-  $scope.dontshowagain = WelcomeMessage.skip();
+musicShowCaseApp.controller("welcomeModalCtrl", ["$q", "$scope", "$uibModalInstance", "Recipe", "WelcomeMessage", "dontshowagain", function($q, $scope, $uibModalInstance, Recipe, WelcomeMessage, dontshowagain) {
+  $scope.dontshowagain = dontshowagain;
+
+  var skipUpdated = $q.when(null);
+  $scope.updateSkip = function() {
+    skipUpdated = WelcomeMessage.setSkip($scope.dontshowagain);
+  };
 
   $scope.dismiss = function() {
-    WelcomeMessage.setSkip($scope.dontshowagain);
-
-    $uibModalInstance.dismiss();
+    skipUpdated
+      .then(function() {
+        $uibModalInstance.dismiss();
+      });
 
   };
 
   $scope.tutorial = function() {
-    WelcomeMessage.setSkip($scope.dontshowagain);
-
-    $uibModalInstance.dismiss();
-    Recipe.start('intro');
+    skipUpdated
+      .then(function() {
+        $uibModalInstance.dismiss();
+        Recipe.start('intro');
+      });
   };
 }]);

@@ -644,7 +644,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage) {
+musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage) {
   var music;
   
   $scope.changeLanguage = function (langKey) {
@@ -656,7 +656,12 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
     // show welcome modal
     var modalIns = $uibModal.open({
       templateUrl: "site/templates/modal/welcome.html",
-      controller: "welcomeModalCtrl"
+      controller: "welcomeModalCtrl",
+      resolve: {
+        dontshowagain: ["WelcomeMessage", function(WelcomeMessage) {
+          return WelcomeMessage.skip();
+        }]
+      }
     });
   };
      
@@ -669,7 +674,10 @@ musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal"
   };
 
 
-  if (!WelcomeMessage.skip()) $scope.welcome();
+  WelcomeMessage.skip()
+    .then(function(skip) {
+      if (!skip) $scope.welcome();
+    });
 
   var currentObserver = FileRepository.search().observe(function(files) {
     $timeout(function() {

@@ -14,7 +14,7 @@
   </div>
   <div class="row-fluid highlight" ng-class="{inverse: dontshowagain}">
     <div class="span2">
-      <input type="checkbox" ng-model="dontshowagain" class="pull-right regular-checkbox" />
+      <input type="checkbox" ng-model="dontshowagain" class="pull-right regular-checkbox" ng-change="updateSkip()" />
     </div>
     <div class="span10" translate="welcome.nevershow">
       
