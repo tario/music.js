@@ -500,53 +500,6 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
   };
 }]);
 
-
-musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
-  return {
-    scope: {
-      /* Current pattern */
-      pattern: "=pattern",
-      /* Current track */
-      track: "=track",
-      /* Display params */
-      zoomLevel: "=zoomLevel",
-      beatWidth: "=beatWidth",
-      /* File params (common to all tracks) */
-      measure: "=measure",
-      measureCount: "=measureCount"
-    },
-    templateUrl: "site/templates/directives/patternTrackCompactView.html",
-    link: function(scope, element) {
-      scope.TICKS_PER_BEAT = TICKS_PER_BEAT;
-      var semitoneToNote = function(n) {
-        return [0,[0,1], 1, [1,2], 2, 3, [3,4], 4, [4,5], 5, [5,6], 6][n%12];
-      };
-      var notation7 = function(n) {
-        return ["C","D","E","F","G","A","B"][n % 7];
-      };
-      scope.noteName = function(n) {
-        var note7 = semitoneToNote(n);
-
-        if (Array.isArray(note7)) {
-          note7 = note7[0]
-          return notation7(note7)  + '#';
-        } else {
-          return notation7(note7);
-        }
-      };
-      
-      var updateGrid = function() {
-        scope.mainGridStyle = {
-          "background-size": (scope.measure*scope.beatWidth*scope.zoomLevel) + "px 240px",
-          "background-position": -scope.pattern.scrollLeft + "px"
-        };
-      };
-      scope.$watch("[measure, beatWidth, zoomLevel, pattern.scrollLeft]", updateGrid);
-
-    }
-  };
-}]);
-
 musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
   return {
     scope: {
@@ -658,6 +611,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
 
         newEvt.s = Math.floor(newEvt.s);
 
+        scope.$emit("patternSelectEvent", newEvt);
         scope.selected = newEvt;
 
         scope.recipe.raise('pattern_note_added');
@@ -683,6 +637,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
         document.activeElement.blur();
 
         scope.$emit("eventSelected", {evt: evt, track: scope.track});
+
+        scope.$emit("patternSelectEvent", evt);
         scope.selected = evt;
 
         scope.mouseMove = moveEvent(evt, event.offsetX);
@@ -705,6 +661,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
       scope.mouseDownResizeEvent = function(evt, event) {
         event.preventDefault();
 
+        scope.$emit("patternSelectEvent", evt);
         scope.selected = evt;
 
         scope.mouseMove = function(event) {
@@ -756,6 +713,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
       $(document).bind("keydown", keyDownHandler);
       scope.$on("$destroy", function() {
         $(document).unbind("keydown", keyDownHandler);
+      });
+
+      scope.$on("trackSelectEvent", function(evt, event) {
+        scope.selected = event;
       });
     }
   };

@@ -10,7 +10,7 @@
     <recipe-tooltip rt-id="'pattern_remove'"></recipe-tooltip>
     <div class="help-tooltip contextual-tooltip cap-right" translate="common.tooltip.remove_item"></div>
     {{'common.remove'|translate}}
- </button>
+  </button>
 </div>
 
 <div class="pattern-main-window">
@@ -82,8 +82,7 @@
         <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.remove_track"></div>
       </div>
       <div class="vertical-margin span10 show-contextual-tooltip">
-        <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedTrack === $index}"
-            ng-click="file.selectedTrack = $index">
+        <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedTrack === $index}">
           <pattern-track-compact-view
             measure-count="file.measureCount"
             measure="file.measure"

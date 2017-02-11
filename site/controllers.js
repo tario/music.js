@@ -505,7 +505,15 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     instSet.dispose();
   });
 
+  $scope.$on("enableTrack", function(evt, track) {
+    $scope.file.selectedTrack = $scope.file.tracks.indexOf(track);
+  });
 
+  $scope.$on("patternSelectEvent", function(evt, event) {
+    $timeout(function() {
+      $scope.$broadcast("trackSelectEvent", event);
+    });
+  });
 }]);
 
 musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {

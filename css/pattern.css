@@ -67,6 +67,10 @@ input.smallinput {
   background-color: #55ff55;
 }
 
+.track-compact-view-wrapper.selected .event-area .note.selected {
+  background-color: white;
+}
+
 .track-compact-view-wrapper .event-area .note {
   background-color: #00aa00;
 }
@@ -83,7 +87,7 @@ input.smallinput {
   overflow: visible;
 }
 
-.event-area-container .event-area .note:hover {
+.event-area .note:hover {
   cursor: all-scroll;
 }
 
