@@ -16,7 +16,7 @@
         class="note show-contextual-tooltip" ng-class="{selected: selected===evt}"
         ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT+'px', 'bottom': evt.n*20+'px'}"
         >
-        <div class="overlay">{{noteName(evt.n)}}</div>
+        <div class="overlay note-label">{{noteName(evt.n)}}</div>
         <div class="drag-event-section" ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-5)+'px', 'height':'20px'}"
           draggable="false"
           ng-mousedown="mouseDownEvent(evt, $event)"

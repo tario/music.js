@@ -538,12 +538,13 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
 
       scope.noteName = function(n) {
         var note7 = semitoneToNote(n);
+        var octave = Math.floor(n/12);
 
         if (Array.isArray(note7)) {
           note7 = note7[0]
-          return notation7(note7)  + '#';
+          return notation7(note7) + '#' + octave;
         } else {
-          return notation7(note7);
+          return notation7(note7) + octave;
         }
       };
 

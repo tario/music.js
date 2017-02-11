@@ -75,6 +75,10 @@ input.smallinput {
   background-color: #00aa00;
 }
 
+.event-area .note-label {
+  overflow: hidden;
+}
+
 .event-area .note {
   background-color: #55ff55;
   position: absolute;
