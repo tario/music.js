@@ -13122,6 +13122,12 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next, onDispose)
     value.apply(music.audio.currentTime, audioNode[paramName]);
   };
 
+  this.setParamTarget = function(paramName, target, timeConstant) {
+    var audioParam = audioNode[paramName];
+    audioParam.cancelScheduledValues(0.0);
+    audioParam.setTargetAtTime(target, music.audio.currentTime, timeConstant);
+  };
+
   this.record = function() {
     var rec = new Recorder(audioNode, {workerPath: "lib/recorder/recorderWorker.js"});
 

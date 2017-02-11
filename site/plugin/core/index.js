@@ -977,15 +977,11 @@ module.export = function(m) {
         };
 
         return MUSIC.playablePipeExtend({play: play})
-            .stopDelay(releaseTime*1000)
             .onStop(function() {
                 noteCount--;
                 // don't release if noteCount > 0
                 if (noteCount > 0) return;
-
-                var currentLevel = gainNode._destination.gain.value;
-                var releaseCurve = new MUSIC.Curve.Ramp(currentLevel, 0.0, samples).during(releaseTime)
-                gainNode.setParam('gain', releaseCurve);
+                gainNode.setParamTarget('gain', 0.0, releaseTime);
             });
       };
 
