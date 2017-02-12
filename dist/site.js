@@ -12750,7 +12750,9 @@ var enTranslations = {
       add_track: 'Click this button to add new empty tracks',
       note_event_p1: 'Note event. Drag from the right edge to change the duration or press delete key to remove',
       note_event_p2: 'Drag to change the value and/or starting time',
-      note_event_p3: 'Note event. Click to select and edit it'
+      note_event_p3: 'Note event. Click to select and edit it',
+      muted: 'Disable the track in order to silence it',
+      solo: 'Isolate the track so that it is the only one that plays. Can be more than one'
     }
   },
   song: {
@@ -12931,7 +12933,9 @@ var esTranslations = {
 
       note_event_p1: 'Evento de nota. Arrastra desde el borde derecho para cambiar su duracion, o presiona la tecla SUPR. para eliminarlo',
       note_event_p2: 'Arrastra para cambiar el valor o el tiempo de comienzo en la secuencia',
-      note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo'
+      note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo',
+      muted: 'Desactiva la pista haciendo que no se reproduzca',
+      solo: 'Aisla la pista de manera que sea la unica que se reproduzca. Pueden aislarse varias'
     }
   },
   song: {

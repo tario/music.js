@@ -157,7 +157,9 @@ var esTranslations = {
 
       note_event_p1: 'Evento de nota. Arrastra desde el borde derecho para cambiar su duracion, o presiona la tecla SUPR. para eliminarlo',
       note_event_p2: 'Arrastra para cambiar el valor o el tiempo de comienzo en la secuencia',
-      note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo'
+      note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo',
+      muted: 'Desactiva la pista haciendo que no se reproduzca',
+      solo: 'Aisla la pista de manera que sea la unica que se reproduzca. Pueden aislarse varias'
     }
   },
   song: {

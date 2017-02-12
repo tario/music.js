@@ -166,7 +166,9 @@ var enTranslations = {
       add_track: 'Click this button to add new empty tracks',
       note_event_p1: 'Note event. Drag from the right edge to change the duration or press delete key to remove',
       note_event_p2: 'Drag to change the value and/or starting time',
-      note_event_p3: 'Note event. Click to select and edit it'
+      note_event_p3: 'Note event. Click to select and edit it',
+      muted: 'Disable the track in order to silence it',
+      solo: 'Isolate the track so that it is the only one that plays. Can be more than one'
     }
   },
   song: {

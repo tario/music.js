@@ -190,3 +190,29 @@ input.responsive-input {
 .track-muted .note.selected {
   background-color: #AAAAAA !important;
 }
+
+.btn-remove-track:before {
+  content: none;
+}
+
+.btn-remove-track:after {
+  content: none;
+}
+
+.track-button-panel {
+  user-select: none;
+}
+
+.track-button-panel .inline {
+  display: inline;
+}
+
+.track-button-panel .track-flag {
+  cursor: pointer;
+  color: #555555;
+  margin-right: 10px;
+}
+
+.track-button-panel .track-flag.enabled {
+  color: #ff0000;
+}
