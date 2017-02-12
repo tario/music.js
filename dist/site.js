@@ -15784,6 +15784,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
 
     $scope.file.selectedTrack = $scope.file.selectedTrack % $scope.file.tracks.length;
 
+    $scope.updateMuted();
     $scope.fileChanged();
   };
 
@@ -15794,6 +15795,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     });
 
     $scope.file.selectedTrack = $scope.file.tracks.length - 1;
+    $scope.updateMuted();
     $scope.fileChanged();
   };
 
