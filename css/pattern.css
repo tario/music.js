@@ -210,7 +210,7 @@ input.responsive-input {
 .track-button-panel .track-flag {
   cursor: pointer;
   color: #555555;
-  margin-right: 10px;
+  margin-left: 10px;
 }
 
 .track-button-panel .track-flag.enabled {
