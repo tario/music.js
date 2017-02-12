@@ -405,9 +405,10 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, base, onStop) {
+    var mutedState = getMutedState(file);
     var playableArray = file.tracks.map(function(track, idx) {
       idx = base + idx;
-      if (!track.instrument || track.muted) return null;
+      if (!track.instrument || mutedState[idx]) return null;
 
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
     }).filter(function(track) {
@@ -435,10 +436,22 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     return measureCount;
   };
 
+  var getMutedState = function(file) {
+    var someSolo = file.tracks.some(function(t) {return t.solo; });
+    return file.tracks.map(function(t) {
+      if (someSolo) {
+        return t.muted || !t.solo;
+      } else {
+        return t.muted;
+      }
+    });
+  };
+
   return {
     noteseq: noteseq,
     patternCompose: patternCompose,
-    computeMeasureCount: computeMeasureCount
+    computeMeasureCount: computeMeasureCount,
+    getMutedState: getMutedState
   };
 }]);
 

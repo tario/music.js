@@ -12726,6 +12726,7 @@ var enTranslations = {
   },
   pattern: {
     track_muted: 'Muted',
+    track_solo: 'Solo',
     measure_beats: 'Measure beats',
     amount_beats: 'Amount of beats per measure',
     measure_count: 'Measure count',
@@ -12905,6 +12906,7 @@ var esTranslations = {
   },
   pattern: {
     track_muted: 'Apagado',
+    track_solo: 'Solo',
     measure_beats: 'Pulsos/compas',
     measure_count: 'Cant. de compases',
     zoom_level: 'Nivel de zoom',
@@ -14551,9 +14553,10 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, base, onStop) {
+    var mutedState = getMutedState(file);
     var playableArray = file.tracks.map(function(track, idx) {
       idx = base + idx;
-      if (!track.instrument || track.muted) return null;
+      if (!track.instrument || mutedState[idx]) return null;
 
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
     }).filter(function(track) {
@@ -14581,10 +14584,22 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     return measureCount;
   };
 
+  var getMutedState = function(file) {
+    var someSolo = file.tracks.some(function(t) {return t.solo; });
+    return file.tracks.map(function(t) {
+      if (someSolo) {
+        return t.muted || !t.solo;
+      } else {
+        return t.muted;
+      }
+    });
+  };
+
   return {
     noteseq: noteseq,
     patternCompose: patternCompose,
-    computeMeasureCount: computeMeasureCount
+    computeMeasureCount: computeMeasureCount,
+    getMutedState: getMutedState
   };
 }]);
 
@@ -15745,9 +15760,15 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
   $scope.selectedTrack = 0;
+  $scope.mutedState = [];
 
   var playing = null;
   var instSet = InstrumentSet();
+
+  $scope.updateMuted = function() {
+    $scope.mutedState = Pattern.getMutedState($scope.file);
+    $scope.fileChanged();
+  };
 
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
@@ -15834,16 +15855,20 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   };
 
   var lastPlaying;
+  var trackMuted = function(track) {
+    return $scope.mutedState[$scope.file.tracks.indexOf(track)];
+  };
+
   $scope.$on("eventChanged", function(evt, data) {
     computeMeasureCount();
 
-    if (data.oldevt.n !== data.evt.n) beep(instrument.get(data.track), data.evt.n);
+    if (data.oldevt.n !== data.evt.n && !trackMuted(data.track)) beep(instrument.get(data.track), data.evt.n);
 
     $scope.fileChanged();
   });
 
   $scope.$on("eventSelected", function(evt, data) {
-    beep(instrument.get(data.track), data.evt.n);
+    if (!trackMuted(data.track)) beep(instrument.get(data.track), data.evt.n);
   });
 
   $scope.$watch("file.measure", computeMeasureCount);
@@ -15874,7 +15899,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     FileRepository.updateFile(id, $scope.file);
     $scope.updateInstrument(trackNo)
       .then(function(musicObject) {
-        beep(musicObject, 36);
+        if (!$scope.mutedState[trackNo]) beep(musicObject, 36);
       });
   };
 
@@ -15884,6 +15909,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
         var outputFile = {};
         $scope.fileIndex = file.index;
         $scope.file = file.contents;
+        $scope.mutedState = Pattern.getMutedState($scope.file);
         if (!$scope.file.tracks) $scope.file.tracks=[{}];
 
         $scope.file.tracks.forEach(function(track, idx) {

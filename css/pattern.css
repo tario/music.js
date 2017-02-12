@@ -186,3 +186,7 @@ input.responsive-input {
 .track-muted .note {
   background-color: #555555 !important;
 }
+
+.track-muted .note.selected {
+  background-color: #AAAAAA !important;
+}

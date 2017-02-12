@@ -87,7 +87,7 @@ var patternPacker = objToArrayPacker([
   "selectedTrack",
   "scrollLeft",
   ["tracks", array(
-    objToArrayPacker([["muted", booleanPacker], "scroll",["events", flatten(array(objToArrayPacker(["n","s","l"])),3)], "instrument"])
+    objToArrayPacker([["muted", booleanPacker], ["solo", booleanPacker], "scroll",["events", flatten(array(objToArrayPacker(["n","s","l"])),3)], "instrument"])
   )]
 ]);
 
