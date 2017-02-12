@@ -15,6 +15,7 @@ body.modal-open .contextual-help-switch {
 }
 
 .lower-right-corner-menu {
+  z-index: 1;
   position: fixed;
   right: 0;
   bottom: 0;
