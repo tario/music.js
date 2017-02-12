@@ -238,10 +238,13 @@ DeserializerTest.test = function(serializerfunc, deserializerfunc, extras) {
   };
 
   var extraInstruments = [];
-  if (extras) extraInstruments = extras.instruments;
+  var extraPatterns = [];
+  if (extras) extraInstruments = extras.instruments||[];
+  if (extras) extraPatterns = extras.patterns||[];
+
 
   describe("patterns", function() {
-    patterns.forEach(generateTests('pattern'));
+    patterns.concat(extraPatterns).forEach(generateTests('pattern'));
   });
 
   describe("songs", function() {
