@@ -180,7 +180,7 @@ input.responsive-input {
   margin-top: 10px;
 }
 
-.track-muted .pattern-drop-lateral {
+.track-muted .enabled-instrument .pattern-drop-lateral {
   background-color: #555555;
 }
 .track-muted .note {

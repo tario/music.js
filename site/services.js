@@ -408,7 +408,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     var mutedState = getMutedState(file);
     var playableArray = file.tracks.map(function(track, idx) {
       idx = base + idx;
-      if (!track.instrument || mutedState[idx]) return null;
+      if (mutedState[idx]) return null;
 
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
     }).filter(function(track) {
@@ -442,7 +442,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       if (someSolo) {
         return t.muted || !t.solo;
       } else {
-        return t.muted;
+        return t.muted || !t.instrument;
       }
     });
   };

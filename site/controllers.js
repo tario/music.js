@@ -475,6 +475,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     FileRepository.updateFile(id, $scope.file);
     $scope.updateInstrument(trackNo)
       .then(function(musicObject) {
+        $scope.updateMuted();
         if (!$scope.mutedState[trackNo]) beep(musicObject, 36);
       });
   };
