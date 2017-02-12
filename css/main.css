@@ -55,6 +55,10 @@ body.modal-open .contextual-help-switch {
   margin-right: 14px;
 }
 
+.container.musicapp > div {
+  padding: 10px;
+}
+
 .code-error {
 	color: red;
 	white-space: pre;

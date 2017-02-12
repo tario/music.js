@@ -130,9 +130,6 @@
               <recipe-tooltip rt-id="'navbar'"></recipe-tooltip>
         </div>
         <div class="navbar-padding"></div>
-        <div class="container musicapp">
-            <div class="span4">
-            </div>
             <div class="span4 bs-docs-sidebar affix show-contextual-tooltip" recipe-blink="'object_index_panel'">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
                   <li class="show-contextual-tooltip"><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> 
@@ -161,7 +158,8 @@
                 </p></div>
             </div>
 
-            <div class="span9">
+        <div class="container musicapp row-fluid">
+            <div class="span8 pull-right">
                 <div ng-view></div>
             </div>
         </div>
