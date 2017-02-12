@@ -141,6 +141,7 @@ var enTranslations = {
     }
   },
   pattern: {
+    track_muted: 'Muted',
     measure_beats: 'Measure beats',
     amount_beats: 'Amount of beats per measure',
     measure_count: 'Measure count',

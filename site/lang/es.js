@@ -131,6 +131,7 @@ var esTranslations = {
     }
   },
   pattern: {
+    track_muted: 'Apagado',
     measure_beats: 'Pulsos/compas',
     measure_count: 'Cant. de compases',
     zoom_level: 'Nivel de zoom',

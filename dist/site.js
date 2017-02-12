@@ -12725,6 +12725,7 @@ var enTranslations = {
     }
   },
   pattern: {
+    track_muted: 'Muted',
     measure_beats: 'Measure beats',
     amount_beats: 'Amount of beats per measure',
     measure_count: 'Measure count',
@@ -12903,6 +12904,7 @@ var esTranslations = {
     }
   },
   pattern: {
+    track_muted: 'Apagado',
     measure_beats: 'Pulsos/compas',
     measure_count: 'Cant. de compases',
     zoom_level: 'Nivel de zoom',
@@ -13544,7 +13546,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
       scope.noteName = function(n) {
         var note7 = semitoneToNote(n);
         var octave = Math.floor(n/12);
-        
+
         if (Array.isArray(note7)) {
           note7 = note7[0]
           return notation7(note7) + '#' + octave;
@@ -13839,7 +13841,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
       scope.noteName = function(n) {
         var note7 = semitoneToNote(n);
         var octave = Math.floor(n/12);
-        
+
         if (Array.isArray(note7)) {
           note7 = note7[0]
           return notation7(note7) + '#' + octave;
@@ -14551,7 +14553,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   var patternCompose = function(file, instruments, base, onStop) {
     var playableArray = file.tracks.map(function(track, idx) {
       idx = base + idx;
-      if (!track.instrument) return null;
+      if (!track.instrument || track.muted) return null;
 
       return noteseq(file, track, onStop).makePlayable(instruments[track.instrument + '_' + idx]);
     }).filter(function(track) {

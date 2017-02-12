@@ -167,3 +167,22 @@ input.smallinput {
 input.responsive-input {
   width: 100%;
 }
+
+.track-muted-state {
+  color: #555555;
+}
+
+.track-muted-state.track-muted {
+  color: #ff0000;
+}
+
+.track-flags-panel {
+  margin-top: 10px;
+}
+
+.track-muted .pattern-drop-lateral {
+  background-color: #555555;
+}
+.track-muted .note {
+  background-color: #555555 !important;
+}

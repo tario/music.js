@@ -75,7 +75,7 @@
 
   <h1 translate="pattern.tracks"></h1>
 
-  <div ng-repeat="track in file.tracks track by $index">
+  <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': track.muted}">
     <div class="row-fluid">
       <div class="vertical-margin span2 show-contextual-tooltip">
         <button ng-click="removeTrack($index)" class="btn btn-primary" translate="common.remove"></button>
@@ -103,8 +103,16 @@
               <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
               <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
             </div>
+            <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.drop_zone"></div>
 
-             <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.drop_zone"></div>
+            <div class="row-fluid track-flags-panel">
+              <div class="span2">
+                <input type="checkbox" class="regular-checkbox" ng-change="fileChanged()" ng-model="track.muted" />
+              </div>
+              <div class="span10">
+                <div class="track-muted-state" ng-class="{'track-muted': track.muted}" translate="pattern.track_muted"></div>
+              </div>
+            </div>
         </div>  
 
         <div class="span10 show-contextual-tooltip">
