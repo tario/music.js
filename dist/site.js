@@ -14791,13 +14791,21 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       });
   };
 
+
+  var s0 = MUSIC.Formats.JSONSerializer;
+  var s1 = MUSIC.Formats.CachedSerializer(MUSIC.Formats.PackedJSONSerializer);
+  var s2 = MUSIC.Formats.HuffmanSerializerWrapper(s0);
+  var s3 = MUSIC.Formats.HuffmanSerializerWrapper(s1);
+  var s4 = MUSIC.Formats.CachedSerializer(MUSIC.Formats.PackedJSONSerializerB);
+  var s5 = MUSIC.Formats.HuffmanSerializerWrapper(s4);
+
   MUSIC.Formats.MultiSerializer.setSerializers([
-    {serializer: MUSIC.Formats.JSONSerializer, base: '0'},
-    {serializer: MUSIC.Formats.PackedJSONSerializer, base: '1'},
-    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.JSONSerializer), base: '2'},
-    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.PackedJSONSerializer), base: '3'},
-    {serializer: MUSIC.Formats.PackedJSONSerializerB, base: '4'},
-    {serializer: MUSIC.Formats.HuffmanSerializerWrapper(MUSIC.Formats.PackedJSONSerializerB), base: '5'}
+    {serializer: s0, base: '0'},
+    {serializer: s1, base: '1'},
+    {serializer: s2, base: '2'},
+    {serializer: s3, base: '3'},
+    {serializer: s4, base: '4'},
+    {serializer: s5, base: '5'}
   ]);
 
   var storageIndex = Index("index");
