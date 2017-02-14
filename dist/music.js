@@ -13587,6 +13587,12 @@ var instrumentExtend = function(obj) {
     });
   };
 
+  if (!obj.eventPreprocessor) {
+    obj.eventPreprocessor = function(evt) {
+      return evt;
+    };
+  }
+
   return obj;
 };
 
@@ -15327,12 +15333,13 @@ var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
 "envelope","transpose","scale","gain","echo","lowpass",
 "highpass","bandpass","lowshelf","highshelf","peaking",
 "notch","allpass","reverb","noise","pink_noise","red_noise",
-"arpeggiator","stack", "multi_instrument", "monophoner", "polyphoner"];
+"arpeggiator","stack", "multi_instrument", "monophoner", "polyphoner", "note_padding"];
 
 var monophonerPacker = objToArrayPacker([
   ["force_note_cut", booleanPacker]
 ]);
 var polyphonerPacker = objToArrayPacker(["maxChannels"]);
+var notePaddingPacker = objToArrayPacker(["time"]);
 
 var instrumentPacker = objToArrayPacker([
   ["type", substitution(typeNames)],
@@ -15364,7 +15371,8 @@ var instrumentPacker = objToArrayPacker([
       stack: stackPacker,
       multi_instrument: multiInstrumentPacker,
       monophoner: monophonerPacker,
-      polyphoner: polyphonerPacker
+      polyphoner: polyphonerPacker,
+      note_padding: notePaddingPacker
     }
   )],
 ]);

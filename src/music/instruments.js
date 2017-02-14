@@ -55,6 +55,12 @@ var instrumentExtend = function(obj) {
     });
   };
 
+  if (!obj.eventPreprocessor) {
+    obj.eventPreprocessor = function(evt) {
+      return evt;
+    };
+  }
+
   return obj;
 };
 

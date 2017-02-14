@@ -98,6 +98,12 @@ module.export = function(m) {
     red_noise: {
       description: 'Red noise generator'
     },
+    note_padding: {
+      description: 'Note Padding',
+      tooltip: {
+        time: 'Silence padding duration after note stops'
+      }
+    },
     arpeggiator: {
       description: 'Note Arpeggiator',
       notes: 'Notes',
@@ -266,6 +272,12 @@ module.export = function(m) {
     },
     red_noise: {
       description: 'Generador de ruido rojo'
+    },
+    note_padding: {
+      description: 'Relleno de nota',
+      tooltip: {
+        time: 'Relleno con silencio despues de que la nota se detiene'
+      }
     },
     arpeggiator: {
       description: 'Arpegiador de Notas',
@@ -930,6 +942,44 @@ module.export = function(m) {
     return ret;
   });
 
+
+  m.type("note_padding",
+      {
+          template: "generic_wrapper_editor", 
+          parameters: [
+            {name: "time", value: 0, tooltip: 'core.note_padding.tooltip.time'}
+          ], 
+          description: "core.note_padding.description"
+      },  function(data, subobjects) {
+        if (!subobjects) return;
+        var wrapped = subobjects[0];
+        if (!wrapped) return;
+        var time;
+
+        var eventPreprocessor = function(event) {
+          var l = event[2];
+          l = l - time * 1000;
+          if (l <0 ) l = 0;
+
+          return [event[0], event[1], l];
+        };
+
+        var ret = function(music) {
+          var ret = wrapped(music);
+          ret.eventPreprocessor = eventPreprocessor;
+          return ret;
+        };
+
+        ret.update = function(data) {
+          time = parseFloat(data.time);
+          return this;
+        };
+
+        ret.update(data);
+
+        return ret;
+      });
+
   m.type("envelope", {template: "envelope", description: "ADSR", _default: {
     attackTime: 0.01,
     decayTime: 0.4,
@@ -944,6 +994,13 @@ module.export = function(m) {
     var attackCurve, decayCurve, releaseCurve;
     var resetOnCut = false;
 
+    var eventPreprocessor = function(event) {
+      var l = event[2];
+      l = l - releaseTime * 1000;
+      if (l <0 ) l = 0;
+
+      return [event[0], event[1], l];
+    };
 
     var ret = function(music) {
       var baseNode = music.sfxBase();
@@ -986,7 +1043,8 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
-        note: note
+        note: note,
+        eventPreprocessor: eventPreprocessor
       });
     };
 
