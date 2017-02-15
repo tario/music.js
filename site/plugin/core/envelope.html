@@ -15,6 +15,6 @@
 
 <div class="generic-parameter show-contextual-tooltip">
 {{'core.adsr.reset_on_cut' | translate}}
-<input type="checkbox" class="regular-checkbox" ng-model="file.data.reset_on_cut" />
+<input ng-init="file.data.reset_on_cut = file.data.reset_on_cut || false" type="checkbox" class="regular-checkbox" ng-model="file.data.reset_on_cut" />
 <div class="help-tooltip contextual-tooltip" translate="core.adsr.tooltip.reset_on_cut"></div>
 </div>

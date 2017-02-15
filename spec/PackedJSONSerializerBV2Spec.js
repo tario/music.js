@@ -9,6 +9,39 @@ describe("PackedJSONSerializerBV2", function() {
   instruments.push(obj1);
   instruments.push(obj2);
 
+  instruments.push({
+    "type": "stack",
+    "data": {
+      "array": [
+        {
+          "type": "envelope",
+          "data": {
+            "attackTime": 0.01,
+            "decayTime": "0.42",
+            "sustainLevel": 0.8,
+            "releaseTime": 0.4
+          }
+        },
+        {
+          "type": "oscillator",
+          "data": {
+            "modulation": {
+              "detune": {
+                "type": "stack",
+                "data": {
+                  "array": []
+                }
+              }
+            },
+            "oscillatorType": "square",
+            "time_constant": 0.005
+          }
+        }
+      ]
+    }
+  });
+
+
   DeserializerTest.test(SerializerOracle.PackedJSONBV2.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
     instruments: instruments
   });

@@ -984,7 +984,8 @@ module.export = function(m) {
     attackTime: 0.01,
     decayTime: 0.4,
     sustainLevel: 0.8,
-    releaseTime: 0.4
+    releaseTime: 0.4,
+    reset_on_cut: false
   }},  function(data, subobjects) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
