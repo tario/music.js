@@ -106,7 +106,7 @@ describe("CachedSerializer", function() {
 
     describe("when called .serialize again with different input", function() {
       beforeEach(function() {
-        this.fakeAnotherInput = {};
+        this.fakeAnotherInput = {a:3};
         this.currentOutput = this.serializer.serialize(this.fakeType, this.fakeAnotherInput);
       });
 
@@ -130,6 +130,34 @@ describe("CachedSerializer", function() {
         });
       });
     });
+
+    describe("when called .serialize again with different input (same object)", function() {
+      beforeEach(function() {
+        this.fakeInput.i = 2;
+        this.currentOutput = this.serializer.serialize(this.fakeType, this.fakeInput);
+      });
+
+      it("should call inner serializer twice", function() {
+        expect(this.innerSerializer.serialize.calledTwice).to.be(true);
+      });
+
+      it("should return same inner output", function() {
+        expect(this.currentOutput).to.be(this.fakeInnerSerializerOutput);
+      });
+
+      describe("first argument to inner.serialize", function() {
+        it("should be same type", function() {
+          expect(this.innerSerializer.serialize.args[1][0]).to.be(this.fakeType);
+        });
+      });
+
+      describe("second argument to inner.serialize", function() {
+        it("should be same input", function() {
+          expect(this.innerSerializer.serialize.args[1][1]).to.be(this.fakeInput);
+        });
+      });
+    });
+
   });
 
 });

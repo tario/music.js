@@ -1,4 +1,4 @@
-describe("PackedJSONSerializerB", function() {
+describe("PackedJSONSerializerBV2", function() {
   var instruments = [];
 
   var obj1 = {"type": "note_padding", "data": {"time": 0.3}};
