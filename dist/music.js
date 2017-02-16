@@ -13640,6 +13640,16 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
   };
 
   instrumentExtend(this);
+
+  this.eventPreprocessor = function(event) {
+    var instrument = instrumentArray[0]
+    if (!instrument) {
+      instrument = innerFactory();
+      instrumentArray[0] = instrument;
+    }
+
+    return (instrument.eventPreprocessor||function(x){return x; })(event);
+  };
 };
 
 MUSIC.MonoNoteInstrument = function(inner) {
@@ -13745,6 +13755,19 @@ MUSIC.MultiInstrument = function(instrumentArray) {
   };
 
   instrumentExtend(this);
+
+  this.eventPreprocessor = function(event) {
+    var array = instrumentArray();
+    if (!array.length) return event;
+
+    var events = array.map(function(instrument) {
+      return instrument.eventPreprocessor(event);
+    });
+
+    return events.reduce(function(acc, e1) {
+      return acc[2] > e1[2] ? acc : e1;
+    });
+  };
 };
 
 var NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
