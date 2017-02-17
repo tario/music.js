@@ -45,11 +45,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
 
   $scope.indexMap = {};
-  var music = new MUSIC.Context();
-
   var id = $routeParams.id;
 
-  var instSet = InstrumentSet(music);
+  var instSet = InstrumentSet();
 
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
@@ -516,6 +514,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
     $(document).unbind("keydown", keyDownHandler);
+
     instSet.dispose();
   });
 

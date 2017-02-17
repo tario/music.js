@@ -139,21 +139,29 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         ___cache[channel] = new WeakMap(); 
       }
 
-      if (base) base.prune();
+      bases.forEach(function(base) {
+        base.prune();
+      });
+
+      bases = [];
 
       return $q.when(null);
     };
 
-    var base;
-
+    var bases = [];
     var create = function(descriptor, music) {
       return createParametric(descriptor)
         .then(function(fcn) {
           if (!fcn) return;
 
-          if (music) return fcn(music);
+          if (music) {
+            var base= music.sfxBase();
+            bases.push(base);
+            return fcn(base);
+          }
           return MusicContext.runFcn(function(music) {
-            base = music.sfxBase();
+            var base = music.sfxBase();
+            bases.push(base);
             return fcn(base);
           });
         });
@@ -461,6 +469,9 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
 musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
   return function(music) {
+
+    var musicObjectFactory;
+
     var set = {};
     var created = [];
     var load = function(id, trackNo) {
@@ -469,7 +480,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       if (!set[_id]) {
         set[_id] = FileRepository.getFile(id)
           .then(function(file) {
-            return MusicObjectFactory().create(file.contents, music);
+            if (!musicObjectFactory) musicObjectFactory = MusicObjectFactory();
+            return musicObjectFactory.create(file.contents, music);
           })
           .then(function(obj){
             created.push(obj);
@@ -486,6 +498,10 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
           instrument.dispose();
         }
       });
+
+      if (musicObjectFactory) {
+        return musicObjectFactory.destroyAll();
+      }
     };
 
     return {
