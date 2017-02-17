@@ -1059,6 +1059,7 @@ module.export = function(m) {
       decayTime = parseFloat(_def(data.decayTime,0.4));
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
+      if (releaseTime <= 0.0) releaseTime = 0.00001;
       resetOnCut = data.reset_on_cut;
 
       decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);

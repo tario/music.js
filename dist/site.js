@@ -14295,6 +14295,8 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         base.prune();
       });
 
+      bases = [];
+
       return $q.when(null);
     };
 
