@@ -13513,7 +13513,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
   };
 }]);
 
-musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
+musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "Pattern", function($timeout, TICKS_PER_BEAT, Pattern) {
   return {
     scope: {
       /* Current pattern */
@@ -13580,13 +13580,42 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
         scope.mouseMove = function() {};
       };
 
+      var max = function(c1, c2) {
+        return c1 > c2 ? c1 : c2;
+      };
+
+      var findClipS = function(self, s) {
+        var previousEvents = scope.track.events.filter(function(evt) {
+          return evt.s + evt.l <= s && evt !== self;
+        });
+
+        if (previousEvents.length === 0) return 0;
+
+        var clips = previousEvents.map(function(evt) {
+          return evt.s + evt.l;
+        });
+
+        return clips.reduce(max);
+      };
+
       var moveEvent = function(evt, offsetX) {
         return function(event) {
+          var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
+          var exactPosition = Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
+          exactPosition = Math.floor(exactPosition);
+          var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+
           if (!event.target.classList.contains("event-list")) return;
-          evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-          evt.s = Math.floor(evt.s);
+
+          if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
+            evt.s = clipS;
+          } else {
+            evt.s = Math.floor((event.offsetX - offsetX) / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+            evt.s = Math.floor(evt.s);
+          }
+
           if (evt.s < 0) evt.s = 0;
 
           var oldN = evt.n;
@@ -13599,9 +13628,20 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
 
       var moveEventFromEvent = function(evt, offsetX) {
         return function(dragevt, event) {
+          var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
-          evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-          evt.s = Math.floor(evt.s);
+
+          var exactPosition = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
+          exactPosition = Math.floor(exactPosition);
+          var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+
+          if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
+            evt.s = clipS;
+          } else {
+            evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+            evt.s = Math.floor(evt.s);
+          }
+
           evt.n = dragevt.n;
           if (evt.s < 0) evt.s = 0;
           scope.$emit("trackChanged", scope.track);
@@ -13646,6 +13686,52 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
         scope.mouseUp = cancelMove;
       };
 
+      var eventSplit = function(evt, ticks) {
+        var originalL = evt.l;
+        evt.l = ticks;
+        var newEvt = {
+          n: evt.n,
+          s: evt.s + evt.l,
+          l: originalL - ticks
+        };
+        scope.recipe.raise('pattern_note_added');
+        scope.track.events.push(newEvt);
+      }
+
+      var eventLeftSplit = function(evt) {
+        if (evt.l % 3 === 0) {
+          eventSplit(evt, evt.l / 3);
+        } else {
+          eventCenterSplit(evt);
+        }
+      };
+
+      var eventRightSplit = function(evt) {
+        if (evt.l % 3 === 0) {
+          eventSplit(evt, evt.l * 2 / 3);
+        } else {
+          eventCenterSplit(evt);
+        }
+      };
+
+      var eventCenterSplit = function(evt) {
+        if (evt.l % 2 === 0) {
+          eventSplit(evt, evt.l / 2);
+        }
+      };
+
+      scope.mouseDblClickEvent = function(evt, event) {
+        var elementWidth = $(event.target)[0].clientWidth+5;
+
+        if (event.offsetX < elementWidth/3) {
+          eventLeftSplit(evt);
+        } else if (event.offsetX > elementWidth*2/3) {
+          eventRightSplit(evt);
+        } else {
+          eventCenterSplit(evt);
+        }
+      };
+
       scope.mouseDownEvent = function(evt, event) {
         event.preventDefault();
         document.activeElement.blur();
@@ -13680,29 +13766,48 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", fu
 
         scope.mouseMove = function(event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
+          var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
+          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
 
           if (!event.target.classList.contains("event-list")) return;
-          var refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-          evt.l = refs - evt.s;
-          evt.l = Math.floor(evt.l);
 
-          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+          var exactL = Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) - evt.s;
 
-          defaultL = evt.l;
+          if (Math.abs(exactL - clipL - clipDistance) < clipDistance) {
+            evt.l = clipL;
+          } else {
+            var refs = Math.floor(event.offsetX / scope.beatWidth / 2) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+            evt.l = refs - evt.s;
+            evt.l = Math.floor(evt.l);
+            if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+
+            defaultL = evt.l;
+          }
+  
           scope.$emit("trackChanged", scope.track);
           scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
         };
 
         scope.mouseMoveEvent = function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
+          var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
+          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
 
-          var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-          evt.l = refs - evt.s;
-          evt.l = Math.floor(evt.l);
+          var exactL = dragevt.s + 
+            Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) -
+            evt.s;
 
-          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+          if (Math.abs(exactL - clipL - clipDistance) < clipDistance) {
+            evt.l = clipL;
+          } else {
+            var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth / 2) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+            evt.l = refs - evt.s;
+            evt.l = Math.floor(evt.l);
 
-          defaultL = evt.l;
+            if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+
+            defaultL = evt.l;
+          }
 
           scope.$emit("trackChanged", scope.track);
           scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
@@ -13819,7 +13924,7 @@ musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($pars
 }]);
 
 
-musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", function($timeout, TICKS_PER_BEAT, Recipe) {
+musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", "Pattern", function($timeout, TICKS_PER_BEAT, Recipe, Pattern) {
   return {
     scope: {
       /* Current pattern */
@@ -13887,13 +13992,25 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
       scope.mouseDownEvent = function(evt, event) {
         var moved = false;
+
         var moveEvent = function(evt, offsetX) {
           return function(event) {
+            var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
             if (!event.target.classList.contains("track-compact-view")) return;
-            evt.s = Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-            evt.s = Math.floor(evt.s);
+
+            var exactPosition = Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
+            exactPosition = Math.floor(exactPosition);
+            var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+
+            if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
+              evt.s = clipS;
+            } else {
+              evt.s = Math.floor((event.offsetX - offsetX) / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+              evt.s = Math.floor(evt.s);
+            }
+
             if (evt.s < 0) evt.s = 0;
             if (evt.s !== oldevt.s) moved = true;
 
@@ -13904,9 +14021,20 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
         var moveEventFromEvent = function(evt, offsetX) {
           return function(dragevt, event) {
+            var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
-            evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-            evt.s = Math.floor(evt.s);
+
+            var exactPosition = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
+            exactPosition = Math.floor(exactPosition);
+            var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+
+            if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
+              evt.s = clipS;
+            } else {
+              evt.s = dragevt.s + Math.floor((event.offsetX - offsetX) / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+              evt.s = Math.floor(evt.s);
+            }
+
             if (evt.s < 0) evt.s = 0;
             if (evt.s !== oldevt.s) moved = true;
 
@@ -13951,33 +14079,53 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
         scope.mouseMove = function(event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
+          var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
+          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
 
           if (!event.target.classList.contains("track-compact-view")) return;
-          var refs = Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-          evt.l = refs - evt.s;
-          evt.l = Math.floor(evt.l);
+
+          var exactL = Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) - evt.s;
+
+          if (Math.abs(exactL - clipL - clipDistance) < clipDistance) {
+            evt.l = clipL;
+          } else {
+            var refs = Math.floor(event.offsetX / scope.beatWidth / 2) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+            evt.l = refs - evt.s;
+            evt.l = Math.floor(evt.l);
+
+            if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+            defaultL = evt.l;
+          }
 
           if (evt.l !== oldevt.l) {
             moved = true;
           }
 
-          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
-
-          defaultL = evt.l;
           scope.$emit("trackChanged", scope.track);
           scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
         };
 
         scope.mouseMoveEvent = function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
+          var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
+          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
 
-          var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT;
-          evt.l = refs - evt.s;
-          evt.l = Math.floor(evt.l);
+          var exactL = dragevt.s + 
+            Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) -
+            evt.s;
 
-          if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+          if (Math.abs(exactL - clipL - clipDistance) < clipDistance) {
+            evt.l = clipL;
+          } else {
+            var refs = dragevt.s + Math.floor(event.offsetX / scope.beatWidth / 2) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+            evt.l = refs - evt.s;
+            evt.l = Math.floor(evt.l);
 
-          defaultL = evt.l;
+            if (evt.l<TICKS_PER_BEAT/scope.zoomLevel) evt.l=TICKS_PER_BEAT/scope.zoomLevel;
+
+            defaultL = evt.l;
+          }
+
           if (evt.l !== oldevt.l) {
             moved = true;
           }          
@@ -14610,11 +14758,51 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     });
   };
 
+  var findClipS = function(track, self, s) {
+    var nearest = function(c1, c2) {
+      return Math.abs(self.s - c1) < Math.abs(self.s - c2) ? c1 : c2;
+    };
+
+    var allEvents = track.events.filter(function(evt) {
+      return evt !== self;
+    });
+
+    if (allEvents.length === 0) return 0;
+
+    var clips = allEvents.map(function(evt) {
+      return evt.s + evt.l;
+    }).concat(allEvents.map(function(evt) {
+      return evt.s - self.l;
+    }));
+
+    return clips.reduce(nearest);
+  };       
+
+  var findClipL = function(track, self, s) {
+    var nearest = function(c1, c2) {
+      return Math.abs(self.s + self.l - c1) < Math.abs(self.s + self.l - c2) ? c1 : c2;
+    };
+
+    var allEvents = track.events.filter(function(evt) {
+      return evt !== self;
+    });
+
+    if (allEvents.length === 0) return 0;
+    var clips = allEvents.map(function(evt) {
+      return evt.s;
+    });
+
+    return clips.reduce(nearest) - self.s;
+  }; 
+
+
   return {
     noteseq: noteseq,
     patternCompose: patternCompose,
     computeMeasureCount: computeMeasureCount,
-    getMutedState: getMutedState
+    getMutedState: getMutedState,
+    findClipL: findClipL,
+    findClipS: findClipS
   };
 }]);
 

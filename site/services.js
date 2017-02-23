@@ -458,11 +458,51 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     });
   };
 
+  var findClipS = function(track, self, s) {
+    var nearest = function(c1, c2) {
+      return Math.abs(self.s - c1) < Math.abs(self.s - c2) ? c1 : c2;
+    };
+
+    var allEvents = track.events.filter(function(evt) {
+      return evt !== self;
+    });
+
+    if (allEvents.length === 0) return 0;
+
+    var clips = allEvents.map(function(evt) {
+      return evt.s + evt.l;
+    }).concat(allEvents.map(function(evt) {
+      return evt.s - self.l;
+    }));
+
+    return clips.reduce(nearest);
+  };       
+
+  var findClipL = function(track, self, s) {
+    var nearest = function(c1, c2) {
+      return Math.abs(self.s + self.l - c1) < Math.abs(self.s + self.l - c2) ? c1 : c2;
+    };
+
+    var allEvents = track.events.filter(function(evt) {
+      return evt !== self;
+    });
+
+    if (allEvents.length === 0) return 0;
+    var clips = allEvents.map(function(evt) {
+      return evt.s;
+    });
+
+    return clips.reduce(nearest) - self.s;
+  }; 
+
+
   return {
     noteseq: noteseq,
     patternCompose: patternCompose,
     computeMeasureCount: computeMeasureCount,
-    getMutedState: getMutedState
+    getMutedState: getMutedState,
+    findClipL: findClipL,
+    findClipS: findClipS
   };
 }]);
 
