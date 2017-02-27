@@ -12670,6 +12670,7 @@ var enTranslations = {
     HELP: 'HELP',
     more: 'more',
     remove: 'Remove',
+    'export': 'Export',
     reset: 'Reset',
     play: 'Play',
     stop: 'Stop',
@@ -12862,6 +12863,7 @@ var esTranslations = {
     HELP: 'AYUDA',
     more: 'mas',
     remove: 'Elimi.',
+    'export': 'Exportar',
     reset: 'Fabr.',
     play: 'Reprod.',
     stop: 'Detener',
@@ -15103,13 +15105,13 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               if (serialized) {
                 var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
                 return {
-                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, updated: true},
+                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type, updated: true},
                   contents: contents
                 };
               } else {
                 if (localFile) {
                   return {
-                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn},
+                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type},
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
                 };
@@ -15257,6 +15259,76 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
       return ret;
     };
 });
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRepository) {
+  var exportContents = function(name, contents) {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+
+    var blob = new Blob([JSON.stringify(contents, null,"  ")]);
+    var url  = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = name + ".json";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  var getRelatedIds = function(file) {
+    if (file.index.type === 'pattern') {
+      var related = {};
+      file.contents.tracks.forEach(function(track) {
+        related[track.instrument] = 1;
+      });
+      return Object.keys(related);
+    } else if (file.index.type === 'song') {
+      var related = {};
+      file.contents.tracks.forEach(function(track) {
+        track.blocks.forEach(function(block) {
+          related[block.id] = 1;
+        });
+      });
+      return Object.keys(related);
+    }
+
+    return [];
+  };
+
+  var getFileWithRelated = function(id) {
+    var ret = [];
+    return FileRepository.getFile(id)
+      .then(function(file) {
+        if (!file) return [];
+
+        ret.push({
+          name: file.index.name,
+          id: file.index.id,
+          contents: file.contents
+        });
+
+        return $q.all(getRelatedIds(file).map(getFileWithRelated))
+          .then(function(relarray) {
+            relarray.forEach(function(rel) {
+              ret = ret.concat(rel);
+            });
+            return ret;
+          });
+      });
+  };
+
+  var exportFile = function(name, id) {
+    return getFileWithRelated(id)
+      .then(function(array) {
+        exportContents(name, array);
+      });
+  };
+
+  return {
+    exportContents: exportContents,
+    exportFile: exportFile
+  };
+}]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
@@ -15680,13 +15752,17 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
-    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "Export", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
+    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, Export, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
 
   $scope.indexMap = {};
   var id = $routeParams.id;
 
   var instSet = InstrumentSet();
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
 
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
@@ -15963,10 +16039,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 
-  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 
+  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export) {
   var id = $routeParams.id;
-  
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
+
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
@@ -16168,8 +16248,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   });
 }]);
 
-musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Export", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Export) {
   var id = $routeParams.id;
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
 
   $scope.removeItem = function() {
     destroyAll();
@@ -16244,19 +16328,6 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
       });
   }, 50);
   $scope.$watch('file', fileChanged, true);
-
-  $scope.export = function() {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-
-    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
-    var url  = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = $scope.fileIndex.name + ".json";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);

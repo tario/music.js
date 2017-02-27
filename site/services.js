@@ -803,13 +803,13 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               if (serialized) {
                 var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
                 return {
-                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, updated: true},
+                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type, updated: true},
                   contents: contents
                 };
               } else {
                 if (localFile) {
                   return {
-                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn},
+                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type},
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
                 };

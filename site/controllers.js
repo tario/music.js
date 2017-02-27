@@ -41,13 +41,17 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
-    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "Export", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
+    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, Export, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
 
   $scope.indexMap = {};
   var id = $routeParams.id;
 
   var instSet = InstrumentSet();
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
 
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
@@ -324,10 +328,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 
-  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 
+  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export) {
   var id = $routeParams.id;
-  
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
+
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
@@ -529,8 +537,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   });
 }]);
 
-musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Export", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Export) {
   var id = $routeParams.id;
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
 
   $scope.removeItem = function() {
     destroyAll();
@@ -605,19 +617,6 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
       });
   }, 50);
   $scope.$watch('file', fileChanged, true);
-
-  $scope.export = function() {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-
-    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
-    var url  = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = $scope.fileIndex.name + ".json";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
 
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);

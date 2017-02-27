@@ -86,6 +86,7 @@ var esTranslations = {
     HELP: 'AYUDA',
     more: 'mas',
     remove: 'Elimi.',
+    'export': 'Exportar',
     reset: 'Fabr.',
     play: 'Reprod.',
     stop: 'Detener',
