@@ -12,7 +12,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       };
 
       var observer = FileRepository.observeRecycled(function() {
-        FileRepository.searchRecycled()
+        FileRepository.searchRecycled(null, {limit: 0})
           .then(function(result) {
             $timeout(function() {
               scope.files = result.results.slice(-4).reverse();

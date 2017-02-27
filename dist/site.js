@@ -14265,7 +14265,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       };
 
       var observer = FileRepository.observeRecycled(function() {
-        FileRepository.searchRecycled()
+        FileRepository.searchRecycled(null, {limit: 0})
           .then(function(result) {
             $timeout(function() {
               scope.files = result.results.slice(-4).reverse();
@@ -15131,7 +15131,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         }
       };
     },
-    searchRecycled: function(keyword) {
+    searchRecycled: function(keyword, options) {
+      options = options || {};
+      var limit = typeof options.limit === 'undefined' ? 10 : options.limit;
       var hasKeyword = function() { return true };
       if (keyword && keyword.length > 0) {
         keyword = keyword.toLowerCase();
@@ -15141,7 +15143,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       return recycleIndex.getAll().then(function(index) {
         var filtered = (index||[]).filter(hasKeyword);
         return {
-          results: filtered.slice(0,10),
+          results: limit ? filtered.slice(0,limit) : filtered,
           total: filtered.length
         };
       });
