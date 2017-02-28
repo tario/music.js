@@ -664,10 +664,54 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage) {
+musicShowCaseApp.controller("MainController", 
+  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
+  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
   
-  $scope.fileImport = function() {
+  $scope.fileImport = function(files) {
+    var readTextFile = function(file) {
+      return $q(function(resolve, reject) {
+        var fileReader = new FileReader();
+        fileReader.onload = function(e) {
+          resolve(e.target.result);
+        };
+
+        fileReader.onerror = function(err) {
+          reject(err);
+        };
+
+        fileReader.readAsText(file);
+      });
+    };
+
+    var importFile = function(file) {
+      return function() {
+        return readTextFile(file)
+          .then(function(json) {
+            return Export.importFile(json);
+          });
+      };
+    };
+
+    var p = null;
+    for (var i=0; i<files.length; i++) {
+      if (p) {
+        var fileReader = new FileReader;
+        fileReader.readAsText(files[i])
+        Export.importFile.bind(Export, files[i])
+        p = p.then(importFile(files[i]));
+      } else {
+        p = importFile(files[i])();
+      }
+    }
+
+    if (p) {
+      p.then(function(index) {
+        document.location = "#/";
+        document.location = "#/editor/"+index.type+"/"+index.id;
+      });
+    }
   };
 
   $scope.changeLanguage = function (langKey) {

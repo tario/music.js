@@ -13928,6 +13928,21 @@ musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($pars
 }]);
 
 
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("ngfLoader", ["$parse", function($parse) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var ngfLoaderGetter = $parse(attrs.ngfLoader);
+
+      $(element).on('change', function(e) {
+        ngfLoaderGetter(scope, {'$files': e.target.files});
+        $(element).val("");
+      })
+    }
+  };
+}]);
+
 musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", "Pattern", function($timeout, TICKS_PER_BEAT, Recipe, Pattern) {
   return {
     scope: {
@@ -14269,10 +14284,10 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       };
 
       var observer = FileRepository.observeRecycled(function() {
-        FileRepository.searchRecycled(null, {limit: 0})
+        FileRepository.searchRecycled(null, {limit: 10})
           .then(function(result) {
             $timeout(function() {
-              scope.files = result.results.slice(-4).reverse();
+              scope.files = result.results.slice(0, 4);
             });
           });
       });
@@ -15145,7 +15160,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       }
 
       return recycleIndex.getAll().then(function(index) {
-        var filtered = (index||[]).filter(hasKeyword);
+        var filtered = (index||[]).filter(hasKeyword).reverse();
         return {
           results: limit ? filtered.slice(0,limit) : filtered,
           total: filtered.length
@@ -15305,6 +15320,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
 
         ret.push({
           name: file.index.name,
+          type: file.index.type,
           id: file.index.id,
           contents: file.contents
         });
@@ -15326,9 +15342,42 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       });
   };
 
+  var importFile = function(contents) {
+    var importItem = function(item) {
+      return function() {
+        return FileRepository.destroyFile(item.id)
+          .then(function() {
+            return FileRepository.createFile({
+              id: item.id,
+              contents: item.contents,
+              type: item.type,
+              name: item.name
+            });
+          });
+      };
+    };
+
+    var p = null;
+    var parsed = JSON.parse(contents);
+    var firstItem = parsed[0];
+
+    parsed.forEach(function(item) {
+      if (p) {
+        p = p.then(importItem(item));
+      } else {
+        p = importItem(item)();
+      }
+    });
+
+    return p.then(function() {
+      return {id: firstItem.id, type: firstItem.type};
+    });
+  };
+
   return {
     exportContents: exportContents,
-    exportFile: exportFile
+    exportFile: exportFile,
+    importFile: importFile
   };
 }]);
 
@@ -16377,10 +16426,54 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage) {
+musicShowCaseApp.controller("MainController", 
+  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
+  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
   
-  $scope.fileImport = function() {
+  $scope.fileImport = function(files) {
+    var readTextFile = function(file) {
+      return $q(function(resolve, reject) {
+        var fileReader = new FileReader();
+        fileReader.onload = function(e) {
+          resolve(e.target.result);
+        };
+
+        fileReader.onerror = function(err) {
+          reject(err);
+        };
+
+        fileReader.readAsText(file);
+      });
+    };
+
+    var importFile = function(file) {
+      return function() {
+        return readTextFile(file)
+          .then(function(json) {
+            return Export.importFile(json);
+          });
+      };
+    };
+
+    var p = null;
+    for (var i=0; i<files.length; i++) {
+      if (p) {
+        var fileReader = new FileReader;
+        fileReader.readAsText(files[i])
+        Export.importFile.bind(Export, files[i])
+        p = p.then(importFile(files[i]));
+      } else {
+        p = importFile(files[i])();
+      }
+    }
+
+    if (p) {
+      p.then(function(index) {
+        document.location = "#/";
+        document.location = "#/editor/"+index.type+"/"+index.id;
+      });
+    }
   };
 
   $scope.changeLanguage = function (langKey) {
@@ -16540,10 +16633,10 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
   }
 
   var immediateUpdateSearch = function() {
-    FileRepository.searchRecycled($scope.searchKeyword)
+    FileRepository.searchRecycled($scope.searchKeyword, {limit: 10})
       .then(function(results) {
         $timeout(function() {
-          $scope.files = results.results.reverse();
+          $scope.files = results.results;
           $scope.filesTotal = results.total;
         });
       })

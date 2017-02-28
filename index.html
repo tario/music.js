@@ -81,12 +81,13 @@
                               <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
                             </li>
                             <div class="choose-file-import-container">
-                              <input recipe-blink="'menu_file_import'" type="file" class="file" name="attachement" ng-model="importedFile" />
+                              <input recipe-blink="'menu_file_import'" type="file" class="file" name="attachement" ngf-loader="fileImport($files)" />
+                                <!--onchange="alert('hello'); angular.element(this).scope().fileNameChanged()"/>-->
                             </div>
-                            <li class="import" recipe-blink="'menu_file_import'"><a href="" ng-click="fileImport(); recipe.raise('new_file_import')" translate="menu.file_import"></a>
+                            <li class="import" recipe-blink="'menu_file_import'"><a href="" translate="menu.file_import"></a>
                               <recipe-tooltip rt-id="'menu_file_import'"></recipe-tooltip>
                             </li>
-                            
+
                             <li class="divider"></li>
                             <li><a href="" ng-click="openRecycleBin(); recipe.raise('menu_open_recycle')" translate="menu.recycle_bin"></a><li>
                          </ul>

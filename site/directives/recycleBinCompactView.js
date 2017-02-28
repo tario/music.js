@@ -12,10 +12,10 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       };
 
       var observer = FileRepository.observeRecycled(function() {
-        FileRepository.searchRecycled(null, {limit: 0})
+        FileRepository.searchRecycled(null, {limit: 10})
           .then(function(result) {
             $timeout(function() {
-              scope.files = result.results.slice(-4).reverse();
+              scope.files = result.results.slice(0, 4);
             });
           });
       });

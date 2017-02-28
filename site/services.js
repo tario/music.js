@@ -841,7 +841,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       }
 
       return recycleIndex.getAll().then(function(index) {
-        var filtered = (index||[]).filter(hasKeyword);
+        var filtered = (index||[]).filter(hasKeyword).reverse();
         return {
           results: limit ? filtered.slice(0,limit) : filtered,
           total: filtered.length

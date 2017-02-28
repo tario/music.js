@@ -41,6 +41,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
 
         ret.push({
           name: file.index.name,
+          type: file.index.type,
           id: file.index.id,
           contents: file.contents
         });
@@ -62,8 +63,41 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       });
   };
 
+  var importFile = function(contents) {
+    var importItem = function(item) {
+      return function() {
+        return FileRepository.destroyFile(item.id)
+          .then(function() {
+            return FileRepository.createFile({
+              id: item.id,
+              contents: item.contents,
+              type: item.type,
+              name: item.name
+            });
+          });
+      };
+    };
+
+    var p = null;
+    var parsed = JSON.parse(contents);
+    var firstItem = parsed[0];
+
+    parsed.forEach(function(item) {
+      if (p) {
+        p = p.then(importItem(item));
+      } else {
+        p = importItem(item)();
+      }
+    });
+
+    return p.then(function() {
+      return {id: firstItem.id, type: firstItem.type};
+    });
+  };
+
   return {
     exportContents: exportContents,
-    exportFile: exportFile
+    exportFile: exportFile,
+    importFile: importFile
   };
 }]);

@@ -13,10 +13,10 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
   }
 
   var immediateUpdateSearch = function() {
-    FileRepository.searchRecycled($scope.searchKeyword)
+    FileRepository.searchRecycled($scope.searchKeyword, {limit: 10})
       .then(function(results) {
         $timeout(function() {
-          $scope.files = results.results.reverse();
+          $scope.files = results.results;
           $scope.filesTotal = results.total;
         });
       })
