@@ -500,3 +500,33 @@ body.modal-open .main-window h6 {
 .btn.editor-btn {
   margin-left: 10px;
 }
+
+.choose-file-import-container {
+  cursor: pointer;
+  /*height: 0;*/
+  z-index: 1;
+  position: relative;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.choose-file-import-container input {
+  opacity: 1;
+  cursor: pointer;
+  width: 0;
+}
+
+.choose-file-import-container:hover ~ li.import a {
+  color: #aaaaaa;
+  background-color: black;
+}
+
+li.import ~ li.divider {
+  margin-top: -0.8em;
+}
+
+li.import {
+  transform: translateY(-1em);
+  cursor: pointer;
+ /* transform: translateY(-1em);*/
+}

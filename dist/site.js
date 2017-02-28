@@ -12611,6 +12611,7 @@ var enTranslations = {
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',
     new_song: 'New Song',
+    file_import: 'Import...',
     tools: 'Tools',
     tools_preferences: 'Preferences',
     help_view_help: 'View Help',
@@ -12804,6 +12805,7 @@ var esTranslations = {
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',
     new_song: 'Nueva Cancion',
+    file_import: 'Importar...',
     tools: 'Herramientas',
     tools_preferences: 'Preferencias',
     help_view_help: 'Ver Pagina de Ayuda',
@@ -16378,6 +16380,9 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage) {
   var music;
   
+  $scope.fileImport = function() {
+  };
+
   $scope.changeLanguage = function (langKey) {
     localforage.setItem('lang', langKey);
     $translate.use(langKey);

@@ -667,6 +667,9 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage) {
   var music;
   
+  $scope.fileImport = function() {
+  };
+
   $scope.changeLanguage = function (langKey) {
     localforage.setItem('lang', langKey);
     $translate.use(langKey);
