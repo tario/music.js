@@ -650,6 +650,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       })
   };
 
+  var purgeFromRecycleBin = function(id) {
+    return recycleIndex.removeEntry(id);
+  };
 
   var restoreFromRecycleBin = function(id) {
     return recycleIndex.getEntry(id)
@@ -759,6 +762,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       return updateFile(id, JSON.parse(nextVer), {noHistory: true});
     },
+    purgeFromRecycleBin: purgeFromRecycleBin,
     moveToRecycleBin: moveToRecycleBin,
     restoreFromRecycleBin: restoreFromRecycleBin,
     destroyFile: destroyFile,
@@ -865,8 +869,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               createdFilesIndex,
               TypeService.getTypes(keyword)
             ]).then(function(result) {
+              var notInRes = function(item) {
+                return true;
+//                return ids.indexOf(item.id) === -1;
+              };
+
               var res = result[0]||[];
-              if (result[1]) res = res.concat(result[1]);
+              var ids = res.map(function(x){ return x.id; });
+              if (result[1]) res = res.concat(result[1].filter(notInRes));
               res = res.concat(result[2].map(convertType));
               res = res.filter(hasKeyword);
 

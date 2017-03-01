@@ -66,14 +66,26 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   var importFile = function(contents) {
     var importItem = function(item) {
       return function() {
-        return FileRepository.destroyFile(item.id)
-          .then(function() {
-            return FileRepository.createFile({
-              id: item.id,
-              contents: item.contents,
-              type: item.type,
-              name: item.name
-            });
+        return FileRepository.getIndex(item.id)
+          .then(function(index) {
+            if (index) {
+              return FileRepository.updateFile(item.id, item.contents)
+                .then(function() {
+                  return FileRepository.updateIndex(item.id, {
+                    name: item.name
+                  });
+                });
+            } else {
+              return FileRepository.purgeFromRecycleBin(item.id)
+                .then(function() {
+                  return FileRepository.createFile({
+                    id: item.id,
+                    contents: item.contents,
+                    type: item.type,
+                    name: item.name
+                  });
+                });
+            }
           });
       };
     };
