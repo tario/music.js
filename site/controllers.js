@@ -710,6 +710,20 @@ musicShowCaseApp.controller("MainController",
       p.then(function(index) {
         document.location = "#/";
         document.location = "#/editor/"+index.type+"/"+index.id;
+      }).catch(function(err) {
+        var modalIns = $uibModal.open({
+          templateUrl: "site/templates/modal/error.html",
+          controller: "errorModalCtrl",
+          windowClass: 'error',
+          resolve: {
+            text: function() {
+              return $translate('common.loader_error');
+            },
+            title: function() {
+              return $translate('common.error_title');
+            }
+          }
+        });
       });
     }
   };

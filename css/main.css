@@ -526,3 +526,10 @@ li.import ~ li.divider {
 li.import {
   transform: translateY(-1em);
 }
+
+.modal.error .modal-dialog {
+  border-color: #ff0000;
+}
+.modal.error .modal-header {
+  background-color: #ff0000;
+}

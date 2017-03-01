@@ -83,6 +83,8 @@ var esTranslations = {
     yes: 'Si',
     no: 'No',
     dismiss: 'Cerrar',
+    loader_error: 'Error al intentar cargar el archivo',
+    error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
     more: 'mas',

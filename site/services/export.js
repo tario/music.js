@@ -78,21 +78,24 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       };
     };
 
-    var p = null;
-    var parsed = JSON.parse(contents);
-    var firstItem = parsed[0];
+    return $q.when()
+      .then(function() {
+        var p = null;
+        var parsed = JSON.parse(contents);
+        var firstItem = parsed[0];
 
-    parsed.forEach(function(item) {
-      if (p) {
-        p = p.then(importItem(item));
-      } else {
-        p = importItem(item)();
-      }
-    });
+        parsed.forEach(function(item) {
+          if (p) {
+            p = p.then(importItem(item));
+          } else {
+            p = importItem(item)();
+          }
+        });
 
-    return p.then(function() {
-      return {id: firstItem.id, type: firstItem.type};
-    });
+        return p.then(function() {
+          return {id: firstItem.id, type: firstItem.type};
+        });
+      });
   };
 
   return {

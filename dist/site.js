@@ -12668,6 +12668,8 @@ var enTranslations = {
     no: 'No',
     dismiss: 'Dismiss',
     language: 'Language:',
+    loader_error: 'Error when trying to load file',
+    error_title: 'Error',
     HELP: 'HELP',
     more: 'more',
     remove: 'Remove',
@@ -12861,6 +12863,8 @@ var esTranslations = {
     yes: 'Si',
     no: 'No',
     dismiss: 'Cerrar',
+    loader_error: 'Error al intentar cargar el archivo',
+    error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
     more: 'mas',
@@ -15391,21 +15395,24 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       };
     };
 
-    var p = null;
-    var parsed = JSON.parse(contents);
-    var firstItem = parsed[0];
+    return $q.when()
+      .then(function() {
+        var p = null;
+        var parsed = JSON.parse(contents);
+        var firstItem = parsed[0];
 
-    parsed.forEach(function(item) {
-      if (p) {
-        p = p.then(importItem(item));
-      } else {
-        p = importItem(item)();
-      }
-    });
+        parsed.forEach(function(item) {
+          if (p) {
+            p = p.then(importItem(item));
+          } else {
+            p = importItem(item)();
+          }
+        });
 
-    return p.then(function() {
-      return {id: firstItem.id, type: firstItem.type};
-    });
+        return p.then(function() {
+          return {id: firstItem.id, type: firstItem.type};
+        });
+      });
   };
 
   return {
@@ -16506,6 +16513,20 @@ musicShowCaseApp.controller("MainController",
       p.then(function(index) {
         document.location = "#/";
         document.location = "#/editor/"+index.type+"/"+index.id;
+      }).catch(function(err) {
+        var modalIns = $uibModal.open({
+          templateUrl: "site/templates/modal/error.html",
+          controller: "errorModalCtrl",
+          windowClass: 'error',
+          resolve: {
+            text: function() {
+              return $translate('common.loader_error');
+            },
+            title: function() {
+              return $translate('common.error_title');
+            }
+          }
+        });
       });
     }
   };
@@ -16639,6 +16660,16 @@ musicShowCaseApp.controller("MainController",
 }]);
 
 musicShowCaseApp.controller("todoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
+  $scope.dismiss = function() {
+    $uibModalInstance.dismiss();
+  };
+}]);
+
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.controller("errorModalCtrl", ["$scope", "$uibModalInstance", "text", "title", function($scope, $uibModalInstance, text, title) {
+  $scope.text = text;
+  $scope.title = title;
   $scope.dismiss = function() {
     $uibModalInstance.dismiss();
   };

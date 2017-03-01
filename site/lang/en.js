@@ -84,6 +84,8 @@ var enTranslations = {
     no: 'No',
     dismiss: 'Dismiss',
     language: 'Language:',
+    loader_error: 'Error when trying to load file',
+    error_title: 'Error',
     HELP: 'HELP',
     more: 'more',
     remove: 'Remove',
