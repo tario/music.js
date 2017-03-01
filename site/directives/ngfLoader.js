@@ -4,11 +4,15 @@ musicShowCaseApp.directive("ngfLoader", ["$parse", function($parse) {
     restrict: 'A',
     link: function(scope, element, attrs) {
       var ngfLoaderGetter = $parse(attrs.ngfLoader);
-
-      $(element).on('change', function(e) {
+      var onChange =  function(e) {
         ngfLoaderGetter(scope, {'$files': e.target.files});
         $(element).val("");
-      })
+      };
+
+      $(element).on('change', onChange);
+      scope.$on('$destroy', function() {
+        $(element).off('change', onChange);
+      });
     }
   };
 }]);

@@ -13929,16 +13929,50 @@ musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($pars
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.directive("ngfDrop", ["$parse", function($parse) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var ngfDropGetter = $parse(attrs.ngfDrop);
+
+      var allowDrag = function(e) {
+        e.dataTransfer.dropEffect = 'copy';
+        e.preventDefault();
+      }
+
+      var onDrop = function(e) {
+        ngfDropGetter(scope, {'$files': e.dataTransfer.files});
+        e.preventDefault();
+      };
+
+      window.addEventListener('dragenter', allowDrag);
+      window.addEventListener('dragover', allowDrag)
+      window.addEventListener('drop', onDrop);
+
+      scope.$on("$destroy", function() {
+        window.removeEventListener('dragenter', allowDrag);
+        window.removeEventListener('dragover', allowDrag);
+        window.removeEventListener('drop', onDrop);
+      });
+    }
+  };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.directive("ngfLoader", ["$parse", function($parse) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
       var ngfLoaderGetter = $parse(attrs.ngfLoader);
-
-      $(element).on('change', function(e) {
+      var onChange =  function(e) {
         ngfLoaderGetter(scope, {'$files': e.target.files});
         $(element).val("");
-      })
+      };
+
+      $(element).on('change', onChange);
+      scope.$on('$destroy', function() {
+        $(element).off('change', onChange);
+      });
     }
   };
 }]);
@@ -16430,7 +16464,7 @@ musicShowCaseApp.controller("MainController",
   ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
   function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
-  
+
   $scope.fileImport = function(files) {
     var readTextFile = function(file) {
       return $q(function(resolve, reject) {
