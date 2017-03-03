@@ -81,10 +81,9 @@
                               <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
                             </li>
                             <div class="choose-file-import-container">
-                              <input recipe-blink="'menu_file_import'" type="file" class="file" name="attachement" ngf-loader="fileImport($files)" />
-                                <!--onchange="alert('hello'); angular.element(this).scope().fileNameChanged()"/>-->
+                              <input recipe-blink="'menu_file_import'" type="file" class="file" name="attachement" accept="json" ngf-loader="fileImport($files)" />
                             </div>
-                            <li class="import" recipe-blink="'menu_file_import'"><a href="" translate="menu.file_import"></a>
+                            <li recipe-blink="'menu_file_import'"><a href="" translate="menu.file_import" ng-click="fileInputClick()"></a>
                               <recipe-tooltip rt-id="'menu_file_import'"></recipe-tooltip>
                             </li>
 

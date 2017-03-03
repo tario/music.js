@@ -502,34 +502,5 @@ body.modal-open .main-window h6 {
 }
 
 .choose-file-import-container {
-  /*height: 0;*/
-  z-index: 1;
-  position: relative;
-  opacity: 0;
-  cursor: pointer;
-  width: 1px;
-}
-
-.choose-file-import-container input {
-  opacity: 1;
-}
-
-.choose-file-import-container:hover ~ li.import a {
-  color: #aaaaaa;
-  background-color: black;
-}
-
-li.import ~ li.divider {
-  margin-top: -0.8em;
-}
-
-li.import {
-  transform: translateY(-1em);
-}
-
-.modal.error .modal-dialog {
-  border-color: #ff0000;
-}
-.modal.error .modal-header {
-  background-color: #ff0000;
+  display: none;
 }

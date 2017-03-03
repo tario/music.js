@@ -669,6 +669,12 @@ musicShowCaseApp.controller("MainController",
   function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
 
+  $scope.fileInputClick = function() {
+    $timeout(function() {
+      $(".choose-file-import-container input[type=file]").click();
+    });
+  };
+
   $scope.fileImport = function(files) {
     var readTextFile = function(file) {
       return $q(function(resolve, reject) {
