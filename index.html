@@ -23,7 +23,7 @@
 </script>
 </head>
 <body ng-app="MusicShowCaseApp" class="musicapp">
-    <div ng-controller="MainController" ng-show="langLoaded" class="main-window" ng-class="{'contextual-help-enabled': contextualHelp}">
+    <div ng-controller="MainController" ng-show="langLoaded" class="main-window" ng-class="{'contextual-help-enabled': contextualHelp}" ngf-drop="fileImport($files)">
     
     <script type="text/ng-template" id="todoModal.html">
         <div class="modal-header musicapp">
@@ -80,6 +80,13 @@
                             <li recipe-blink="'menu_new_song'"><a href="" ng-click="newSong(); recipe.raise('menu_new_song_click')" translate="menu.new_song"></a>
                               <recipe-tooltip rt-id="'menu_new_song'"></recipe-tooltip>
                             </li>
+                            <div class="choose-file-import-container">
+                              <input recipe-blink="'menu_file_import'" type="file" class="file" name="attachement" accept="json" ngf-loader="fileImport($files)" />
+                            </div>
+                            <li recipe-blink="'menu_file_import'"><a href="" translate="menu.file_import" ng-click="fileInputClick()"></a>
+                              <recipe-tooltip rt-id="'menu_file_import'"></recipe-tooltip>
+                            </li>
+
                             <li class="divider"></li>
                             <li><a href="" ng-click="openRecycleBin(); recipe.raise('menu_open_recycle')" translate="menu.recycle_bin"></a><li>
                          </ul>

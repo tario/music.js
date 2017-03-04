@@ -496,3 +496,11 @@ body.modal-open .main-window h6 {
 .width50px {
   width: 50px;
 }
+
+.btn.editor-btn {
+  margin-left: 10px;
+}
+
+.choose-file-import-container {
+  display: none;
+}

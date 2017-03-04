@@ -4,10 +4,16 @@
     <div class="help-tooltip contextual-tooltip" translate="editor.tooltip.type_here_instrument"></div>
   </div>
 
-  <button class="btn btn-primary pull-right show-contextual-tooltip" ng-click="removeItem()">
+  <button class="btn btn-primary pull-right show-contextual-tooltip editor-btn" ng-click="removeItem()">
     <recipe-tooltip rt-id="'instrument_remove'"></recipe-tooltip>
     <div class="help-tooltip contextual-tooltip cap-right" translate="common.tooltip.remove_item"></div>
     {{(fileIndex.builtIn ? 'common.reset':'common.remove') | translate}}
+  </button>
+
+  <button class="btn btn-primary pull-right show-contextual-tooltip editor-btn" ng-click="exportItem()">
+    <recipe-tooltip rt-id="'instrument_export'"></recipe-tooltip>
+    <div class="help-tooltip contextual-tooltip cap-right" translate="common.tooltip.remove_item"></div>
+    {{'common.export' | translate}}
   </button>
 
 </div>

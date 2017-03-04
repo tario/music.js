@@ -41,13 +41,17 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
-musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
-    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
+musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "Export", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
+    function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, Export, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
 
   $scope.indexMap = {};
   var id = $routeParams.id;
 
   var instSet = InstrumentSet();
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
 
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
@@ -324,10 +328,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 
-  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet) {
+musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 
+  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export) {
   var id = $routeParams.id;
-  
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
+
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
@@ -529,8 +537,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   });
 }]);
 
-musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory) {
+musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Export", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Export) {
   var id = $routeParams.id;
+
+  $scope.exportItem = function() {
+    Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
+  };
 
   $scope.removeItem = function() {
     destroyAll();
@@ -606,19 +618,6 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
   }, 50);
   $scope.$watch('file', fileChanged, true);
 
-  $scope.export = function() {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-
-    var blob = new Blob([JSON.stringify($scope.file,"\n","  ")]);
-    var url  = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = $scope.fileIndex.name + ".json";
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   $scope.indexChanged = function() {
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
@@ -665,9 +664,76 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
 }]);
 
-musicShowCaseApp.controller("MainController", ["$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", function($scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage) {
+musicShowCaseApp.controller("MainController", 
+  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
+  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
-  
+
+  $scope.fileInputClick = function() {
+    $timeout(function() {
+      $(".choose-file-import-container input[type=file]").click();
+    });
+  };
+
+  $scope.fileImport = function(files) {
+    var readTextFile = function(file) {
+      return $q(function(resolve, reject) {
+        var fileReader = new FileReader();
+        fileReader.onload = function(e) {
+          resolve(e.target.result);
+        };
+
+        fileReader.onerror = function(err) {
+          reject(err);
+        };
+
+        fileReader.readAsText(file);
+      });
+    };
+
+    var importFile = function(file) {
+      return function() {
+        return readTextFile(file)
+          .then(function(json) {
+            return Export.importFile(json);
+          });
+      };
+    };
+
+    var p = null;
+    for (var i=0; i<files.length; i++) {
+      if (p) {
+        var fileReader = new FileReader;
+        fileReader.readAsText(files[i])
+        Export.importFile.bind(Export, files[i])
+        p = p.then(importFile(files[i]));
+      } else {
+        p = importFile(files[i])();
+      }
+    }
+
+    if (p) {
+      p.then(function(index) {
+        document.location = "#/";
+        document.location = "#/editor/"+index.type+"/"+index.id;
+      }).catch(function(err) {
+        var modalIns = $uibModal.open({
+          templateUrl: "site/templates/modal/error.html",
+          controller: "errorModalCtrl",
+          windowClass: 'error',
+          resolve: {
+            text: function() {
+              return $translate('common.loader_error');
+            },
+            title: function() {
+              return $translate('common.error_title');
+            }
+          }
+        });
+      });
+    }
+  };
+
   $scope.changeLanguage = function (langKey) {
     localforage.setItem('lang', langKey);
     $translate.use(langKey);
