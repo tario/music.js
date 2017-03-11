@@ -564,7 +564,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
   };
 
   var lastObj;
-  var musicObjectFactory = MusicObjectFactory();
+  var musicObjectFactory = MusicObjectFactory({monitor: true});
 
   var destroyAll = function() {
     ($scope.instruments||[]).forEach(function(instrument) {

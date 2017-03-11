@@ -550,7 +550,7 @@ module.export = function(m) {
     file.array.push({type: data.name, data: {}});
   };
 
-  m.type("signal_monitor", {template: 'monitor', description: 'Signal Monitor'}, function(data, subobjects, components) {
+  m.type("signal_monitor", {template: 'monitor', description: 'Signal Monitor', monitor: true}, function(data, subobjects, components) {
     if (!subobjects) return;
     var wrapped = subobjects[0];
     var currentObserver;
