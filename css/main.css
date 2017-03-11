@@ -504,3 +504,7 @@ body.modal-open .main-window h6 {
 .choose-file-import-container {
   display: none;
 }
+
+.signal-monitor-tooltip {
+  transform: translateX(100px);
+}

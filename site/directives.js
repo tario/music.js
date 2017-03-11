@@ -1,6 +1,6 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", function($timeout, $http, TypeService, Recipe) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", "MusicObjectFactory", function($timeout, $http, TypeService, Recipe, MusicObjectFactory) {
   return {
     scope: {
       file: "=file"
@@ -9,6 +9,13 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
     link: function(scope, element, attrs) {
       var file;
       var types = TypeService.getTypes();
+
+      scope.output = {};
+      MusicObjectFactory().registerOutput(scope.file, function(output) {
+        $timeout(function() {
+          scope.output = output;
+        });
+      });
 
       scope.parameters = [];
       scope.recipe = Recipe.start;

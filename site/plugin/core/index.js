@@ -1,6 +1,16 @@
 module.export = function(m) {
 
   m.lang("en", {
+    signal_monitor: {
+      tooltip: {
+        signal_value: "Current value of the signal",
+        upper_bound: "Upper bound of the signal during the measurement cycle",
+        lower_bound: "Lower bound of the signal during the measurement cycle"
+      },
+      signal_value: 'Signal value',
+      upper_bound: 'Upper bound',
+      lower_bound: 'Lower bound'
+    },
     sample_rate_reduction: {
       tooltip: {
         factor: 'Rate reduction factor'
@@ -176,6 +186,16 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    signal_monitor: {
+      tooltip: {
+        signal_value: "Valor actual de la señal",
+        upper_bound: "Cota superior de la señal durante el ciclo de medida",
+        lower_bound: "Cota superior de la señal durante el ciclo de medida"
+      },
+      signal_value: 'Valor de la señal',
+      upper_bound: 'Cota superior',
+      lower_bound: 'Cota inferior'
+    },
     sample_rate_reduction: {
       tooltip: {
         factor: 'Factor de reduccion de frecuencia de muestreo'
@@ -529,6 +549,60 @@ module.export = function(m) {
 
     file.array.push({type: data.name, data: {}});
   };
+
+  m.type("signal_monitor", {template: 'monitor', description: 'Signal Monitor'}, function(data, subobjects, components) {
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    var currentObserver;
+
+    if (!wrapped) return;
+
+    var phase = 0;
+    var upperBound = -Infinity;
+    var lowerBound = Infinity;
+    var s, s2, s3;
+    var monitorFcn = function(t) {
+      if (currentObserver) {
+        phase += 0.00005;
+
+        if (t > upperBound) upperBound = t;
+        if (t < lowerBound) lowerBound = t;
+
+        if (phase > 1) {
+          phase--;
+          s = t < 0 ? -1 : 1;
+          s2 = upperBound < 0 ? -1 : 1;
+          s3 = lowerBound < 0 ? -1 : 1;
+          currentObserver({
+            sign: s,
+            signalValue: t*s,
+            upperBoundSign: s2,
+            upperBoundValue: upperBound*s2,
+            lowerBoundSign: s3,
+            lowerBoundValue: lowerBound*s3
+          });
+
+          upperBound = -Infinity;
+          lowerBound = Infinity;
+        }
+      }
+      return t;
+    };
+
+    var ret = function(music) {
+      return wrapped(music.formula(monitorFcn));
+    };
+
+    ret.update = function() {
+      return this;
+    };
+
+    ret.dataLink = function(obs) {
+      currentObserver = obs;
+    };
+
+    return ret;
+  });
 
   var defaultModWrapper = function(x){return x;};
   m.type("oscillator", {template: "oscillator", description: "Oscillator", stackAppend: oscillatorStackAppend,

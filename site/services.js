@@ -1,6 +1,8 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
+  var fileOutputMap = new WeakMap();
+
   return function() {
     var nextId = 0;
 
@@ -117,6 +119,12 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
             .then(function(obj) {
               return constructor([obj]);
             });
+        })
+        .then(function(obj) {
+          if (obj && obj.dataLink && fileOutputMap.has(descriptor)) {
+            obj.dataLink(fileOutputMap.get(descriptor));
+          }
+          return obj;
         });
     };
 
@@ -167,9 +175,14 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         });
     };
 
+    var registerOutput = function(file, output) {
+      fileOutputMap.set(file, output);
+    };
+
     return {
       create: create,
-      destroyAll: destroyAll
+      destroyAll: destroyAll,
+      registerOutput
     };
   };
 }]);

@@ -13021,7 +13021,7 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", function($timeout, $http, TypeService, Recipe) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", "MusicObjectFactory", function($timeout, $http, TypeService, Recipe, MusicObjectFactory) {
   return {
     scope: {
       file: "=file"
@@ -13030,6 +13030,13 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
     link: function(scope, element, attrs) {
       var file;
       var types = TypeService.getTypes();
+
+      scope.output = {};
+      MusicObjectFactory().registerOutput(scope.file, function(output) {
+        $timeout(function() {
+          scope.output = output;
+        });
+      });
 
       scope.parameters = [];
       scope.recipe = Recipe.start;
@@ -14358,6 +14365,8 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
+  var fileOutputMap = new WeakMap();
+
   return function() {
     var nextId = 0;
 
@@ -14474,6 +14483,12 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
             .then(function(obj) {
               return constructor([obj]);
             });
+        })
+        .then(function(obj) {
+          if (obj && obj.dataLink && fileOutputMap.has(descriptor)) {
+            obj.dataLink(fileOutputMap.get(descriptor));
+          }
+          return obj;
         });
     };
 
@@ -14524,9 +14539,14 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         });
     };
 
+    var registerOutput = function(file, output) {
+      fileOutputMap.set(file, output);
+    };
+
     return {
       create: create,
-      destroyAll: destroyAll
+      destroyAll: destroyAll,
+      registerOutput
     };
   };
 }]);
