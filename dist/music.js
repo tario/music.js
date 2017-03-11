@@ -12544,6 +12544,10 @@ MUSIC.EffectsPipeline.prototype = {
     return ret;
   },
 
+  constant: function(options) {
+    return this._wrapFcn(new MUSIC.SoundLib.Constant(this._audio, this._audioDestination, options));
+  },
+
   oscillator: function(options) {
     return this._wrapFcn(new MUSIC.SoundLib.Oscillator(this._audio, this._audioDestination, options));
   },
@@ -12878,6 +12882,28 @@ MUSIC.modulator = function(f) {
         }
       };
     }
+  };
+};
+
+MUSIC.SoundLib.Constant = function(music, destination, options) {
+  var constantNode = music.audio.createConstantSource();
+  constantNode.offset.value = options.offset || 0.0;
+  constantNode.connect(destination._destination);
+  constantNode.start();
+
+  var noop = function() {};
+
+  this.freq = function(newFreq) {
+    var playable = {};
+
+    playable.setFreq = noop;
+    playable.reset = noop;
+    playable.play = function() {
+      return {stop: noop}
+    };
+
+    MUSIC.playablePipeExtend(playable);
+    return playable;
   };
 };
 

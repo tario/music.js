@@ -13032,15 +13032,9 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var types = TypeService.getTypes();
 
       scope.output = {};
-      MusicObjectFactory().registerOutput(scope.file, function(output) {
-        $timeout(function() {
-          scope.output = output;
-        });
-      });
 
       scope.parameters = [];
       scope.recipe = Recipe.start;
-
       scope.termschanged = function() {
         scope.$broadcast('termschanged');
       };
@@ -13141,8 +13135,20 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         });
       };
 
+      var outputObserver;
+      scope.$on("$destroy", function() {
+        if (outputObserver) outputObserver.destroy();
+      });
+
       var updateTemplate = function(file) {
         if (!file) return;
+
+        if (outputObserver) outputObserver.destroy();
+        var outputObserver = MusicObjectFactory().observeOutput(file, function(output) {
+          $timeout(function() {
+            scope.output = output;
+          });
+        });
 
         types.then(function() {
           $timeout(function() {
@@ -14496,11 +14502,20 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
             });
         })
         .then(function(obj) {
-          if (obj && obj.dataLink && fileOutputMap.has(descriptor)) {
-            obj.dataLink(fileOutputMap.get(descriptor));
+          if (obj && obj.dataLink) {
+            obj.dataLink(notifyChangeFor(descriptor));
           }
           return obj;
         });
+    };
+
+    var notifyChangeFor = function(descriptor) {
+      return function(output) {
+        if (fileOutputMap.has(descriptor)) {
+          var ee = fileOutputMap.get(descriptor);
+          ee.emit('changed', output);
+        }
+      };
     };
 
     var createParametric = function(descriptor) {
@@ -14550,14 +14565,29 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         });
     };
 
-    var registerOutput = function(file, output) {
-      fileOutputMap.set(file, output);
+    var observeOutput = function(file, listener) {
+      var ee;
+
+      if (fileOutputMap.has(file)) {
+        ee = fileOutputMap.get(file);
+      } else {
+        ee = new EventEmitter();
+        fileOutputMap.set(file, ee)
+      }
+
+      ee.on('changed', listener);
+
+      return {
+        destroy: function() {
+          ee.removeListener('changed', listener);
+        }
+      }
     };
 
     return {
       create: create,
       destroyAll: destroyAll,
-      registerOutput
+      observeOutput: observeOutput
     };
   };
 }]);
@@ -16472,7 +16502,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
           }
           lastObj = obj;
       });
-  }, 50);
+  }, 250);
   $scope.$watch('file', fileChanged, true);
 
   $scope.indexChanged = function() {

@@ -615,7 +615,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
           }
           lastObj = obj;
       });
-  }, 50);
+  }, 250);
   $scope.$watch('file', fileChanged, true);
 
   $scope.indexChanged = function() {

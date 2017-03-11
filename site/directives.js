@@ -11,15 +11,9 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var types = TypeService.getTypes();
 
       scope.output = {};
-      MusicObjectFactory().registerOutput(scope.file, function(output) {
-        $timeout(function() {
-          scope.output = output;
-        });
-      });
 
       scope.parameters = [];
       scope.recipe = Recipe.start;
-
       scope.termschanged = function() {
         scope.$broadcast('termschanged');
       };
@@ -120,8 +114,20 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         });
       };
 
+      var outputObserver;
+      scope.$on("$destroy", function() {
+        if (outputObserver) outputObserver.destroy();
+      });
+
       var updateTemplate = function(file) {
         if (!file) return;
+
+        if (outputObserver) outputObserver.destroy();
+        var outputObserver = MusicObjectFactory().observeOutput(file, function(output) {
+          $timeout(function() {
+            scope.output = output;
+          });
+        });
 
         types.then(function() {
           $timeout(function() {

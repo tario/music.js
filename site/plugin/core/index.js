@@ -1,6 +1,12 @@
 module.export = function(m) {
 
   m.lang("en", {
+    constant: {
+      tooltip: {
+        constant: 'Produce a constant output signal of a given value'
+      },
+      description: 'Produce a constant output signal of a given value'
+    },
     signal_monitor: {
       tooltip: {
         signal_value: "Current value of the signal",
@@ -186,6 +192,12 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    constant: {
+      tooltip: {
+        constant: 'Produce una señal constante con un valor determinado'
+      },
+      description: 'Produce una señal constante con un valor determinado'
+    },
     signal_monitor: {
       tooltip: {
         signal_value: "Valor actual de la señal",
@@ -589,8 +601,15 @@ module.export = function(m) {
       return t;
     };
 
+    var lastObject = null;
     var ret = function(music) {
-      return wrapped(music.formula(monitorFcn));
+      if (lastObject) {
+        lastObject.dispose();
+        lastObject = null;
+      }
+
+      lastObject = music.formula(monitorFcn);
+      return wrapped(lastObject);
     };
 
     ret.update = function() {
@@ -602,6 +621,15 @@ module.export = function(m) {
     };
 
     return ret;
+  });
+
+  m.type("constant", {template: "constant", description: "Constant signal"}, 
+    function(data, subobjects, components) {
+    if (!data) return;
+      return function(music){
+        var generator = music.constant({offset: data.offset});
+        return new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator), {start: true});
+      };
   });
 
   var defaultModWrapper = function(x){return x;};
