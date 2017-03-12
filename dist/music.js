@@ -12598,20 +12598,33 @@ MUSIC.EffectsPipeline.prototype = {
   },
 
   scale: function(options) {
-    var a, b;
-    var formulaGenerator = new MUSIC.Effects.Formula(this._audio, this._audioDestination, function(input, t) {
-      return input*a+b;
-    });
+    var gain = this.gain(1.0);
+    var c1 = this.constant(0.0);
+
+    var gainUpdate = gain.update.bind(gain);
+    var gainDispose = gain.dispose.bind(gain);
+    var constantUpdate = c1.update.bind(c1);
+    var constantDispose = c1.dispose.bind(c1);
+
+    var dispose = function() {
+      gainDispose();
+      constantDispose();
+    };
 
     var update = function(options) {
+      var a, b;
       a = (options.top - options.base)/2;
       b = options.base + a;
+
+      gainUpdate(a);
+      constantUpdate(b);
     };
 
     update(options);
-    formulaGenerator.update = update;
+    gain.update = update;
+    gain.dispose = dispose;
 
-    return formulaGenerator;
+    return gain;
   },
 
 
@@ -12892,6 +12905,15 @@ MUSIC.SoundLib.Constant = function(music, destination, options) {
   constantNode.start();
 
   var noop = function() {};
+
+  this.dispose = function() {
+    constantNode.stop();
+    constantNode.disconnect(destination._destination);
+  };
+
+  this.update = function(value) {
+    constantNode.offset.value = value;
+  };
 
   this.freq = function(newFreq) {
     var playable = {};
