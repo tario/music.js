@@ -12601,6 +12601,38 @@ MUSIC.EffectsPipeline.prototype = {
     return this.gain(value||1);
   },
 
+  nand: function(value) {
+    return this.not().and(value||1);
+  },
+
+  or: function(value) {
+    return this.not().nor(value||0);
+  },
+
+  nor: function(value) {
+    var negateModl = function(modl) {
+      if (!modl.apply) return modl;
+
+      return {
+        apply: function(currentTime, audioParam, music) {
+          return modl.apply(currentTime, audioParam, music, function(modulatorFactory, f) {
+            return f(modulatorFactory.not());
+          });
+        }
+      };
+    };
+
+    var andNode = this.and(1);
+    var update = function(value) {
+      andNode.update(negateModl(value));
+    };
+    update(value);
+
+    var ret = andNode.not();
+    ret.update = update;
+    return ret;
+  },
+
   not: function() {
     return this.scale({top: 0, base: 2});
   },
@@ -12892,10 +12924,14 @@ MUSIC.AudioDestinationWrapper = function(music, audioDestination) {
 MUSIC.AudioDestinationWrapper.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
 MUSIC.modulator = function(f) {
+  var _f = function(modulatorFactory, f) {
+    return f(modulatorFactory);
+  };
+
   return {
-    apply: function(currentTime, audioParam, music) {
+    apply: function(currentTime, audioParam, music, combineFunc) {
       var modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
-      var modulator = f(modulatorFactory);
+      var modulator = (combineFunc||_f)(modulatorFactory, f);
 
       return {
         dispose: function() {
@@ -12907,7 +12943,7 @@ MUSIC.modulator = function(f) {
 };
 
 MUSIC.SoundLib.Constant = function(music, destination, options) {
-  var constantNode = music.audio.createConstantSource();
+  var constantNode = music._audio.audio.createConstantSource();
   constantNode.offset.value = options.offset || 0.0;
   constantNode.connect(destination._destination);
   constantNode.start();

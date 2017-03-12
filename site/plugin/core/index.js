@@ -1322,14 +1322,44 @@ module.export = function(m) {
     description: "core.not.description"
   });
 
-  genericType("and",
+  genericType("or",
       {
         parameters: [
-          {name: "second_signal", value: 1.0, tooltip: 'core.gain.tooltip.gain', hidden: true}
+          {name: "second_signal", value: 1.0, hidden: true}
         ], 
         components: ["second_signal"],
         singleParameter: true,
-        description: "core.gain.description"
+        description: "core.or.description"
+      });  
+
+  genericType("nor",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.nor.description"
+      });  
+
+  genericType("and",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.and.description"
+      });
+
+  genericType("nand",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.nand.description"
       });
 
   genericType("gain", 
