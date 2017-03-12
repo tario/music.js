@@ -219,6 +219,10 @@ MUSIC.EffectsPipeline.prototype = {
     return this._wrapFcn(new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn));
   },
 
+  and: function(value) {
+    return this.gain(value||1);
+  },
+
   not: function() {
     return this.scale({top: 0, base: 2});
   },

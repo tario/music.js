@@ -1322,6 +1322,16 @@ module.export = function(m) {
     description: "core.not.description"
   });
 
+  genericType("and",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, tooltip: 'core.gain.tooltip.gain', hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.gain.description"
+      });
+
   genericType("gain", 
       {
         parameters: [
