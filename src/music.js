@@ -219,6 +219,10 @@ MUSIC.EffectsPipeline.prototype = {
     return this._wrapFcn(new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn));
   },
 
+  not: function() {
+    return this.scale({top: 0, base: 2});
+  },
+
   scale: function(options) {
     var gain = this.gain(1.0);
     var c1 = this.constant(0.0);
@@ -527,10 +531,11 @@ MUSIC.SoundLib.Constant = function(music, destination, options) {
   constantNode.start();
 
   var noop = function() {};
-
   this.dispose = function() {
     constantNode.stop();
     constantNode.disconnect(destination._destination);
+
+    this.dispose = function() {};
   };
 
   this.update = function(value) {

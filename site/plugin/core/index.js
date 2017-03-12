@@ -1316,6 +1316,12 @@ module.export = function(m) {
     description: "core.scale.description"
   });
 
+  genericType("not",
+  {
+    parameters: [],
+    description: "core.not.description"
+  });
+
   genericType("gain", 
       {
         parameters: [
