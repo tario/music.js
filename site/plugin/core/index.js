@@ -551,12 +551,35 @@ module.export = function(m) {
   });
 
   var oscillatorStackAppend = function(file, data) {
-    var isEnvelope = function(data) {
-      return data.type === 'envelope';
+    var isEnvelopedGain = function(obj) {
+      if (obj.type === 'gain') {
+        if (obj.data && obj.data.modulation && obj.data.modulation.gain) {
+          var gainModulation = obj.data.modulation.gain;
+          if (gainModulation.type === "stack") {
+            if (gainModulation.data &&
+                gainModulation.data.array &&
+                gainModulation.data.array[0] &&
+                gainModulation.data.array[0].type === 'adsr') {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
     };
 
-    if (!file.array.some(isEnvelope)) {
-      file.array.push({type: 'envelope', data: {}})
+    if (!file.array.some(isEnvelopedGain)) {
+      var gainModulation = {
+        type: "stack",
+        data: {
+          array: [{
+            type: "adsr",
+            data: {attackTime: 0.01, decayTime: 0.4, sustainLevel: 0.8, releaseTime: 0.1}
+          }]
+        }
+      };
+
+      file.array.push({type: 'gain', data: {modulation: {gain: gainModulation}, gain: 0.0}});
     }
 
     file.array.push({type: data.name, data: {}});
@@ -825,86 +848,67 @@ module.export = function(m) {
     sustainLevel: 0.8,
     releaseTime: 0.4
   }},  function(data, subobjects) {
-    var attackTime, decayTime, sustainLevel, releaseTime, mdecay, reset_on_cut; 
+    var samples, attackTime, decayTime, sustainLevel, releaseTime;
+    var attackCurve, decayCurve, releaseCurve;
+    var resetOnCut = false;
 
-    var ret = function(music, options){
-      var currentPhase = 0; // = OFF 1 = ADS 2 = R
-      var prevPhase = 0
-      var d, r, t0, acc;
-      
-      options = options ||{};
-      var formulaNode = music
-        .formulaGenerator(function(t) {
-          if (currentPhase===0) {
-            prevPhase = currentPhase;
-            return 0;
-          }
-          if (currentPhase===1) { // ADS
-            if (prevPhase!==1) {
-              t0 = t;
-            }
-            prevPhase = currentPhase;
+    var eventPreprocessor = function(event) {
+      var l = event[2];
+      l = l - releaseTime * 1000;
+      if (l <0 ) l = 0;
 
-            d = t-t0;
-            if (attackTime !== 0 && d < attackTime) {
-              acc = d / attackTime
-            } else if (d < attackTime + decayTime && sustainLevel < 1) {
-              d = t-(t0+attackTime);
-              acc = 1 - (d / decayTime)*(1 - sustainLevel);
-            }
-            return acc;
-          }
-          if (currentPhase===2) { // R
-            if (prevPhase!==2) {
-              t0 = t;
-            }
-            prevPhase = currentPhase;
+      return [event[0], event[1], l];
+    };
 
-            r = acc * (1 - (t-t0)/releaseTime);
-            return r > 0 ? r : 0;
-          }
-        });
-
-      var playing = formulaNode.play();
+    var ret = function(music) {
+      var baseNode = music.sfxBase();
+      var constantNode = baseNode.constant(0);
 
       var noteCount = 0;
-      var stop = function() {
-        noteCount--;
-        if (noteCount===0) {
-          currentPhase=2; // change to 'release'
-        }
-      };
-
-      var play = function() {
-        if (noteCount===0 || reset_on_cut) {
-          // change to ads
-          prevPhase = 0;
-          currentPhase=1;
-        }
-        noteCount++;
-        return {stop: stop};
-      };
-
       var note = function(n) {
-        return MUSIC.playablePipeExtend({play: play});
-      };
+        var innerNote;
+        var play = function(){
+          var currentLevel = constantNode._destination.offset.value;
 
-      var dispose = function() {
-        playing.stop();
+          if (noteCount === 0 || resetOnCut) {
+            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
+            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+            constantNode.setParam('offset', startCurve);
+          }
+
+          noteCount++;
+          return {stop: function(){}};
+        };
+
+        return MUSIC.playablePipeExtend({play: play})
+            .onStop(function() {
+                noteCount--;
+                // don't release if noteCount > 0
+                if (noteCount > 0) return;
+                constantNode.setParamTarget('offset', 0.0, releaseTime);
+            });
       };
 
       return MUSIC.instrumentExtend({
         note: note,
-        dispose: dispose
+        eventPreprocessor: eventPreprocessor
       });
     };
 
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
     ret.update = function(data) {
-      attackTime = parseFloat(data.attackTime || 0.4);
-      decayTime = parseFloat(data.decayTime || 0.4);
-      sustainLevel = parseFloat(data.sustainLevel || 0.8);
-      releaseTime = parseFloat(data.releaseTime || 0.4);
-      reset_on_cut = data.reset_on_cut;
+      samples = data.samples || 100;  
+      attackTime = parseFloat(_def(data.attackTime, 0.4));
+      decayTime = parseFloat(_def(data.decayTime,0.4));
+      sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
+      releaseTime = parseFloat(_def(data.releaseTime,0.4));
+      if (releaseTime <= 0.0) releaseTime = 0.00001;
+      resetOnCut = data.reset_on_cut;
+
+      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
       return this;
     };
 
@@ -1081,98 +1085,6 @@ module.export = function(m) {
 
         return ret;
       });
-
-  m.type("envelope", {template: "envelope", description: "ADSR", _default: {
-    attackTime: 0.01,
-    decayTime: 0.4,
-    sustainLevel: 0.8,
-    releaseTime: 0.4,
-    reset_on_cut: false
-  }},  function(data, subobjects) {
-    if (!subobjects) return;
-    var wrapped = subobjects[0];
-    if (!wrapped) return;
-
-    var samples, attackTime, decayTime, sustainLevel, releaseTime;
-    var attackCurve, decayCurve, releaseCurve;
-    var resetOnCut = false;
-
-    var eventPreprocessor = function(event) {
-      var l = event[2];
-      l = l - releaseTime * 1000;
-      if (l <0 ) l = 0;
-
-      return [event[0], event[1], l];
-    };
-
-    var ret = function(music) {
-      var baseNode = music.sfxBase();
-      var gainNode = baseNode.gain(0);
-      var inst = wrapped(gainNode);
-
-      var noteCount = 0;
-      var note = function(n) {
-        var innerNote;
-        var noteInst = inst.note(n);
-
-        var play = function(){
-          var playing = noteInst.play();
-          var currentLevel = gainNode._destination.gain.value;
-
-          if (noteCount === 0 || resetOnCut) {
-            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
-            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-            gainNode.setParam('gain', startCurve);
-          }
-
-          noteCount++;
-
-
-          var origStop = playing.stop.bind(playing);
-          playing.stop = function() {
-            playing.stop = function() {};
-            origStop();
-          };
-          return playing;
-        };
-
-        return MUSIC.playablePipeExtend({play: play})
-            .onStop(function() {
-                noteCount--;
-                // don't release if noteCount > 0
-                if (noteCount > 0) return;
-                gainNode.setParamTarget('gain', 0.0, releaseTime);
-            });
-      };
-
-      return MUSIC.instrumentExtend({
-        note: note,
-        eventPreprocessor: eventPreprocessor
-      });
-    };
-
-    var _def = function(val, d) {
-      return typeof val === 'undefined' ? d : val;
-    };
-
-    ret.update = function(data) {
-      samples = data.samples || 100;  
-      attackTime = parseFloat(_def(data.attackTime, 0.4));
-      decayTime = parseFloat(_def(data.decayTime,0.4));
-      sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
-      releaseTime = parseFloat(_def(data.releaseTime,0.4));
-      if (releaseTime <= 0.0) releaseTime = 0.00001;
-      resetOnCut = data.reset_on_cut;
-
-      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
-      return this;
-    };
-
-    ret.update(data);
-
-    return ret;
-  });
-
 
   m.type("transpose",
       {

@@ -566,11 +566,24 @@ MUSIC.modulator = function(f) {
 
 MUSIC.SoundLib.Constant = function(music, destination, options) {
   var constantNode = music._audio.audio.createConstantSource();
+  this._destination = constantNode;
+
   constantNode.offset.value = options.offset || 0.0;
   constantNode.connect(destination._destination);
   constantNode.start();
 
   var noop = function() {};
+
+  this.setParam = function(paramName, value) {
+    value.apply(music.audio.currentTime, constantNode[paramName]);
+  };
+
+  this.setParamTarget = function(paramName, target, timeConstant) {
+    var audioParam = constantNode[paramName];
+    audioParam.cancelScheduledValues(0.0);
+    audioParam.setTargetAtTime(target, music.audio.currentTime, timeConstant);
+  };
+
   this.dispose = function() {
     constantNode.stop();
     constantNode.disconnect(destination._destination);
