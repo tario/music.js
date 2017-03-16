@@ -1,6 +1,11 @@
 module.export = function(m) {
 
   m.lang("en", {
+    note_condition: {
+      note_on: "Note ON",
+      note_off: "Note OFF",
+      time_constant: "Time Constant"
+    },
     constant: {
       tooltip: {
         constant: 'Produce a constant output signal of a given value'
@@ -192,6 +197,11 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    note_condition: {
+      note_on: "Nota Activa",
+      note_off: "Nota Inactiva",
+      time_constant: "Constante de tiempo"
+    },
     constant: {
       tooltip: {
         constant: 'Produce una señal constante con un valor determinado'
@@ -841,6 +851,78 @@ module.export = function(m) {
     ret.update(data);
     return ret;
   });
+
+  m.type("note_condition", {template: "note_condition", description: "core.note_condition.description", _default: {
+    note_on: 1.0,
+    note_off: 0.0,
+    time_constant: 0.01
+  }},  function(data, subobjects) {
+    var note_on, note_off, time_constant;
+
+    var eventPreprocessor = function(event) {
+      var l = event[2];
+      l = l - releaseTime * 1000;
+      if (l <0 ) l = 0;
+
+      return [event[0], event[1], l];
+    };
+
+    var ret = function(music) {
+      var audioParamModulation = music.audioParamModulation;
+      var baseNode = music.sfxBase();
+
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
+
+      var noteCount = 0;
+      var note = function(n) {
+        var play = function(){
+          var currentLevel = audioParamModulation.value;
+
+          if (noteCount === 0) {
+            audioParamModulation.cancelScheduledValues(0.0);
+            audioParamModulation.setTargetAtTime(note_on, music._audio.audio.currentTime, time_constant);
+          }
+
+          noteCount++;
+          return {stop: function(){}};
+        };
+
+        return MUSIC.playablePipeExtend({play: play})
+            .onStop(function() {
+                noteCount--;
+                // don't release if noteCount > 0
+                if (noteCount > 0) return;
+                audioParamModulation.cancelScheduledValues(0.0);
+                audioParamModulation.setTargetAtTime(note_off, music._audio.audio.currentTime, time_constant);
+            });
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note,
+        eventPreprocessor: eventPreprocessor
+      });
+    };
+
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
+    ret.update = function(data) {
+      note_on = parseFloat(_def(data.note_on, 1.0));
+      note_off = parseFloat(_def(data.note_off, 0.0));
+      time_constant = parseFloat(_def(data.time_constant,0.01));
+      return this;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
+
+
 
   m.type("adsr", {template: "adsr", description: "core.adsr.description", _default: {
     attackTime: 0.01,

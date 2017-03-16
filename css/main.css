@@ -60,8 +60,9 @@ body.modal-open .contextual-help-switch {
 	white-space: pre;
 }
 
-.object-template-editor input[type="text"] {
-  width: 50px;
+.object-template-editor input[type="text"],
+.object-template-editor input[type="number"] {
+  width: 3em;
 }
 
 .object-template-editor {
