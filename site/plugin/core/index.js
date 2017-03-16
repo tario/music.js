@@ -861,19 +861,24 @@ module.export = function(m) {
     };
 
     var ret = function(music) {
+      var audioParamModulation = music.audioParamModulation;
       var baseNode = music.sfxBase();
-      var constantNode = baseNode.constant(0);
+
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
 
       var noteCount = 0;
       var note = function(n) {
         var innerNote;
         var play = function(){
-          var currentLevel = constantNode._destination.offset.value;
+          var currentLevel = audioParamModulation.value;
 
           if (noteCount === 0 || resetOnCut) {
             attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
             startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-            constantNode.setParam('offset', startCurve);
+            startCurve.apply(music._audio.audio.currentTime, audioParamModulation);
           }
 
           noteCount++;
@@ -885,7 +890,8 @@ module.export = function(m) {
                 noteCount--;
                 // don't release if noteCount > 0
                 if (noteCount > 0) return;
-                constantNode.setParamTarget('offset', 0.0, releaseTime);
+                audioParamModulation.cancelScheduledValues(0.0);
+                audioParamModulation.setTargetAtTime(0.0, music._audio.audio.currentTime, releaseTime);
             });
       };
 

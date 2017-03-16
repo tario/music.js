@@ -12930,8 +12930,10 @@ MUSIC.modulator = function(f) {
 
   return {
     apply: function(currentTime, audioParam, music, combineFunc) {
-      var modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
-      var modulator = (combineFunc||_f)(modulatorFactory, f);
+      var modulatorFactory, modulator;
+      modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
+      modulatorFactory.audioParamModulation = audioParam;
+      modulator = (combineFunc||_f)(modulatorFactory, f);
 
       return {
         dispose: function() {
