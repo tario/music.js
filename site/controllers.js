@@ -583,7 +583,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
    
     $q.when(null)
       .then(function() {
-        if ($scope.resetStack) {
+        if ($scope.resetStack||1) {
           return destroyAll();
         }
       })
@@ -615,7 +615,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
           }
           lastObj = obj;
       });
-  }, 250);
+  }, 500);
   $scope.$watch('file', fileChanged, true);
 
   $scope.indexChanged = function() {
