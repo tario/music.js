@@ -6,7 +6,7 @@ module.export = function(m) {
       note_off: "Note OFF",
       time_constant: "Time Constant"
     },
-    constant: {
+    signal_constant: {
       tooltip: {
         constant: 'Produce a constant output signal of a given value'
       },
@@ -174,7 +174,7 @@ module.export = function(m) {
         delay: 'time separation (in seconds) between repetitions'
       }
     },
-    scale: {
+    signal_scale: {
       tooltip: {
         base: 'base signal target level',
         top: 'top signal target level'
@@ -202,7 +202,7 @@ module.export = function(m) {
       note_off: "Nota Inactiva",
       time_constant: "Constante de tiempo"
     },
-    constant: {
+    signal_constant: {
       tooltip: {
         constant: 'Produce una señal constante con un valor determinado'
       },
@@ -370,7 +370,7 @@ module.export = function(m) {
         delay: 'Separacion en el tiempo (en segundos) entre las repeticiones'
       }
     },
-    scale: {
+    signal_scale: {
       tooltip: {
         base: 'nivel base objetivo de la señal',
         top: 'nivel superior objetivo de la señal'
@@ -656,7 +656,7 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("constant", {template: "constant", description: "Constant signal"}, 
+  m.type("signal_constant", {template: "constant", description: "Constant signal"}, 
     function(data, subobjects, components) {
     if (!data) return;
       return function(music){
@@ -1307,59 +1307,59 @@ module.export = function(m) {
     });
   };
 
-  genericType("scale",
+  genericType("signal_scale",
   {
     parameters: [
-      {name: 'base', value: -1, tooltip: 'core.scale.tooltip.base'},
-      {name: 'top', value: 1, tooltip: 'core.scale.tooltip.top'},
+      {name: 'base', value: -1, tooltip: 'core.signal_scale.tooltip.base'},
+      {name: 'top', value: 1, tooltip: 'core.signal_scale.tooltip.top'},
     ],
-    description: "core.scale.description"
+    description: "core.signal_scale.description"
   });
 
-  genericType("not",
+  genericType("signal_not",
   {
     parameters: [],
-    description: "core.not.description"
+    description: "core.signal_not.description"
   });
 
-  genericType("or",
+  genericType("signal_or",
       {
         parameters: [
           {name: "second_signal", value: 1.0, hidden: true}
         ], 
         components: ["second_signal"],
         singleParameter: true,
-        description: "core.or.description"
+        description: "core.signal_or.description"
       });  
 
-  genericType("nor",
+  genericType("signal_nor",
       {
         parameters: [
           {name: "second_signal", value: 1.0, hidden: true}
         ], 
         components: ["second_signal"],
         singleParameter: true,
-        description: "core.nor.description"
+        description: "core.signal_nor.description"
       });  
 
-  genericType("and",
+  genericType("signal_and",
       {
         parameters: [
           {name: "second_signal", value: 1.0, hidden: true}
         ], 
         components: ["second_signal"],
         singleParameter: true,
-        description: "core.and.description"
+        description: "core.signal_and.description"
       });
 
-  genericType("nand",
+  genericType("signal_nand",
       {
         parameters: [
           {name: "second_signal", value: 1.0, hidden: true}
         ], 
         components: ["second_signal"],
         singleParameter: true,
-        description: "core.nand.description"
+        description: "core.signal_nand.description"
       });
 
   genericType("gain", 
@@ -1369,7 +1369,7 @@ module.export = function(m) {
         ], 
         components: ["gain"],
         singleParameter: true,
-        description: "core.gain.description"
+        description: "core.signal_gain.description"
       });
 
   genericType("delay", 

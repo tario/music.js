@@ -219,19 +219,19 @@ MUSIC.EffectsPipeline.prototype = {
     return this._wrapFcn(new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn));
   },
 
-  and: function(value) {
+  signal_and: function(value) {
     return this.gain(value||1);
   },
 
-  nand: function(value) {
+  signal_nand: function(value) {
     return this.not().and(value||1);
   },
 
-  or: function(value) {
+  signal_or: function(value) {
     return this.not().nor(value||0);
   },
 
-  nor: function(value) {
+  signal_nor: function(value) {
     var negateModl = function(modl) {
       if (!modl.apply) return modl;
 
@@ -255,11 +255,11 @@ MUSIC.EffectsPipeline.prototype = {
     return ret;
   },
 
-  not: function() {
-    return this.scale({top: 0, base: 2});
+  signal_not: function() {
+    return this.signal_scale({top: 0, base: 2});
   },
 
-  scale: function(options) {
+  signal_scale: function(options) {
     var gain = this.gain(1.0);
     var c1 = this.constant(0.0);
 
