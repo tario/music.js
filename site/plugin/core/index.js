@@ -14,7 +14,8 @@ module.export = function(m) {
     note_condition: {
       note_on: "Note ON",
       note_off: "Note OFF",
-      time_constant: "Time Constant"
+      leave_time_constant: "Leave Time Constant",
+      enter_time_constant: "Enter Time Constant",
     },
     signal_constant: {
       tooltip: {
@@ -877,15 +878,7 @@ module.export = function(m) {
     note_off: 0.0,
     time_constant: 0.01
   }},  function(data, subobjects) {
-    var note_on, note_off, time_constant;
-
-    var eventPreprocessor = function(event) {
-      var l = event[2];
-      l = l - releaseTime * 1000;
-      if (l <0 ) l = 0;
-
-      return [event[0], event[1], l];
-    };
+    var note_on, note_off, leave_time_constant, enter_time_constant;
 
     var ret = function(music) {
       var audioParamModulation = music.audioParamModulation;
@@ -903,7 +896,7 @@ module.export = function(m) {
 
           if (noteCount === 0) {
             audioParamModulation.cancelScheduledValues(0.0);
-            audioParamModulation.setTargetAtTime(note_on, music._audio.audio.currentTime, time_constant);
+            audioParamModulation.setTargetAtTime(note_on, music._audio.audio.currentTime, enter_time_constant);
           }
 
           noteCount++;
@@ -916,13 +909,12 @@ module.export = function(m) {
                 // don't release if noteCount > 0
                 if (noteCount > 0) return;
                 audioParamModulation.cancelScheduledValues(0.0);
-                audioParamModulation.setTargetAtTime(note_off, music._audio.audio.currentTime, time_constant);
+                audioParamModulation.setTargetAtTime(note_off, music._audio.audio.currentTime, leave_time_constant);
             });
       };
 
       return MUSIC.instrumentExtend({
-        note: note,
-        eventPreprocessor: eventPreprocessor
+        note: note
       });
     };
 
@@ -933,7 +925,8 @@ module.export = function(m) {
     ret.update = function(data) {
       note_on = parseFloat(_def(data.note_on, 1.0));
       note_off = parseFloat(_def(data.note_off, 0.0));
-      time_constant = parseFloat(_def(data.time_constant,0.01));
+      leave_time_constant = parseFloat(_def(data.leave_time_constant,0.01));
+      enter_time_constant = parseFloat(_def(data.enter_time_constant,0.01));
       return this;
     };
 
