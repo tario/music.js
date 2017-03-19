@@ -1,6 +1,16 @@
 module.export = function(m) {
 
   m.lang("en", {
+    phase_fix: {
+      frequency: 'Frequency',
+      fix_on_start: 'Fix on start',
+      fix_on_end: 'Fix on end',
+      tooltip: {
+        frequency: 'Frequency of oscillator',
+        fix_on_start: 'Enable this option to apply the fix on start of note',
+        fix_on_end: 'Enable this option to apply the fix on end of note'
+      }
+    },
     note_condition: {
       note_on: "Note ON",
       note_off: "Note OFF",
@@ -197,6 +207,16 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    phase_fix: {
+      frequency: 'Frecuencia',
+      fix_on_start: 'Arreglo al comienzo',
+      fix_on_end: 'Arreglo al final',
+      tooltip: {
+        frequency: 'Frequencia del oscilador',
+        fix_on_start: 'Activa esta opcion para aplicar el arreglo al comienzo de la nota',
+        fix_on_end: 'Activa esto opcion para aplicar el arreglo al final de la nota'
+      }
+    },
     note_condition: {
       note_on: "Nota Activa",
       note_off: "Nota Inactiva",
@@ -923,6 +943,80 @@ module.export = function(m) {
   });
 
 
+  m.type("phase_fix", {template: "phase_fix", description: "core.phase_fix.description", _default: {
+    frequency: 5,
+  }},  function(data, subobjects) {
+    var frequency = 5;
+    var T = 0.2;
+    var fix_on_start;
+    var fix_on_end;
+
+    var ret = function(music) {
+      var delayNode = music.delay(0);
+      var inner = subobjects[0](delayNode);
+      var playedFirstNote = false;
+      var referenceTime;
+
+      var fix = function() {
+        var delta = music._audio.audio.currentTime - referenceTime;
+        delayNode.update(delta % T);
+      };
+
+      var noteCount = 0;
+      var note = function(n) {
+        var innerNote = inner.note(n);
+        var play = function(){
+          if(!playedFirstNote) {
+            referenceTime = music._audio.audio.currentTime;
+            playedFirstNote = true;
+          }
+
+          var playing = innerNote.play();
+
+          if (noteCount === 0 && fix_on_start) {
+            fix();
+          }
+
+          noteCount++;
+          return {stop: function(){
+            playing.stop();
+          }};
+        };
+
+        return MUSIC.playablePipeExtend({play: play})
+            .onStop(function() {
+                noteCount--;
+                if (noteCount > 0) return;
+
+                // end event
+                if (fix_on_end) {
+                  fix();
+                }
+            });
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });
+    };
+
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
+    ret.update = function(data) {
+      samples = data.samples || 100;  
+      frequency = parseFloat(_def(data.frequency, 5));
+      T = parseFloat(1/frequency);
+      fix_on_start = data.fix_on_start;
+      fix_on_end = data.fix_on_end;
+
+      return this;
+    };
+
+    ret.update(data);
+    return ret;
+  });
 
   m.type("adsr", {template: "adsr", description: "core.adsr.description", _default: {
     attackTime: 0.01,
