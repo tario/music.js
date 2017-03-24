@@ -37,6 +37,155 @@ describe("PackedJSONSerializerBV3", function() {
 
   instruments.push({"type": "delay", "data": {"delay": 0.4}});
 
+  instruments.push({
+            "type": "gain",
+            "data": {
+              "modulation": {
+                "gain": {
+                  "type": "stack",
+                  "data": {
+                    "array": [
+                      {
+                        "type": "adsr",
+                        "data": {
+                          "attackTime": "0.0",
+                          "decayTime": 0.4,
+                          "sustainLevel": 0.8,
+                          "releaseTime": "0.2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "gain": "0.12"
+            }
+          });
+
+  instruments.push({
+            "type": "gain",
+            "data": {
+              "gain": "0.12"
+            }
+          });  
+
+
+  instruments.push({
+      "type": "stack",
+      "data": {
+        "array": [
+          {
+            "type": "gain",
+            "data": {
+              "modulation": {
+                "gain": {
+                  "type": "stack",
+                  "data": {
+                    "array": [
+                      {
+                        "type": "adsr",
+                        "data": {
+                          "attackTime": "0.0",
+                          "decayTime": 0.4,
+                          "sustainLevel": 0.8,
+                          "releaseTime": "0.2"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "gain": "0.1244"
+            }
+          },
+          {
+            "type": "gain",
+            "data": {
+              "modulation": {
+                "gain": {
+                  "type": "stack",
+                  "data": {
+                    "array": [
+                      {
+                        "type": "signal_scale",
+                        "data": {
+                          "base": "0.5",
+                          "top": "1.5"
+                        }
+                      },
+                      {
+                        "type": "gain",
+                        "data": {
+                          "modulation": {
+                            "gain": {
+                              "type": "stack",
+                              "data": {
+                                "array": [
+                                  {
+                                    "type": "note_condition",
+                                    "data": {
+                                      "note_on": 0.1,
+                                      "note_off": 1,
+                                      "enter_time_constant": 0.01,
+                                      "leave_time_constant": 0.1
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "gain": 0.8
+                        }
+                      },
+                      {
+                        "type": "oscillator",
+                        "data": {
+                          "modulation": {
+                            "detune": {
+                              "type": "stack",
+                              "data": {
+                                "array": []
+                              }
+                            }
+                          },
+                          "oscillatorType": "sine",
+                          "time_constant": 0.005,
+                          "fixed_frequency": true,
+                          "frequency": "15"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "gain": 0.8
+            }
+          },
+          {
+            "type": "oscillator",
+            "data": {
+              "modulation": {
+                "detune": {
+                  "type": "stack",
+                  "data": {
+                    "array": []
+                  }
+                }
+              },
+              "oscillatorType": "square",
+              "time_constant": 0.005,
+              "waveform": "t > 0.5 ? t*4 - 1 : -1",
+              "serie": {
+                "sin": "0",
+                "cos": "0"
+              },
+              "terms": {}
+            }
+          }
+        ]
+      }
+    });
+
   DeserializerTest.test(SerializerOracle.PackedJSONBV3.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
     instruments: instruments
   });

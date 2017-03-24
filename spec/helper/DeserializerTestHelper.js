@@ -220,10 +220,6 @@ DeserializerTest.test = function(serializerfunc, deserializerfunc, extras) {
     return function(obj) {
       describe("when serialized " + JSON.stringify(obj), function() {
         beforeEach(function() {
-          if (obj.type === 'note_condition') {
-            console.log(deserializerfunc);
-            //debugger;
-          }
           this.serialized = serializerfunc(type, obj);
         });
 

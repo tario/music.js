@@ -7,7 +7,16 @@ describe("PackedJSONSerializerB", function() {
   patterns.push({"measure":5,"measureCount":1,"bpm":140,"selectedTrack":0,"tracks":[track2],"scrollLeft":0});
   patterns.push({"measure":5,"measureCount":1,"bpm":140,"selectedTrack":0,"tracks":[track3],"scrollLeft":0});
 
+  var instruments = [];
+  instruments.push({
+            "type": "gain",
+            "data": {
+              "gain": "0.12"
+            }
+          });
+
   DeserializerTest.test(SerializerOracle.PackedJSONB.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
-    patterns: patterns
+    patterns: patterns,
+    instruments: instruments
   });
 });

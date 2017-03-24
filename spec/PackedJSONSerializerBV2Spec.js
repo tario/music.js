@@ -41,6 +41,12 @@ describe("PackedJSONSerializerBV2", function() {
     }
   });
 
+  instruments.push({
+            "type": "gain",
+            "data": {
+              "gain": "0.12"
+            }
+          });
 
   DeserializerTest.test(SerializerOracle.PackedJSONBV2.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
     instruments: instruments
