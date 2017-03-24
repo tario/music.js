@@ -13021,7 +13021,7 @@ musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeP
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
-musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", function($timeout, $http, TypeService, Recipe) {
+musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeService", "Recipe", "MusicObjectFactory", function($timeout, $http, TypeService, Recipe, MusicObjectFactory) {
   return {
     scope: {
       file: "=file"
@@ -13031,9 +13031,10 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
       var file;
       var types = TypeService.getTypes();
 
+      scope.output = {};
+
       scope.parameters = [];
       scope.recipe = Recipe.start;
-
       scope.termschanged = function() {
         scope.$broadcast('termschanged');
       };
@@ -13134,8 +13135,20 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         });
       };
 
+      var outputObserver;
+      scope.$on("$destroy", function() {
+        if (outputObserver) outputObserver.destroy();
+      });
+
       var updateTemplate = function(file) {
         if (!file) return;
+
+        if (outputObserver) outputObserver.destroy();
+        var outputObserver = MusicObjectFactory().observeOutput(file, function(output) {
+          $timeout(function() {
+            scope.output = output;
+          });
+        });
 
         types.then(function() {
           $timeout(function() {
@@ -14358,15 +14371,28 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
-  return function() {
+  var fileOutputMap = new WeakMap();
+
+  return function(options) {
     var nextId = 0;
 
     var _last_type = {};
     var ___cache = {};
 
+    var monitor = options && options.monitor;
+
     var getConstructor = function(descriptor, channel) {
         return TypeService.getType(descriptor.type)
           .then(function(type) {
+            if (type.monitor && !monitor) {
+              return function(subobjects) {
+                var wrapped = subobjects[0];
+                return function(music) {
+                  return wrapped(music);
+                };
+              };
+            }
+
             var ret = function(subobjects) {
               var buildComponents = [];
 
@@ -14474,7 +14500,22 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
             .then(function(obj) {
               return constructor([obj]);
             });
+        })
+        .then(function(obj) {
+          if (obj && obj.dataLink) {
+            obj.dataLink(notifyChangeFor(descriptor));
+          }
+          return obj;
         });
+    };
+
+    var notifyChangeFor = function(descriptor) {
+      return function(output) {
+        if (fileOutputMap.has(descriptor)) {
+          var ee = fileOutputMap.get(descriptor);
+          ee.emit('changed', output);
+        }
+      };
     };
 
     var createParametric = function(descriptor) {
@@ -14524,9 +14565,29 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         });
     };
 
+    var observeOutput = function(file, listener) {
+      var ee;
+
+      if (fileOutputMap.has(file)) {
+        ee = fileOutputMap.get(file);
+      } else {
+        ee = new EventEmitter();
+        fileOutputMap.set(file, ee)
+      }
+
+      ee.on('changed', listener);
+
+      return {
+        destroy: function() {
+          ee.removeListener('changed', listener);
+        }
+      }
+    };
+
     return {
       create: create,
-      destroyAll: destroyAll
+      destroyAll: destroyAll,
+      observeOutput: observeOutput
     };
   };
 }]);
@@ -14662,7 +14723,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function
           description: options.description,
           _default: options._default,
           subobjects: options.subobjects,
-          stackAppend: options.stackAppend
+          stackAppend: options.stackAppend,
+          monitor: options.monitor
         })
       }
     };
@@ -16389,7 +16451,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
   };
 
   var lastObj;
-  var musicObjectFactory = MusicObjectFactory();
+  var musicObjectFactory = MusicObjectFactory({monitor: true});
 
   var destroyAll = function() {
     ($scope.instruments||[]).forEach(function(instrument) {
@@ -16403,18 +16465,57 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
     return musicObjectFactory.destroyAll();
   };
 
+  var lazyLoadInstrument = function(f) {
+    var callStop = function(p) { return p.stop(); };
+    var callPlay = function(p) { return p.play(); };
+
+    var instrumentPromise;
+    var innerInstrument;
+
+    var note = function(n) {
+      if (innerInstrument) return innerInstrument.note(n);
+      var innerNote;
+
+      if (!instrumentPromise) {
+        instrumentPromise = f();
+      }
+
+      innerNote = instrumentPromise.then(function(inst) {
+        innerInstrument = inst;
+        return inst.note(n);
+      });
+
+      var play = function() {
+        var playing = innerNote.then(callPlay);
+
+        var stop = function() {
+          return playing.then(callStop);
+        };
+
+        return {stop: stop};
+      };
+
+      return {play: play};
+    };
+
+    return MUSIC.instrumentExtend({
+      note: note
+    });
+  };
+
+  var createInstrumentFromFile = function() {
+    return musicObjectFactory.create($scope.file);
+  };
+
   var fileChanged = fn.debounce(function(newFile, oldFile) {
     if (!$scope.file) return;
    
     $q.when(null)
       .then(function() {
-        if ($scope.resetStack) {
-          return destroyAll();
-        }
+        return destroyAll();
       })
       .then(function() {
-        $scope.resetStack = false;
-        return musicObjectFactory.create($scope.file)
+        return lazyLoadInstrument(createInstrumentFromFile);
       })    
       .then(function(obj) {
           if (!obj) {
@@ -16440,7 +16541,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
           }
           lastObj = obj;
       });
-  }, 50);
+  }, 250);
   $scope.$watch('file', fileChanged, true);
 
   $scope.indexChanged = function() {

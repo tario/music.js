@@ -1,6 +1,28 @@
 module.export = function(m) {
 
   m.lang("en", {
+    note_condition: {
+      note_on: "Note ON",
+      note_off: "Note OFF",
+      leave_time_constant: "Leave Time Constant",
+      enter_time_constant: "Enter Time Constant",
+    },
+    signal_constant: {
+      tooltip: {
+        constant: 'Produce a constant output signal of a given value'
+      },
+      description: 'Produce a constant output signal of a given value'
+    },
+    signal_monitor: {
+      tooltip: {
+        signal_value: "Current value of the signal",
+        upper_bound: "Upper bound of the signal during the measurement cycle",
+        lower_bound: "Lower bound of the signal during the measurement cycle"
+      },
+      signal_value: 'Signal value',
+      upper_bound: 'Upper bound',
+      lower_bound: 'Lower bound'
+    },
     sample_rate_reduction: {
       tooltip: {
         factor: 'Rate reduction factor'
@@ -153,7 +175,7 @@ module.export = function(m) {
         delay: 'time separation (in seconds) between repetitions'
       }
     },
-    scale: {
+    signal_scale: {
       tooltip: {
         base: 'base signal target level',
         top: 'top signal target level'
@@ -176,6 +198,27 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    note_condition: {
+      note_on: "Nota Activa",
+      note_off: "Nota Inactiva",
+      time_constant: "Constante de tiempo"
+    },
+    signal_constant: {
+      tooltip: {
+        constant: 'Produce una señal constante con un valor determinado'
+      },
+      description: 'Produce una señal constante con un valor determinado'
+    },
+    signal_monitor: {
+      tooltip: {
+        signal_value: "Valor actual de la señal",
+        upper_bound: "Cota superior de la señal durante el ciclo de medida",
+        lower_bound: "Cota superior de la señal durante el ciclo de medida"
+      },
+      signal_value: 'Valor de la señal',
+      upper_bound: 'Cota superior',
+      lower_bound: 'Cota inferior'
+    },
     sample_rate_reduction: {
       tooltip: {
         factor: 'Factor de reduccion de frecuencia de muestreo'
@@ -328,7 +371,7 @@ module.export = function(m) {
         delay: 'Separacion en el tiempo (en segundos) entre las repeticiones'
       }
     },
-    scale: {
+    signal_scale: {
       tooltip: {
         base: 'nivel base objetivo de la señal',
         top: 'nivel superior objetivo de la señal'
@@ -519,16 +562,109 @@ module.export = function(m) {
   });
 
   var oscillatorStackAppend = function(file, data) {
-    var isEnvelope = function(data) {
-      return data.type === 'envelope';
+    var isEnvelopedGain = function(obj) {
+      if (obj.type === 'gain') {
+        if (obj.data && obj.data.modulation && obj.data.modulation.gain) {
+          var gainModulation = obj.data.modulation.gain;
+          if (gainModulation.type === "stack") {
+            if (gainModulation.data &&
+                gainModulation.data.array &&
+                gainModulation.data.array[0] &&
+                gainModulation.data.array[0].type === 'adsr') {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
     };
 
-    if (!file.array.some(isEnvelope)) {
-      file.array.push({type: 'envelope', data: {}})
+    if (!file.array.some(isEnvelopedGain)) {
+      var gainModulation = {
+        type: "stack",
+        data: {
+          array: [{
+            type: "adsr",
+            data: {attackTime: 0.01, decayTime: 0.4, sustainLevel: 0.8, releaseTime: 0.1}
+          }]
+        }
+      };
+
+      file.array.push({type: 'gain', data: {modulation: {gain: gainModulation}, gain: 0.0}});
     }
 
     file.array.push({type: data.name, data: {}});
   };
+
+  m.type("signal_monitor", {template: 'monitor', description: 'Signal Monitor', monitor: true}, function(data, subobjects, components) {
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    var currentObserver;
+
+    if (!wrapped) return;
+
+    var phase = 0;
+    var upperBound = -Infinity;
+    var lowerBound = Infinity;
+    var s, s2, s3;
+    var monitorFcn = function(t) {
+      if (currentObserver) {
+        phase += 0.00005;
+
+        if (t > upperBound) upperBound = t;
+        if (t < lowerBound) lowerBound = t;
+
+        if (phase > 1) {
+          phase--;
+          s = t < 0 ? -1 : 1;
+          s2 = upperBound < 0 ? -1 : 1;
+          s3 = lowerBound < 0 ? -1 : 1;
+          currentObserver({
+            sign: s,
+            signalValue: t*s,
+            upperBoundSign: s2,
+            upperBoundValue: upperBound*s2,
+            lowerBoundSign: s3,
+            lowerBoundValue: lowerBound*s3
+          });
+
+          upperBound = -Infinity;
+          lowerBound = Infinity;
+        }
+      }
+      return t;
+    };
+
+    var lastObject = null;
+    var ret = function(music) {
+      if (lastObject) {
+        lastObject.dispose();
+        lastObject = null;
+      }
+
+      lastObject = music.formula(monitorFcn);
+      return wrapped(lastObject);
+    };
+
+    ret.update = function() {
+      return this;
+    };
+
+    ret.dataLink = function(obs) {
+      currentObserver = obs;
+    };
+
+    return ret;
+  });
+
+  m.type("signal_constant", {template: "constant", description: "Constant signal"}, 
+    function(data, subobjects, components) {
+    if (!data) return;
+      return function(music){
+        var generator = music.constant({offset: data.offset});
+        return new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator), {start: true});
+      };
+  });
 
   var defaultModWrapper = function(x){return x;};
   m.type("oscillator", {template: "oscillator", description: "Oscillator", stackAppend: oscillatorStackAppend,
@@ -717,92 +853,142 @@ module.export = function(m) {
     return ret;
   });
 
+  m.type("note_condition", {template: "note_condition", description: "core.note_condition.description", _default: {
+    note_on: 1.0,
+    note_off: 0.0,
+    leave_time_constant: 0.01,
+    enter_time_constant: 0.01
+  }},  function(data, subobjects) {
+    var note_on, note_off, leave_time_constant, enter_time_constant;
+
+    var ret = function(music) {
+      var audioParamModulation = music.audioParamModulation;
+      var baseNode = music.sfxBase();
+
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
+
+      var noteCount = 0;
+      var note = function(n) {
+        var play = function(){
+          var currentLevel = audioParamModulation.value;
+
+          if (noteCount === 0) {
+            audioParamModulation.cancelScheduledValues(0.0);
+            audioParamModulation.setTargetAtTime(note_on, music._audio.audio.currentTime, enter_time_constant);
+          }
+
+          noteCount++;
+          return {stop: function(){}};
+        };
+
+        return MUSIC.playablePipeExtend({play: play})
+            .onStop(function() {
+                noteCount--;
+                // don't release if noteCount > 0
+                if (noteCount > 0) return;
+                audioParamModulation.cancelScheduledValues(0.0);
+                audioParamModulation.setTargetAtTime(note_off, music._audio.audio.currentTime, leave_time_constant);
+            });
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });
+    };
+
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
+    ret.update = function(data) {
+      note_on = parseFloat(_def(data.note_on, 1.0));
+      note_off = parseFloat(_def(data.note_off, 0.0));
+      leave_time_constant = parseFloat(_def(data.leave_time_constant,0.01));
+      enter_time_constant = parseFloat(_def(data.enter_time_constant,0.01));
+      return this;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
+
   m.type("adsr", {template: "adsr", description: "core.adsr.description", _default: {
     attackTime: 0.01,
     decayTime: 0.4,
     sustainLevel: 0.8,
     releaseTime: 0.4
   }},  function(data, subobjects) {
-    var attackTime, decayTime, sustainLevel, releaseTime, mdecay, reset_on_cut; 
+    var samples, attackTime, decayTime, sustainLevel, releaseTime;
+    var attackCurve, decayCurve, releaseCurve;
+    var resetOnCut = false;
 
-    var ret = function(music, options){
-      var currentPhase = 0; // = OFF 1 = ADS 2 = R
-      var prevPhase = 0
-      var d, r, t0, acc;
-      
-      options = options ||{};
-      var formulaNode = music
-        .formulaGenerator(function(t) {
-          if (currentPhase===0) {
-            prevPhase = currentPhase;
-            return 0;
-          }
-          if (currentPhase===1) { // ADS
-            if (prevPhase!==1) {
-              t0 = t;
-            }
-            prevPhase = currentPhase;
+    var eventPreprocessor = function(event) {
+      var l = event[2];
+      l = l - releaseTime * 1000;
+      if (l <0 ) l = 0;
 
-            d = t-t0;
-            if (attackTime !== 0 && d < attackTime) {
-              acc = d / attackTime
-            } else if (d < attackTime + decayTime && sustainLevel < 1) {
-              d = t-(t0+attackTime);
-              acc = 1 - (d / decayTime)*(1 - sustainLevel);
-            }
-            return acc;
-          }
-          if (currentPhase===2) { // R
-            if (prevPhase!==2) {
-              t0 = t;
-            }
-            prevPhase = currentPhase;
+      return [event[0], event[1], l];
+    };
 
-            r = acc * (1 - (t-t0)/releaseTime);
-            return r > 0 ? r : 0;
-          }
-        });
+    var ret = function(music) {
+      var audioParamModulation = music.audioParamModulation;
+      var baseNode = music.sfxBase();
 
-      var playing = formulaNode.play();
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
 
       var noteCount = 0;
-      var stop = function() {
-        noteCount--;
-        if (noteCount===0) {
-          currentPhase=2; // change to 'release'
-        }
-      };
-
-      var play = function() {
-        if (noteCount===0 || reset_on_cut) {
-          // change to ads
-          prevPhase = 0;
-          currentPhase=1;
-        }
-        noteCount++;
-        return {stop: stop};
-      };
-
       var note = function(n) {
-        return MUSIC.playablePipeExtend({play: play});
-      };
+        var innerNote;
+        var play = function(){
+          var currentLevel = audioParamModulation.value;
 
-      var dispose = function() {
-        playing.stop();
+          if (noteCount === 0 || resetOnCut) {
+            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
+            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+            startCurve.apply(music._audio.audio.currentTime, audioParamModulation);
+          }
+
+          noteCount++;
+          return {stop: function(){}};
+        };
+
+        return MUSIC.playablePipeExtend({play: play})
+            .onStop(function() {
+                noteCount--;
+                // don't release if noteCount > 0
+                if (noteCount > 0) return;
+                audioParamModulation.cancelScheduledValues(0.0);
+                audioParamModulation.setTargetAtTime(0.0, music._audio.audio.currentTime, releaseTime);
+            });
       };
 
       return MUSIC.instrumentExtend({
         note: note,
-        dispose: dispose
+        eventPreprocessor: eventPreprocessor
       });
     };
 
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
     ret.update = function(data) {
-      attackTime = parseFloat(data.attackTime || 0.4);
-      decayTime = parseFloat(data.decayTime || 0.4);
-      sustainLevel = parseFloat(data.sustainLevel || 0.8);
-      releaseTime = parseFloat(data.releaseTime || 0.4);
-      reset_on_cut = data.reset_on_cut;
+      samples = data.samples || 100;  
+      attackTime = parseFloat(_def(data.attackTime, 0.4));
+      decayTime = parseFloat(_def(data.decayTime,0.4));
+      sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
+      releaseTime = parseFloat(_def(data.releaseTime,0.4));
+      if (releaseTime <= 0.0) releaseTime = 0.00001;
+      resetOnCut = data.reset_on_cut;
+
+      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
       return this;
     };
 
@@ -980,98 +1166,6 @@ module.export = function(m) {
         return ret;
       });
 
-  m.type("envelope", {template: "envelope", description: "ADSR", _default: {
-    attackTime: 0.01,
-    decayTime: 0.4,
-    sustainLevel: 0.8,
-    releaseTime: 0.4,
-    reset_on_cut: false
-  }},  function(data, subobjects) {
-    if (!subobjects) return;
-    var wrapped = subobjects[0];
-    if (!wrapped) return;
-
-    var samples, attackTime, decayTime, sustainLevel, releaseTime;
-    var attackCurve, decayCurve, releaseCurve;
-    var resetOnCut = false;
-
-    var eventPreprocessor = function(event) {
-      var l = event[2];
-      l = l - releaseTime * 1000;
-      if (l <0 ) l = 0;
-
-      return [event[0], event[1], l];
-    };
-
-    var ret = function(music) {
-      var baseNode = music.sfxBase();
-      var gainNode = baseNode.gain(0);
-      var inst = wrapped(gainNode);
-
-      var noteCount = 0;
-      var note = function(n) {
-        var innerNote;
-        var noteInst = inst.note(n);
-
-        var play = function(){
-          var playing = noteInst.play();
-          var currentLevel = gainNode._destination.gain.value;
-
-          if (noteCount === 0 || resetOnCut) {
-            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
-            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-            gainNode.setParam('gain', startCurve);
-          }
-
-          noteCount++;
-
-
-          var origStop = playing.stop.bind(playing);
-          playing.stop = function() {
-            playing.stop = function() {};
-            origStop();
-          };
-          return playing;
-        };
-
-        return MUSIC.playablePipeExtend({play: play})
-            .onStop(function() {
-                noteCount--;
-                // don't release if noteCount > 0
-                if (noteCount > 0) return;
-                gainNode.setParamTarget('gain', 0.0, releaseTime);
-            });
-      };
-
-      return MUSIC.instrumentExtend({
-        note: note,
-        eventPreprocessor: eventPreprocessor
-      });
-    };
-
-    var _def = function(val, d) {
-      return typeof val === 'undefined' ? d : val;
-    };
-
-    ret.update = function(data) {
-      samples = data.samples || 100;  
-      attackTime = parseFloat(_def(data.attackTime, 0.4));
-      decayTime = parseFloat(_def(data.decayTime,0.4));
-      sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
-      releaseTime = parseFloat(_def(data.releaseTime,0.4));
-      if (releaseTime <= 0.0) releaseTime = 0.00001;
-      resetOnCut = data.reset_on_cut;
-
-      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
-      return this;
-    };
-
-    ret.update(data);
-
-    return ret;
-  });
-
-
   m.type("transpose",
       {
           template: "generic_wrapper_editor", 
@@ -1205,14 +1299,60 @@ module.export = function(m) {
     });
   };
 
-  genericType("scale",
+  genericType("signal_scale",
   {
     parameters: [
-      {name: 'base', value: -1, tooltip: 'core.scale.tooltip.base'},
-      {name: 'top', value: 1, tooltip: 'core.scale.tooltip.top'},
+      {name: 'base', value: -1, tooltip: 'core.signal_scale.tooltip.base'},
+      {name: 'top', value: 1, tooltip: 'core.signal_scale.tooltip.top'},
     ],
-    description: "core.scale.description"
+    description: "core.signal_scale.description"
   });
+
+  genericType("signal_not",
+  {
+    parameters: [],
+    description: "core.signal_not.description"
+  });
+
+  genericType("signal_or",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.signal_or.description"
+      });  
+
+  genericType("signal_nor",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.signal_nor.description"
+      });  
+
+  genericType("signal_and",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.signal_and.description"
+      });
+
+  genericType("signal_nand",
+      {
+        parameters: [
+          {name: "second_signal", value: 1.0, hidden: true}
+        ], 
+        components: ["second_signal"],
+        singleParameter: true,
+        description: "core.signal_nand.description"
+      });
 
   genericType("gain", 
       {
@@ -1221,7 +1361,7 @@ module.export = function(m) {
         ], 
         components: ["gain"],
         singleParameter: true,
-        description: "core.gain.description"
+        description: "core.signal_gain.description"
       });
 
   genericType("delay", 

@@ -1,0 +1,8 @@
+<div class="row-fluid show-contextual-tooltip">
+<div class="span2" translate="core.signal_monitor.signal_value"></div>
+<div class="span2">{{output.sign == -1 ? '-' : '+'}}{{output.signalValue | number:4}}</div>
+<div class="span2" translate="core.signal_monitor.upper_bound"></div>
+<div class="span2">{{output.upperBoundSign == -1 ? '-' : '+'}}{{output.upperBoundValue | number:4}}</div>
+<div class="span2" translate="core.signal_monitor.lower_bound"></div>
+<div class="span2">{{output.lowerBoundSign == -1 ? '-' : '+'}}{{output.lowerBoundValue | number:4}}</div>
+</div>

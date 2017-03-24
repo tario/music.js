@@ -186,7 +186,6 @@ instruments.push({
   }
 });
 
-
 var deepEqual = function(obj1, obj2) {
   expect(typeof obj1).to.be(typeof obj2);
 

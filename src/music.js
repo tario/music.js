@@ -166,6 +166,10 @@ MUSIC.EffectsPipeline.prototype = {
     return ret;
   },
 
+  constant: function(options) {
+    return this._wrapFcn(new MUSIC.SoundLib.Constant(this._audio, this._audioDestination, options));
+  },
+
   oscillator: function(options) {
     return this._wrapFcn(new MUSIC.SoundLib.Oscillator(this._audio, this._audioDestination, options));
   },
@@ -215,21 +219,74 @@ MUSIC.EffectsPipeline.prototype = {
     return this._wrapFcn(new MUSIC.SoundLib.FormulaGenerator(this._audio, this._audioDestination, fcn));
   },
 
-  scale: function(options) {
-    var a, b;
-    var formulaGenerator = new MUSIC.Effects.Formula(this._audio, this._audioDestination, function(input, t) {
-      return input*a+b;
-    });
+  signal_and: function(value) {
+    return this.gain(value||1);
+  },
+
+  signal_nand: function(value) {
+    return this.not().and(value||1);
+  },
+
+  signal_or: function(value) {
+    return this.not().nor(value||0);
+  },
+
+  signal_nor: function(value) {
+    var negateModl = function(modl) {
+      if (!modl.apply) return modl;
+
+      return {
+        apply: function(currentTime, audioParam, music) {
+          return modl.apply(currentTime, audioParam, music, function(modulatorFactory, f) {
+            return f(modulatorFactory.not());
+          });
+        }
+      };
+    };
+
+    var andNode = this.and(1);
+    var update = function(value) {
+      andNode.update(negateModl(value));
+    };
+    update(value);
+
+    var ret = andNode.not();
+    ret.update = update;
+    return ret;
+  },
+
+  signal_not: function() {
+    return this.signal_scale({top: 0, base: 2});
+  },
+
+  signal_scale: function(options) {
+    var gain = this.gain(1.0);
+    var c1 = this.constant(0.0);
+
+    var gainUpdate = gain.update.bind(gain);
+    var gainDispose = gain.dispose.bind(gain);
+    var constantUpdate = c1.update.bind(c1);
+    var constantDispose = c1.dispose.bind(c1);
+
+    var dispose = function() {
+      gainDispose();
+      constantDispose();
+    };
 
     var update = function(options) {
+      var a, b;
       a = (options.top - options.base)/2;
       b = options.base + a;
+
+      gainUpdate(a);
+      constantUpdate(b);
     };
 
     update(options);
-    formulaGenerator.update = update;
+    gain.update = update;
+    gain.dispose = dispose;
 
-    return formulaGenerator;
+    return gain;
   },
 
 
@@ -489,10 +546,16 @@ MUSIC.AudioDestinationWrapper = function(music, audioDestination) {
 MUSIC.AudioDestinationWrapper.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
 MUSIC.modulator = function(f) {
+  var _f = function(modulatorFactory, f) {
+    return f(modulatorFactory);
+  };
+
   return {
-    apply: function(currentTime, audioParam, music) {
-      var modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
-      var modulator = f(modulatorFactory);
+    apply: function(currentTime, audioParam, music, combineFunc) {
+      var modulatorFactory, modulator;
+      modulatorFactory = (new MUSIC.AudioDestinationWrapper(music, audioParam)).sfxBase();
+      modulatorFactory.audioParamModulation = audioParam;
+      modulator = (combineFunc||_f)(modulatorFactory, f);
 
       return {
         dispose: function() {
@@ -500,6 +563,51 @@ MUSIC.modulator = function(f) {
         }
       };
     }
+  };
+};
+
+MUSIC.SoundLib.Constant = function(music, destination, options) {
+  var constantNode = music._audio.audio.createConstantSource();
+  this._destination = constantNode;
+
+  constantNode.offset.value = options.offset || 0.0;
+  constantNode.connect(destination._destination);
+  constantNode.start();
+
+  var noop = function() {};
+
+  this.setParam = function(paramName, value) {
+    value.apply(music.audio.currentTime, constantNode[paramName]);
+  };
+
+  this.setParamTarget = function(paramName, target, timeConstant) {
+    var audioParam = constantNode[paramName];
+    audioParam.cancelScheduledValues(0.0);
+    audioParam.setTargetAtTime(target, music.audio.currentTime, timeConstant);
+  };
+
+  this.dispose = function() {
+    constantNode.stop();
+    constantNode.disconnect(destination._destination);
+
+    this.dispose = function() {};
+  };
+
+  this.update = function(value) {
+    constantNode.offset.value = value;
+  };
+
+  this.freq = function(newFreq) {
+    var playable = {};
+
+    playable.setFreq = noop;
+    playable.reset = noop;
+    playable.play = function() {
+      return {stop: noop}
+    };
+
+    MUSIC.playablePipeExtend(playable);
+    return playable;
   };
 };
 

@@ -1,15 +1,28 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeService", "pruneWrapper", function(MusicContext, $q, TypeService, pruneWrapper) {
-  return function() {
+  var fileOutputMap = new WeakMap();
+
+  return function(options) {
     var nextId = 0;
 
     var _last_type = {};
     var ___cache = {};
 
+    var monitor = options && options.monitor;
+
     var getConstructor = function(descriptor, channel) {
         return TypeService.getType(descriptor.type)
           .then(function(type) {
+            if (type.monitor && !monitor) {
+              return function(subobjects) {
+                var wrapped = subobjects[0];
+                return function(music) {
+                  return wrapped(music);
+                };
+              };
+            }
+
             var ret = function(subobjects) {
               var buildComponents = [];
 
@@ -117,7 +130,22 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
             .then(function(obj) {
               return constructor([obj]);
             });
+        })
+        .then(function(obj) {
+          if (obj && obj.dataLink) {
+            obj.dataLink(notifyChangeFor(descriptor));
+          }
+          return obj;
         });
+    };
+
+    var notifyChangeFor = function(descriptor) {
+      return function(output) {
+        if (fileOutputMap.has(descriptor)) {
+          var ee = fileOutputMap.get(descriptor);
+          ee.emit('changed', output);
+        }
+      };
     };
 
     var createParametric = function(descriptor) {
@@ -167,9 +195,29 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
         });
     };
 
+    var observeOutput = function(file, listener) {
+      var ee;
+
+      if (fileOutputMap.has(file)) {
+        ee = fileOutputMap.get(file);
+      } else {
+        ee = new EventEmitter();
+        fileOutputMap.set(file, ee)
+      }
+
+      ee.on('changed', listener);
+
+      return {
+        destroy: function() {
+          ee.removeListener('changed', listener);
+        }
+      }
+    };
+
     return {
       create: create,
-      destroyAll: destroyAll
+      destroyAll: destroyAll,
+      observeOutput: observeOutput
     };
   };
 }]);
@@ -305,7 +353,8 @@ musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function
           description: options.description,
           _default: options._default,
           subobjects: options.subobjects,
-          stackAppend: options.stackAppend
+          stackAppend: options.stackAppend,
+          monitor: options.monitor
         })
       }
     };
