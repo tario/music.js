@@ -186,7 +186,6 @@ instruments.push({
   }
 });
 
-
 var deepEqual = function(obj1, obj2) {
   expect(typeof obj1).to.be(typeof obj2);
 
@@ -221,6 +220,10 @@ DeserializerTest.test = function(serializerfunc, deserializerfunc, extras) {
     return function(obj) {
       describe("when serialized " + JSON.stringify(obj), function() {
         beforeEach(function() {
+          if (obj.type === 'note_condition') {
+            console.log(deserializerfunc);
+            //debugger;
+          }
           this.serialized = serializerfunc(type, obj);
         });
 

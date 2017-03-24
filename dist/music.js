@@ -15466,13 +15466,25 @@ var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
 "envelope","transpose","scale","gain","echo","lowpass",
 "highpass","bandpass","lowshelf","highshelf","peaking",
 "notch","allpass","reverb","noise","pink_noise","red_noise",
-"arpeggiator","stack", "multi_instrument", "monophoner", "polyphoner", "note_padding"];
+"arpeggiator","stack", "multi_instrument", "monophoner", "polyphoner", "note_padding",
+"note_condition", "signal_monitor", "signal_constant", "note_delay",
+"sample_rate_reduction", "bit_crushing",
+"signal_scale", "signal_not",
+"signal_or", "signal_and", "signal_nor", "signal_nand", "delay"];
 
 var monophonerPacker = objToArrayPacker([
   ["force_note_cut", booleanPacker]
 ]);
 var polyphonerPacker = objToArrayPacker(["maxChannels"]);
 var notePaddingPacker = objToArrayPacker(["time"]);
+
+var toModl = function(value) {
+  return [value, recursiveInstrumentPacker];
+};
+
+var modl = function(values) {
+  return nullable(objToArrayPacker(values.map(toModl)));
+};
 
 var instrumentPacker = objToArrayPacker([
   ["type", substitution(typeNames)],
@@ -15505,7 +15517,20 @@ var instrumentPacker = objToArrayPacker([
       multi_instrument: multiInstrumentPacker,
       monophoner: monophonerPacker,
       polyphoner: polyphonerPacker,
-      note_padding: notePaddingPacker
+      note_padding: notePaddingPacker,
+      note_condition: objToArrayPacker(["note_on", "note_off","enter_time_constant", "leave_time_constant"]),
+      signal_monitor: noParametersPacker,
+      signal_constant: objToArrayPacker(["offset"]),
+      note_delay: objToArrayPacker(["delay"]),
+      delay: objToArrayPacker(["delay"]),      
+      sample_rate_reduction: objToArrayPacker(["factor"]),
+      bit_crushing: objToArrayPacker(["bits"]),
+      signal_scale: objToArrayPacker(["base", "top"]),
+      signal_not: noParametersPacker,
+      signal_or: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
+      signal_and: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
+      signal_nor: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
+      signal_nand: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]])
     }
   )],
 ]);
