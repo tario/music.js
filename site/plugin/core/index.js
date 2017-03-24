@@ -856,7 +856,8 @@ module.export = function(m) {
   m.type("note_condition", {template: "note_condition", description: "core.note_condition.description", _default: {
     note_on: 1.0,
     note_off: 0.0,
-    time_constant: 0.01
+    leave_time_constant: 0.01,
+    enter_time_constant: 0.01
   }},  function(data, subobjects) {
     var note_on, note_off, leave_time_constant, enter_time_constant;
 
