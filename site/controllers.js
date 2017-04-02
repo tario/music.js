@@ -708,6 +708,48 @@ musicShowCaseApp.controller("MainController",
   function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
 
+  var concat = function(a, b) {
+    return a.concat(b);
+  };
+
+  var getPFilter = function(projectId) {
+    return FileRepository.getFile(projectId)
+      .then(function(file) {
+        if (file.contents.ref) {
+          return $q.all(file.contents.ref.map(getPFilter))
+            .then(function(f) {
+              return [projectId].concat(f.reduce(concat));
+            });
+        } else {
+          return [projectId];
+        }
+      });
+  };
+
+  var switchProject = function(projectId) {
+    var pFilter = [projectId];
+
+    return FileRepository.getFile(projectId).then(function(file) {
+      $scope.project = file;
+
+      return getPFilter(projectId);
+    }).then(function(filter) {
+      $scope.projectFilter = filter.concat(['core']);
+      if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
+    });
+  };
+
+  var currentObserver;
+  switchProject("default")
+    .then(function() {
+      currentObserver = FileRepository.search(null, {project: $scope.projectFilter}).observe(function(files) {
+        $timeout(function() {
+          $scope.filesTotal = files.total;
+          $scope.files = files.results;
+        });
+      });
+    });
+
   $scope.fileInputClick = function() {
     $timeout(function() {
       $(".choose-file-import-container input[type=file]").click();
@@ -814,13 +856,6 @@ musicShowCaseApp.controller("MainController",
       if (!skip) $scope.welcome();
     });
 
-  var currentObserver = FileRepository.search().observe(function(files) {
-    $timeout(function() {
-      $scope.filesTotal = files.total;
-      $scope.files = files.results;
-    });
-  });
-
   $scope.recipe = Recipe.start;
 
   $scope.activate = function(example) {
@@ -831,7 +866,7 @@ musicShowCaseApp.controller("MainController",
 
   $scope.$watch("searchKeyword", fn.debounce(function() {
     if (currentObserver) currentObserver.close();
-    currentObserver = FileRepository.search($scope.searchKeyword).observe(function(files) {
+    currentObserver = FileRepository.search($scope.searchKeyword, {project: $scope.projectFilter}).observe(function(files) {
       $scope.filesTotal = files.total;
       $scope.files = files.results;
     });
@@ -842,6 +877,7 @@ musicShowCaseApp.controller("MainController",
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";
+    if (type === "project") return "folder-o";
     return "question";
   }
 

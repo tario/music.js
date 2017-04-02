@@ -27,6 +27,8 @@ var esTranslations = {
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',
     new_song: 'Nueva Cancion',
+    new_project: 'Nuevo Proyecto...',
+    open_project: 'Abrir Proyecto...',
     file_import: 'Importar...',
     tools: 'Herramientas',
     tools_preferences: 'Preferencias',

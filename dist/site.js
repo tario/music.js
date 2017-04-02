@@ -12611,6 +12611,8 @@ var enTranslations = {
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',
     new_song: 'New Song',
+    new_project: 'New Project...',
+    open_project: 'Open Project...',
     file_import: 'Import...',
     tools: 'Tools',
     tools_preferences: 'Preferences',
@@ -12807,6 +12809,8 @@ var esTranslations = {
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',
     new_song: 'Nueva Cancion',
+    new_project: 'Nuevo Proyecto...',
+    open_project: 'Abrir Proyecto...',
     file_import: 'Importar...',
     tools: 'Herramientas',
     tools_preferences: 'Preferencias',
@@ -14982,6 +14986,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 }]);
 
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+  var createdFilesIndex = [];
+  var createdFiles = {};
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -14994,10 +15000,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
             createdFiles[fileId] = r.data;
             createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId});
+            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
           });
       }));
     });
+
+  createdFiles['default'] = {
+    ref: ['samples']
+  };
+  createdFiles['samples'] = {};
+
+  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default'});
+  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
 
   var createId = function() {
     var array = [];
@@ -15008,9 +15022,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
     return array.join("");
   };
-
-  var createdFilesIndex = [];
-  var createdFiles = {};
 
   var genericStateEmmiter = new EventEmitter();
   var recycledEmmiter = new EventEmitter();
@@ -15281,12 +15292,20 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         };
       });
     },
-    search: function(keyword) {
+    search: function(keyword, options) {
+      options = options || {};
 
       var hasKeyword = function() { return true };
       if (keyword && keyword.length > 0) {
         keyword = keyword.toLowerCase();
         hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
+
+      var byProject = function() { return true };
+      if (options.project) {
+        byProject = function(x) {
+          return options.project.indexOf(x.project) !== -1;
+        };
       }
 
       var ee = new EventEmitter();
@@ -15307,7 +15326,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               var ids = res.map(function(x){ return x.id; });
               if (result[1]) res = res.concat(result[1].filter(notInRes));
               res = res.concat(result[2].map(convertType));
-              res = res.filter(hasKeyword);
+              res = res.filter(hasKeyword).filter(byProject);
 
               ee.emit("changed", {
                 results: res.slice(0,15),
@@ -15339,7 +15358,8 @@ var convertType = function(type) {
   return {
     type: "fx",
     name: type.name,
-    id: "type"+ type.name
+    id: "type"+ type.name,
+    project: 'core'
   };
 };
 
@@ -16605,6 +16625,48 @@ musicShowCaseApp.controller("MainController",
   function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
 
+  var concat = function(a, b) {
+    return a.concat(b);
+  };
+
+  var getPFilter = function(projectId) {
+    return FileRepository.getFile(projectId)
+      .then(function(file) {
+        if (file.contents.ref) {
+          return $q.all(file.contents.ref.map(getPFilter))
+            .then(function(f) {
+              return [projectId].concat(f.reduce(concat));
+            });
+        } else {
+          return [projectId];
+        }
+      });
+  };
+
+  var switchProject = function(projectId) {
+    var pFilter = [projectId];
+
+    return FileRepository.getFile(projectId).then(function(file) {
+      $scope.project = file;
+
+      return getPFilter(projectId);
+    }).then(function(filter) {
+      $scope.projectFilter = filter.concat(['core']);
+      if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
+    });
+  };
+
+  var currentObserver;
+  switchProject("default")
+    .then(function() {
+      currentObserver = FileRepository.search(null, {project: $scope.projectFilter}).observe(function(files) {
+        $timeout(function() {
+          $scope.filesTotal = files.total;
+          $scope.files = files.results;
+        });
+      });
+    });
+
   $scope.fileInputClick = function() {
     $timeout(function() {
       $(".choose-file-import-container input[type=file]").click();
@@ -16711,13 +16773,6 @@ musicShowCaseApp.controller("MainController",
       if (!skip) $scope.welcome();
     });
 
-  var currentObserver = FileRepository.search().observe(function(files) {
-    $timeout(function() {
-      $scope.filesTotal = files.total;
-      $scope.files = files.results;
-    });
-  });
-
   $scope.recipe = Recipe.start;
 
   $scope.activate = function(example) {
@@ -16728,7 +16783,7 @@ musicShowCaseApp.controller("MainController",
 
   $scope.$watch("searchKeyword", fn.debounce(function() {
     if (currentObserver) currentObserver.close();
-    currentObserver = FileRepository.search($scope.searchKeyword).observe(function(files) {
+    currentObserver = FileRepository.search($scope.searchKeyword, {project: $scope.projectFilter}).observe(function(files) {
       $scope.filesTotal = files.total;
       $scope.files = files.results;
     });
@@ -16739,6 +16794,7 @@ musicShowCaseApp.controller("MainController",
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";
+    if (type === "project") return "folder-o";
     return "question";
   }
 

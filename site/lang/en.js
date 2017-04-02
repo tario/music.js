@@ -27,6 +27,8 @@ var enTranslations = {
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',
     new_song: 'New Song',
+    new_project: 'New Project...',
+    open_project: 'Open Project...',
     file_import: 'Import...',
     tools: 'Tools',
     tools_preferences: 'Preferences',

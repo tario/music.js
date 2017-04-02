@@ -612,6 +612,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 }]);
 
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+  var createdFilesIndex = [];
+  var createdFiles = {};
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -624,10 +626,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
             createdFiles[fileId] = r.data;
             createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId});
+            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
           });
       }));
     });
+
+  createdFiles['default'] = {
+    ref: ['samples']
+  };
+  createdFiles['samples'] = {};
+
+  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default'});
+  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
 
   var createId = function() {
     var array = [];
@@ -638,9 +648,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
     return array.join("");
   };
-
-  var createdFilesIndex = [];
-  var createdFiles = {};
 
   var genericStateEmmiter = new EventEmitter();
   var recycledEmmiter = new EventEmitter();
@@ -911,12 +918,20 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         };
       });
     },
-    search: function(keyword) {
+    search: function(keyword, options) {
+      options = options || {};
 
       var hasKeyword = function() { return true };
       if (keyword && keyword.length > 0) {
         keyword = keyword.toLowerCase();
         hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
+
+      var byProject = function() { return true };
+      if (options.project) {
+        byProject = function(x) {
+          return options.project.indexOf(x.project) !== -1;
+        };
       }
 
       var ee = new EventEmitter();
@@ -937,7 +952,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               var ids = res.map(function(x){ return x.id; });
               if (result[1]) res = res.concat(result[1].filter(notInRes));
               res = res.concat(result[2].map(convertType));
-              res = res.filter(hasKeyword);
+              res = res.filter(hasKeyword).filter(byProject);
 
               ee.emit("changed", {
                 results: res.slice(0,15),
@@ -969,7 +984,8 @@ var convertType = function(type) {
   return {
     type: "fx",
     name: type.name,
-    id: "type"+ type.name
+    id: "type"+ type.name,
+    project: 'core'
   };
 };
 
