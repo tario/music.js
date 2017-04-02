@@ -916,6 +916,97 @@ module.export = function(m) {
     return ret;
   });
 
+  m.type("envelope", {template: "envelope", description: "ADSR", _default: {
+    attackTime: 0.01,
+    decayTime: 0.4,
+    sustainLevel: 0.8,
+    releaseTime: 0.4,
+    reset_on_cut: false
+  }},  function(data, subobjects) {
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var samples, attackTime, decayTime, sustainLevel, releaseTime;
+    var attackCurve, decayCurve, releaseCurve;
+    var resetOnCut = false;
+
+    var eventPreprocessor = function(event) {
+      var l = event[2];
+      l = l - releaseTime * 1000;
+      if (l <0 ) l = 0;
+
+      return [event[0], event[1], l];
+    };
+
+    var ret = function(music) {
+      var baseNode = music.sfxBase();
+      var gainNode = baseNode.gain(0);
+      var inst = wrapped(gainNode);
+
+      var noteCount = 0;
+      var note = function(n) {
+        var innerNote;
+        var noteInst = inst.note(n);
+
+        var play = function(){
+          var playing = noteInst.play();
+          var currentLevel = gainNode._destination.gain.value;
+
+          if (noteCount === 0 || resetOnCut) {
+            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
+            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
+            gainNode.setParam('gain', startCurve);
+          }
+
+          noteCount++;
+
+
+          var origStop = playing.stop.bind(playing);
+          playing.stop = function() {
+            playing.stop = function() {};
+            origStop();
+          };
+          return playing;
+        };
+
+        return MUSIC.playablePipeExtend({play: play})
+            .onStop(function() {
+                noteCount--;
+                // don't release if noteCount > 0
+                if (noteCount > 0) return;
+                gainNode.setParamTarget('gain', 0.0, releaseTime);
+            });
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note,
+        eventPreprocessor: eventPreprocessor
+      });
+    };
+
+    var _def = function(val, d) {
+      return typeof val === 'undefined' ? d : val;
+    };
+
+    ret.update = function(data) {
+      samples = data.samples || 100;  
+      attackTime = parseFloat(_def(data.attackTime, 0.4));
+      decayTime = parseFloat(_def(data.decayTime,0.4));
+      sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
+      releaseTime = parseFloat(_def(data.releaseTime,0.4));
+      if (releaseTime <= 0.0) releaseTime = 0.00001;
+      resetOnCut = data.reset_on_cut;
+
+      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
+      return this;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
+
   m.type("adsr", {template: "adsr", description: "core.adsr.description", _default: {
     attackTime: 0.01,
     decayTime: 0.4,
