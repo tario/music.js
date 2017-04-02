@@ -92,6 +92,7 @@ var enTranslations = {
   common: {
     yes: 'Yes',
     no: 'No',
+    ok: 'Ok',
     dismiss: 'Dismiss',
     cancel: 'Cancel',
     create: 'Create',

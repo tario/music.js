@@ -92,6 +92,7 @@ var esTranslations = {
   common: {
     yes: 'Si',
     no: 'No',
+    ok: 'Aceptar',
     dismiss: 'Cerrar',
     cancel: 'Cancelar',
     create: 'Crear',

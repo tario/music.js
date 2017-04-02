@@ -63,7 +63,7 @@
               <div class="title container">
                 <a class="brand" href="">
                   <span class="fa fa-music" style="margin-right: 10px"></span>Music.js
-                </a>{{project.index.name}}
+                </a><a ng-click="projectSettings(); recipe.raise('menu_project_settings_click')" href="">{{project.index.name}}</a>
               </div>
               <div class="navbar-inner">
                 <div class="container">
@@ -87,7 +87,7 @@
                          <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
                          <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.new"></div>
                       </li>
-                      <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_preferences'">
+                      <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_project'">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Project</a>
 
                          <ul class="dropdown-menu">
@@ -107,14 +107,14 @@
                               <recipe-tooltip rt-id="'menu_file_import'"></recipe-tooltip>
                             </li>
                             <li class="divider"></li>
-                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')">Settings...</a>
-                              <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
+                            <li recipe-blink="'menu_project_settings'"><a href="" ng-click="projectSettings(); recipe.raise('menu_project_settings_click')">Settings...</a>
+                              <recipe-tooltip rt-id="'menu_project_settings'"></recipe-tooltip>
                             </li>
 
 
                          </ul>
                          <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
-                         <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.new"></div>
+                         <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.project"></div>
                       </li>
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_preferences'">
                           <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.tools"></a>

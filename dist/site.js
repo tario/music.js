@@ -12676,6 +12676,7 @@ var enTranslations = {
   common: {
     yes: 'Yes',
     no: 'No',
+    ok: 'Ok',
     dismiss: 'Dismiss',
     cancel: 'Cancel',
     create: 'Create',
@@ -12886,6 +12887,7 @@ var esTranslations = {
   common: {
     yes: 'Si',
     no: 'No',
+    ok: 'Aceptar',
     dismiss: 'Cerrar',
     cancel: 'Cancelar',
     create: 'Crear',
@@ -16871,6 +16873,26 @@ musicShowCaseApp.controller("MainController",
     return "question";
   }
 
+  $scope.projectSettings = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/projectSettings.html",
+      controller: "projectSettingsModalCtrl",
+      resolve: {
+        project: {
+          name: $scope.project.index.name,
+          ref: $scope.project.contents.name
+        },
+        buttonText: function() { return 'common.ok'; }
+      }
+    }).result.then(function(project) {
+      $scope.project.index.name = project.name;
+      FileRepository.updateIndex($scope.project.index.id, {
+        type: 'project', 
+        name: project.name
+      });
+    });
+  };
+
   $scope.newProject = function() {
     // open "project settings" modal
     $translate('project.new').then(function(projectName) {
@@ -16879,9 +16901,12 @@ musicShowCaseApp.controller("MainController",
         controller: "projectSettingsModalCtrl",
         resolve: {
           project: {name: projectName}
-        }
+        },
+        buttonText: function() { return 'common.create'; }
       }).result.then(function(project) {
-        FileRepository.createFile({type: 'project', name: project.name})
+        FileRepository.createFile({type: 'project', name: project.name, contents: {
+          ref: project.ref
+        }})
           .then(function(id) {
             document.location="#/editor/" + id;
           });
@@ -17019,14 +17044,15 @@ musicShowCaseApp.controller("openProjectModalCtrl", ["$q", "$scope", "$uibModalI
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.controller("projectSettingsModalCtrl", ["$q", "$scope", "$uibModalInstance", "project", function($q, $scope, $uibModalInstance, project) {
+musicShowCaseApp.controller("projectSettingsModalCtrl", ["$q", "$scope", "$uibModalInstance", "project", "buttonText", function($q, $scope, $uibModalInstance, project, buttonText) {
   $scope.project = project;
+  $scope.buttonText = buttonText;
 
   $scope.cancel = function() {
     $uibModalInstance.dismiss();
   };
 
-  $scope.create = function() {
+  $scope.done = function() {
     $uibModalInstance.close($scope.project);
   };
 }]);
