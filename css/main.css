@@ -164,7 +164,6 @@ table {
 .musicapp .btn.active,
 .musicapp .btn:active {
   margin-top: 0;
-  margin-left: 0;
   color: #0000AA;
   -webkit-box-shadow: 0 0 0;
      -moz-box-shadow: 0 0 0;

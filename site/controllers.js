@@ -41,13 +41,22 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
+musicShowCaseApp.controller("DashboardController", ["$scope", function($scope) {
+  $scope.$emit('switchProject', "default");
+}]);
+
+musicShowCaseApp.controller("ProjectDashboardController", ["$scope", "$routeParams", function($scope, $routeParams) {
+  $scope.$emit('switchProject', $routeParams.project);
+}]);
+
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "Export", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
     function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, Export, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
 
   $scope.indexMap = {};
   var id = $routeParams.id;
-
   var instSet = InstrumentSet();
+
+  $scope.$emit('switchProject', $routeParams.project);
 
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
@@ -56,7 +65,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
       .then(function() {
-        document.location = "#";
+        document.location = "#/editor/" + $routeParams.project;
       });
   };
 
@@ -336,6 +345,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
   };
 
+  $scope.$emit('switchProject', $routeParams.project); 
+
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;
   $scope.zoomLevel = 8;
@@ -539,6 +550,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
 
 musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Export", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Export) {
   var id = $routeParams.id;
+  $scope.$emit('switchProject', $routeParams.project);
 
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
@@ -708,6 +720,10 @@ musicShowCaseApp.controller("MainController",
   function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
   var music;
 
+  $scope.$on("switchProject", function(evt, id) {
+    switchProject(id).then(updateSearch);
+  });
+
   var concat = function(a, b) {
     return a.concat(b);
   };
@@ -739,16 +755,20 @@ musicShowCaseApp.controller("MainController",
     });
   };
 
-  var currentObserver;
-  switchProject("default")
-    .then(function() {
-      currentObserver = FileRepository.search(null, {project: $scope.projectFilter}).observe(function(files) {
-        $timeout(function() {
-          $scope.filesTotal = files.total;
-          $scope.files = files.results;
-        });
+  var updateSearch = fn.debounce(function() {
+    if (currentObserver) currentObserver.close();
+    currentObserver = FileRepository.search(null, {
+      project: $scope.projectFilter, type: ['instrument', 'pattern', 'song', 'fx']
+    }).observe(function(files) {
+      $timeout(function() {
+        $scope.filesTotal = files.total;
+        $scope.files = files.results;
       });
     });
+  },100);
+
+  var currentObserver;
+  switchProject("default").then(updateSearch);
 
   $scope.fileInputClick = function() {
     $timeout(function() {
@@ -796,7 +816,7 @@ musicShowCaseApp.controller("MainController",
     if (p) {
       p.then(function(index) {
         document.location = "#/";
-        document.location = "#/editor/"+index.type+"/"+index.id;
+        document.location = "#/editor/"+ $scope.project.index.id + "/"+index.type+"/"+index.id;
       }).catch(function(err) {
         var modalIns = $uibModal.open({
           templateUrl: "site/templates/modal/error.html",
@@ -860,17 +880,22 @@ musicShowCaseApp.controller("MainController",
 
   $scope.activate = function(example) {
     if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {
-      document.location = "#/editor/"+example.type+"/"+example.id;
+      document.location = "#/editor/" + $scope.project.index.id + "/" +example.type+"/"+example.id;
+    }
+    if (example.type === "project") {
+      document.location = "#/editor/" + example.id;
     }
   };
 
-  $scope.$watch("searchKeyword", fn.debounce(function() {
+  $scope.keywordUpdated = fn.debounce(function() {
     if (currentObserver) currentObserver.close();
-    currentObserver = FileRepository.search($scope.searchKeyword, {project: $scope.projectFilter}).observe(function(files) {
+    currentObserver = FileRepository.search($scope.searchKeyword, {
+      project: $scope.projectFilter, type: ['instrument', 'pattern', 'song', 'fx']
+    }).observe(function(files) {
       $scope.filesTotal = files.total;
       $scope.files = files.results;
     });
-  },200));
+  },200);
 
   $scope.iconForType = function(type) {
     if (type === "instrument") return "keyboard-o";
@@ -881,13 +906,44 @@ musicShowCaseApp.controller("MainController",
     return "question";
   }
 
+  $scope.newProject = function() {
+    // open "project settings" modal
+    $translate('project.new').then(function(projectName) {
+      $uibModal.open({
+        templateUrl: "site/templates/modal/projectSettings.html",
+        controller: "projectSettingsModalCtrl",
+        resolve: {
+          project: {name: projectName}
+        }
+      }).result.then(function(project) {
+        FileRepository.createFile({type: 'project', name: project.name})
+          .then(function(id) {
+            document.location="#/editor/" + id;
+          });
+      });
+    });
+  };
+
+  $scope.openProject = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/openProject.html",
+      controller: "openProjectModalCtrl"
+    }).result.then(function(id) {
+      document.location="#/editor/" + id;
+    });
+  };
+
   $scope.newInstrument = function() {
     $translate("common.new_instrument")
       .then(function(name) {
-        return FileRepository.createFile({type: "instrument", name: name});
+        return FileRepository.createFile({
+          type: "instrument",
+          name: name,
+          project: $scope.project.index.id
+        });
       })
       .then(function(id) {
-        document.location = "#/editor/instrument/"+id;
+        document.location = "#/editor/" + $scope.project.index.id + "/instrument/" + id;
       })
       .catch(function(err) {
         debugger;
@@ -897,20 +953,28 @@ musicShowCaseApp.controller("MainController",
   $scope.newSong = function() {
     $translate("common.new_song")
       .then(function(name) {
-        return FileRepository.createFile({type: "song", name: name});
+        return FileRepository.createFile({
+          type: "song", 
+          name: name,
+          project: $scope.project.index.id
+        });
       })
       .then(function(id) {
-        document.location = "#/editor/song/"+id;
+        document.location = "#/editor/" + $scope.project.index.id + "/song/"+id;
       });
   };
 
   $scope.newPattern = function() {
     $translate("common.new_pattern")
       .then(function(name) {
-        return FileRepository.createFile({type: "pattern", name: name});
+        return FileRepository.createFile({
+          type: "pattern",
+          name: name,
+          project: $scope.project.index.id
+        });
       })
       .then(function(id) {
-        document.location = "#/editor/pattern/"+id;
+        document.location = "#/editor/" + $scope.project.index.id + "/pattern/"+id;
       });
   };
 

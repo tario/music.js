@@ -774,7 +774,12 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
     return localforage.setItem(newid, serialized)
       .then(function() {
-        return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
+        return storageIndex.createEntry({
+          type: options.type,
+          name: options.name,
+          project: options.project,
+          id: newid,
+        });
       })
       .then(function() {
         return recycleIndex.reload();
@@ -930,8 +935,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       var byProject = function() { return true };
       if (options.project) {
         byProject = function(x) {
+          if (options.type) {
+            if (options.type.indexOf(x.type) === -1) return false;
+          }
           return options.project.indexOf(x.project) !== -1;
         };
+      } else {
+        if (options.type) {
+          byProject = function(x) {
+            if (options.type.indexOf(x.type) === -1) return false;
+            return true
+          };
+        }
       }
 
       var ee = new EventEmitter();

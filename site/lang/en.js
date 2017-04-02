@@ -1,5 +1,9 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  open_project: {
+    p1: 'Select the project you want to open',
+    title: 'Open Project'
+  },
   array_editor: {
     tooltip: {
       remove_item: 'Removes the object from array',
@@ -21,6 +25,10 @@ var enTranslations = {
       type_p2: 'To instead, *edit* the resource, double click it',
       index: 'This is the object index, you can find here your crafting outputs and inputs'
     }
+  },
+  project: {
+    settings: 'Project Settings',
+    'new': 'New Project'
   },
   menu: {
     'new': 'File',
@@ -85,6 +93,10 @@ var enTranslations = {
     yes: 'Yes',
     no: 'No',
     dismiss: 'Dismiss',
+    cancel: 'Cancel',
+    create: 'Create',
+    open: 'Open',
+    name: 'Name',
     language: 'Language:',
     loader_error: 'Error when trying to load file',
     error_title: 'Error',

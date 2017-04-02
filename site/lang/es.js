@@ -1,5 +1,9 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  open_project: {
+    p1: 'Selecciona el proyecto que quieras abrir',
+    title: 'Abrir Proyecto'
+  },
   array_editor: {
     tooltip: {
       remove_item: 'Elimina el objeto de la coleccion',
@@ -21,6 +25,10 @@ var esTranslations = {
       type_p2: 'Para, en lugar de eso, editarlo, haz doble click en el',
       index: 'Este es el indice de objetos, puedes encontrar tus materiales y productos listados aqui'
     }
+  },
+  project: {
+    settings: 'Configuracion del Proyecto',
+    'new': 'Nuevo Proyecto'
   },
   menu: {
     'new': 'Archivo',
@@ -85,6 +93,10 @@ var esTranslations = {
     yes: 'Si',
     no: 'No',
     dismiss: 'Cerrar',
+    cancel: 'Cancelar',
+    create: 'Crear',
+    open: 'Abrir',
+    name: 'Nombre',
     loader_error: 'Error al intentar cargar el archivo',
     error_title: 'Error',
     language: 'Idioma:',

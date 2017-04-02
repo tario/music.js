@@ -10,7 +10,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     };
 
     var clearItem = function(data) {
-      var ret = {id: data.id, name: data.name, type: data.type};
+      var ret = {id: data.id, name: data.name, type: data.type, project: data.project};
       if (data.c) ret.c=data.c;
       return ret;
     };

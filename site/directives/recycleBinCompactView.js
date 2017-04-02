@@ -8,6 +8,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
         if (type === "instrument") return "keyboard-o";
         if (type === "song") return "th";
         if (type === "pattern") return "music";
+        if (type === "project") return "folder-o";
         return "question";
       };
 
@@ -33,7 +34,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       scope.restore = function(file) {
         FileRepository.restoreFromRecycleBin(file.id)
           .then(function() {
-            document.location = "#/editor/"+file.type+"/"+file.id;
+            document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
           });
       };
 

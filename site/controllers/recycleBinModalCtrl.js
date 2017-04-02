@@ -9,6 +9,7 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";
+    if (type === "project") return "folder-o";
     return "question";
   }
 
