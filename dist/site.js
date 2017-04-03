@@ -14594,6 +14594,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
 musicShowCaseApp.service("MusicContext", function() {
   var music;
+  var context;
 
   var Recordable = function(music, playable, name) {
     this._playable = playable;
@@ -14625,8 +14626,17 @@ musicShowCaseApp.service("MusicContext", function() {
 
   return {
     runFcn: function(f) {
-      if (!music) music = new MUSIC.Context().sfxBase();
+      if (!music) {
+        context = new MUSIC.Context();
+        music = context.sfxBase(); 
+      }
       return f(music);
+    },
+
+    record: function(options, callback) {
+      return this.runFcn(function(){
+        return context.record(options, callback);
+      });
     },
 
     run: function(code) {
@@ -15964,7 +15974,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     });
 
     modalIns.result.then(function(encodingOptions) {
-      $scope.currentRec = music.record({
+      $scope.currentRec = MusicContext.record({
         encoding: encodingOptions.encoding, 
         numChannels: encodingOptions.numChannels
       }, function(blob) {

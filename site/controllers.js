@@ -77,7 +77,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     });
 
     modalIns.result.then(function(encodingOptions) {
-      $scope.currentRec = music.record({
+      $scope.currentRec = MusicContext.record({
         encoding: encodingOptions.encoding, 
         numChannels: encodingOptions.numChannels
       }, function(blob) {
