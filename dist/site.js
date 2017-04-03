@@ -15588,8 +15588,31 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
+  var Sync = function() {
+    var promise = $q.when();
+    this.sync = function(f) {
+      return function() {
+        var _args = arguments;
+        var _self = this;
+        var defer = $q.defer();
+
+        promise = promise.then(function() {
+          return f.apply(_self, _args)
+            .then(function(value) {
+              defer.resolve(value);
+            })
+            .catch(function(err) {
+              defer.reject(err);
+            });
+        });
+        return defer.promise;
+      };
+    };
+  };
 
   var IndexFactory = function(indexName) {
+    var entryChange = new Sync();
+
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
@@ -15621,7 +15644,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
-    var createEntry = function(data) {
+    var createEntry = entryChange.sync(function(data) {
       return storageIndex
         .then(function(index) {
           index = index || [];
@@ -15634,9 +15657,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
-    var updateEntry = function(id, attributes) {
+    var updateEntry = entryChange.sync(function(id, attributes) {
       return storageIndex
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
@@ -15649,7 +15672,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
     var getAll = function() {
       return storageIndex
@@ -15776,7 +15799,37 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
         };
       };
 
+      var createFile = function(file) {
+        return FileRepository.destroyFile(file.index.id)
+          .then(function() {
+            return FileRepository.createFile({
+              id: file.index.id,
+              type: file.index.type,
+              project: file.index.project,
+              name: file.index.name,
+              contents: file.contents
+            });
+          });
+      };
+
+      var createFiles = function(result) {
+        return $q.all((result.data.files||[]).map(createFile))
+          .then(function() {
+            return result;
+          });
+      };
+
+      var switchProject = function(result) {
+        if (result.data.project) {
+          document.location = "#/editor/"+ result.data.project;
+        }
+
+        return result;
+      };
+
       return $http.get("recipes/" + name +".json")
+        .then(createFiles)
+        .then(switchProject)
         .then(function(result) {
           var recipeData = result.data;
 
@@ -16701,7 +16754,7 @@ musicShowCaseApp.controller("MainController",
         if (file.contents.ref) {
           return $q.all(file.contents.ref.map(getPFilter))
             .then(function(f) {
-              return [projectId].concat(f.reduce(concat));
+              return [projectId].concat(f.reduce(concat, []));
             });
         } else {
           return [projectId];
@@ -16719,6 +16772,8 @@ musicShowCaseApp.controller("MainController",
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
+    }).catch(function() {
+      document.location = "#";
     });
   };
 
@@ -16730,13 +16785,11 @@ musicShowCaseApp.controller("MainController",
       $timeout(function() {
         $scope.filesTotal = files.total;
         $scope.files = files.results;
-      });
+      }); 
     });
   },100);
 
   var currentObserver;
-  switchProject("default").then(updateSearch);
-
   $scope.fileInputClick = function() {
     $timeout(function() {
       $(".choose-file-import-container input[type=file]").click();
@@ -16900,9 +16953,9 @@ musicShowCaseApp.controller("MainController",
         templateUrl: "site/templates/modal/projectSettings.html",
         controller: "projectSettingsModalCtrl",
         resolve: {
-          project: {name: projectName}
-        },
-        buttonText: function() { return 'common.create'; }
+          project: {name: projectName},
+          buttonText: function() { return 'common.create'; }
+        }
       }).result.then(function(project) {
         FileRepository.createFile({type: 'project', name: project.name, contents: {
           ref: project.ref

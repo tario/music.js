@@ -734,7 +734,7 @@ musicShowCaseApp.controller("MainController",
         if (file.contents.ref) {
           return $q.all(file.contents.ref.map(getPFilter))
             .then(function(f) {
-              return [projectId].concat(f.reduce(concat));
+              return [projectId].concat(f.reduce(concat, []));
             });
         } else {
           return [projectId];
@@ -752,6 +752,8 @@ musicShowCaseApp.controller("MainController",
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
+    }).catch(function() {
+      document.location = "#";
     });
   };
 
@@ -763,13 +765,11 @@ musicShowCaseApp.controller("MainController",
       $timeout(function() {
         $scope.filesTotal = files.total;
         $scope.files = files.results;
-      });
+      }); 
     });
   },100);
 
   var currentObserver;
-  switchProject("default").then(updateSearch);
-
   $scope.fileInputClick = function() {
     $timeout(function() {
       $(".choose-file-import-container input[type=file]").click();
@@ -933,9 +933,9 @@ musicShowCaseApp.controller("MainController",
         templateUrl: "site/templates/modal/projectSettings.html",
         controller: "projectSettingsModalCtrl",
         resolve: {
-          project: {name: projectName}
-        },
-        buttonText: function() { return 'common.create'; }
+          project: {name: projectName},
+          buttonText: function() { return 'common.create'; }
+        }
       }).result.then(function(project) {
         FileRepository.createFile({type: 'project', name: project.name, contents: {
           ref: project.ref

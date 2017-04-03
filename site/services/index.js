@@ -1,7 +1,30 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
+  var Sync = function() {
+    var promise = $q.when();
+    this.sync = function(f) {
+      return function() {
+        var _args = arguments;
+        var _self = this;
+        var defer = $q.defer();
+
+        promise = promise.then(function() {
+          return f.apply(_self, _args)
+            .then(function(value) {
+              defer.resolve(value);
+            })
+            .catch(function(err) {
+              defer.reject(err);
+            });
+        });
+        return defer.promise;
+      };
+    };
+  };
 
   var IndexFactory = function(indexName) {
+    var entryChange = new Sync();
+
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
@@ -33,7 +56,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
-    var createEntry = function(data) {
+    var createEntry = entryChange.sync(function(data) {
       return storageIndex
         .then(function(index) {
           index = index || [];
@@ -46,9 +69,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
-    var updateEntry = function(id, attributes) {
+    var updateEntry = entryChange.sync(function(id, attributes) {
       return storageIndex
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
@@ -61,7 +84,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
     var getAll = function() {
       return storageIndex

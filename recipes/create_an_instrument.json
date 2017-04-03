@@ -1,16 +1,22 @@
 {
   "lang": ["en", "es"],
-  "isolatedContext": "2",
+  "project": "create_an_instrument",
+  "files": [{
+    "index": {"name": "Create an Instrument Tutorial", "type": "project", "id": "create_an_instrument"},
+    "contents": {
+      "ref": []
+    }
+  }],
   "steps": [
     {
-      "blink": ["menu_new"],
+      "blink": ["menu_project"],
       "tooltip": {
         "menu_new": [
-          "Click \"File\" menu option",
-          "Haz click en la opcion \"Archivo\""
+          "Click \"Project\" menu option",
+          "Haz click en la opcion \"Proyecto\""
         ]
       },
-      "eventHandler": {"next_step_on": "menu_new_click"}
+      "eventHandler": {"next_step_on": "menu_project_click"}
     },
     { 
       "blink": ["menu_new_instrument"],

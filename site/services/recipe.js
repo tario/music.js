@@ -97,7 +97,37 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
         };
       };
 
+      var createFile = function(file) {
+        return FileRepository.destroyFile(file.index.id)
+          .then(function() {
+            return FileRepository.createFile({
+              id: file.index.id,
+              type: file.index.type,
+              project: file.index.project,
+              name: file.index.name,
+              contents: file.contents
+            });
+          });
+      };
+
+      var createFiles = function(result) {
+        return $q.all((result.data.files||[]).map(createFile))
+          .then(function() {
+            return result;
+          });
+      };
+
+      var switchProject = function(result) {
+        if (result.data.project) {
+          document.location = "#/editor/"+ result.data.project;
+        }
+
+        return result;
+      };
+
       return $http.get("recipes/" + name +".json")
+        .then(createFiles)
+        .then(switchProject)
         .then(function(result) {
           var recipeData = result.data;
 

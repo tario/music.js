@@ -1,16 +1,55 @@
 {
   "lang": ["en", "es"],
-  "isolatedContext": "1",
+  "project": "create_a_song",
+  "files": [{
+      "index": {"name": "Create a Song Tutorial", "type": "project", "id": "create_a_song"},
+      "contents": {
+        "ref": []
+      }
+    },{
+    "index": {"name": "Square+ADSR", "project": "create_a_song", "type": "instrument", "id": "square+adsr"},
+    "contents": {
+      "type": "stack",
+      "data": {
+        "array": [
+          {
+            "type": "envelope",
+            "data": {
+              "attackTime": 0.0,
+              "decayTime": 0.2,
+              "sustainLevel": 0.8,
+              "releaseTime": 0.2
+            }
+          },
+          {
+            "type": "oscillator",
+            "data": {
+              "modulation": {
+                "detune": {
+                  "type": "stack",
+                  "data": {
+                    "array": []
+                  }
+                }
+              },
+              "time_constant": 0.01,
+              "oscillatorType": "square"
+            }
+          }
+        ]
+      }
+    }
+  }],
   "steps": [
     {
-      "blink": ["menu_new"],
+      "blink": ["menu_project"],
       "tooltip": {
         "menu_new": [
-          "Click \"File\" menu option",
-          "Haz click en la opcion \"Archivo\""
+          "Click \"Project\" menu option",
+          "Haz click en la opcion \"Proyecto\""
         ]
       },
-      "eventHandler": {"next_step_on": "menu_new_click"}
+      "eventHandler": {"next_step_on": "menu_project_click"}
     },
     { 
       "blink": ["menu_new_pattern"],
@@ -112,14 +151,14 @@
       "duration": 7
     },
     {
-      "blink": ["menu_new"],
+      "blink": ["menu_project"],
       "tooltip": {
         "menu_new": [
-          "Click \"File\" menu option, this time, is to create the song",
-          "Haz click en la opcion \"Archivo\" del menu, esta vez sera para crear la cancion"
+          "Click \"Project\" menu option, this time, is to create the song",
+          "Haz click en la opcion \"Proyecto\" del menu, esta vez sera para crear la cancion"
         ]
       },
-      "eventHandler": {"next_step_on": "menu_new_click"}
+      "eventHandler": {"next_step_on": "menu_project_click"}
     },
     {
       "blink": ["menu_new_song"],
