@@ -1,13 +1,45 @@
 <div class="modal-header musicapp" translate="project.settings">
 </div>
 
-<div class="modal-body musicapp">
+<div class="modal-body musicapp recycle">
   <div class="row-fluid">
     <div class="span2">
       <p class="serie-label" translate="common.name"></p>
     </div>
     <div class="span10">
-      <input class="serie" type="text" ng-model="project.name"></input>
+      <input class="serie white-bg" type="text" ng-model="project.name"></input>
+    </div>
+  </div>
+
+  <div class="row-fluid project-references">
+    <div class="span6">
+      <ul class="nav bs-docs-sidenav">
+        <li class="show-contextual-tooltip"><span class="fa fa-search"></span> <input ng-model="searchKeyword" ng-change="updateSearch()"></input> 
+          <div class="help-tooltip contextual-tooltip">
+            <p translate="index.filter"></p>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="span6">
+      <h3 translate="project.references"></h3>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span6">
+      <ul class="nav bs-docs-sidenav">
+        <li ng-repeat="file in files track by $index">
+          <a ng-dblclick="add(file)" href=""><span class="fa fa-folder-o"></span> {{file.name}}</a>
+        </li>
+        <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} {{'common.more' | translate}}) ...</li>
+      </ul>
+    </div>
+    <div class="span6 bordered-square">
+      <ul class="nav bs-docs-sidenav">
+        <li ng-repeat="file in refs track by $index">
+          <a href=""><span class="fa fa-folder-o"></span> {{file.name}}</a>
+        </li>
+      </ul>
     </div>
   </div>
 </div>

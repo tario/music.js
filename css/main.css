@@ -520,3 +520,16 @@ body.modal-open .main-window h6 {
 .signal-monitor-tooltip {
   transform: translateX(100px);
 }
+
+input.white-bg {
+  background-color: white;
+}
+
+.row-fluid.project-list {
+  height: 300px;
+  max-height: 300px;
+}
+
+.project-references {
+  margin-top: 20px;
+}

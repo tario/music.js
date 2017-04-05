@@ -27,6 +27,8 @@ var enTranslations = {
     }
   },
   project: {
+    basic_info: 'Properties',
+    references: 'References',
     settings: 'Project Settings',
     'new': 'New Project'
   },

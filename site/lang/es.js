@@ -27,6 +27,8 @@ var esTranslations = {
     }
   },
   project: {
+    basic_info: 'Propiedades del proyecto',
+    references: 'Referencias',
     settings: 'Configuracion del Proyecto',
     'new': 'Nuevo Proyecto'
   },

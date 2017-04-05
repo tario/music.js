@@ -721,25 +721,11 @@ musicShowCaseApp.controller("MainController",
   var music;
 
   $scope.$on("switchProject", function(evt, id) {
-    switchProject(id).then(updateSearch);
+    switchProject(id);
   });
 
   var concat = function(a, b) {
     return a.concat(b);
-  };
-
-  var getPFilter = function(projectId) {
-    return FileRepository.getFile(projectId)
-      .then(function(file) {
-        if (file.contents.ref) {
-          return $q.all(file.contents.ref.map(getPFilter))
-            .then(function(f) {
-              return [projectId].concat(f.reduce(concat, []));
-            });
-        } else {
-          return [projectId];
-        }
-      });
   };
 
   var switchProject = function(projectId) {
@@ -748,11 +734,12 @@ musicShowCaseApp.controller("MainController",
     return FileRepository.getFile(projectId).then(function(file) {
       $scope.project = file;
 
-      return getPFilter(projectId);
+      return (file.contents.ref||[]).concat([projectId]);
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
-    }).catch(function() {
+    }).then(updateSearch)
+      .catch(function() {
       document.location = "#";
     });
   };
@@ -913,7 +900,7 @@ musicShowCaseApp.controller("MainController",
       resolve: {
         project: {
           name: $scope.project.index.name,
-          ref: $scope.project.contents.name
+          ref: $scope.project.contents.ref
         },
         buttonText: function() { return 'common.ok'; }
       }
@@ -922,6 +909,12 @@ musicShowCaseApp.controller("MainController",
       FileRepository.updateIndex($scope.project.index.id, {
         type: 'project', 
         name: project.name
+      }).then(function() {
+/*        $scope.project.contents.ref = project.ref;
+        $scope.projectFilter = project.ref.concat([$scope.project.index.id]);*/
+        return FileRepository.updateFile($scope.project.index.id, {ref: project.ref});
+      }).then(function() {
+        switchProject($scope.project.index.id);
       });
     });
   };
