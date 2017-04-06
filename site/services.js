@@ -820,7 +820,26 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     recycledEmmiter.emit("changed");
   };
 
+  var getRefs = function(type, contents) {
+    var ref = [];
+    if (type === 'song') {
+      contents.tracks.forEach(function(track) {
+        for (var i=0;i<track.blocks.length;i++) {
+          var blockId = track.blocks[i].id;
+          if (blockId && ref.indexOf(blockId) === -1) ref.push(blockId);
+        }
+      });
+    } else if (type === 'pattern') {
+      contents.tracks.forEach(function(track) {
+        if (track.instrument && ref.indexOf(track.instrument) === -1) ref.push(track.instrument);
+      });
+    }
+
+    return ref;
+  };
+
   return {
+    getRefs: getRefs,
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
@@ -878,13 +897,26 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               if (serialized) {
                 var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
                 return {
-                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type, updated: true},
+                  index: {
+                    name: localFile.name,
+                    id: localFile.id,
+                    builtIn: builtIn,
+                    type: localFile.type,
+                    ref: localFile.ref||getRefs(localFile.type, contents),
+                    updated: true
+                  },
                   contents: contents
                 };
               } else {
                 if (localFile) {
                   return {
-                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type},
+                    index: {
+                      name: localFile.name,
+                      id: localFile.id,
+                      builtIn: builtIn,
+                      type: localFile.type,
+                      ref: localFile.ref
+                    },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
                 };

@@ -15233,7 +15233,26 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     recycledEmmiter.emit("changed");
   };
 
+  var getRefs = function(type, contents) {
+    var ref = [];
+    if (type === 'song') {
+      contents.tracks.forEach(function(track) {
+        for (var i=0;i<track.blocks.length;i++) {
+          var blockId = track.blocks[i].id;
+          if (blockId && ref.indexOf(blockId) === -1) ref.push(blockId);
+        }
+      });
+    } else if (type === 'pattern') {
+      contents.tracks.forEach(function(track) {
+        if (track.instrument && ref.indexOf(track.instrument) === -1) ref.push(track.instrument);
+      });
+    }
+
+    return ref;
+  };
+
   return {
+    getRefs: getRefs,
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
@@ -15291,13 +15310,26 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               if (serialized) {
                 var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
                 return {
-                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type, updated: true},
+                  index: {
+                    name: localFile.name,
+                    id: localFile.id,
+                    builtIn: builtIn,
+                    type: localFile.type,
+                    ref: localFile.ref||getRefs(localFile.type, contents),
+                    updated: true
+                  },
                   contents: contents
                 };
               } else {
                 if (localFile) {
                   return {
-                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type},
+                    index: {
+                      name: localFile.name,
+                      id: localFile.id,
+                      builtIn: builtIn,
+                      type: localFile.type,
+                      ref: localFile.ref
+                    },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
                 };
@@ -15625,7 +15657,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     };
 
     var clearItem = function(data) {
-      var ret = {id: data.id, name: data.name, type: data.type, project: data.project};
+      var ret = {id: data.id, name: data.name, type: data.type, project: data.project, ref: data.ref};
       if (data.c) ret.c=data.c;
       return ret;
     };
@@ -15668,6 +15700,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
+          localFile.ref = attributes.ref;
 
           if (IndexFactory.isolatedContext) {
             localFile.c = IndexFactory.isolatedContext;
@@ -16219,12 +16252,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.indexChanged = function() {
+    $scope.fileIndex.ref = FileRepository.getRefs("song", $scope.file);
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
-  },100);;
+    FileRepository.updateFile(id, $scope.file)
+      .then(function() {
+        $scope.indexChanged();
+      });
+  },100);
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -16441,11 +16478,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   };
 
   $scope.indexChanged = function() {
+    $scope.fileIndex.ref = FileRepository.getRefs("pattern", $scope.file);
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
+    FileRepository.updateFile(id, $scope.file)
+      .then($scope.indexChanged);
   },100);
 
   $scope.$on("trackChanged", function(track) {

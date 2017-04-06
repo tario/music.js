@@ -33,7 +33,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     };
 
     var clearItem = function(data) {
-      var ret = {id: data.id, name: data.name, type: data.type, project: data.project};
+      var ret = {id: data.id, name: data.name, type: data.type, project: data.project, ref: data.ref};
       if (data.c) ret.c=data.c;
       return ret;
     };
@@ -76,6 +76,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
+          localFile.ref = attributes.ref;
 
           if (IndexFactory.isolatedContext) {
             localFile.c = IndexFactory.isolatedContext;

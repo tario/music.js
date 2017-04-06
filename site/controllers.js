@@ -195,12 +195,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.indexChanged = function() {
+    $scope.fileIndex.ref = FileRepository.getRefs("song", $scope.file);
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
-  },100);;
+    FileRepository.updateFile(id, $scope.file)
+      .then(function() {
+        $scope.indexChanged();
+      });
+  },100);
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -417,11 +421,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   };
 
   $scope.indexChanged = function() {
+    $scope.fileIndex.ref = FileRepository.getRefs("pattern", $scope.file);
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
+    FileRepository.updateFile(id, $scope.file)
+      .then($scope.indexChanged);
   },100);
 
   $scope.$on("trackChanged", function(track) {
