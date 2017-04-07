@@ -12686,6 +12686,7 @@ var enTranslations = {
     name: 'Name',
     language: 'Language:',
     loader_error: 'Error when trying to load file',
+    cantremove_error: 'Can not delete the file if it is being used',
     error_title: 'Error',
     HELP: 'HELP',
     more: 'more',
@@ -12898,6 +12899,7 @@ var esTranslations = {
     open: 'Abrir',
     name: 'Nombre',
     loader_error: 'Error al intentar cargar el archivo',
+    cantremove_error: 'No se puede eliminar el archivo si esta siendo utilizado',
     error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
@@ -14364,7 +14366,7 @@ musicShowCaseApp.directive("recipeWizard", ["$timeout", function($timeout) {
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", function($timeout, $uibModal, FileRepository) {
+musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", "ErrMessage", function($timeout, $uibModal, FileRepository, ErrMessage) {
   return {
     templateUrl: 'site/templates/directives/recycleBinCompactView.html',
     scope: {},
@@ -14404,7 +14406,14 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       };
 
       scope.onDropComplete= function(file) {
-        FileRepository.moveToRecycleBin(file.id);
+        FileRepository.moveToRecycleBin(file.id)
+          .catch(function(err) {
+            if (err.type && err.type === 'cantremove') {
+              ErrMessage('common.error_title', 'common.cantremove_error');
+            } else {
+              throw err;
+            }
+          });
       };
     }
   };
@@ -15134,45 +15143,68 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   };
 
   var restoreFromRecycleBin = function(id) {
-    return recycleIndex.getEntry(id)
-      .then(function(localFile) {
-        if (localFile) {
-          return recycleIndex.removeEntry(id)
-            .then(function() {
-              return storageIndex.createEntry(localFile);
-            });
-        }
-      })
+    return _restoreFromRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
       });
   };
 
-  var moveToRecycleBin = function(id) {
-    return storageIndex.getEntry(id)
+  var _restoreFromRecycleBin = function(id) {
+    return recycleIndex.getEntry(id)
       .then(function(localFile) {
         if (localFile) {
-          return recycleIndex.getAll()
-            .then(function(idx) {
-              if (idx && idx.length >= 100) {
-                return recycleIndex.removeEntry(idx[0].id)
-                  .then(function() {
-                    return localforage.removeItem(id);
-                  });
+          return recycleIndex.removeEntry(id)
+            .then(function() {
+              return storageIndex.createEntry(localFile);
+            })
+            .then(function() {
+              if (localFile.ref && localFile.ref.length) {
+                return $q.all(localFile.ref.map(_restoreFromRecycleBin));
               }
-            })
-            .then(function() {
-              return storageIndex.removeEntry(id);
-            })
-            .then(function() {
-              return recycleIndex.createEntry(localFile);
             });
         }
-      })
+      });
+  };
+
+  var moveToRecycleBin = function(id) {
+    return _moveToRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
+      })
+  };
+
+  var _moveToRecycleBin = function(id) {
+    var getId = function(x){ return x.id; };
+    return storageIndex.willRemove(id)
+      .then(function() {
+        return storageIndex.getEntry(id)
+          .then(function(localFile) {
+            if (localFile) {
+              return recycleIndex.getAll()
+                .then(function(idx) {
+                  if (idx && idx.length >= 100) {
+                    return recycleIndex.removeEntry(idx[0].id)
+                      .then(function() {
+                        return localforage.removeItem(id);
+                      });
+                  }
+                })
+                .then(function() {
+                  return storageIndex.removeEntry(id);
+                })
+                .then(function() {
+                  return recycleIndex.createEntry(localFile);
+                });
+            }
+          });
+      })
+      .then(function() {
+        return storageIndex.getOrphan(createdFilesIndex.map(getId));
+      })
+      .then(function(orphanFiles) {
+        return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin));
       });
   };
 
@@ -15504,6 +15536,27 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("ErrMessage", ['$uibModal', '$translate', function($uibModal, $translate) {
+  return function(title, text) {
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/error.html",
+      controller: "errorModalCtrl",
+      windowClass: 'error',
+      resolve: {
+        text: function() {
+          return $translate(text);
+        },
+        title: function() {
+          return $translate(title);
+        }
+      }
+    });
+
+    return modalIns;
+  };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRepository) {
   var exportContents = function(name, contents) {
     var a = document.createElement("a");
@@ -15624,6 +15677,14 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
+  function CantRemove(id, file) {
+      this.id = id;
+      this.file = file;
+      this.stack = (new Error()).stack;
+      this.type = "cantremove";
+  }
+  CantRemove.prototype = new Error
+
   var Sync = function() {
     var promise = $q.when();
     this.sync = function(f) {
@@ -15662,7 +15723,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       return ret;
     };
 
-    var removeEntry = function(id) {
+    var removeEntry = entryChange.sync(function(id) {
       return storageIndex
         .then(function(index) {
           if (!index) return;
@@ -15670,7 +15731,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
     var getEntry = function(id) {
       return storageIndex
@@ -15722,11 +15783,67 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
+    var refs = function(index, id) {
+      return index.filter(function(file) {
+        return (file.ref||[]).indexOf(id) !== -1;
+      });
+    };
+
+    var isProjectType = function(file) {
+      return file.type === 'project';
+    };
+
+    var getId = function(file) {
+      return file.id;
+    };
+
+    var willRemove = function(id) {
+      return storageIndex
+        .then(function(index) {
+          var localFile = index.filter(function(x) { return x.id === id; })[0];
+
+          if (!localFile) return;
+
+          var r = refs(index, id);
+          // if the item has no references, it can be removed!
+          if (r.length === 0) return;
+
+          if (localFile.type === 'project') {
+            if (r.some(isProjectType)) {
+              throw new CantRemove(id, localFile);
+            }
+          } else {
+            throw new CantRemove(id, localFile);
+          }
+
+          return $q.all(r.map(getId).map(willRemove));
+        });
+    };
+
+    var getOrphan = function(extraIds) {
+      return storageIndex
+        .then(function(index) {
+          var ids = index.map(getId).concat(extraIds||[]);
+          var isOrphan = function(file) {
+            if (!file.ref) return false;
+            if (!file.ref.length) return false;
+
+            return file.ref.some(function(id) {
+              return ids.indexOf(id) === -1;
+            });
+          };
+
+          return index.filter(isOrphan);
+        });
+    };
+
     reload();
 
     return {
+      willRemove: willRemove,
       reload: reload,
       removeEntry: removeEntry,
+      getOrphan: getOrphan,
       getEntry: getEntry,
       createEntry: createEntry,
       updateEntry: updateEntry,
@@ -16398,8 +16515,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 
-  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export) {
+musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 'ErrMessage',
+  function($q, $translate, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export, ErrMessage) {
   var id = $routeParams.id;
 
   $scope.exportItem = function() {
@@ -16426,6 +16543,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
+      })
+      .catch(function(err) {
+        if (err.type && err.type === 'cantremove') {
+          ErrMessage('common.error_title', 'common.cantremove_error');
+        } else {
+          throw err;
+        }
       });
   };
 
@@ -16634,6 +16758,13 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
       FileRepository.moveToRecycleBin(id)
         .then(function() {
           document.location = "#";
+        })
+        .catch(function(err) {
+          if (err.type && err.type === 'cantremove') {
+            ErrMessage('common.error_title', 'common.cantremove_error');
+          } else {
+            throw err;
+          }
         });
     }
   };

@@ -341,8 +341,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 
-  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export) {
+musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 'ErrMessage',
+  function($q, $translate, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export, ErrMessage) {
   var id = $routeParams.id;
 
   $scope.exportItem = function() {
@@ -369,6 +369,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
+      })
+      .catch(function(err) {
+        if (err.type && err.type === 'cantremove') {
+          ErrMessage('common.error_title', 'common.cantremove_error');
+        } else {
+          throw err;
+        }
       });
   };
 
@@ -577,6 +584,13 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
       FileRepository.moveToRecycleBin(id)
         .then(function() {
           document.location = "#";
+        })
+        .catch(function(err) {
+          if (err.type && err.type === 'cantremove') {
+            ErrMessage('common.error_title', 'common.cantremove_error');
+          } else {
+            throw err;
+          }
         });
     }
   };

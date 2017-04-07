@@ -721,45 +721,68 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   };
 
   var restoreFromRecycleBin = function(id) {
-    return recycleIndex.getEntry(id)
-      .then(function(localFile) {
-        if (localFile) {
-          return recycleIndex.removeEntry(id)
-            .then(function() {
-              return storageIndex.createEntry(localFile);
-            });
-        }
-      })
+    return _restoreFromRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
       });
   };
 
-  var moveToRecycleBin = function(id) {
-    return storageIndex.getEntry(id)
+  var _restoreFromRecycleBin = function(id) {
+    return recycleIndex.getEntry(id)
       .then(function(localFile) {
         if (localFile) {
-          return recycleIndex.getAll()
-            .then(function(idx) {
-              if (idx && idx.length >= 100) {
-                return recycleIndex.removeEntry(idx[0].id)
-                  .then(function() {
-                    return localforage.removeItem(id);
-                  });
+          return recycleIndex.removeEntry(id)
+            .then(function() {
+              return storageIndex.createEntry(localFile);
+            })
+            .then(function() {
+              if (localFile.ref && localFile.ref.length) {
+                return $q.all(localFile.ref.map(_restoreFromRecycleBin));
               }
-            })
-            .then(function() {
-              return storageIndex.removeEntry(id);
-            })
-            .then(function() {
-              return recycleIndex.createEntry(localFile);
             });
         }
-      })
+      });
+  };
+
+  var moveToRecycleBin = function(id) {
+    return _moveToRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
+      })
+  };
+
+  var _moveToRecycleBin = function(id) {
+    var getId = function(x){ return x.id; };
+    return storageIndex.willRemove(id)
+      .then(function() {
+        return storageIndex.getEntry(id)
+          .then(function(localFile) {
+            if (localFile) {
+              return recycleIndex.getAll()
+                .then(function(idx) {
+                  if (idx && idx.length >= 100) {
+                    return recycleIndex.removeEntry(idx[0].id)
+                      .then(function() {
+                        return localforage.removeItem(id);
+                      });
+                  }
+                })
+                .then(function() {
+                  return storageIndex.removeEntry(id);
+                })
+                .then(function() {
+                  return recycleIndex.createEntry(localFile);
+                });
+            }
+          });
+      })
+      .then(function() {
+        return storageIndex.getOrphan(createdFilesIndex.map(getId));
+      })
+      .then(function(orphanFiles) {
+        return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin));
       });
   };
 

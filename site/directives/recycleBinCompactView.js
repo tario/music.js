@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", function($timeout, $uibModal, FileRepository) {
+musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", "ErrMessage", function($timeout, $uibModal, FileRepository, ErrMessage) {
   return {
     templateUrl: 'site/templates/directives/recycleBinCompactView.html',
     scope: {},
@@ -39,7 +39,14 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       };
 
       scope.onDropComplete= function(file) {
-        FileRepository.moveToRecycleBin(file.id);
+        FileRepository.moveToRecycleBin(file.id)
+          .catch(function(err) {
+            if (err.type && err.type === 'cantremove') {
+              ErrMessage('common.error_title', 'common.cantremove_error');
+            } else {
+              throw err;
+            }
+          });
       };
     }
   };

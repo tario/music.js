@@ -102,6 +102,7 @@ var enTranslations = {
     name: 'Name',
     language: 'Language:',
     loader_error: 'Error when trying to load file',
+    cantremove_error: 'Can not delete the file if it is being used',
     error_title: 'Error',
     HELP: 'HELP',
     more: 'more',
