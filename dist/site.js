@@ -15185,9 +15185,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               return recycleIndex.getAll()
                 .then(function(idx) {
                   if (idx && idx.length >= 100) {
-                    return recycleIndex.removeEntry(idx[0].id)
-                      .then(function() {
-                        return localforage.removeItem(id);
+                    return recycleIndex.getFreeItems()
+                      .then(function(idx) {
+                        if (!idx[0]) return;
+
+                        return recycleIndex.removeEntry(idx[0].id)
+                          .then(function() {
+                            return localforage.removeItem(id);
+                          });
                       });
                   }
                 })
@@ -15837,6 +15842,22 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
+    var getFreeItems = function() {
+      return storageIndex
+        .then(function(index) {
+          var referenced = {};
+          index.forEach(function(file) {
+            (file.ref||[]).forEach(function(r) {
+              referenced[r]=true;
+            });
+          });
+
+          return index.filter(function(file) {
+            return !referenced[file.id];
+          });
+        });
+    };
+
     reload();
 
     return {
@@ -15845,6 +15866,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       removeEntry: removeEntry,
       getOrphan: getOrphan,
       getEntry: getEntry,
+      getFreeItems: getFreeItems,
       createEntry: createEntry,
       updateEntry: updateEntry,
       getAll: getAll

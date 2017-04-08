@@ -160,6 +160,22 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
+    var getFreeItems = function() {
+      return storageIndex
+        .then(function(index) {
+          var referenced = {};
+          index.forEach(function(file) {
+            (file.ref||[]).forEach(function(r) {
+              referenced[r]=true;
+            });
+          });
+
+          return index.filter(function(file) {
+            return !referenced[file.id];
+          });
+        });
+    };
+
     reload();
 
     return {
@@ -168,6 +184,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       removeEntry: removeEntry,
       getOrphan: getOrphan,
       getEntry: getEntry,
+      getFreeItems: getFreeItems,
       createEntry: createEntry,
       updateEntry: updateEntry,
       getAll: getAll

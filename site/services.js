@@ -763,9 +763,14 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               return recycleIndex.getAll()
                 .then(function(idx) {
                   if (idx && idx.length >= 100) {
-                    return recycleIndex.removeEntry(idx[0].id)
-                      .then(function() {
-                        return localforage.removeItem(id);
+                    return recycleIndex.getFreeItems()
+                      .then(function(idx) {
+                        if (!idx[0]) return;
+
+                        return recycleIndex.removeEntry(idx[0].id)
+                          .then(function() {
+                            return localforage.removeItem(id);
+                          });
                       });
                   }
                 })
