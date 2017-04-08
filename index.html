@@ -60,15 +60,35 @@
 
     <!-- TODO: Move to directive  -->
         <div class="navbar navbar-inverse" recipe-blink="'navbar'">
+              <div class="title container">
+                <a class="brand" href="">
+                  <span class="fa fa-music" style="margin-right: 10px"></span>Music.js
+                </a><a ng-click="projectSettings(); recipe.raise('menu_project_settings_click')" href="">{{project.index.name}}</a>
+              </div>
               <div class="navbar-inner">
                 <div class="container">
                   <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                   </button>
-                  <a class="brand" href="">Music.js</a>
                   <div class="nav-collapse collapse">
                     <ul class="nav">
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_new'" ng-click="recipe.raise('menu_new_click')">
                          <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.new"></a>
+
+                         <ul class="dropdown-menu">
+                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newProject(); recipe.raise('menu_new_project_click')" translate="menu.new_project"></a>
+                              <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
+                            </li>
+                            <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="openProject(); recipe.raise('menu_open_project_click')" translate="menu.open_project"></a>
+                              <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a href="" ng-click="openRecycleBin(); recipe.raise('menu_open_recycle')" translate="menu.recycle_bin"></a><li>
+                         </ul>
+                         <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
+                         <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.new"></div>
+                      </li>
+                      <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_project'" ng-click="recipe.raise('menu_project_click')">
+                         <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.project"></a>
 
                          <ul class="dropdown-menu">
                             <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="newInstrument(); recipe.raise('menu_new_instrument_click')" translate="menu.new_instrument"></a>
@@ -88,10 +108,22 @@
                             </li>
 
                             <li class="divider"></li>
-                            <li><a href="" ng-click="openRecycleBin(); recipe.raise('menu_open_recycle')" translate="menu.recycle_bin"></a><li>
+                            <li recipe-blink="'menu_project_export_project'"><a href="" ng-click="exportProject(); recipe.raise('menu_project_export_project_click')" translate="menu.project_export_project"></a>
+                              <recipe-tooltip rt-id="'menu_project_export_project'"></recipe-tooltip>
+                            </li>
+                            <li recipe-blink="'menu_project_remove_project'"><a href="" ng-click="removeProject(); recipe.raise('menu_project_remove_project_click')" translate="menu.project_remove_project"></a>
+                              <recipe-tooltip rt-id="'menu_project_remove_project'"></recipe-tooltip>
+                            </li>
+
+                            <li class="divider"></li>
+                            <li recipe-blink="'menu_project_settings'"><a href="" ng-click="projectSettings(); recipe.raise('menu_project_settings_click')" translate="menu.project_settings"></a>
+                              <recipe-tooltip rt-id="'menu_project_settings'"></recipe-tooltip>
+                            </li>
+
+
                          </ul>
-                         <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
-                         <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.new"></div>
+                         <recipe-tooltip rt-id="'menu_project'"></recipe-tooltip>
+                         <div class="help-tooltip contextual-tooltip" translate="menu.tooltip.project"></div>
                       </li>
                       <li class="dropdown show-contextual-tooltip" recipe-blink="'menu_preferences'">
                           <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" translate="menu.tools"></a>
@@ -134,15 +166,16 @@
                   </div>
                 </div>
               </div>
+
               <recipe-tooltip rt-id="'navbar'"></recipe-tooltip>
         </div>
-        <div class="navbar-padding"></div>
+        <div class="navbar-padding" style="height: 60px"></div>
         <div class="container musicapp">
             <div class="span4">
             </div>
             <div class="span4 bs-docs-sidebar affix show-contextual-tooltip" recipe-blink="'object_index_panel'">
                 <ul class="nav nav-list bs-docs-sidenav affix-top examplelist">
-                  <li class="show-contextual-tooltip"><span class="fa fa-search"></span> <input ng-model="searchKeyword"></input> 
+                  <li class="show-contextual-tooltip"><span class="fa fa-search"></span> <input ng-model="searchKeyword" ng-change="keywordUpdated()"></input> 
                     <div class="help-tooltip contextual-tooltip">
                       <p translate="index.filter"></p>
                     </div>

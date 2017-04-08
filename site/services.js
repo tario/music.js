@@ -612,6 +612,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 }]);
 
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+  var createdFilesIndex = [];
+  var createdFiles = {};
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -624,10 +626,16 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
             createdFiles[fileId] = r.data;
             createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId});
+            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
           });
       }));
     });
+
+  createdFiles['default'] = {};
+  createdFiles['samples'] = {};
+
+  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
+  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
 
   var createId = function() {
     var array = [];
@@ -638,9 +646,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
     return array.join("");
   };
-
-  var createdFilesIndex = [];
-  var createdFiles = {};
 
   var genericStateEmmiter = new EventEmitter();
   var recycledEmmiter = new EventEmitter();
@@ -714,45 +719,74 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   };
 
   var restoreFromRecycleBin = function(id) {
-    return recycleIndex.getEntry(id)
-      .then(function(localFile) {
-        if (localFile) {
-          return recycleIndex.removeEntry(id)
-            .then(function() {
-              return storageIndex.createEntry(localFile);
-            });
-        }
-      })
+    return _restoreFromRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
       });
   };
 
-  var moveToRecycleBin = function(id) {
-    return storageIndex.getEntry(id)
+  var _restoreFromRecycleBin = function(id) {
+    return recycleIndex.getEntry(id)
       .then(function(localFile) {
         if (localFile) {
-          return recycleIndex.getAll()
-            .then(function(idx) {
-              if (idx && idx.length >= 100) {
-                return recycleIndex.removeEntry(idx[0].id)
-                  .then(function() {
-                    return localforage.removeItem(id);
-                  });
-              }
+          return recycleIndex.removeEntry(id)
+            .then(function() {
+              return storageIndex.createEntry(localFile);
             })
             .then(function() {
-              return storageIndex.removeEntry(id);
-            })
-            .then(function() {
-              return recycleIndex.createEntry(localFile);
+              var refs = (localFile.ref||[])
+              if (localFile.project) refs.push(localFile.project);
+
+              return $q.all(refs.map(_restoreFromRecycleBin));
             });
         }
-      })
+      });
+  };
+
+  var moveToRecycleBin = function(id) {
+    return _moveToRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
+      })
+  };
+
+  var _moveToRecycleBin = function(id) {
+    var getId = function(x){ return x.id; };
+    return storageIndex.willRemove(id)
+      .then(function() {
+        return storageIndex.getEntry(id)
+          .then(function(localFile) {
+            if (localFile) {
+              return recycleIndex.getAll()
+                .then(function(idx) {
+                  if (idx && idx.length >= 100) {
+                    return recycleIndex.getFreeItems()
+                      .then(function(idx) {
+                        if (!idx[0]) return;
+
+                        return recycleIndex.removeEntry(idx[0].id)
+                          .then(function() {
+                            return localforage.removeItem(id);
+                          });
+                      });
+                  }
+                })
+                .then(function() {
+                  return storageIndex.removeEntry(id);
+                })
+                .then(function() {
+                  return recycleIndex.createEntry(localFile);
+                });
+            }
+          });
+      })
+      .then(function() {
+        return storageIndex.getOrphan(createdFilesIndex.map(getId));
+      })
+      .then(function(orphanFiles) {
+        return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin));
       });
   };
 
@@ -767,7 +801,13 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
     return localforage.setItem(newid, serialized)
       .then(function() {
-        return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
+        return storageIndex.createEntry({
+          type: options.type,
+          name: options.name,
+          project: options.project,
+          id: newid,
+          ref: options.ref
+        });
       })
       .then(function() {
         return recycleIndex.reload();
@@ -808,7 +848,36 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     recycledEmmiter.emit("changed");
   };
 
+  var getRefs = function(type, contents) {
+    var ref = [];
+    if (type === 'song') {
+      contents.tracks.forEach(function(track) {
+        for (var i=0;i<track.blocks.length;i++) {
+          var blockId = track.blocks[i].id;
+          if (blockId && ref.indexOf(blockId) === -1) ref.push(blockId);
+        }
+      });
+    } else if (type === 'pattern') {
+      contents.tracks.forEach(function(track) {
+        if (track.instrument && ref.indexOf(track.instrument) === -1) ref.push(track.instrument);
+      });
+    }
+
+    return ref;
+  };
+
+  var getProjectFiles = function(projectId) {
+    return storageIndex.getAll()
+      .then(function(idx) {
+        return idx.filter(function(file) {
+          return file.project === projectId || file.id === projectId;
+        });
+      });
+  };
+
   return {
+    getRefs: getRefs,
+    getProjectFiles: getProjectFiles,
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
@@ -866,13 +935,28 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               if (serialized) {
                 var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
                 return {
-                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type, updated: true},
+                  index: {
+                    name: localFile.name,
+                    id: localFile.id,
+                    builtIn: builtIn,
+                    type: localFile.type,
+                    ref: localFile.ref||getRefs(localFile.type, contents),
+                    updated: true,
+                    project: localFile.project
+                  },
                   contents: contents
                 };
               } else {
                 if (localFile) {
                   return {
-                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type},
+                    index: {
+                      name: localFile.name,
+                      id: localFile.id,
+                      builtIn: builtIn,
+                      type: localFile.type,
+                      ref: localFile.ref,
+                      project: localFile.project
+                    },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
                 };
@@ -911,12 +995,30 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         };
       });
     },
-    search: function(keyword) {
+    search: function(keyword, options) {
+      options = options || {};
 
       var hasKeyword = function() { return true };
       if (keyword && keyword.length > 0) {
         keyword = keyword.toLowerCase();
         hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
+
+      var byProject = function() { return true };
+      if (options.project) {
+        byProject = function(x) {
+          if (options.type) {
+            if (options.type.indexOf(x.type) === -1) return false;
+          }
+          return options.project.indexOf(x.project) !== -1;
+        };
+      } else {
+        if (options.type) {
+          byProject = function(x) {
+            if (options.type.indexOf(x.type) === -1) return false;
+            return true
+          };
+        }
       }
 
       var ee = new EventEmitter();
@@ -937,7 +1039,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               var ids = res.map(function(x){ return x.id; });
               if (result[1]) res = res.concat(result[1].filter(notInRes));
               res = res.concat(result[2].map(convertType));
-              res = res.filter(hasKeyword);
+              res = res.filter(hasKeyword).filter(byProject);
 
               ee.emit("changed", {
                 results: res.slice(0,15),
@@ -969,7 +1071,8 @@ var convertType = function(type) {
   return {
     type: "fx",
     name: type.name,
-    id: "type"+ type.name
+    id: "type"+ type.name,
+    project: 'core'
   };
 };
 

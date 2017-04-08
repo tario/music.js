@@ -1,5 +1,9 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  open_project: {
+    p1: 'Select the project you want to open',
+    title: 'Open Project'
+  },
   array_editor: {
     tooltip: {
       remove_item: 'Removes the object from array',
@@ -22,11 +26,19 @@ var enTranslations = {
       index: 'This is the object index, you can find here your crafting outputs and inputs'
     }
   },
+  project: {
+    basic_info: 'Properties',
+    references: 'References',
+    settings: 'Project Settings',
+    'new': 'New Project'
+  },
   menu: {
     'new': 'File',
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',
     new_song: 'New Song',
+    new_project: 'New Project...',
+    open_project: 'Open Project...',
     file_import: 'Import...',
     tools: 'Tools',
     tools_preferences: 'Preferences',
@@ -43,7 +55,11 @@ var enTranslations = {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',
       help: 'Menu to access help options and about'
-    }
+    },
+    project: 'Project',
+    project_settings: 'Settings...',
+    project_remove_project: 'Remove Project',
+    project_export_project: 'Export Project'
   },
   contextual_help: {
     enable: 'Enable Contextual Help',
@@ -82,9 +98,16 @@ var enTranslations = {
   common: {
     yes: 'Yes',
     no: 'No',
+    ok: 'Ok',
     dismiss: 'Dismiss',
+    cancel: 'Cancel',
+    create: 'Create',
+    open: 'Open',
+    name: 'Name',
     language: 'Language:',
     loader_error: 'Error when trying to load file',
+    cantremove_error: 'Can not delete the file if it is being used',
+    cantremove_project_error: 'Can not delete the project if it is being used in another project',
     error_title: 'Error',
     HELP: 'HELP',
     more: 'more',

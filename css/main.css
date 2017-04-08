@@ -164,7 +164,6 @@ table {
 .musicapp .btn.active,
 .musicapp .btn:active {
   margin-top: 0;
-  margin-left: 0;
   color: #0000AA;
   -webkit-box-shadow: 0 0 0;
      -moz-box-shadow: 0 0 0;
@@ -324,6 +323,18 @@ select.preset {
   position: fixed;
   width: 100%;
   z-index: 1000;
+}
+
+.navbar .title.container {
+  color: white;
+  background-color: black;
+  margin-left: 0
+}
+
+.navbar .brand {
+  color: white;
+  background-color: black;
+  margin-right: 40px
 }
 
 .navbar-padding {
@@ -508,4 +519,17 @@ body.modal-open .main-window h6 {
 
 .signal-monitor-tooltip {
   transform: translateX(100px);
+}
+
+input.white-bg {
+  background-color: white;
+}
+
+.row-fluid.project-list {
+  height: 300px;
+  max-height: 300px;
+}
+
+.project-references {
+  margin-top: 20px;
 }

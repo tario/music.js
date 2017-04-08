@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", function($timeout, $uibModal, FileRepository) {
+musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", "ErrMessage", function($timeout, $uibModal, FileRepository, ErrMessage) {
   return {
     templateUrl: 'site/templates/directives/recycleBinCompactView.html',
     scope: {},
@@ -8,6 +8,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
         if (type === "instrument") return "keyboard-o";
         if (type === "song") return "th";
         if (type === "pattern") return "music";
+        if (type === "project") return "folder-o";
         return "question";
       };
 
@@ -33,12 +34,23 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       scope.restore = function(file) {
         FileRepository.restoreFromRecycleBin(file.id)
           .then(function() {
-            document.location = "#/editor/"+file.type+"/"+file.id;
+            if (file.type === 'project') {
+              document.location = "#/editor/" + file.id;
+            } else {
+              document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
+            }
           });
       };
 
       scope.onDropComplete= function(file) {
-        FileRepository.moveToRecycleBin(file.id);
+        FileRepository.moveToRecycleBin(file.id)
+          .catch(function(err) {
+            if (err.type && err.type === 'cantremove') {
+              ErrMessage('common.error_title', 'common.cantremove_error');
+            } else {
+              throw err;
+            }
+          });
       };
     }
   };

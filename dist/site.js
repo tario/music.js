@@ -12584,6 +12584,10 @@ musicShowCaseApp.constant("localforage", localforage);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  open_project: {
+    p1: 'Select the project you want to open',
+    title: 'Open Project'
+  },
   array_editor: {
     tooltip: {
       remove_item: 'Removes the object from array',
@@ -12606,11 +12610,19 @@ var enTranslations = {
       index: 'This is the object index, you can find here your crafting outputs and inputs'
     }
   },
+  project: {
+    basic_info: 'Properties',
+    references: 'References',
+    settings: 'Project Settings',
+    'new': 'New Project'
+  },
   menu: {
     'new': 'File',
     new_instrument: 'New Instrument',
     new_pattern: 'New Pattern',
     new_song: 'New Song',
+    new_project: 'New Project...',
+    open_project: 'Open Project...',
     file_import: 'Import...',
     tools: 'Tools',
     tools_preferences: 'Preferences',
@@ -12627,7 +12639,11 @@ var enTranslations = {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',
       help: 'Menu to access help options and about'
-    }
+    },
+    project: 'Project',
+    project_settings: 'Settings...',
+    project_remove_project: 'Remove Project',
+    project_export_project: 'Export Project'
   },
   contextual_help: {
     enable: 'Enable Contextual Help',
@@ -12666,9 +12682,16 @@ var enTranslations = {
   common: {
     yes: 'Yes',
     no: 'No',
+    ok: 'Ok',
     dismiss: 'Dismiss',
+    cancel: 'Cancel',
+    create: 'Create',
+    open: 'Open',
+    name: 'Name',
     language: 'Language:',
     loader_error: 'Error when trying to load file',
+    cantremove_error: 'Can not delete the file if it is being used',
+    cantremove_project_error: 'Can not delete the project if it is being used in another project',
     error_title: 'Error',
     HELP: 'HELP',
     more: 'more',
@@ -12780,6 +12803,10 @@ musicShowCaseApp.constant("enTranslations", enTranslations);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  open_project: {
+    p1: 'Selecciona el proyecto que quieras abrir',
+    title: 'Abrir Proyecto'
+  },
   array_editor: {
     tooltip: {
       remove_item: 'Elimina el objeto de la coleccion',
@@ -12802,11 +12829,19 @@ var esTranslations = {
       index: 'Este es el indice de objetos, puedes encontrar tus materiales y productos listados aqui'
     }
   },
+  project: {
+    basic_info: 'Propiedades del proyecto',
+    references: 'Referencias',
+    settings: 'Configuracion del Proyecto',
+    'new': 'Nuevo Proyecto'
+  },
   menu: {
     'new': 'Archivo',
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',
     new_song: 'Nueva Cancion',
+    new_project: 'Nuevo Proyecto...',
+    open_project: 'Abrir Proyecto...',
     file_import: 'Importar...',
     tools: 'Herramientas',
     tools_preferences: 'Preferencias',
@@ -12823,7 +12858,11 @@ var esTranslations = {
       'new': 'Puedes crear nuevos items en blanco desde esta opcion',
       preferences: 'Puedes editar tus preferencias aqui',
       help: 'Menu para acceder a las opciones de ayuda y *Acerca De*'
-    }
+    },
+    project: 'Proyecto',
+    project_settings: 'Configuracion...',
+    project_remove_project: 'Eliminar Proyecto',
+    project_export_project: 'Exportar Proyecto'
   },
   contextual_help: {
     enable: 'Activar Ayuda Contextual',
@@ -12862,8 +12901,15 @@ var esTranslations = {
   common: {
     yes: 'Si',
     no: 'No',
+    ok: 'Aceptar',
     dismiss: 'Cerrar',
+    cancel: 'Cancelar',
+    create: 'Crear',
+    open: 'Abrir',
+    name: 'Nombre',
     loader_error: 'Error al intentar cargar el archivo',
+    cantremove_error: 'No se puede eliminar el archivo si esta siendo utilizado',
+    cantremove_project_error: 'No se puede eliminar el proyecto si esta siendo usado desde otro proyecto',
     error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
@@ -12999,17 +13045,25 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
 musicShowCaseApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
   $routeProvider
-    .when('/editor/instrument/:id', {
+    .when('/editor/:project/instrument/:id', {
       templateUrl: 'site/templates/editor.html',
       controller: 'EditorController'
     })
-    .when('/editor/song/:id', {
+    .when('/editor/:project/song/:id', {
       templateUrl: 'site/templates/songEditor.html',
       controller: 'SongEditorController'
     })
-    .when('/editor/pattern/:id', {
+    .when('/editor/:project/pattern/:id', {
       templateUrl: 'site/templates/patternEditor.html',
       controller: 'PatternEditorController'
+    })
+    .when('/editor/:project', {
+      templateUrl: 'site/templates/dashboard.html',
+      controller: 'ProjectDashboardController'
+    })
+    .when('/', {
+      templateUrl: 'site/templates/dashboard.html',
+      controller: 'DashboardController'
     });
 
   // configure html5 to get links working on jsfiddle
@@ -14322,7 +14376,7 @@ musicShowCaseApp.directive("recipeWizard", ["$timeout", function($timeout) {
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", function($timeout, $uibModal, FileRepository) {
+musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "FileRepository", "ErrMessage", function($timeout, $uibModal, FileRepository, ErrMessage) {
   return {
     templateUrl: 'site/templates/directives/recycleBinCompactView.html',
     scope: {},
@@ -14331,6 +14385,7 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
         if (type === "instrument") return "keyboard-o";
         if (type === "song") return "th";
         if (type === "pattern") return "music";
+        if (type === "project") return "folder-o";
         return "question";
       };
 
@@ -14356,12 +14411,23 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       scope.restore = function(file) {
         FileRepository.restoreFromRecycleBin(file.id)
           .then(function() {
-            document.location = "#/editor/"+file.type+"/"+file.id;
+            if (file.type === 'project') {
+              document.location = "#/editor/" + file.id;
+            } else {
+              document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
+            }
           });
       };
 
       scope.onDropComplete= function(file) {
-        FileRepository.moveToRecycleBin(file.id);
+        FileRepository.moveToRecycleBin(file.id)
+          .catch(function(err) {
+            if (err.type && err.type === 'cantremove') {
+              ErrMessage('common.error_title', 'common.cantremove_error');
+            } else {
+              throw err;
+            }
+          });
       };
     }
   };
@@ -14982,6 +15048,8 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 }]);
 
 musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Historial", "Index", "_localforage", function($http, $q, TypeService, Historial, Index, localforage) {
+  var createdFilesIndex = [];
+  var createdFiles = {};
 
   var exampleList = $http.get("exampleList.json")
     .then(function(result) {
@@ -14994,10 +15062,16 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
             createdFiles[fileId] = r.data;
             createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId});
+            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
           });
       }));
     });
+
+  createdFiles['default'] = {};
+  createdFiles['samples'] = {};
+
+  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
+  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
 
   var createId = function() {
     var array = [];
@@ -15008,9 +15082,6 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
     return array.join("");
   };
-
-  var createdFilesIndex = [];
-  var createdFiles = {};
 
   var genericStateEmmiter = new EventEmitter();
   var recycledEmmiter = new EventEmitter();
@@ -15084,45 +15155,74 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   };
 
   var restoreFromRecycleBin = function(id) {
-    return recycleIndex.getEntry(id)
-      .then(function(localFile) {
-        if (localFile) {
-          return recycleIndex.removeEntry(id)
-            .then(function() {
-              return storageIndex.createEntry(localFile);
-            });
-        }
-      })
+    return _restoreFromRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
       });
   };
 
-  var moveToRecycleBin = function(id) {
-    return storageIndex.getEntry(id)
+  var _restoreFromRecycleBin = function(id) {
+    return recycleIndex.getEntry(id)
       .then(function(localFile) {
         if (localFile) {
-          return recycleIndex.getAll()
-            .then(function(idx) {
-              if (idx && idx.length >= 100) {
-                return recycleIndex.removeEntry(idx[0].id)
-                  .then(function() {
-                    return localforage.removeItem(id);
-                  });
-              }
+          return recycleIndex.removeEntry(id)
+            .then(function() {
+              return storageIndex.createEntry(localFile);
             })
             .then(function() {
-              return storageIndex.removeEntry(id);
-            })
-            .then(function() {
-              return recycleIndex.createEntry(localFile);
+              var refs = (localFile.ref||[])
+              if (localFile.project) refs.push(localFile.project);
+
+              return $q.all(refs.map(_restoreFromRecycleBin));
             });
         }
-      })
+      });
+  };
+
+  var moveToRecycleBin = function(id) {
+    return _moveToRecycleBin(id)
       .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
+      })
+  };
+
+  var _moveToRecycleBin = function(id) {
+    var getId = function(x){ return x.id; };
+    return storageIndex.willRemove(id)
+      .then(function() {
+        return storageIndex.getEntry(id)
+          .then(function(localFile) {
+            if (localFile) {
+              return recycleIndex.getAll()
+                .then(function(idx) {
+                  if (idx && idx.length >= 100) {
+                    return recycleIndex.getFreeItems()
+                      .then(function(idx) {
+                        if (!idx[0]) return;
+
+                        return recycleIndex.removeEntry(idx[0].id)
+                          .then(function() {
+                            return localforage.removeItem(id);
+                          });
+                      });
+                  }
+                })
+                .then(function() {
+                  return storageIndex.removeEntry(id);
+                })
+                .then(function() {
+                  return recycleIndex.createEntry(localFile);
+                });
+            }
+          });
+      })
+      .then(function() {
+        return storageIndex.getOrphan(createdFilesIndex.map(getId));
+      })
+      .then(function(orphanFiles) {
+        return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin));
       });
   };
 
@@ -15137,7 +15237,13 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
     return localforage.setItem(newid, serialized)
       .then(function() {
-        return storageIndex.createEntry({type: options.type, name: options.name, id: newid});
+        return storageIndex.createEntry({
+          type: options.type,
+          name: options.name,
+          project: options.project,
+          id: newid,
+          ref: options.ref
+        });
       })
       .then(function() {
         return recycleIndex.reload();
@@ -15178,7 +15284,36 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     recycledEmmiter.emit("changed");
   };
 
+  var getRefs = function(type, contents) {
+    var ref = [];
+    if (type === 'song') {
+      contents.tracks.forEach(function(track) {
+        for (var i=0;i<track.blocks.length;i++) {
+          var blockId = track.blocks[i].id;
+          if (blockId && ref.indexOf(blockId) === -1) ref.push(blockId);
+        }
+      });
+    } else if (type === 'pattern') {
+      contents.tracks.forEach(function(track) {
+        if (track.instrument && ref.indexOf(track.instrument) === -1) ref.push(track.instrument);
+      });
+    }
+
+    return ref;
+  };
+
+  var getProjectFiles = function(projectId) {
+    return storageIndex.getAll()
+      .then(function(idx) {
+        return idx.filter(function(file) {
+          return file.project === projectId || file.id === projectId;
+        });
+      });
+  };
+
   return {
+    getRefs: getRefs,
+    getProjectFiles: getProjectFiles,
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
@@ -15236,13 +15371,28 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               if (serialized) {
                 var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
                 return {
-                  index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type, updated: true},
+                  index: {
+                    name: localFile.name,
+                    id: localFile.id,
+                    builtIn: builtIn,
+                    type: localFile.type,
+                    ref: localFile.ref||getRefs(localFile.type, contents),
+                    updated: true,
+                    project: localFile.project
+                  },
                   contents: contents
                 };
               } else {
                 if (localFile) {
                   return {
-                    index: {name: localFile.name, id: localFile.id, builtIn: builtIn, type: localFile.type},
+                    index: {
+                      name: localFile.name,
+                      id: localFile.id,
+                      builtIn: builtIn,
+                      type: localFile.type,
+                      ref: localFile.ref,
+                      project: localFile.project
+                    },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
                 };
@@ -15281,12 +15431,30 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         };
       });
     },
-    search: function(keyword) {
+    search: function(keyword, options) {
+      options = options || {};
 
       var hasKeyword = function() { return true };
       if (keyword && keyword.length > 0) {
         keyword = keyword.toLowerCase();
         hasKeyword = function(x) { return x.name.toLowerCase().indexOf(keyword) !== -1 };
+      }
+
+      var byProject = function() { return true };
+      if (options.project) {
+        byProject = function(x) {
+          if (options.type) {
+            if (options.type.indexOf(x.type) === -1) return false;
+          }
+          return options.project.indexOf(x.project) !== -1;
+        };
+      } else {
+        if (options.type) {
+          byProject = function(x) {
+            if (options.type.indexOf(x.type) === -1) return false;
+            return true
+          };
+        }
       }
 
       var ee = new EventEmitter();
@@ -15307,7 +15475,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               var ids = res.map(function(x){ return x.id; });
               if (result[1]) res = res.concat(result[1].filter(notInRes));
               res = res.concat(result[2].map(convertType));
-              res = res.filter(hasKeyword);
+              res = res.filter(hasKeyword).filter(byProject);
 
               ee.emit("changed", {
                 results: res.slice(0,15),
@@ -15339,7 +15507,8 @@ var convertType = function(type) {
   return {
     type: "fx",
     name: type.name,
-    id: "type"+ type.name
+    id: "type"+ type.name,
+    project: 'core'
   };
 };
 
@@ -15398,6 +15567,27 @@ musicShowCaseApp.factory("sfxBaseOneEntryCacheWrapper", function() {
 });
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.factory("ErrMessage", ['$uibModal', '$translate', function($uibModal, $translate) {
+  return function(title, text) {
+    var modalIns = $uibModal.open({
+      templateUrl: "site/templates/modal/error.html",
+      controller: "errorModalCtrl",
+      windowClass: 'error',
+      resolve: {
+        text: function() {
+          return $translate(text);
+        },
+        title: function() {
+          return $translate(title);
+        }
+      }
+    });
+
+    return modalIns;
+  };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRepository) {
   var exportContents = function(name, contents) {
     var a = document.createElement("a");
@@ -15413,25 +15603,16 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   };
 
   var getRelatedIds = function(file) {
-    if (file.index.type === 'pattern') {
-      var related = {};
-      file.contents.tracks.forEach(function(track) {
-        related[track.instrument] = 1;
-      });
-      return Object.keys(related);
-    } else if (file.index.type === 'song') {
-      var related = {};
-      file.contents.tracks.forEach(function(track) {
-        track.blocks.forEach(function(block) {
-          related[block.id] = 1;
-        });
-      });
-      return Object.keys(related);
+    if (file.index.type === 'project') {
+      return (file.index.ref||[]);
+    } else {
+      var ret = FileRepository.getRefs(file.index.type, file.contents);
+      if (file.index.project) ret.push(file.index.project);
+      return ret;
     }
-
-    return [];
   };
 
+  var concat = function(x, y) {return x.concat(y); };
   var getFileWithRelated = function(id) {
     var ret = [];
     return FileRepository.getFile(id)
@@ -15442,7 +15623,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
           name: file.index.name,
           type: file.index.type,
           id: file.index.id,
-          contents: file.contents
+          contents: file.contents,
+          project: file.index.project,
+          ref: file.index.ref
         });
 
         return $q.all(getRelatedIds(file).map(getFileWithRelated))
@@ -15455,10 +15638,34 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       });
   };
 
+  var uniq = function(array) {
+    var files = {};
+    array.forEach(function(file) {
+      files[file.id] = file;
+    });
+
+    return Object.keys(files).map(function(id) {
+      return files[id];
+    });
+  };
+
+  var exportProject = function(name, id) {
+    var getId = function(x) { return x.id; };
+
+    FileRepository.getProjectFiles(id)
+      .then(function(files) {
+        return $q.all(files.map(getId).map(getFileWithRelated));
+      })
+      .then(function(array){
+        array = array.reduce(concat, []);
+        exportContents(name, uniq(array));
+      });
+  };
+
   var exportFile = function(name, id) {
     return getFileWithRelated(id)
       .then(function(array) {
-        exportContents(name, array);
+        exportContents(name, uniq(array));
       });
   };
 
@@ -15471,7 +15678,8 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
               return FileRepository.updateFile(item.id, item.contents)
                 .then(function() {
                   return FileRepository.updateIndex(item.id, {
-                    name: item.name
+                    name: item.name,
+                    project: item.project
                   });
                 });
             } else {
@@ -15481,7 +15689,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
                     id: item.id,
                     contents: item.contents,
                     type: item.type,
-                    name: item.name
+                    name: item.name,
+                    project: item.project,
+                    ref: item.ref
                   });
                 });
             }
@@ -15504,7 +15714,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
         });
 
         return p.then(function() {
-          return {id: firstItem.id, type: firstItem.type};
+          return {id: firstItem.id, type: firstItem.type, project: firstItem.project};
         });
       });
   };
@@ -15512,14 +15722,46 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   return {
     exportContents: exportContents,
     exportFile: exportFile,
+    exportProject: exportProject,
     importFile: importFile
   };
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
+  function CantRemove(id, file) {
+      this.id = id;
+      this.file = file;
+      this.stack = (new Error()).stack;
+      this.type = "cantremove";
+  }
+  CantRemove.prototype = new Error
+
+  var Sync = function() {
+    var promise = $q.when();
+    this.sync = function(f) {
+      return function() {
+        var _args = arguments;
+        var _self = this;
+        var defer = $q.defer();
+
+        promise = promise.then(function() {
+          return f.apply(_self, _args)
+            .then(function(value) {
+              defer.resolve(value);
+            })
+            .catch(function(err) {
+              defer.reject(err);
+            });
+        });
+        return defer.promise;
+      };
+    };
+  };
 
   var IndexFactory = function(indexName) {
+    var entryChange = new Sync();
+
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
@@ -15528,12 +15770,12 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     };
 
     var clearItem = function(data) {
-      var ret = {id: data.id, name: data.name, type: data.type};
+      var ret = {id: data.id, name: data.name, type: data.type, project: data.project, ref: data.ref};
       if (data.c) ret.c=data.c;
       return ret;
     };
 
-    var removeEntry = function(id) {
+    var removeEntry = entryChange.sync(function(id) {
       return storageIndex
         .then(function(index) {
           if (!index) return;
@@ -15541,7 +15783,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
     var getEntry = function(id) {
       return storageIndex
@@ -15551,7 +15793,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
-    var createEntry = function(data) {
+    var createEntry = entryChange.sync(function(data) {
       return storageIndex
         .then(function(index) {
           index = index || [];
@@ -15564,13 +15806,14 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
-    var updateEntry = function(id, attributes) {
+    var updateEntry = entryChange.sync(function(id, attributes) {
       return storageIndex
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
+          localFile.ref = attributes.ref;
 
           if (IndexFactory.isolatedContext) {
             localFile.c = IndexFactory.isolatedContext;
@@ -15579,7 +15822,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
           return localforage.setItem(indexName, index.map(clearItem));
         })
         .then(reload);
-    };
+    });
 
     var getAll = function() {
       return storageIndex
@@ -15592,12 +15835,88 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
         });
     };
 
+    var refs = function(index, id) {
+      return index.filter(function(file) {
+        return (file.ref||[]).indexOf(id) !== -1;
+      });
+    };
+
+    var isProjectType = function(file) {
+      return file.type === 'project';
+    };
+
+    var getId = function(file) {
+      return file.id;
+    };
+
+    var willRemove = function(id) {
+      return storageIndex
+        .then(function(index) {
+          var localFile = index.filter(function(x) { return x.id === id; })[0];
+
+          if (!localFile) return;
+
+          var r = refs(index, id);
+          // if the item has no references, it can be removed!
+          if (r.length === 0) return;
+
+          if (localFile.type === 'project') {
+            if (r.some(isProjectType)) {
+              throw new CantRemove(id, localFile);
+            }
+          } else {
+            throw new CantRemove(id, localFile);
+          }
+
+          return $q.all(r.map(getId).map(willRemove));
+        });
+    };
+
+    var getOrphan = function(extraIds) {
+      return storageIndex
+        .then(function(index) {
+          var projectIds = index.filter(isProjectType).map(getId);
+          var ids = index.map(getId).concat(extraIds||[]);
+          var isOrphan = function(file) {
+            if (file.project) {
+              if (projectIds.indexOf(file.project) === -1) {
+                return true;
+              }
+            }
+            return (file.ref||[]).some(function(id) {
+              return ids.indexOf(id) === -1;
+            });
+          };
+
+          return index.filter(isOrphan);
+        });
+    };
+
+    var getFreeItems = function() {
+      return storageIndex
+        .then(function(index) {
+          var referenced = {};
+          index.forEach(function(file) {
+            (file.ref||[]).forEach(function(r) {
+              referenced[r]=true;
+            });
+          });
+
+          return index.filter(function(file) {
+            return !referenced[file.id];
+          });
+        });
+    };
+
     reload();
 
     return {
+      willRemove: willRemove,
       reload: reload,
       removeEntry: removeEntry,
+      getOrphan: getOrphan,
       getEntry: getEntry,
+      getFreeItems: getFreeItems,
       createEntry: createEntry,
       updateEntry: updateEntry,
       getAll: getAll
@@ -15706,7 +16025,37 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
         };
       };
 
+      var createFile = function(file) {
+        return FileRepository.destroyFile(file.index.id)
+          .then(function() {
+            return FileRepository.createFile({
+              id: file.index.id,
+              type: file.index.type,
+              project: file.index.project,
+              name: file.index.name,
+              contents: file.contents
+            });
+          });
+      };
+
+      var createFiles = function(result) {
+        return $q.all((result.data.files||[]).map(createFile))
+          .then(function() {
+            return result;
+          });
+      };
+
+      var switchProject = function(result) {
+        if (result.data.project) {
+          document.location = "#/editor/"+ result.data.project;
+        }
+
+        return result;
+      };
+
       return $http.get("recipes/" + name +".json")
+        .then(createFiles)
+        .then(switchProject)
         .then(function(result) {
           var recipeData = result.data;
 
@@ -15938,13 +16287,22 @@ musicShowCaseApp.controller("recordOptionsCtrl", ["$scope", "$uibModalInstance",
   };
 }]);
 
+musicShowCaseApp.controller("DashboardController", ["$scope", function($scope) {
+  $scope.$emit('switchProject', "default");
+}]);
+
+musicShowCaseApp.controller("ProjectDashboardController", ["$scope", "$routeParams", function($scope, $routeParams) {
+  $scope.$emit('switchProject', $routeParams.project);
+}]);
+
 musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "InstrumentSet", "Pattern", "Export", "TICKS_PER_BEAT", "SONG_MAX_TRACKS", 
     function($scope, $uibModal, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, InstrumentSet, Pattern, Export, TICKS_PER_BEAT, SONG_MAX_TRACKS) {
 
   $scope.indexMap = {};
   var id = $routeParams.id;
-
   var instSet = InstrumentSet();
+
+  $scope.$emit('switchProject', $routeParams.project);
 
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
@@ -15953,7 +16311,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
       .then(function() {
-        document.location = "#";
+        document.location = "#/editor/" + $routeParams.project;
       });
   };
 
@@ -16083,12 +16441,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.indexChanged = function() {
+    $scope.fileIndex.ref = FileRepository.getRefs("song", $scope.file);
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
-  },100);;
+    FileRepository.updateFile(id, $scope.file)
+      .then(function() {
+        $scope.indexChanged();
+      });
+  },100);
 
   var checkPayload = function() {
     var maxblocks = 0;
@@ -16225,13 +16587,15 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 
-  function($q, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export) {
+musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 'ErrMessage',
+  function($q, $translate, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export, ErrMessage) {
   var id = $routeParams.id;
 
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
   };
+
+  $scope.$emit('switchProject', $routeParams.project); 
 
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;
@@ -16251,6 +16615,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#";
+      })
+      .catch(function(err) {
+        if (err.type && err.type === 'cantremove') {
+          ErrMessage('common.error_title', 'common.cantremove_error');
+        } else {
+          throw err;
+        }
       });
   };
 
@@ -16303,11 +16674,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
   };
 
   $scope.indexChanged = function() {
+    $scope.fileIndex.ref = FileRepository.getRefs("pattern", $scope.file);
     FileRepository.updateIndex(id, $scope.fileIndex);
   };
 
   $scope.fileChanged = fn.debounce(function() {
-    FileRepository.updateFile(id, $scope.file);
+    FileRepository.updateFile(id, $scope.file)
+      .then($scope.indexChanged);
   },100);
 
   $scope.$on("trackChanged", function(track) {
@@ -16436,6 +16809,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q","$scope", "$timeout
 
 musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "MusicObjectFactory", "Export", function($scope, $q, $timeout, $routeParams, $http, MusicContext, FileRepository, MusicObjectFactory, Export) {
   var id = $routeParams.id;
+  $scope.$emit('switchProject', $routeParams.project);
 
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
@@ -16456,6 +16830,13 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
       FileRepository.moveToRecycleBin(id)
         .then(function() {
           document.location = "#";
+        })
+        .catch(function(err) {
+          if (err.type && err.type === 'cantremove') {
+            ErrMessage('common.error_title', 'common.cantremove_error');
+          } else {
+            throw err;
+          }
         });
     }
   };
@@ -16601,10 +16982,47 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 }]);
 
 musicShowCaseApp.controller("MainController", 
-  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
-  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
+  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export", "ErrMessage",
+  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export, ErrMessage) {
   var music;
 
+  $scope.$on("switchProject", function(evt, id) {
+    switchProject(id);
+  });
+
+  var concat = function(a, b) {
+    return a.concat(b);
+  };
+
+  var switchProject = function(projectId) {
+    var pFilter = [projectId];
+
+    return FileRepository.getFile(projectId).then(function(file) {
+      $scope.project = file;
+
+      return (file.index.ref||[]).concat([projectId]);
+    }).then(function(filter) {
+      $scope.projectFilter = filter.concat(['core']);
+      if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
+    }).then(updateSearch)
+      .catch(function() {
+      document.location = "#";
+    });
+  };
+
+  var updateSearch = fn.debounce(function() {
+    if (currentObserver) currentObserver.close();
+    currentObserver = FileRepository.search(null, {
+      project: $scope.projectFilter, type: ['instrument', 'pattern', 'song', 'fx']
+    }).observe(function(files) {
+      $timeout(function() {
+        $scope.filesTotal = files.total;
+        $scope.files = files.results;
+      }); 
+    });
+  },100);
+
+  var currentObserver;
   $scope.fileInputClick = function() {
     $timeout(function() {
       $(".choose-file-import-container input[type=file]").click();
@@ -16627,11 +17045,21 @@ musicShowCaseApp.controller("MainController",
       });
     };
 
+    var nextLocation;
     var importFile = function(file) {
-      return function() {
+      return function(options) {
         return readTextFile(file)
           .then(function(json) {
-            return Export.importFile(json);
+            return Export.importFile(json)
+              .then(function(file) {
+                if (options && options.first) {
+                  if (file.type === 'project') {
+                    nextLocation = "#/editor/"+ file.id;
+                  } else {
+                    nextLocation = "#/editor/"+ file.project + "/"+ file.type + "/" +file.id;
+                  }
+                }
+              });
           });
       };
     };
@@ -16639,19 +17067,15 @@ musicShowCaseApp.controller("MainController",
     var p = null;
     for (var i=0; i<files.length; i++) {
       if (p) {
-        var fileReader = new FileReader;
-        fileReader.readAsText(files[i])
-        Export.importFile.bind(Export, files[i])
         p = p.then(importFile(files[i]));
       } else {
-        p = importFile(files[i])();
+        p = importFile(files[i])({first: true});
       }
     }
 
     if (p) {
       p.then(function(index) {
-        document.location = "#/";
-        document.location = "#/editor/"+index.type+"/"+index.id;
+        if (nextLocation) document.location = nextLocation;
       }).catch(function(err) {
         var modalIns = $uibModal.open({
           templateUrl: "site/templates/modal/error.html",
@@ -16711,44 +17135,117 @@ musicShowCaseApp.controller("MainController",
       if (!skip) $scope.welcome();
     });
 
-  var currentObserver = FileRepository.search().observe(function(files) {
-    $timeout(function() {
-      $scope.filesTotal = files.total;
-      $scope.files = files.results;
-    });
-  });
-
   $scope.recipe = Recipe.start;
 
   $scope.activate = function(example) {
     if (example.type === "instrument"||example.type === "song"||example.type === "pattern") {
-      document.location = "#/editor/"+example.type+"/"+example.id;
+      document.location = "#/editor/" + $scope.project.index.id + "/" +example.type+"/"+example.id;
+    }
+    if (example.type === "project") {
+      document.location = "#/editor/" + example.id;
     }
   };
 
-  $scope.$watch("searchKeyword", fn.debounce(function() {
+  $scope.keywordUpdated = fn.debounce(function() {
     if (currentObserver) currentObserver.close();
-    currentObserver = FileRepository.search($scope.searchKeyword).observe(function(files) {
+    currentObserver = FileRepository.search($scope.searchKeyword, {
+      project: $scope.projectFilter, type: ['instrument', 'pattern', 'song', 'fx']
+    }).observe(function(files) {
       $scope.filesTotal = files.total;
       $scope.files = files.results;
     });
-  },200));
+  },200);
 
   $scope.iconForType = function(type) {
     if (type === "instrument") return "keyboard-o";
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";
+    if (type === "project") return "folder-o";
     return "question";
   }
+
+  $scope.removeProject = function() {
+    FileRepository.moveToRecycleBin($scope.project.index.id)
+      .then(function() {
+        document.location = "#";
+      })
+      .catch(function(err) {
+        if (err.type && err.type === 'cantremove') {
+          ErrMessage('common.error_title', 'common.cantremove_project_error');
+        } else {
+          throw err;
+        }
+      });
+  };
+
+  $scope.exportProject = function() {
+    Export.exportProject($scope.project.index.name, $scope.project.index.id);
+  };
+
+  $scope.projectSettings = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/projectSettings.html",
+      controller: "projectSettingsModalCtrl",
+      resolve: {
+        project: {
+          name: $scope.project.index.name,
+          ref: $scope.project.index.ref
+        },
+        buttonText: function() { return 'common.ok'; }
+      }
+    }).result.then(function(project) {
+      $scope.project.index.name = project.name;
+      FileRepository.updateIndex($scope.project.index.id, {
+        type: 'project', 
+        name: project.name,
+        ref: project.ref
+      })
+      .then(function() {
+        switchProject($scope.project.index.id);
+      });
+    });
+  };
+
+  $scope.newProject = function() {
+    // open "project settings" modal
+    $translate('project.new').then(function(projectName) {
+      $uibModal.open({
+        templateUrl: "site/templates/modal/projectSettings.html",
+        controller: "projectSettingsModalCtrl",
+        resolve: {
+          project: {name: projectName},
+          buttonText: function() { return 'common.create'; }
+        }
+      }).result.then(function(project) {
+        FileRepository.createFile({type: 'project', name: project.name, ref: project.ref})
+          .then(function(id) {
+            document.location="#/editor/" + id;
+          });
+      });
+    });
+  };
+
+  $scope.openProject = function() {
+    $uibModal.open({
+      templateUrl: "site/templates/modal/openProject.html",
+      controller: "openProjectModalCtrl"
+    }).result.then(function(id) {
+      document.location="#/editor/" + id;
+    });
+  };
 
   $scope.newInstrument = function() {
     $translate("common.new_instrument")
       .then(function(name) {
-        return FileRepository.createFile({type: "instrument", name: name});
+        return FileRepository.createFile({
+          type: "instrument",
+          name: name,
+          project: $scope.project.index.id
+        });
       })
       .then(function(id) {
-        document.location = "#/editor/instrument/"+id;
+        document.location = "#/editor/" + $scope.project.index.id + "/instrument/" + id;
       })
       .catch(function(err) {
         debugger;
@@ -16758,20 +17255,28 @@ musicShowCaseApp.controller("MainController",
   $scope.newSong = function() {
     $translate("common.new_song")
       .then(function(name) {
-        return FileRepository.createFile({type: "song", name: name});
+        return FileRepository.createFile({
+          type: "song", 
+          name: name,
+          project: $scope.project.index.id
+        });
       })
       .then(function(id) {
-        document.location = "#/editor/song/"+id;
+        document.location = "#/editor/" + $scope.project.index.id + "/song/"+id;
       });
   };
 
   $scope.newPattern = function() {
     $translate("common.new_pattern")
       .then(function(name) {
-        return FileRepository.createFile({type: "pattern", name: name});
+        return FileRepository.createFile({
+          type: "pattern",
+          name: name,
+          project: $scope.project.index.id
+        });
       })
       .then(function(id) {
-        document.location = "#/editor/pattern/"+id;
+        document.location = "#/editor/" + $scope.project.index.id + "/pattern/"+id;
       });
   };
 
@@ -16823,6 +17328,88 @@ musicShowCaseApp.controller("infoModalCtrl", ["$scope", "$uibModalInstance", fun
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.controller("openProjectModalCtrl", ["$q", "$scope", "$uibModalInstance", 'FileRepository', function($q, $scope, $uibModalInstance, FileRepository) {
+  var currentObserver;
+  var immediateUpdateSearch = function() {
+    if (currentObserver) currentObserver.close();
+    currentObserver = FileRepository.search($scope.searchKeyword, {type: ['project']})
+      .observe(function(files) {
+        $scope.filesTotal = files.total;
+        $scope.files = files.results;
+      });
+  };
+
+  $scope.updateSearch = fn.debounce(immediateUpdateSearch,250);
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss();
+  };
+
+  $scope.select = function(projectId) {
+    $scope.selected = projectId;
+  };
+
+  $scope.open = function(projectId) {
+    $uibModalInstance.close(projectId);
+  };
+
+  immediateUpdateSearch();
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.controller("projectSettingsModalCtrl", ["$q", "$scope", "$uibModalInstance", "FileRepository", "project", "buttonText", function($q, $scope, $uibModalInstance, FileRepository, project, buttonText) {
+  var currentObserver;
+  var immediateUpdateSearch = function() {
+    if (currentObserver) currentObserver.close();
+    currentObserver = FileRepository.search($scope.searchKeyword, {type: ['project']})
+      .observe(function(files) {
+        $scope.filesTotal = files.total;
+        $scope.files = files.results;
+      });
+  };
+
+  $scope.project = project;
+  $scope.buttonText = buttonText;
+
+  var getIndex = function(id) {
+    return FileRepository.getFile(id)
+      .then(function(file) {
+        return file.index;
+      });
+  };
+
+  $scope.refs = [];
+  $q.all(($scope.project.ref||[]).map(getIndex))
+    .then(function(refs) {
+      $scope.refs = refs
+    });
+
+  $scope.updateSearch = fn.debounce(immediateUpdateSearch,250);
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss();
+  };
+
+  $scope.done = function() {
+    $scope.project.ref = $scope.refs.map(getId);
+    $uibModalInstance.close($scope.project);
+  };
+
+  var getId = function(x) { return x.id; };
+  $scope.remove = function(file) {
+    $scope.refs = $scope.refs.filter(function(f) {
+      return f.id !== file.id;
+    });
+  };
+
+  $scope.add = function(file) {
+    if ($scope.refs.map(getId).indexOf(file.id) === -1) {
+      $scope.refs.push(file);
+    }
+  };
+
+  immediateUpdateSearch();
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibModalInstance", "FileRepository", function($scope, $timeout, $uibModalInstance, FileRepository) {
   $scope.dismiss = function() {
     $uibModalInstance.dismiss();
@@ -16833,6 +17420,7 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";
+    if (type === "project") return "folder-o";
     return "question";
   }
 

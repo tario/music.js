@@ -14,25 +14,16 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   };
 
   var getRelatedIds = function(file) {
-    if (file.index.type === 'pattern') {
-      var related = {};
-      file.contents.tracks.forEach(function(track) {
-        related[track.instrument] = 1;
-      });
-      return Object.keys(related);
-    } else if (file.index.type === 'song') {
-      var related = {};
-      file.contents.tracks.forEach(function(track) {
-        track.blocks.forEach(function(block) {
-          related[block.id] = 1;
-        });
-      });
-      return Object.keys(related);
+    if (file.index.type === 'project') {
+      return (file.index.ref||[]);
+    } else {
+      var ret = FileRepository.getRefs(file.index.type, file.contents);
+      if (file.index.project) ret.push(file.index.project);
+      return ret;
     }
-
-    return [];
   };
 
+  var concat = function(x, y) {return x.concat(y); };
   var getFileWithRelated = function(id) {
     var ret = [];
     return FileRepository.getFile(id)
@@ -43,7 +34,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
           name: file.index.name,
           type: file.index.type,
           id: file.index.id,
-          contents: file.contents
+          contents: file.contents,
+          project: file.index.project,
+          ref: file.index.ref
         });
 
         return $q.all(getRelatedIds(file).map(getFileWithRelated))
@@ -56,10 +49,34 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       });
   };
 
+  var uniq = function(array) {
+    var files = {};
+    array.forEach(function(file) {
+      files[file.id] = file;
+    });
+
+    return Object.keys(files).map(function(id) {
+      return files[id];
+    });
+  };
+
+  var exportProject = function(name, id) {
+    var getId = function(x) { return x.id; };
+
+    FileRepository.getProjectFiles(id)
+      .then(function(files) {
+        return $q.all(files.map(getId).map(getFileWithRelated));
+      })
+      .then(function(array){
+        array = array.reduce(concat, []);
+        exportContents(name, uniq(array));
+      });
+  };
+
   var exportFile = function(name, id) {
     return getFileWithRelated(id)
       .then(function(array) {
-        exportContents(name, array);
+        exportContents(name, uniq(array));
       });
   };
 
@@ -72,7 +89,8 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
               return FileRepository.updateFile(item.id, item.contents)
                 .then(function() {
                   return FileRepository.updateIndex(item.id, {
-                    name: item.name
+                    name: item.name,
+                    project: item.project
                   });
                 });
             } else {
@@ -82,7 +100,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
                     id: item.id,
                     contents: item.contents,
                     type: item.type,
-                    name: item.name
+                    name: item.name,
+                    project: item.project,
+                    ref: item.ref
                   });
                 });
             }
@@ -105,7 +125,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
         });
 
         return p.then(function() {
-          return {id: firstItem.id, type: firstItem.type};
+          return {id: firstItem.id, type: firstItem.type, project: firstItem.project};
         });
       });
   };
@@ -113,6 +133,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   return {
     exportContents: exportContents,
     exportFile: exportFile,
+    exportProject: exportProject,
     importFile: importFile
   };
 }]);

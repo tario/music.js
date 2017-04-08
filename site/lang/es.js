@@ -1,5 +1,9 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  open_project: {
+    p1: 'Selecciona el proyecto que quieras abrir',
+    title: 'Abrir Proyecto'
+  },
   array_editor: {
     tooltip: {
       remove_item: 'Elimina el objeto de la coleccion',
@@ -22,11 +26,19 @@ var esTranslations = {
       index: 'Este es el indice de objetos, puedes encontrar tus materiales y productos listados aqui'
     }
   },
+  project: {
+    basic_info: 'Propiedades del proyecto',
+    references: 'Referencias',
+    settings: 'Configuracion del Proyecto',
+    'new': 'Nuevo Proyecto'
+  },
   menu: {
     'new': 'Archivo',
     new_instrument: 'Nuevo Instrumento',
     new_pattern: 'Nuevo Patron',
     new_song: 'Nueva Cancion',
+    new_project: 'Nuevo Proyecto...',
+    open_project: 'Abrir Proyecto...',
     file_import: 'Importar...',
     tools: 'Herramientas',
     tools_preferences: 'Preferencias',
@@ -43,7 +55,11 @@ var esTranslations = {
       'new': 'Puedes crear nuevos items en blanco desde esta opcion',
       preferences: 'Puedes editar tus preferencias aqui',
       help: 'Menu para acceder a las opciones de ayuda y *Acerca De*'
-    }
+    },
+    project: 'Proyecto',
+    project_settings: 'Configuracion...',
+    project_remove_project: 'Eliminar Proyecto',
+    project_export_project: 'Exportar Proyecto'
   },
   contextual_help: {
     enable: 'Activar Ayuda Contextual',
@@ -82,8 +98,15 @@ var esTranslations = {
   common: {
     yes: 'Si',
     no: 'No',
+    ok: 'Aceptar',
     dismiss: 'Cerrar',
+    cancel: 'Cancelar',
+    create: 'Crear',
+    open: 'Abrir',
+    name: 'Nombre',
     loader_error: 'Error al intentar cargar el archivo',
+    cantremove_error: 'No se puede eliminar el archivo si esta siendo utilizado',
+    cantremove_project_error: 'No se puede eliminar el proyecto si esta siendo usado desde otro proyecto',
     error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
