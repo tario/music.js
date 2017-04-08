@@ -12691,6 +12691,7 @@ var enTranslations = {
     language: 'Language:',
     loader_error: 'Error when trying to load file',
     cantremove_error: 'Can not delete the file if it is being used',
+    cantremove_project_error: 'Can not delete the project if it is being used in another project',
     error_title: 'Error',
     HELP: 'HELP',
     more: 'more',
@@ -12908,6 +12909,7 @@ var esTranslations = {
     name: 'Nombre',
     loader_error: 'Error al intentar cargar el archivo',
     cantremove_error: 'No se puede eliminar el archivo si esta siendo utilizado',
+    cantremove_project_error: 'No se puede eliminar el proyecto si esta siendo usado desde otro proyecto',
     error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
@@ -16980,8 +16982,8 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 }]);
 
 musicShowCaseApp.controller("MainController", 
-  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
-  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
+  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export", "ErrMessage",
+  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export, ErrMessage) {
   var music;
 
   $scope.$on("switchProject", function(evt, id) {
@@ -17167,6 +17169,13 @@ musicShowCaseApp.controller("MainController",
     FileRepository.moveToRecycleBin($scope.project.index.id)
       .then(function() {
         document.location = "#";
+      })
+      .catch(function(err) {
+        if (err.type && err.type === 'cantremove') {
+          ErrMessage('common.error_title', 'common.cantremove_project_error');
+        } else {
+          throw err;
+        }
       });
   };
 
@@ -17385,6 +17394,12 @@ musicShowCaseApp.controller("projectSettingsModalCtrl", ["$q", "$scope", "$uibMo
   };
 
   var getId = function(x) { return x.id; };
+  $scope.remove = function(file) {
+    $scope.refs = $scope.refs.filter(function(f) {
+      return f.id !== file.id;
+    });
+  };
+
   $scope.add = function(file) {
     if ($scope.refs.map(getId).indexOf(file.id) === -1) {
       $scope.refs.push(file);

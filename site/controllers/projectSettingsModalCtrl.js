@@ -37,6 +37,12 @@ musicShowCaseApp.controller("projectSettingsModalCtrl", ["$q", "$scope", "$uibMo
   };
 
   var getId = function(x) { return x.id; };
+  $scope.remove = function(file) {
+    $scope.refs = $scope.refs.filter(function(f) {
+      return f.id !== file.id;
+    });
+  };
+
   $scope.add = function(file) {
     if ($scope.refs.map(getId).indexOf(file.id) === -1) {
       $scope.refs.push(file);

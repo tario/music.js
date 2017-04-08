@@ -107,6 +107,7 @@ var enTranslations = {
     language: 'Language:',
     loader_error: 'Error when trying to load file',
     cantremove_error: 'Can not delete the file if it is being used',
+    cantremove_project_error: 'Can not delete the project if it is being used in another project',
     error_title: 'Error',
     HELP: 'HELP',
     more: 'more',

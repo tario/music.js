@@ -736,8 +736,8 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 }]);
 
 musicShowCaseApp.controller("MainController", 
-  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export",
-  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export) {
+  ["$q", "$scope", "$timeout", "$uibModal", "$translate", "MusicContext", "FileRepository", "Recipe", "WelcomeMessage", "localforage", "Export", "ErrMessage",
+  function($q, $scope, $timeout, $uibModal, $translate, MusicContext, FileRepository, Recipe, WelcomeMessage, localforage, Export, ErrMessage) {
   var music;
 
   $scope.$on("switchProject", function(evt, id) {
@@ -923,6 +923,13 @@ musicShowCaseApp.controller("MainController",
     FileRepository.moveToRecycleBin($scope.project.index.id)
       .then(function() {
         document.location = "#";
+      })
+      .catch(function(err) {
+        if (err.type && err.type === 'cantremove') {
+          ErrMessage('common.error_title', 'common.cantremove_project_error');
+        } else {
+          throw err;
+        }
       });
   };
 

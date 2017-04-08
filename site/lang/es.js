@@ -106,6 +106,7 @@ var esTranslations = {
     name: 'Nombre',
     loader_error: 'Error al intentar cargar el archivo',
     cantremove_error: 'No se puede eliminar el archivo si esta siendo utilizado',
+    cantremove_project_error: 'No se puede eliminar el proyecto si esta siendo usado desde otro proyecto',
     error_title: 'Error',
     language: 'Idioma:',
     HELP: 'AYUDA',
