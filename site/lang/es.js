@@ -55,7 +55,11 @@ var esTranslations = {
       'new': 'Puedes crear nuevos items en blanco desde esta opcion',
       preferences: 'Puedes editar tus preferencias aqui',
       help: 'Menu para acceder a las opciones de ayuda y *Acerca De*'
-    }
+    },
+    project: 'Proyecto',
+    project_settings: 'Configuracion...',
+    project_remove_project: 'Eliminar Proyecto',
+    project_export_project: 'Exportar Proyecto'
   },
   contextual_help: {
     enable: 'Activar Ayuda Contextual',

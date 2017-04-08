@@ -754,7 +754,7 @@ musicShowCaseApp.controller("MainController",
     return FileRepository.getFile(projectId).then(function(file) {
       $scope.project = file;
 
-      return (file.contents.ref||[]).concat([projectId]);
+      return (file.index.ref||[]).concat([projectId]);
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
@@ -799,11 +799,21 @@ musicShowCaseApp.controller("MainController",
       });
     };
 
+    var nextLocation;
     var importFile = function(file) {
-      return function() {
+      return function(options) {
         return readTextFile(file)
           .then(function(json) {
-            return Export.importFile(json);
+            return Export.importFile(json)
+              .then(function(file) {
+                if (options && options.first) {
+                  if (file.type === 'project') {
+                    nextLocation = "#/editor/"+ file.id;
+                  } else {
+                    nextLocation = "#/editor/"+ file.project + "/"+ file.type + "/" +file.id;
+                  }
+                }
+              });
           });
       };
     };
@@ -811,19 +821,15 @@ musicShowCaseApp.controller("MainController",
     var p = null;
     for (var i=0; i<files.length; i++) {
       if (p) {
-        var fileReader = new FileReader;
-        fileReader.readAsText(files[i])
-        Export.importFile.bind(Export, files[i])
         p = p.then(importFile(files[i]));
       } else {
-        p = importFile(files[i])();
+        p = importFile(files[i])({first: true});
       }
     }
 
     if (p) {
       p.then(function(index) {
-        document.location = "#/";
-        document.location = "#/editor/"+ $scope.project.index.id + "/"+index.type+"/"+index.id;
+        if (nextLocation) document.location = nextLocation;
       }).catch(function(err) {
         var modalIns = $uibModal.open({
           templateUrl: "site/templates/modal/error.html",
@@ -913,6 +919,17 @@ musicShowCaseApp.controller("MainController",
     return "question";
   }
 
+  $scope.removeProject = function() {
+    FileRepository.moveToRecycleBin($scope.project.index.id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
+
+  $scope.exportProject = function() {
+    Export.exportProject($scope.project.index.name, $scope.project.index.id);
+  };
+
   $scope.projectSettings = function() {
     $uibModal.open({
       templateUrl: "site/templates/modal/projectSettings.html",
@@ -920,7 +937,7 @@ musicShowCaseApp.controller("MainController",
       resolve: {
         project: {
           name: $scope.project.index.name,
-          ref: $scope.project.contents.ref
+          ref: $scope.project.index.ref
         },
         buttonText: function() { return 'common.ok'; }
       }
@@ -928,12 +945,10 @@ musicShowCaseApp.controller("MainController",
       $scope.project.index.name = project.name;
       FileRepository.updateIndex($scope.project.index.id, {
         type: 'project', 
-        name: project.name
-      }).then(function() {
-/*        $scope.project.contents.ref = project.ref;
-        $scope.projectFilter = project.ref.concat([$scope.project.index.id]);*/
-        return FileRepository.updateFile($scope.project.index.id, {ref: project.ref});
-      }).then(function() {
+        name: project.name,
+        ref: project.ref
+      })
+      .then(function() {
         switchProject($scope.project.index.id);
       });
     });
@@ -950,9 +965,7 @@ musicShowCaseApp.controller("MainController",
           buttonText: function() { return 'common.create'; }
         }
       }).result.then(function(project) {
-        FileRepository.createFile({type: 'project', name: project.name, contents: {
-          ref: project.ref
-        }})
+        FileRepository.createFile({type: 'project', name: project.name, ref: project.ref})
           .then(function(id) {
             document.location="#/editor/" + id;
           });

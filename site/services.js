@@ -631,12 +631,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       }));
     });
 
-  createdFiles['default'] = {
-    ref: ['samples']
-  };
+  createdFiles['default'] = {};
   createdFiles['samples'] = {};
 
-  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default'});
+  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
   createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
 
   var createId = function() {
@@ -737,9 +735,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               return storageIndex.createEntry(localFile);
             })
             .then(function() {
-              if (localFile.ref && localFile.ref.length) {
-                return $q.all(localFile.ref.map(_restoreFromRecycleBin));
-              }
+              var refs = (localFile.ref||[])
+              if (localFile.project) refs.push(localFile.project);
+
+              return $q.all(refs.map(_restoreFromRecycleBin));
             });
         }
       });
@@ -807,6 +806,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           name: options.name,
           project: options.project,
           id: newid,
+          ref: options.ref
         });
       })
       .then(function() {
@@ -866,8 +866,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     return ref;
   };
 
+  var getProjectFiles = function(projectId) {
+    return storageIndex.getAll()
+      .then(function(idx) {
+        return idx.filter(function(file) {
+          return file.project === projectId || file.id === projectId;
+        });
+      });
+  };
+
   return {
     getRefs: getRefs,
+    getProjectFiles: getProjectFiles,
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
@@ -931,7 +941,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
                     builtIn: builtIn,
                     type: localFile.type,
                     ref: localFile.ref||getRefs(localFile.type, contents),
-                    updated: true
+                    updated: true,
+                    project: localFile.project
                   },
                   contents: contents
                 };
@@ -943,7 +954,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
                       id: localFile.id,
                       builtIn: builtIn,
                       type: localFile.type,
-                      ref: localFile.ref
+                      ref: localFile.ref,
+                      project: localFile.project
                     },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };

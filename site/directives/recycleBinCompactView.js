@@ -34,7 +34,11 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       scope.restore = function(file) {
         FileRepository.restoreFromRecycleBin(file.id)
           .then(function() {
-            document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
+            if (file.type === 'project') {
+              document.location = "#/editor/" + file.id;
+            } else {
+              document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
+            }
           });
       };
 

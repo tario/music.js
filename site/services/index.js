@@ -146,12 +146,15 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     var getOrphan = function(extraIds) {
       return storageIndex
         .then(function(index) {
+          var projectIds = index.filter(isProjectType).map(getId);
           var ids = index.map(getId).concat(extraIds||[]);
           var isOrphan = function(file) {
-            if (!file.ref) return false;
-            if (!file.ref.length) return false;
-
-            return file.ref.some(function(id) {
+            if (file.project) {
+              if (projectIds.indexOf(file.project) === -1) {
+                return true;
+              }
+            }
+            return (file.ref||[]).some(function(id) {
               return ids.indexOf(id) === -1;
             });
           };

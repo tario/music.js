@@ -12639,7 +12639,11 @@ var enTranslations = {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',
       help: 'Menu to access help options and about'
-    }
+    },
+    project: 'Project',
+    project_settings: 'Settings...',
+    project_remove_project: 'Remove Project',
+    project_export_project: 'Export Project'
   },
   contextual_help: {
     enable: 'Enable Contextual Help',
@@ -12853,7 +12857,11 @@ var esTranslations = {
       'new': 'Puedes crear nuevos items en blanco desde esta opcion',
       preferences: 'Puedes editar tus preferencias aqui',
       help: 'Menu para acceder a las opciones de ayuda y *Acerca De*'
-    }
+    },
+    project: 'Proyecto',
+    project_settings: 'Configuracion...',
+    project_remove_project: 'Eliminar Proyecto',
+    project_export_project: 'Exportar Proyecto'
   },
   contextual_help: {
     enable: 'Activar Ayuda Contextual',
@@ -14401,7 +14409,11 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
       scope.restore = function(file) {
         FileRepository.restoreFromRecycleBin(file.id)
           .then(function() {
-            document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
+            if (file.type === 'project') {
+              document.location = "#/editor/" + file.id;
+            } else {
+              document.location = "#/editor/"+file.project+"/"+file.type+"/"+file.id;
+            }
           });
       };
 
@@ -15053,12 +15065,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       }));
     });
 
-  createdFiles['default'] = {
-    ref: ['samples']
-  };
+  createdFiles['default'] = {};
   createdFiles['samples'] = {};
 
-  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default'});
+  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
   createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
 
   var createId = function() {
@@ -15159,9 +15169,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
               return storageIndex.createEntry(localFile);
             })
             .then(function() {
-              if (localFile.ref && localFile.ref.length) {
-                return $q.all(localFile.ref.map(_restoreFromRecycleBin));
-              }
+              var refs = (localFile.ref||[])
+              if (localFile.project) refs.push(localFile.project);
+
+              return $q.all(refs.map(_restoreFromRecycleBin));
             });
         }
       });
@@ -15229,6 +15240,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           name: options.name,
           project: options.project,
           id: newid,
+          ref: options.ref
         });
       })
       .then(function() {
@@ -15288,8 +15300,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     return ref;
   };
 
+  var getProjectFiles = function(projectId) {
+    return storageIndex.getAll()
+      .then(function(idx) {
+        return idx.filter(function(file) {
+          return file.project === projectId || file.id === projectId;
+        });
+      });
+  };
+
   return {
     getRefs: getRefs,
+    getProjectFiles: getProjectFiles,
     undo: function(id) {
       var oldVer = hist[id].undo();
       if (!oldVer) return;
@@ -15353,7 +15375,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
                     builtIn: builtIn,
                     type: localFile.type,
                     ref: localFile.ref||getRefs(localFile.type, contents),
-                    updated: true
+                    updated: true,
+                    project: localFile.project
                   },
                   contents: contents
                 };
@@ -15365,7 +15388,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
                       id: localFile.id,
                       builtIn: builtIn,
                       type: localFile.type,
-                      ref: localFile.ref
+                      ref: localFile.ref,
+                      project: localFile.project
                     },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };
@@ -15577,25 +15601,16 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   };
 
   var getRelatedIds = function(file) {
-    if (file.index.type === 'pattern') {
-      var related = {};
-      file.contents.tracks.forEach(function(track) {
-        related[track.instrument] = 1;
-      });
-      return Object.keys(related);
-    } else if (file.index.type === 'song') {
-      var related = {};
-      file.contents.tracks.forEach(function(track) {
-        track.blocks.forEach(function(block) {
-          related[block.id] = 1;
-        });
-      });
-      return Object.keys(related);
+    if (file.index.type === 'project') {
+      return (file.index.ref||[]);
+    } else {
+      var ret = FileRepository.getRefs(file.index.type, file.contents);
+      if (file.index.project) ret.push(file.index.project);
+      return ret;
     }
-
-    return [];
   };
 
+  var concat = function(x, y) {return x.concat(y); };
   var getFileWithRelated = function(id) {
     var ret = [];
     return FileRepository.getFile(id)
@@ -15606,7 +15621,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
           name: file.index.name,
           type: file.index.type,
           id: file.index.id,
-          contents: file.contents
+          contents: file.contents,
+          project: file.index.project,
+          ref: file.index.ref
         });
 
         return $q.all(getRelatedIds(file).map(getFileWithRelated))
@@ -15619,10 +15636,34 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
       });
   };
 
+  var uniq = function(array) {
+    var files = {};
+    array.forEach(function(file) {
+      files[file.id] = file;
+    });
+
+    return Object.keys(files).map(function(id) {
+      return files[id];
+    });
+  };
+
+  var exportProject = function(name, id) {
+    var getId = function(x) { return x.id; };
+
+    FileRepository.getProjectFiles(id)
+      .then(function(files) {
+        return $q.all(files.map(getId).map(getFileWithRelated));
+      })
+      .then(function(array){
+        array = array.reduce(concat, []);
+        exportContents(name, uniq(array));
+      });
+  };
+
   var exportFile = function(name, id) {
     return getFileWithRelated(id)
       .then(function(array) {
-        exportContents(name, array);
+        exportContents(name, uniq(array));
       });
   };
 
@@ -15635,7 +15676,8 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
               return FileRepository.updateFile(item.id, item.contents)
                 .then(function() {
                   return FileRepository.updateIndex(item.id, {
-                    name: item.name
+                    name: item.name,
+                    project: item.project
                   });
                 });
             } else {
@@ -15645,7 +15687,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
                     id: item.id,
                     contents: item.contents,
                     type: item.type,
-                    name: item.name
+                    name: item.name,
+                    project: item.project,
+                    ref: item.ref
                   });
                 });
             }
@@ -15668,7 +15712,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
         });
 
         return p.then(function() {
-          return {id: firstItem.id, type: firstItem.type};
+          return {id: firstItem.id, type: firstItem.type, project: firstItem.project};
         });
       });
   };
@@ -15676,6 +15720,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
   return {
     exportContents: exportContents,
     exportFile: exportFile,
+    exportProject: exportProject,
     importFile: importFile
   };
 }]);
@@ -15828,12 +15873,15 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     var getOrphan = function(extraIds) {
       return storageIndex
         .then(function(index) {
+          var projectIds = index.filter(isProjectType).map(getId);
           var ids = index.map(getId).concat(extraIds||[]);
           var isOrphan = function(file) {
-            if (!file.ref) return false;
-            if (!file.ref.length) return false;
-
-            return file.ref.some(function(id) {
+            if (file.project) {
+              if (projectIds.indexOf(file.project) === -1) {
+                return true;
+              }
+            }
+            return (file.ref||[]).some(function(id) {
               return ids.indexOf(id) === -1;
             });
           };
@@ -16950,7 +16998,7 @@ musicShowCaseApp.controller("MainController",
     return FileRepository.getFile(projectId).then(function(file) {
       $scope.project = file;
 
-      return (file.contents.ref||[]).concat([projectId]);
+      return (file.index.ref||[]).concat([projectId]);
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
@@ -16995,11 +17043,21 @@ musicShowCaseApp.controller("MainController",
       });
     };
 
+    var nextLocation;
     var importFile = function(file) {
-      return function() {
+      return function(options) {
         return readTextFile(file)
           .then(function(json) {
-            return Export.importFile(json);
+            return Export.importFile(json)
+              .then(function(file) {
+                if (options && options.first) {
+                  if (file.type === 'project') {
+                    nextLocation = "#/editor/"+ file.id;
+                  } else {
+                    nextLocation = "#/editor/"+ file.project + "/"+ file.type + "/" +file.id;
+                  }
+                }
+              });
           });
       };
     };
@@ -17007,19 +17065,15 @@ musicShowCaseApp.controller("MainController",
     var p = null;
     for (var i=0; i<files.length; i++) {
       if (p) {
-        var fileReader = new FileReader;
-        fileReader.readAsText(files[i])
-        Export.importFile.bind(Export, files[i])
         p = p.then(importFile(files[i]));
       } else {
-        p = importFile(files[i])();
+        p = importFile(files[i])({first: true});
       }
     }
 
     if (p) {
       p.then(function(index) {
-        document.location = "#/";
-        document.location = "#/editor/"+ $scope.project.index.id + "/"+index.type+"/"+index.id;
+        if (nextLocation) document.location = nextLocation;
       }).catch(function(err) {
         var modalIns = $uibModal.open({
           templateUrl: "site/templates/modal/error.html",
@@ -17109,6 +17163,17 @@ musicShowCaseApp.controller("MainController",
     return "question";
   }
 
+  $scope.removeProject = function() {
+    FileRepository.moveToRecycleBin($scope.project.index.id)
+      .then(function() {
+        document.location = "#";
+      });
+  };
+
+  $scope.exportProject = function() {
+    Export.exportProject($scope.project.index.name, $scope.project.index.id);
+  };
+
   $scope.projectSettings = function() {
     $uibModal.open({
       templateUrl: "site/templates/modal/projectSettings.html",
@@ -17116,7 +17181,7 @@ musicShowCaseApp.controller("MainController",
       resolve: {
         project: {
           name: $scope.project.index.name,
-          ref: $scope.project.contents.ref
+          ref: $scope.project.index.ref
         },
         buttonText: function() { return 'common.ok'; }
       }
@@ -17124,12 +17189,10 @@ musicShowCaseApp.controller("MainController",
       $scope.project.index.name = project.name;
       FileRepository.updateIndex($scope.project.index.id, {
         type: 'project', 
-        name: project.name
-      }).then(function() {
-/*        $scope.project.contents.ref = project.ref;
-        $scope.projectFilter = project.ref.concat([$scope.project.index.id]);*/
-        return FileRepository.updateFile($scope.project.index.id, {ref: project.ref});
-      }).then(function() {
+        name: project.name,
+        ref: project.ref
+      })
+      .then(function() {
         switchProject($scope.project.index.id);
       });
     });
@@ -17146,9 +17209,7 @@ musicShowCaseApp.controller("MainController",
           buttonText: function() { return 'common.create'; }
         }
       }).result.then(function(project) {
-        FileRepository.createFile({type: 'project', name: project.name, contents: {
-          ref: project.ref
-        }})
+        FileRepository.createFile({type: 'project', name: project.name, ref: project.ref})
           .then(function(id) {
             document.location="#/editor/" + id;
           });

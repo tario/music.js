@@ -55,7 +55,11 @@ var enTranslations = {
       'new': 'You can create new blank items from this option',
       preferences: 'You can edit your preferences here',
       help: 'Menu to access help options and about'
-    }
+    },
+    project: 'Project',
+    project_settings: 'Settings...',
+    project_remove_project: 'Remove Project',
+    project_export_project: 'Export Project'
   },
   contextual_help: {
     enable: 'Enable Contextual Help',
