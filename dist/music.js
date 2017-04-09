@@ -12540,6 +12540,12 @@ MUSIC.EffectsPipeline.prototype = {
     };
 
     var ret = this.wrap(sfxBaseWrapper);
+    var original = this;
+    ret.getOriginal = function() {
+      if (original.getOriginal) return original.getOriginal();
+      return original;
+    };
+
     ret.prune = sfxPrune;
     return ret;
   },

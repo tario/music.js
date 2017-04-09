@@ -960,6 +960,7 @@ module.export = function(m) {
       var noteCount = 0;
       var note = function(n) {
         var innerNote;
+
         var noteInst = inst.note(n);
 
         var play = function(){
@@ -1216,8 +1217,11 @@ module.export = function(m) {
     }
   };
 
-  m.type("sample_rate_reduction", {template: "sample_rate_reduction", description: "Sample Rate Reduction", _default: {
-    factor: 0.5
+  m.type("sample_rate_reduction", {
+    reusableNode: true,
+    template: "sample_rate_reduction",
+    description: "Sample Rate Reduction", _default: {
+      factor: 0.5
   }}, function(data, subobjects){
     if (!subobjects) return;
     var wrapped = subobjects[0];
@@ -1236,7 +1240,7 @@ module.export = function(m) {
         return t0;
       };
 
-      return wrapped(addFormula(music, f));
+      return wrapped(music.formula(f));
     };
 
     ret.update = function(data) {
@@ -1251,8 +1255,12 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("bit_crushing", {template: "bit_crushing", description: "Bit crushing", _default: {
-    bits: 4
+  m.type("bit_crushing", {
+    reusableNode: true,
+    template: "bit_crushing",
+    description: "Bit crushing",
+    _default: {
+      bits: 4
   }}, function(data, subobjects){
     if (!subobjects) return;
     var wrapped = subobjects[0];
@@ -1265,7 +1273,7 @@ module.export = function(m) {
     };
 
     var ret = function(music) {
-      return wrapped(addFormula(music,f));
+      return wrapped(music.formula(f));
     };
 
     ret.update = function(data) {
