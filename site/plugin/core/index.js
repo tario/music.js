@@ -1390,14 +1390,17 @@ module.export = function(m) {
     });
   };
 
-  genericType("signal_scale",
-  {
+  var scaleConfig = {
     parameters: [
       {name: 'base', value: -1, tooltip: 'core.signal_scale.tooltip.base'},
       {name: 'top', value: 1, tooltip: 'core.signal_scale.tooltip.top'},
     ],
-    description: "core.signal_scale.description"
-  });
+    description: "core.signal_scale.description",
+    fcn: 'signal_scale'
+  };
+
+  genericType("signal_scale", scaleConfig);
+  genericType("scale", scaleConfig);
 
   genericType("signal_not",
   {
