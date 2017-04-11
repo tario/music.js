@@ -13226,6 +13226,10 @@ MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next, onDispose)
     return audioNode;
   };
 
+  this.currentTime = function() {
+    return music.audio.currentTime;
+  };
+
   this.setParam = function(paramName, value) {
     value.apply(music.audio.currentTime, audioNode[paramName]);
   };

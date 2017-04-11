@@ -928,7 +928,6 @@ module.export = function(m) {
     if (!wrapped) return;
 
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
-    var attackCurve, decayCurve, releaseCurve;
     var resetOnCut = false;
 
     var eventPreprocessor = function(event) {
@@ -951,16 +950,22 @@ module.export = function(m) {
 
         var play = function(){
           var playing = noteInst.play();
-          var currentLevel = gainNode._destination.gain.value;
+          var audioParam = gainNode._destination.gain;
 
           if (noteCount === 0 || resetOnCut) {
-            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
-            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-            gainNode.setParam('gain', startCurve);
+            var currentTime = gainNode.currentTime();
+            if (attackTime) {
+              audioParam.cancelScheduledValues(currentTime);
+              audioParam.setTargetAtTime(1.0, currentTime, attackTime);
+              audioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
+            } else {
+              audioParam.cancelScheduledValues(currentTime);
+              audioParam.setValueAtTime(1, currentTime);
+              audioParam.setTargetAtTime(sustainLevel, currentTime+0.01, decayTime);
+            }
           }
 
           noteCount++;
-
 
           var origStop = playing.stop.bind(playing);
           playing.stop = function() {
@@ -997,8 +1002,6 @@ module.export = function(m) {
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
       if (releaseTime <= 0.0) releaseTime = 0.00001;
       resetOnCut = data.reset_on_cut;
-
-      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
       return this;
     };
 
@@ -1014,7 +1017,6 @@ module.export = function(m) {
     releaseTime: 0.4
   }},  function(data, subobjects) {
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
-    var attackCurve, decayCurve, releaseCurve;
     var resetOnCut = false;
 
     var eventPreprocessor = function(event) {
@@ -1038,12 +1040,17 @@ module.export = function(m) {
       var note = function(n) {
         var innerNote;
         var play = function(){
-          var currentLevel = audioParamModulation.value;
-
           if (noteCount === 0 || resetOnCut) {
-            attackCurve = new MUSIC.Curve.Ramp(currentLevel, 1.0, samples).during(attackTime);
-            startCurve = MUSIC.Curve.concat(attackCurve, attackTime, decayCurve, decayTime);
-            startCurve.apply(music._audio.audio.currentTime, audioParamModulation);
+            var currentTime = music._audio.audio.currentTime;
+            if (attackTime) {
+              audioParamModulation.cancelScheduledValues(currentTime);
+              audioParamModulation.setTargetAtTime(1.0, currentTime, attackTime);
+              audioParamModulation.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
+            } else {
+              audioParamModulation.cancelScheduledValues(currentTime);
+              audioParamModulation.setValueAtTime(1, currentTime);
+              audioParamModulation.setTargetAtTime(sustainLevel, currentTime+0.01, decayTime);
+            }
           }
 
           noteCount++;
@@ -1078,8 +1085,6 @@ module.export = function(m) {
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
       if (releaseTime <= 0.0) releaseTime = 0.00001;
       resetOnCut = data.reset_on_cut;
-
-      decayCurve = new MUSIC.Curve.Ramp(1.0, sustainLevel, samples).during(decayTime);
       return this;
     };
 
