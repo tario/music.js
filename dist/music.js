@@ -12944,35 +12944,81 @@ MUSIC.modulator = function(f) {
   };
 };
 
-MUSIC.SoundLib.Constant = function(music, destination, options) {
-  var constantNode = music._audio.audio.createConstantSource();
-  this._destination = constantNode;
+(function() {
 
-  constantNode.offset.value = options.offset || 0.0;
-  constantNode.connect(destination._destination);
-  constantNode.start();
+var len = 128;
+var constantArrayBuffer = new Float32Array(len);
+for (var i=0; i<len; i++) {
+  constantArrayBuffer[i]=1;
+};
+var buffer1;
+
+MUSIC.SoundLib.Constant = function(music, destination, options) {
+
+  var constantNode;
+  var bufferSource;
+  var buffer;
+  var audioContext = music._audio.audio;
+
+  if (audioContext.createConstantSource) {
+    constantNode = audioContext.createConstantSource();
+    this._destination = constantNode;
+
+    constantNode.offset.value = options.offset || 0.0;
+    constantNode.connect(destination._destination);
+    constantNode.start();
+  } else {
+    constantNode = audioContext.createGain();
+    bufferSource = audioContext.createBufferSource();
+
+    constantNode.gain.value = options.offset || 0.0;
+    
+    if (!buffer1) {
+      buffer1 = audioContext.createBuffer(1, constantArrayBuffer.length, music._audio.audio.sampleRate);
+      buffer1.getChannelData(0).set(constantArrayBuffer);
+    }
+
+    bufferSource.loop = true;
+    bufferSource.buffer = buffer1;
+    bufferSource.connect(constantNode);
+
+    constantNode.connect(destination._destination);
+
+    bufferSource.start();
+  }
 
   var noop = function() {};
 
   this.setParam = function(paramName, value) {
+    if (paramName === 'offset' && !audioContext.createConstantSource) paramName = 'gain';
     value.apply(music.audio.currentTime, constantNode[paramName]);
   };
 
   this.setParamTarget = function(paramName, target, timeConstant) {
+    if (paramName === 'offset' && !audioContext.createConstantSource) paramName = 'gain';
     var audioParam = constantNode[paramName];
     audioParam.cancelScheduledValues(0.0);
     audioParam.setTargetAtTime(target, music.audio.currentTime, timeConstant);
   };
 
   this.dispose = function() {
-    constantNode.stop();
+    if (audioContext.createConstantSource) {
+      constantNode.stop();
+    } else {
+      bufferSource.stop();
+      bufferSource.disconnect(constantNode);
+    }
     constantNode.disconnect(destination._destination);
 
     this.dispose = function() {};
   };
 
   this.update = function(value) {
-    constantNode.offset.value = value;
+    if (audioContext.createConstantSource) {
+      constantNode.offset.value = value;
+    } else {
+      constantNode.gain.value = value;
+    }
   };
 
   this.freq = function(newFreq) {
@@ -12988,6 +13034,8 @@ MUSIC.SoundLib.Constant = function(music, destination, options) {
     return playable;
   };
 };
+
+})();
 
 MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   options = options || {};
