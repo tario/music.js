@@ -934,6 +934,7 @@ module.export = function(m) {
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var resetOnCut = false;
     var infinitesimalAttackTime = 0.000001;
+    var timeConstantToTimeFactor = 1/6;
 
     var eventPreprocessor = function(event) {
       var l = event[2];
@@ -973,16 +974,16 @@ module.export = function(m) {
 
             if (lastReleaseTime) {
               var t = currentTime - lastReleaseTime;
-              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime);
+              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime * timeConstantToTimeFactor);
             } else {
               audioParam.value = 0.0;
             }
 
-            audioParam.setTargetAtTime(1.0, currentTime, attackTime);
+            audioParam.setTargetAtTime(1.0, currentTime, attackTime * timeConstantToTimeFactor);
 
             secondAudioParam.cancelScheduledValues(0.0);
             secondAudioParam.value = 1.0;
-            secondAudioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
+            secondAudioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime * timeConstantToTimeFactor);
           }
 
           noteCount++;
@@ -1006,11 +1007,11 @@ module.export = function(m) {
                 var t = currentTime - lastAttackTime;
 
                 lastReleaseTime = currentTime;
-                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime);
+                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime * timeConstantToTimeFactor);
 
                 audioParam.cancelScheduledValues(0.0);
                 audioParam.value = lastReleaseV0;
-                audioParam.setTargetAtTime(0.0, currentTime, releaseTime);
+                audioParam.setTargetAtTime(0.0, currentTime, releaseTime * timeConstantToTimeFactor);
             });
       };
 
@@ -1050,6 +1051,7 @@ module.export = function(m) {
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var resetOnCut = false;
     var infinitesimalAttackTime = 0.000001;
+    var timeConstantToTimeFactor = 1/6;
 
     var eventPreprocessor = function(event) {
       var l = event[2];
@@ -1084,16 +1086,16 @@ module.export = function(m) {
 
             if (lastReleaseTime) {
               var t = currentTime - lastReleaseTime;
-              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime);
+              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime * timeConstantToTimeFactor);
             } else {
               audioParam.value = 0.0;
             }
 
-            audioParam.setTargetAtTime(1.0, currentTime, attackTime);
+            audioParam.setTargetAtTime(1.0, currentTime, attackTime * timeConstantToTimeFactor);
 
             secondAudioParam.cancelScheduledValues(0.0);
             secondAudioParam.value = 1.0;
-            secondAudioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
+            secondAudioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime * timeConstantToTimeFactor);
           }
 
           noteCount++;
@@ -1111,11 +1113,11 @@ module.export = function(m) {
                 var t = currentTime - lastAttackTime;
 
                 lastReleaseTime = currentTime;
-                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime);
+                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime * timeConstantToTimeFactor);
 
                 audioParam.cancelScheduledValues(0.0);
                 audioParam.value = lastReleaseV0;
-                audioParam.setTargetAtTime(0.0, currentTime, releaseTime);
+                audioParam.setTargetAtTime(0.0, currentTime, releaseTime * timeConstantToTimeFactor);
             });
       };
 
