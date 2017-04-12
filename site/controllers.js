@@ -645,7 +645,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
 
     return MUSIC.instrumentExtend({
       note: note
-    });
+    }).stopDelay(10);
   };
 
   var createInstrumentFromFile = function() {
