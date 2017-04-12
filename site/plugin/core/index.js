@@ -916,6 +916,10 @@ module.export = function(m) {
     return ret;
   });
 
+  var targetExponentialCurve = function(v0, v1, t, timeConstant) {
+    return v1 + (v0 - v1) * Math.exp(-t/timeConstant);
+  };
+
   m.type("envelope", {template: "envelope", description: "ADSR", _default: {
     attackTime: 0.01,
     decayTime: 0.4,
@@ -929,6 +933,7 @@ module.export = function(m) {
 
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var resetOnCut = false;
+    var infinitesimalAttackTime = 0.000001;
 
     var eventPreprocessor = function(event) {
       var l = event[2];
@@ -940,8 +945,16 @@ module.export = function(m) {
 
     var ret = function(music) {
       var baseNode = music.sfxBase();
-      var gainNode = baseNode.gain(0);
-      var inst = wrapped(gainNode);
+      var gainNode = baseNode.gain(0.0);
+      var secondGainNode = gainNode.gain(1.0);
+
+      var audioParam = gainNode._destination.gain;
+      var secondAudioParam = secondGainNode._destination.gain;
+
+      var inst = wrapped(secondGainNode);
+      var lastAttackTime;
+      var lastReleaseTime;
+      var lastReleaseV0;
 
       var noteCount = 0;
       var note = function(n) {
@@ -950,19 +963,26 @@ module.export = function(m) {
 
         var play = function(){
           var playing = noteInst.play();
-          var audioParam = gainNode._destination.gain;
 
           if (noteCount === 0 || resetOnCut) {
             var currentTime = gainNode.currentTime();
-            if (attackTime) {
-              audioParam.cancelScheduledValues(currentTime);
-              audioParam.setTargetAtTime(1.0, currentTime, attackTime);
-              audioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
+
+            lastAttackTime = currentTime;
+
+            audioParam.cancelScheduledValues(0.0);
+
+            if (lastReleaseTime) {
+              var t = currentTime - lastReleaseTime;
+              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime);
             } else {
-              audioParam.cancelScheduledValues(currentTime);
-              audioParam.setValueAtTime(1, currentTime);
-              audioParam.setTargetAtTime(sustainLevel, currentTime+0.01, decayTime);
+              audioParam.value = 0.0;
             }
+
+            audioParam.setTargetAtTime(1.0, currentTime, attackTime);
+
+            secondAudioParam.cancelScheduledValues(0.0);
+            secondAudioParam.value = 1.0;
+            secondAudioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
           }
 
           noteCount++;
@@ -978,9 +998,19 @@ module.export = function(m) {
         return MUSIC.playablePipeExtend({play: play})
             .onStop(function() {
                 noteCount--;
+
+                var currentTime = gainNode.currentTime();
                 // don't release if noteCount > 0
                 if (noteCount > 0) return;
-                gainNode.setParamTarget('gain', 0.0, releaseTime);
+
+                var t = currentTime - lastAttackTime;
+
+                lastReleaseTime = currentTime;
+                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime);
+
+                audioParam.cancelScheduledValues(0.0);
+                audioParam.value = lastReleaseV0;
+                audioParam.setTargetAtTime(0.0, currentTime, releaseTime);
             });
       };
 
@@ -996,12 +1026,13 @@ module.export = function(m) {
 
     ret.update = function(data) {
       samples = data.samples || 100;  
-      attackTime = parseFloat(_def(data.attackTime, 0.4));
+      attackTime = parseFloat(_def(data.attackTime, 0.4)) || infinitesimalAttackTime;
       decayTime = parseFloat(_def(data.decayTime,0.4));
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
       if (releaseTime <= 0.0) releaseTime = 0.00001;
       resetOnCut = data.reset_on_cut;
+
       return this;
     };
 
@@ -1018,6 +1049,7 @@ module.export = function(m) {
   }},  function(data, subobjects) {
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var resetOnCut = false;
+    var infinitesimalAttackTime = 0.000001;
 
     var eventPreprocessor = function(event) {
       var l = event[2];
@@ -1028,29 +1060,40 @@ module.export = function(m) {
     };
 
     var ret = function(music) {
-      var audioParamModulation = music.audioParamModulation;
-      var baseNode = music.sfxBase();
+      var gainNode = music.gain(0.0);
+      var secondGainNode = gainNode.gain(1.0);
+      secondGainNode.constant({offset: 1});
 
-      if (!audioParamModulation) {
-        baseNode = baseNode.constant(0);
-        audioParamModulation = baseNode._destination.offset;
-      }
+      var audioParam = gainNode._destination.gain;
+      var secondAudioParam = secondGainNode._destination.gain;
+
+      var lastAttackTime;
+      var lastReleaseTime;
+      var lastReleaseV0;
 
       var noteCount = 0;
       var note = function(n) {
         var innerNote;
         var play = function(){
           if (noteCount === 0 || resetOnCut) {
-            var currentTime = music._audio.audio.currentTime;
-            if (attackTime) {
-              audioParamModulation.cancelScheduledValues(currentTime);
-              audioParamModulation.setTargetAtTime(1.0, currentTime, attackTime);
-              audioParamModulation.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
+            var currentTime = gainNode.currentTime();
+
+            lastAttackTime = currentTime;
+
+            audioParam.cancelScheduledValues(0.0);
+
+            if (lastReleaseTime) {
+              var t = currentTime - lastReleaseTime;
+              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime);
             } else {
-              audioParamModulation.cancelScheduledValues(currentTime);
-              audioParamModulation.setValueAtTime(1, currentTime);
-              audioParamModulation.setTargetAtTime(sustainLevel, currentTime+0.01, decayTime);
+              audioParam.value = 0.0;
             }
+
+            audioParam.setTargetAtTime(1.0, currentTime, attackTime);
+
+            secondAudioParam.cancelScheduledValues(0.0);
+            secondAudioParam.value = 1.0;
+            secondAudioParam.setTargetAtTime(sustainLevel, currentTime+attackTime, decayTime);
           }
 
           noteCount++;
@@ -1060,10 +1103,19 @@ module.export = function(m) {
         return MUSIC.playablePipeExtend({play: play})
             .onStop(function() {
                 noteCount--;
+
+                var currentTime = gainNode.currentTime();
                 // don't release if noteCount > 0
                 if (noteCount > 0) return;
-                audioParamModulation.cancelScheduledValues(0.0);
-                audioParamModulation.setTargetAtTime(0.0, music._audio.audio.currentTime, releaseTime);
+
+                var t = currentTime - lastAttackTime;
+
+                lastReleaseTime = currentTime;
+                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime);
+
+                audioParam.cancelScheduledValues(0.0);
+                audioParam.value = lastReleaseV0;
+                audioParam.setTargetAtTime(0.0, currentTime, releaseTime);
             });
       };
 
@@ -1079,12 +1131,13 @@ module.export = function(m) {
 
     ret.update = function(data) {
       samples = data.samples || 100;  
-      attackTime = parseFloat(_def(data.attackTime, 0.4));
+      attackTime = parseFloat(_def(data.attackTime, 0.4))||infinitesimalAttackTime;
       decayTime = parseFloat(_def(data.decayTime,0.4));
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
       if (releaseTime <= 0.0) releaseTime = 0.00001;
       resetOnCut = data.reset_on_cut;
+
       return this;
     };
 
