@@ -13550,8 +13550,49 @@ var Echo = function(music, next, options) {
 };
 Echo.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
 
+var WaveShaper = function(music, next, options) {
+  options = options ||{};
+  var samples = options.samples || 8192;
+  var f = options.f || function(t){return t; };
+
+  var makeDistortionCurve = function() {
+    var array = new Float32Array(samples);
+    for (var i=0; i<samples; i++) {
+      array[i] = f(i*2 / samples - 1);
+    }
+    return array;
+  };
+
+  this.next = function() {
+    return next;
+  };
+
+  var waveShaperNode = music.audio.createWaveShaper();
+  waveShaperNode.curve = makeDistortionCurve();
+  waveShaperNode.oversample = '4x';
+
+  setTimeout(function() {
+    waveShaperNode.connect(next._destination);
+  });
+  this._destination = waveShaperNode;
+  var disconnected = false;
+
+  this.disconnect = function() {
+    if (disconnected) return;
+    disconnected = true;
+    waveShaperNode.disconnect(next._destination);
+  };
+
+  MUSIC.EffectsPipeline.bind(this)(music, this);
+}
+WaveShaper.prototype = Object.create(MUSIC.EffectsPipeline.prototype);
+
 MUSIC.Effects.register("echo", function(music, next, options) {
   return new Echo(music, next, options);
+});
+
+MUSIC.Effects.register("wave_shaper", function(music, next, options) {
+  return new WaveShaper(music, next, options);
 });
 
 MUSIC.Curve = function(array) {

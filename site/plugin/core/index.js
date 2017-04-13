@@ -1269,11 +1269,14 @@ module.export = function(m) {
     var factor;
 
     var f = function(t) {
-      return Math.round(t * factor) / factor;
+      return Math.floor(t * factor + 0.5) / factor;
     };
 
     var ret = function(music) {
-      return wrapped(music.formula(f));
+      return wrapped(music.wave_shaper({
+        f: f,
+        samples: 32768
+      }));
     };
 
     ret.update = function(data) {
