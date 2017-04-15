@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Default Project",
+    "type": "project",
+    "id": "default",
+    "contents": {
+      "ref": [
+        "samples"
+      ]
+    },
+    "ref": [
+      "samples"
+    ]
+  }
+]

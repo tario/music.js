@@ -14911,27 +14911,28 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var createdFilesIndex = [];
   var createdFiles = {};
 
-  var exampleList = $http.get("exampleList.json")
-    .then(function(result) {
-      return $q.all(result.data.map(function(entry) {
-        return $http.get(entry.uri)
-          .then(function(r) {
-            var hash = new jsSHA("SHA-1", "TEXT");
-            hash.update(JSON.stringify(r.data));
-            var fileId = hash.getHash("HEX").toLowerCase();
+  var builtIns = [
+    "site/builtin/defaultProject.json",
+    "site/builtin/samples.json"
+  ];
 
-            createdFiles[fileId] = r.data;
-            createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
+  var loadBuiltIn = function(uri) {
+    return $http.get(uri)
+      .then(function(r) {
+        r.data.forEach(function(obj) {
+          var objectId = obj.id;
+
+          createdFiles[objectId] = obj.contents;
+          createdFilesIndex.push({
+            type: obj.type,
+            name: obj.name,
+            id: objectId,
+            ref: obj.ref
           });
-      }));
-    });
-
-  createdFiles['default'] = {};
-  createdFiles['samples'] = {};
-
-  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
-  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
+        });
+      });
+  };
+  var builtInLoaded = $q.all(builtIns.map(loadBuiltIn));
 
   var createId = function() {
     var array = [];
@@ -15215,7 +15216,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     getFile: function(id) {
       var builtIn = false;
       var changed = false;
-      return exampleList
+      return builtInLoaded
         .then(function() {
           var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
           if (localFile) {
@@ -15319,7 +15320,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       var ee = new EventEmitter();
       var updateSearch = function() {
-        exampleList
+        builtInLoaded
           .then(function() {
             $q.all([
               storageIndex.getAll(),
@@ -15454,7 +15455,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
     document.body.appendChild(a);
     a.style = "display: none";
 
-    var blob = new Blob([JSON.stringify(contents, null,"  ")]);
+    var blob = new Blob([JSON.stringify(contents)]);
     var url  = window.URL.createObjectURL(blob);
     a.href = url;
     a.download = name + ".json";

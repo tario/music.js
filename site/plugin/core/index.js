@@ -827,18 +827,30 @@ module.export = function(m) {
   }, function(data, subobjects) {
     var fallTime = 1;
     var target = 1;
+    var nullPlay = {
+      play: function() {
+        return {
+          stop: function() {}
+        };
+      }
+    };
+
     var ret = function(music) {
+      var baseNode = music;
+      var audioParamModulation = music.audioParamModulation;
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
+
       return {
         note: function() {
-          var formulaNode = music
-                    .formulaGenerator(function(t) {
-                      if (t < fallTime) {
-                        return t*target/fallTime;
-                      } else {
-                        return target;
-                      }
-                    });
-          return formulaNode;
+          var currentTime = music._audio.audio.currentTime;
+          audioParamModulation.cancelScheduledValues(0.0);
+          audioParamModulation.value = 0.0;
+          audioParamModulation.setTargetAtTime(target, currentTime, fallTime/6);
+
+          return nullPlay;
         }
       };
     };
