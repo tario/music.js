@@ -14913,7 +14913,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var builtIns = [
     "site/builtin/defaultProject.json",
-    "site/builtin/samples.json"
+    "site/builtin/samples.json",
+    "site/builtin/smb-underworld.json"
   ];
 
   var loadBuiltIn = function(uri) {
@@ -14923,7 +14924,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           var objectId = obj.id;
 
           createdFiles[objectId] = obj.contents;
+
           createdFilesIndex.push({
+            project: obj.project,
             type: obj.type,
             name: obj.name,
             id: objectId,
