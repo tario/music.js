@@ -368,7 +368,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.removeItem = function() {
     FileRepository.moveToRecycleBin(id)
       .then(function() {
-        document.location = "#";
+        document.location = "#/editor/" + $routeParams.project;
       })
       .catch(function(err) {
         if (err.type && err.type === 'cantremove') {
@@ -583,7 +583,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
     } else {
       FileRepository.moveToRecycleBin(id)
         .then(function() {
-          document.location = "#";
+          document.location = "#/editor/" + $routeParams.project;
         })
         .catch(function(err) {
           if (err.type && err.type === 'cantremove') {
