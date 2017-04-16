@@ -494,7 +494,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
             type: obj.type,
             name: obj.name,
             id: objectId,
-            ref: obj.ref
+            ref: obj.ref,
+            builtIn: true
           });
         });
       });

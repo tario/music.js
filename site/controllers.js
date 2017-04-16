@@ -63,6 +63,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+    
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#/editor/" + $routeParams.project;
@@ -274,7 +284,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     
   };
 
-  var updateFromRepo = function() {
+  var reloadFromRepo = function() {
     var block_ids = {};
 
     FileRepository.getFile(id).then(function(file) {
@@ -320,17 +330,17 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     });
   };
 
-  updateFromRepo();
+  reloadFromRepo();
 
   var keyDownHandler = function(evt) {
     if (document.activeElement.tagName.toLowerCase() === "input") return;
     
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id).then(updateFromRepo);
+      FileRepository.undo(id).then(reloadFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id).then(updateFromRepo);
+      FileRepository.redo(id).then(reloadFromRepo);
     }
   };
 
@@ -366,6 +376,16 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#/editor/" + $routeParams.project;
@@ -510,7 +530,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
       });
   };
 
-  var updateFromRepo = function() {
+  var reloadFromRepo = function() {
     FileRepository.getFile(id).then(function(file) {
       $timeout(function() {
         var outputFile = {};
@@ -527,7 +547,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     });
   };
 
-  updateFromRepo();
+  reloadFromRepo();
 
   // undo & redo
 
@@ -535,11 +555,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     if (document.activeElement.tagName.toLowerCase() === "input") return;
 
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id).then(updateFromRepo);
+      FileRepository.undo(id).then(reloadFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id).then(updateFromRepo);
+      FileRepository.redo(id).then(reloadFromRepo);
     }
   };
 

@@ -36,7 +36,10 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
-      storageIndex = localforage.getItem(indexName);
+      storageIndex = localforage.getItem(indexName)
+        .then(function(array){
+          return array||[];
+        });
       return storageIndex;
     };
 
