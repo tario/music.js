@@ -14469,6 +14469,8 @@ var defaultFromPatterns = function(patterns) {
   };
 };
 
+var nullPlay = {stop: function(){}};
+
 MUSIC.Song = function(input, patternsOrOptions, options){
   var patterns;
   if (arguments.length === 2) {
@@ -14504,7 +14506,7 @@ MUSIC.Song = function(input, patternsOrOptions, options){
       };
       var playableArray = patternArray.map(getFromPatterns) 
       var multiPlayable = new MUSIC.MultiPlayable(playableArray);
-      var playing;
+      var playing = nullPlay;
       var duration = multiPlayable.duration();
 
       funseq.push({t: j*measure, f: function(context) {
