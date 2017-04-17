@@ -63,6 +63,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#/editor/" + $routeParams.project;
@@ -274,7 +284,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     
   };
 
-  var updateFromRepo = function() {
+  var reloadFromRepo = function() {
     var block_ids = {};
 
     FileRepository.getFile(id).then(function(file) {
@@ -320,17 +330,17 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     });
   };
 
-  updateFromRepo();
+  reloadFromRepo();
 
   var keyDownHandler = function(evt) {
     if (document.activeElement.tagName.toLowerCase() === "input") return;
     
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id).then(updateFromRepo);
+      FileRepository.undo(id).then(reloadFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id).then(updateFromRepo);
+      FileRepository.redo(id).then(reloadFromRepo);
     }
   };
 
@@ -366,9 +376,19 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
     FileRepository.moveToRecycleBin(id)
       .then(function() {
-        document.location = "#";
+        document.location = "#/editor/" + $routeParams.project;
       })
       .catch(function(err) {
         if (err.type && err.type === 'cantremove') {
@@ -510,7 +530,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
       });
   };
 
-  var updateFromRepo = function() {
+  var reloadFromRepo = function() {
     FileRepository.getFile(id).then(function(file) {
       $timeout(function() {
         var outputFile = {};
@@ -527,7 +547,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     });
   };
 
-  updateFromRepo();
+  reloadFromRepo();
 
   // undo & redo
 
@@ -535,11 +555,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     if (document.activeElement.tagName.toLowerCase() === "input") return;
 
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id).then(updateFromRepo);
+      FileRepository.undo(id).then(reloadFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id).then(updateFromRepo);
+      FileRepository.redo(id).then(reloadFromRepo);
     }
   };
 
@@ -583,7 +603,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
     } else {
       FileRepository.moveToRecycleBin(id)
         .then(function() {
-          document.location = "#";
+          document.location = "#/editor/" + $routeParams.project;
         })
         .catch(function(err) {
           if (err.type && err.type === 'cantremove') {
@@ -758,8 +778,9 @@ musicShowCaseApp.controller("MainController",
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
-    }).then(updateSearch)
-      .catch(function() {
+    })
+    .then(updateSearch)
+    .catch(function() {
       document.location = "#";
     });
   };
@@ -985,7 +1006,30 @@ musicShowCaseApp.controller("MainController",
       templateUrl: "site/templates/modal/openProject.html",
       controller: "openProjectModalCtrl"
     }).result.then(function(id) {
-      document.location="#/editor/" + id;
+      var moreImportant = function(file1, file2) {
+        if (file1.type !== file2.type) {
+          if (file1.type==='song') return file1;
+          if (file2.type==='song') return file2;
+
+          if (file1.type==='pattern') return file1;
+          if (file2.type==='pattern') return file2;
+        } else {
+          return (file1.ref||[]).length > (file2.ref||[]).length ? file1 : file2;
+        }
+
+        return file2;
+      };
+
+      // switch to main object
+      return FileRepository.getProjectFiles(id)
+        .then(function(files) {
+          if (files.length > 0) {
+            var better = files.reduce(moreImportant, files[0]);
+            document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+          } else {
+            document.location="#/editor/" + id;
+          }
+        });
     });
   };
 

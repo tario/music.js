@@ -827,18 +827,30 @@ module.export = function(m) {
   }, function(data, subobjects) {
     var fallTime = 1;
     var target = 1;
+    var nullPlay = {
+      play: function() {
+        return {
+          stop: function() {}
+        };
+      }
+    };
+
     var ret = function(music) {
+      var baseNode = music;
+      var audioParamModulation = music.audioParamModulation;
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
+
       return {
         note: function() {
-          var formulaNode = music
-                    .formulaGenerator(function(t) {
-                      if (t < fallTime) {
-                        return t*target/fallTime;
-                      } else {
-                        return target;
-                      }
-                    });
-          return formulaNode;
+          var currentTime = music._audio.audio.currentTime;
+          audioParamModulation.cancelScheduledValues(0.0);
+          audioParamModulation.value = 0.0;
+          audioParamModulation.setTargetAtTime(target, currentTime, fallTime/6);
+
+          return nullPlay;
         }
       };
     };
@@ -960,6 +972,7 @@ module.export = function(m) {
       var noteCount = 0;
       var note = function(n) {
         var innerNote;
+
         var noteInst = inst.note(n);
 
         var play = function(){
@@ -1216,8 +1229,11 @@ module.export = function(m) {
     }
   };
 
-  m.type("sample_rate_reduction", {template: "sample_rate_reduction", description: "Sample Rate Reduction", _default: {
-    factor: 0.5
+  m.type("sample_rate_reduction", {
+    reusableNode: true,
+    template: "sample_rate_reduction",
+    description: "Sample Rate Reduction", _default: {
+      factor: 0.5
   }}, function(data, subobjects){
     if (!subobjects) return;
     var wrapped = subobjects[0];
@@ -1236,7 +1252,7 @@ module.export = function(m) {
         return t0;
       };
 
-      return wrapped(addFormula(music, f));
+      return wrapped(music.formula(f));
     };
 
     ret.update = function(data) {
@@ -1251,8 +1267,12 @@ module.export = function(m) {
     return ret;
   });
 
-  m.type("bit_crushing", {template: "bit_crushing", description: "Bit crushing", _default: {
-    bits: 4
+  m.type("bit_crushing", {
+    reusableNode: true,
+    template: "bit_crushing",
+    description: "Bit crushing",
+    _default: {
+      bits: 4
   }}, function(data, subobjects){
     if (!subobjects) return;
     var wrapped = subobjects[0];
@@ -1261,11 +1281,14 @@ module.export = function(m) {
     var factor;
 
     var f = function(t) {
-      return Math.round(t * factor) / factor;
+      return Math.floor(t * factor + 0.5) / factor;
     };
 
     var ret = function(music) {
-      return wrapped(addFormula(music,f));
+      return wrapped(music.wave_shaper({
+        f: f,
+        samples: 32768
+      }));
     };
 
     ret.update = function(data) {

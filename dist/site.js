@@ -14720,146 +14720,6 @@ musicShowCaseApp.service("MusicContext", function() {
   };
 });
 
-musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function($http, $q, pruneWrapper) {
-  var make_mutable = function(fcn) {
-    return function(object, subobjects, components) {
-      var current = fcn(object, subobjects, components);
-      var instances = [];
-
-      if (current.update) {
-        return current;
-      }
-
-      current = pruneWrapper(current);
-
-      var ret = function(music, options) {
-        var r;
-        var wrapped = {};
-        var lastCurrent = current;
-        var proxy = function(name) {
-          wrapped[name] = function() {
-            if (lastCurrent != current) update();
-            return r[name].apply(r, arguments);
-          };
-        };
-
-        var update = function() {
-            var newr = current(music, options);
-            if (newr !== r && r && r.dispose) r.dispose();
-            r = newr;
-
-            instances.push(newr);
-
-            lastCurrent = current;
-            for (var k in r) proxy(k);
-        };
-
-        update();
-
-        return wrapped;
-      };
-
-      var lastObjData;
-      ret.update = function(newobject, _components) {
-        components = _components
-        if (JSON.stringify(newobject) === lastObjData) return ret;
-        lastObjData = JSON.stringify(newobject);
-
-        instances.forEach(function(instance) {
-          if(instance.dispose) instance.dispose();
-        });
-        instances = [];
-
-        current = pruneWrapper(fcn(newobject, subobjects, components));
-        return ret;
-      };
-
-      return ret;
-    };
-  };
-
-
-  var plugins = ["core"];
-  var types = [];
-  var translation = {};
-  var m = function(pluginName) {
-    return {
-      lang: function(key, translateData) {
-        translation[key] =translation[key]||{};
-        translation[key][pluginName] = translateData;
-      },
-      type: function(typeName, options, constructor) {
-        types.push({
-          templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
-          parameters: options.parameters,
-          constructor: make_mutable(constructor),
-          name: typeName,
-          composition: options.composition,
-          components: options.components,
-          description: options.description,
-          _default: options._default,
-          subobjects: options.subobjects,
-          stackAppend: options.stackAppend,
-          monitor: options.monitor
-        })
-      }
-    };
-  };
-
-  var loadPlugin = function(pluginName) {
-    return $http.get("site/plugin/" + pluginName + "/index.js")
-      .then(function(result) {
-        var runnerCode = result.data;
-        var module = {export: function(){}};
-        eval(runnerCode);
-
-        module.export(m(pluginName));
-      });
-  };
-
-  var pluginsLoaded = $q.all(plugins.map(loadPlugin));
-
-  var getTypes = function(keyword) {
-      var hasKeyword = function() {
-        return true;
-      };
-
-      if (keyword) {
-        keyword = keyword.toLowerCase();
-        hasKeyword = function(x) {
-          return x.name.toLowerCase().indexOf(keyword) !== -1;
-        };
-      }
-
-      return pluginsLoaded.then(function() {
-        return types.filter(hasKeyword);
-      });
-  };
-
-  var getType = function(typeName, callback) {
-    return pluginsLoaded
-      .then(function() {
-        var ret = types.filter(function(type) { return type.name === typeName; })[0]; 
-        if (callback) callback(ret);
-        return ret;
-      });
-  };
-
-  var loadTranslations = function(options) {
-    return pluginsLoaded
-      .then(function() {
-        return translation[options.key]||{};
-      });
-  };
-
-  return {
-    getTypes: getTypes,
-    getType: getType,
-    loadTranslations: loadTranslations
-  };
-
-}]);
-
 musicShowCaseApp.service("Historial", [function() {
   return function() {
     var array = [];
@@ -15051,27 +14911,32 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var createdFilesIndex = [];
   var createdFiles = {};
 
-  var exampleList = $http.get("exampleList.json")
-    .then(function(result) {
-      return $q.all(result.data.map(function(entry) {
-        return $http.get(entry.uri)
-          .then(function(r) {
-            var hash = new jsSHA("SHA-1", "TEXT");
-            hash.update(JSON.stringify(r.data));
-            var fileId = hash.getHash("HEX").toLowerCase();
+  var builtIns = [
+    "site/builtin/defaultProject.json",
+    "site/builtin/samples.json",
+    "site/builtin/smb-underworld.json"
+  ];
 
-            createdFiles[fileId] = r.data;
-            createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
+  var loadBuiltIn = function(uri) {
+    return $http.get(uri)
+      .then(function(r) {
+        r.data.forEach(function(obj) {
+          var objectId = obj.id;
+
+          createdFiles[objectId] = obj.contents;
+
+          createdFilesIndex.push({
+            project: obj.project,
+            type: obj.type,
+            name: obj.name,
+            id: objectId,
+            ref: obj.ref,
+            builtIn: true
           });
-      }));
-    });
-
-  createdFiles['default'] = {};
-  createdFiles['samples'] = {};
-
-  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
-  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
+        });
+      });
+  };
+  var builtInLoaded = $q.all(builtIns.map(loadBuiltIn));
 
   var createId = function() {
     var array = [];
@@ -15305,7 +15170,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var getProjectFiles = function(projectId) {
     return storageIndex.getAll()
       .then(function(idx) {
-        return idx.filter(function(file) {
+        return idx.concat(createdFilesIndex).filter(function(file) {
           return file.project === projectId || file.id === projectId;
         });
       });
@@ -15355,7 +15220,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     getFile: function(id) {
       var builtIn = false;
       var changed = false;
-      return exampleList
+      return builtInLoaded
         .then(function() {
           var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
           if (localFile) {
@@ -15459,7 +15324,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       var ee = new EventEmitter();
       var updateSearch = function() {
-        exampleList
+        builtInLoaded
           .then(function() {
             $q.all([
               storageIndex.getAll(),
@@ -15594,7 +15459,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
     document.body.appendChild(a);
     a.style = "display: none";
 
-    var blob = new Blob([JSON.stringify(contents, null,"  ")]);
+    var blob = new Blob([JSON.stringify(contents)]);
     var url  = window.URL.createObjectURL(blob);
     a.href = url;
     a.download = name + ".json";
@@ -15765,7 +15630,10 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
     var storageIndex;
     var reload = function() {
       // load stoargeIndex
-      storageIndex = localforage.getItem(indexName);
+      storageIndex = localforage.getItem(indexName)
+        .then(function(array){
+          return array||[];
+        });
       return storageIndex;
     };
 
@@ -16166,6 +16034,227 @@ musicShowCaseApp.factory("translationsLoader", ['$q', 'TypeService', 'esTranslat
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
+
+var ObjectCache = function() {
+  var wm = new WeakMap();
+  this.get = function(music, object) {
+    var array = wm.get(music);
+    var strobj = JSON.stringify(object);
+
+    if (!array) return undefined;
+
+    var elem = array.filter(function(x) {
+      return x.obj === strobj;
+    })[0];
+
+    return elem && elem.value;
+  };
+
+  this.set = function(music, object, value) {
+    var array = wm.get(music);
+    var strobj = JSON.stringify(object);
+
+    if (!array) {
+      array = [];
+    }
+
+    var elem = array.filter(function(x) {
+      return x.obj === strobj;
+    })[0];
+
+    if (elem) {
+      elem.value = value;
+    } else {
+      array.push({obj: strobj, value: value});
+    }
+
+    if (array.length > 8) array = array.slice(1);
+
+    wm.set(music, array);
+  };
+};
+
+musicShowCaseApp.service("TypeService", ["$http", "$q", function($http, $q) {
+  var make_mutable = function(fcn, options) {
+    var cacheData = new ObjectCache();
+
+    var cacheWrap = function(object, baseMusic) {
+      var originalPrune = baseMusic.prune;
+      baseMusic.prune = function() {
+        cacheData = new ObjectCache();
+
+        if (originalPrune) {
+          return originalPrune.apply(this, arguments);
+        }
+      };
+
+      return function(constructor) {
+        return function(music, params){
+          var key = baseMusic;
+          if (key.getOriginal) key = key.getOriginal();
+          cacheData.set(key, object, music)
+
+          return constructor(music, params);
+        };
+      };
+    };
+
+    return function(object, subobjects, components) {
+      var current;
+      var instances = [];
+
+      if (options && options.reusableNode) {
+        current = function(music, params) {
+          var wrapped = subobjects[0];
+          var constructor = fcn(object, subobjects.map(cacheWrap(object, music)), components); 
+          var key = music;
+          if (key.getOriginal) key = key.getOriginal();
+
+          var newBase = cacheData.get(key, object);
+          if (newBase) {
+            return wrapped(newBase);
+          } else {
+            return constructor(music, params);
+          }
+        }
+      } else {
+        current = fcn(object, subobjects, components);
+      }
+
+      if (current.update) {
+        return current;
+      }
+
+      var ret = function(music, options) {
+        var r;
+        var wrapped = {};
+        var lastCurrent = current;
+        var proxy = function(name) {
+          wrapped[name] = function() {
+            if (lastCurrent != current) update();
+            return r[name].apply(r, arguments);
+          };
+        };
+
+        var update = function() {
+            var newr = current(music, options);
+            if (newr !== r && r && r.dispose) r.dispose();
+            r = newr;
+
+            instances.push(newr);
+
+            lastCurrent = current;
+            for (var k in r) proxy(k);
+        };
+
+        update();
+
+        return wrapped;
+      };
+
+      var lastObjData;
+      ret.update = function(newobject, _components) {
+        components = _components
+        if (JSON.stringify(newobject) === lastObjData) return ret;
+        lastObjData = JSON.stringify(newobject);
+
+        instances.forEach(function(instance) {
+          if(instance.dispose) instance.dispose();
+        });
+        instances = [];
+
+        current = fcn(newobject, subobjects, components);
+        return ret;
+      };
+
+      return ret;
+    };
+  };
+
+
+  var plugins = ["core"];
+  var types = [];
+  var translation = {};
+  var m = function(pluginName) {
+    return {
+      lang: function(key, translateData) {
+        translation[key] =translation[key]||{};
+        translation[key][pluginName] = translateData;
+      },
+      type: function(typeName, options, constructor) {
+        types.push({
+          templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
+          parameters: options.parameters,
+          constructor: make_mutable(constructor, {reusableNode: options.reusableNode}),
+          name: typeName,
+          composition: options.composition,
+          components: options.components,
+          description: options.description,
+          _default: options._default,
+          subobjects: options.subobjects,
+          stackAppend: options.stackAppend,
+          monitor: options.monitor
+        })
+      }
+    };
+  };
+
+  var loadPlugin = function(pluginName) {
+    return $http.get("site/plugin/" + pluginName + "/index.js")
+      .then(function(result) {
+        var runnerCode = result.data;
+        var module = {export: function(){}};
+        eval(runnerCode);
+
+        module.export(m(pluginName));
+      });
+  };
+
+  var pluginsLoaded = $q.all(plugins.map(loadPlugin));
+
+  var getTypes = function(keyword) {
+      var hasKeyword = function() {
+        return true;
+      };
+
+      if (keyword) {
+        keyword = keyword.toLowerCase();
+        hasKeyword = function(x) {
+          return x.name.toLowerCase().indexOf(keyword) !== -1;
+        };
+      }
+
+      return pluginsLoaded.then(function() {
+        return types.filter(hasKeyword);
+      });
+  };
+
+  var getType = function(typeName, callback) {
+    return pluginsLoaded
+      .then(function() {
+        var ret = types.filter(function(type) { return type.name === typeName; })[0]; 
+        if (callback) callback(ret);
+        return ret;
+      });
+  };
+
+  var loadTranslations = function(options) {
+    return pluginsLoaded
+      .then(function() {
+        return translation[options.key]||{};
+      });
+  };
+
+  return {
+    getTypes: getTypes,
+    getType: getType,
+    loadTranslations: loadTranslations
+  };
+
+}]);
+
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("WelcomeMessage", ['localforage', function(localforage) {
     var skip = function() {
       return localforage.getItem("welcome_skip")
@@ -16309,6 +16398,16 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#/editor/" + $routeParams.project;
@@ -16520,7 +16619,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     
   };
 
-  var updateFromRepo = function() {
+  var reloadFromRepo = function() {
     var block_ids = {};
 
     FileRepository.getFile(id).then(function(file) {
@@ -16566,17 +16665,17 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
     });
   };
 
-  updateFromRepo();
+  reloadFromRepo();
 
   var keyDownHandler = function(evt) {
     if (document.activeElement.tagName.toLowerCase() === "input") return;
     
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id).then(updateFromRepo);
+      FileRepository.undo(id).then(reloadFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id).then(updateFromRepo);
+      FileRepository.redo(id).then(reloadFromRepo);
     }
   };
 
@@ -16612,9 +16711,19 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.removeItem = function() {
+    if ($scope.fileIndex.builtIn) {
+      $scope.file = null;
+      $scope.fileIndex = null;
+      FileRepository.destroyFile(id)
+        .then(function() {
+          reloadFromRepo();
+        });
+      return;
+    }
+
     FileRepository.moveToRecycleBin(id)
       .then(function() {
-        document.location = "#";
+        document.location = "#/editor/" + $routeParams.project;
       })
       .catch(function(err) {
         if (err.type && err.type === 'cantremove') {
@@ -16756,7 +16865,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
       });
   };
 
-  var updateFromRepo = function() {
+  var reloadFromRepo = function() {
     FileRepository.getFile(id).then(function(file) {
       $timeout(function() {
         var outputFile = {};
@@ -16773,7 +16882,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     });
   };
 
-  updateFromRepo();
+  reloadFromRepo();
 
   // undo & redo
 
@@ -16781,11 +16890,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     if (document.activeElement.tagName.toLowerCase() === "input") return;
 
     if (evt.keyCode === 90 && evt.ctrlKey) {
-      FileRepository.undo(id).then(updateFromRepo);
+      FileRepository.undo(id).then(reloadFromRepo);
     }
 
     if (evt.keyCode === 89 && evt.ctrlKey) {
-      FileRepository.redo(id).then(updateFromRepo);
+      FileRepository.redo(id).then(reloadFromRepo);
     }
   };
 
@@ -16829,7 +16938,7 @@ musicShowCaseApp.controller("EditorController", ["$scope", "$q", "$timeout", "$r
     } else {
       FileRepository.moveToRecycleBin(id)
         .then(function() {
-          document.location = "#";
+          document.location = "#/editor/" + $routeParams.project;
         })
         .catch(function(err) {
           if (err.type && err.type === 'cantremove') {
@@ -17004,8 +17113,9 @@ musicShowCaseApp.controller("MainController",
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
-    }).then(updateSearch)
-      .catch(function() {
+    })
+    .then(updateSearch)
+    .catch(function() {
       document.location = "#";
     });
   };
@@ -17231,7 +17341,30 @@ musicShowCaseApp.controller("MainController",
       templateUrl: "site/templates/modal/openProject.html",
       controller: "openProjectModalCtrl"
     }).result.then(function(id) {
-      document.location="#/editor/" + id;
+      var moreImportant = function(file1, file2) {
+        if (file1.type !== file2.type) {
+          if (file1.type==='song') return file1;
+          if (file2.type==='song') return file2;
+
+          if (file1.type==='pattern') return file1;
+          if (file2.type==='pattern') return file2;
+        } else {
+          return (file1.ref||[]).length > (file2.ref||[]).length ? file1 : file2;
+        }
+
+        return file2;
+      };
+
+      // switch to main object
+      return FileRepository.getProjectFiles(id)
+        .then(function(files) {
+          if (files.length > 0) {
+            var better = files.reduce(moreImportant, files[0]);
+            document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+          } else {
+            document.location="#/editor/" + id;
+          }
+        });
     });
   };
 

@@ -5,7 +5,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
     document.body.appendChild(a);
     a.style = "display: none";
 
-    var blob = new Blob([JSON.stringify(contents, null,"  ")]);
+    var blob = new Blob([JSON.stringify(contents)]);
     var url  = window.URL.createObjectURL(blob);
     a.href = url;
     a.download = name + ".json";

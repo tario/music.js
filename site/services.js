@@ -284,146 +284,6 @@ musicShowCaseApp.service("MusicContext", function() {
   };
 });
 
-musicShowCaseApp.service("TypeService", ["$http", "$q", "pruneWrapper", function($http, $q, pruneWrapper) {
-  var make_mutable = function(fcn) {
-    return function(object, subobjects, components) {
-      var current = fcn(object, subobjects, components);
-      var instances = [];
-
-      if (current.update) {
-        return current;
-      }
-
-      current = pruneWrapper(current);
-
-      var ret = function(music, options) {
-        var r;
-        var wrapped = {};
-        var lastCurrent = current;
-        var proxy = function(name) {
-          wrapped[name] = function() {
-            if (lastCurrent != current) update();
-            return r[name].apply(r, arguments);
-          };
-        };
-
-        var update = function() {
-            var newr = current(music, options);
-            if (newr !== r && r && r.dispose) r.dispose();
-            r = newr;
-
-            instances.push(newr);
-
-            lastCurrent = current;
-            for (var k in r) proxy(k);
-        };
-
-        update();
-
-        return wrapped;
-      };
-
-      var lastObjData;
-      ret.update = function(newobject, _components) {
-        components = _components
-        if (JSON.stringify(newobject) === lastObjData) return ret;
-        lastObjData = JSON.stringify(newobject);
-
-        instances.forEach(function(instance) {
-          if(instance.dispose) instance.dispose();
-        });
-        instances = [];
-
-        current = pruneWrapper(fcn(newobject, subobjects, components));
-        return ret;
-      };
-
-      return ret;
-    };
-  };
-
-
-  var plugins = ["core"];
-  var types = [];
-  var translation = {};
-  var m = function(pluginName) {
-    return {
-      lang: function(key, translateData) {
-        translation[key] =translation[key]||{};
-        translation[key][pluginName] = translateData;
-      },
-      type: function(typeName, options, constructor) {
-        types.push({
-          templateUrl: "site/plugin/" + pluginName + "/" + options.template + ".html",
-          parameters: options.parameters,
-          constructor: make_mutable(constructor),
-          name: typeName,
-          composition: options.composition,
-          components: options.components,
-          description: options.description,
-          _default: options._default,
-          subobjects: options.subobjects,
-          stackAppend: options.stackAppend,
-          monitor: options.monitor
-        })
-      }
-    };
-  };
-
-  var loadPlugin = function(pluginName) {
-    return $http.get("site/plugin/" + pluginName + "/index.js")
-      .then(function(result) {
-        var runnerCode = result.data;
-        var module = {export: function(){}};
-        eval(runnerCode);
-
-        module.export(m(pluginName));
-      });
-  };
-
-  var pluginsLoaded = $q.all(plugins.map(loadPlugin));
-
-  var getTypes = function(keyword) {
-      var hasKeyword = function() {
-        return true;
-      };
-
-      if (keyword) {
-        keyword = keyword.toLowerCase();
-        hasKeyword = function(x) {
-          return x.name.toLowerCase().indexOf(keyword) !== -1;
-        };
-      }
-
-      return pluginsLoaded.then(function() {
-        return types.filter(hasKeyword);
-      });
-  };
-
-  var getType = function(typeName, callback) {
-    return pluginsLoaded
-      .then(function() {
-        var ret = types.filter(function(type) { return type.name === typeName; })[0]; 
-        if (callback) callback(ret);
-        return ret;
-      });
-  };
-
-  var loadTranslations = function(options) {
-    return pluginsLoaded
-      .then(function() {
-        return translation[options.key]||{};
-      });
-  };
-
-  return {
-    getTypes: getTypes,
-    getType: getType,
-    loadTranslations: loadTranslations
-  };
-
-}]);
-
 musicShowCaseApp.service("Historial", [function() {
   return function() {
     var array = [];
@@ -615,27 +475,32 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var createdFilesIndex = [];
   var createdFiles = {};
 
-  var exampleList = $http.get("exampleList.json")
-    .then(function(result) {
-      return $q.all(result.data.map(function(entry) {
-        return $http.get(entry.uri)
-          .then(function(r) {
-            var hash = new jsSHA("SHA-1", "TEXT");
-            hash.update(JSON.stringify(r.data));
-            var fileId = hash.getHash("HEX").toLowerCase();
+  var builtIns = [
+    "site/builtin/defaultProject.json",
+    "site/builtin/samples.json",
+    "site/builtin/smb-underworld.json"
+  ];
 
-            createdFiles[fileId] = r.data;
-            createdFilesIndex = createdFilesIndex ||[];
-            createdFilesIndex.push({type: entry.type, name: entry.name, id: fileId, project: 'samples'});
+  var loadBuiltIn = function(uri) {
+    return $http.get(uri)
+      .then(function(r) {
+        r.data.forEach(function(obj) {
+          var objectId = obj.id;
+
+          createdFiles[objectId] = obj.contents;
+
+          createdFilesIndex.push({
+            project: obj.project,
+            type: obj.type,
+            name: obj.name,
+            id: objectId,
+            ref: obj.ref,
+            builtIn: true
           });
-      }));
-    });
-
-  createdFiles['default'] = {};
-  createdFiles['samples'] = {};
-
-  createdFilesIndex.push({type: 'project', name: 'Default Project', id: 'default', ref: ['samples']});
-  createdFilesIndex.push({type: 'project', name: 'Samples', id: 'samples'});
+        });
+      });
+  };
+  var builtInLoaded = $q.all(builtIns.map(loadBuiltIn));
 
   var createId = function() {
     var array = [];
@@ -869,7 +734,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var getProjectFiles = function(projectId) {
     return storageIndex.getAll()
       .then(function(idx) {
-        return idx.filter(function(file) {
+        return idx.concat(createdFilesIndex).filter(function(file) {
           return file.project === projectId || file.id === projectId;
         });
       });
@@ -919,7 +784,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     getFile: function(id) {
       var builtIn = false;
       var changed = false;
-      return exampleList
+      return builtInLoaded
         .then(function() {
           var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
           if (localFile) {
@@ -1023,7 +888,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
       var ee = new EventEmitter();
       var updateSearch = function() {
-        exampleList
+        builtInLoaded
           .then(function() {
             $q.all([
               storageIndex.getAll(),
