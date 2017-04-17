@@ -72,7 +72,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         });
       return;
     }
-    
+
     FileRepository.moveToRecycleBin(id)
       .then(function() {
         document.location = "#/editor/" + $routeParams.project;
@@ -778,8 +778,9 @@ musicShowCaseApp.controller("MainController",
     }).then(function(filter) {
       $scope.projectFilter = filter.concat(['core']);
       if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
-    }).then(updateSearch)
-      .catch(function() {
+    })
+    .then(updateSearch)
+    .catch(function() {
       document.location = "#";
     });
   };
@@ -1005,7 +1006,30 @@ musicShowCaseApp.controller("MainController",
       templateUrl: "site/templates/modal/openProject.html",
       controller: "openProjectModalCtrl"
     }).result.then(function(id) {
-      document.location="#/editor/" + id;
+      var moreImportant = function(file1, file2) {
+        if (file1.type !== file2.type) {
+          if (file1.type==='song') return file1;
+          if (file2.type==='song') return file2;
+
+          if (file1.type==='pattern') return file1;
+          if (file2.type==='pattern') return file2;
+        } else {
+          return (file1.ref||[]).length > (file2.ref||[]).length ? file1 : file2;
+        }
+
+        return file2;
+      };
+
+      // switch to main object
+      return FileRepository.getProjectFiles(id)
+        .then(function(files) {
+          if (files.length > 0) {
+            var better = files.reduce(moreImportant, files[0]);
+            document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+          } else {
+            document.location="#/editor/" + id;
+          }
+        });
     });
   };
 

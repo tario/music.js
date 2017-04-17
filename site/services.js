@@ -734,7 +734,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var getProjectFiles = function(projectId) {
     return storageIndex.getAll()
       .then(function(idx) {
-        return idx.filter(function(file) {
+        return idx.concat(createdFilesIndex).filter(function(file) {
           return file.project === projectId || file.id === projectId;
         });
       });
