@@ -1,6 +1,9 @@
 module.export = function(m) {
 
   m.lang("en", {
+    note_frequency_generator: {
+      time_constant: "Time Constant"
+    },
     note_condition: {
       note_on: "Note ON",
       note_off: "Note OFF",
@@ -198,10 +201,14 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    note_frequency_generator: {
+      time_constant: "Constante de tiempo"
+    },
     note_condition: {
       note_on: "Nota Activa",
       note_off: "Nota Inactiva",
-      time_constant: "Constante de tiempo"
+      leave_time_constant: "c. de tiempo al entrar",
+      enter_time_constant: "c. de tiempo al salir",
     },
     signal_constant: {
       tooltip: {
@@ -862,6 +869,52 @@ module.export = function(m) {
       return this;
     };
     ret.update(data);
+    return ret;
+  });
+
+  m.type("note_frequency_generator", {
+    template: "note_frequency_generator", 
+    description: "core.note_frequency_generator.description",
+    _default: {
+      time_constant: 0.01
+    }
+  }, function(data, subobjects) {
+    var frequency = function(notenum) {
+        return 16.35 * Math.pow(2, notenum/12);
+    };
+
+    var time_constant = 0.01;
+
+    var nullPlaying = { stop: function() {} };
+    var nullPlay = { play: function() { return nullPlaying; }};
+
+    var ret = function(music) {
+      var audioParamModulation = music.audioParamModulation;
+      var baseNode = music;
+
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
+
+      var note = function(n) {
+        audioParamModulation.cancelScheduledValues(0.0);
+        audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime, time_constant);
+
+        return nullPlay;
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });      
+    };
+
+    ret.update = function(data) {
+      time_constant = parseFloat(data.time_constant)||0.0001;
+    };
+
+    ret.update(data);
+
     return ret;
   });
 

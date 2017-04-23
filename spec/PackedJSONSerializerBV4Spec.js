@@ -185,7 +185,14 @@ describe("PackedJSONSerializerBV3", function() {
       }
     });
 
-  DeserializerTest.test(SerializerOracle.PackedJSONBV3.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
+  instruments.push({
+            "type": "note_frequency_generator",
+            "data": {
+              "time_constant": "0.01"
+            }
+          });  
+
+  DeserializerTest.test(SerializerOracle.PackedJSONBV4.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
     instruments: instruments
   });
 });
