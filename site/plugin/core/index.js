@@ -123,6 +123,12 @@ module.export = function(m) {
     red_noise: {
       description: 'Red noise generator'
     },
+    note_time_shift: {
+      description: 'delays or move forward all events on track',
+      tooltip: {
+        time: 'Time to shift both start and end time of the event. Can be negative or positive'
+      }
+    },
     note_padding: {
       description: 'Note Padding',
       tooltip: {
@@ -322,6 +328,12 @@ module.export = function(m) {
     },
     red_noise: {
       description: 'Generador de ruido rojo'
+    },
+    note_time_shift: {
+      description: 'Demora o adelanta todos los eventos en la pista',
+      tooltip: {
+        time: 'Tiempo a desplazar tanto el inicio como el final del evento. Puede ser positivo o negativo'
+      }
     },
     note_padding: {
       description: 'Relleno de nota',
@@ -1395,6 +1407,46 @@ module.export = function(m) {
 
         return ret;
       });
+
+
+  m.type("note_time_shift",
+      {
+          template: "generic_wrapper_editor", 
+          parameters: [
+            {name: "time", value: 0, tooltip: 'core.note_time_shift.tooltip.time'}
+          ], 
+          description: "core.note_time_shift.description"
+      },  function(data, subobjects) {
+        if (!subobjects) return;
+        var wrapped = subobjects[0];
+        if (!wrapped) return;
+        var time;
+
+        var eventPreprocessor = function(event) {
+          var s = event[1];
+          s = s + time * 1000;
+          if (s < 0 ) s = 0;
+
+          return [event[0], s, event[2]];
+        };
+
+        var ret = function(music) {
+          var ret = wrapped(music);
+          ret.eventPreprocessor = eventPreprocessor;
+          return ret;
+        };
+
+        ret.update = function(data) {
+          time = parseFloat(data.time);
+          return this;
+        };
+
+        ret.update(data);
+
+        return ret;
+      });
+
+
 
   m.type("transpose",
       {
