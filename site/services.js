@@ -59,7 +59,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                   var last_type = _last_type[channel];
                   var __cache = ___cache[channel];
 
-                  if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
+/*>                  if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
                     if (subobjects.length === 1) {
                       if (__cache.has(descriptor) && __cache.get(descriptor)[subobjects[0].id]) {
                         return $q(function(resolve) {
@@ -75,7 +75,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                         });
                       }
                     }
-                  }
+                  }*/
 
                   last_type.set(descriptor, descriptor.type);
 
