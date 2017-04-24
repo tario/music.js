@@ -886,7 +886,6 @@ module.export = function(m) {
     var time_constant = 0.01;
 
     var nullPlaying = { stop: function() {} };
-    var nullPlay = { play: function() { return nullPlaying; }};
 
     var ret = function(music) {
       var audioParamModulation = music.audioParamModulation;
@@ -898,10 +897,14 @@ module.export = function(m) {
       }
 
       var note = function(n) {
-        audioParamModulation.cancelScheduledValues(0.0);
-        audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime, time_constant);
+        return {
+          play: function() {
+            audioParamModulation.cancelScheduledValues(0.0);
+            audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime, time_constant);
 
-        return nullPlay;
+            return nullPlaying;
+          }
+        };
       };
 
       return MUSIC.instrumentExtend({
