@@ -255,7 +255,8 @@ var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
 "note_condition", "signal_monitor", "signal_constant", "note_delay",
 "sample_rate_reduction", "bit_crushing",
 "signal_scale", "signal_not",
-"signal_or", "signal_and", "signal_nor", "signal_nand", "delay", "note_frequency_generator"];
+"signal_or", "signal_and", "signal_nor", "signal_nand", "delay", "note_frequency_generator",
+"note_time_shift"];
 
 var monophonerPacker = objToArrayPacker([
   ["force_note_cut", booleanPacker]
@@ -316,7 +317,8 @@ var instrumentPacker = objToArrayPacker([
       signal_and: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
       signal_nor: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
       signal_nand: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
-      note_frequency_generator: objToArrayPacker(["time_constant"])
+      note_frequency_generator: objToArrayPacker(["time_constant"]),
+      note_time_shift: objToArrayPacker(["time"])
     }
   )],
 ]);
