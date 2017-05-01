@@ -1025,9 +1025,13 @@ musicShowCaseApp.controller("MainController",
         .then(function(files) {
           if (files.length > 0) {
             var better = files.reduce(moreImportant, files[0]);
-            document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+            if (better && better.type !== 'project') {
+              document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+            } else {
+              document.location = "#/editor/" + id;
+            }
           } else {
-            document.location="#/editor/" + id;
+            document.location = "#/editor/" + id;
           }
         });
     });
