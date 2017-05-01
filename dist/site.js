@@ -14772,20 +14772,21 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, base, onStop) {
+    var noteseq = new MUSIC.NoteSequence();
     var mutedState = getMutedState(file);
-    var playableArray = file.tracks.map(function(track, idx) {
+
+    file.tracks.forEach(function(track, idx) {
       idx = base + idx;
       if (mutedState[idx]) return null;
 
       var instrument = instruments[track.instrument + '_' + idx];
       var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
       
-      return noteseq(file, track, eventPreprocessor, onStop).makePlayable(instrument);
-    }).filter(function(track) {
-      return !!track;
+      var context = MUSIC.NoteSequence.context(instrument);
+      schedule(noteseq, file, track, eventPreprocessor, onStop, context);
     });
 
-    var ret = new MUSIC.MultiPlayable(playableArray);
+    var ret = noteseq.makePlayable(null);
     ret.schedule = function(noteSequence) {
       file.tracks.forEach(function(track, idx) {
         idx = base + idx;
