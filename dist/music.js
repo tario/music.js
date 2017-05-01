@@ -14559,7 +14559,7 @@ MUSIC.Song = function(input, patternsOrOptions, options){
 
       schedulable.forEach(function(s) {
         var delayedFunseq = MUSIC.Utils.DelayedFunctionSeq(funseq, j*measure);
-        self._patternContexts = s.schedule(new MUSIC.NoteSequence(delayedFunseq));
+        self._patternContexts = (self._patternContexts||[]).concat(s.schedule(new MUSIC.NoteSequence(delayedFunseq)));
       });
 
     })();
