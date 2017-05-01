@@ -1,11 +1,18 @@
 (function() {
 
-var PlayingSong = function(funseq, options) {
+var PlayingSong = function(funseq, patternContexts, options) {
   this._context = {playing: [], onStop: options && options.onStop};
+  this._patternContexts = patternContexts;
   this._funseqHandler = funseq.start(this._context);
 };
 
 PlayingSong.prototype.stop = function() {
+  if (this._patternContexts && this._patternContexts.length) {
+    this._patternContexts.forEach(function(ctx) {
+      ctx.stop();
+    });
+  }
+
   this._context.playing.forEach(function(playing) {
     playing.stop();
   });
@@ -43,6 +50,8 @@ var hasNotScheduleMethod = function(pattern) {
 
 MUSIC.Song = function(input, patternsOrOptions, options){
   var patterns;
+  var self = this;
+
   if (arguments.length === 2) {
     return MUSIC.Song.bind(this)(input, {}, patternsOrOptions);
   } else {
@@ -96,7 +105,7 @@ MUSIC.Song = function(input, patternsOrOptions, options){
 
       schedulable.forEach(function(s) {
         var delayedFunseq = MUSIC.Utils.DelayedFunctionSeq(funseq, j*measure);
-        s.schedule(new MUSIC.NoteSequence(delayedFunseq));
+        self._patternContexts = s.schedule(new MUSIC.NoteSequence(delayedFunseq));
       });
 
     })();
@@ -115,7 +124,7 @@ MUSIC.Song.prototype.duration = function() {
 };
 
 MUSIC.Song.prototype.play = function(options) {
-  return new PlayingSong(this._funseq, options);
+  return new PlayingSong(this._funseq,  this._patternContexts, options);
 };
 
 })();

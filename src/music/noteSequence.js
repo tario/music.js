@@ -14,12 +14,14 @@ MUSIC.NoteSequence = function(funseq) {
   this._funseq = funseq;
   this._totalduration = 0;
   this._noteid = 0;
+  this._contextList = [];
 };
 
-MUSIC.NoteSequence.Playable = function(noteseq, instrument, duration) {
+MUSIC.NoteSequence.Playable = function(noteseq, instrument, duration, contextList) {
   this._noteseq = noteseq;
   this._instrument = instrument;
   this._duration = duration;
+  this._contextList = contextList || [];
 };
 
 MUSIC.NoteSequence.Playable.prototype.loop = function(times) {
@@ -31,7 +33,7 @@ MUSIC.NoteSequence.Playable.prototype.duration = function() {
 };
 
 MUSIC.NoteSequence.Playable.prototype.play = function(options) {
-  var context = MUSIC.NoteSequence.context(this._instrument)
+  var context = MUSIC.NoteSequence.context(this._instrument, this._contextList);
   this._runningFunSeq = this._noteseq._funseq.start(context);
   return new MUSIC.NoteSequence.Playing(this._runningFunSeq, context);
 };
@@ -68,6 +70,12 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   this._noteid++;
   var mynoteid = this._noteid;
 
+  if (baseCtx) {
+    if (this._contextList.indexOf(baseCtx)===-1) {
+      this._contextList.push(baseCtx);
+    }
+  }
+
   this._funseq.push({t:startTime, f: function(param){
     var ctx = baseCtx || param;
     var playing;
@@ -83,10 +91,10 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
 };
 
 MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
-  return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration);
+  return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration, this._contextList);
 };
 
-MUSIC.NoteSequence.context = function(instrument) {
+MUSIC.NoteSequence.context = function(instrument, subctx) {
   var playingNotes = {};
   var setPlaying = function(noteid, p) {
     playingNotes[noteid] = p.play();
@@ -100,6 +108,12 @@ MUSIC.NoteSequence.context = function(instrument) {
   };
 
   var stop = function() {
+    if (subctx) {
+      for (var i=0; i<subctx.length; i++) {
+        subctx[i].stop();
+      }
+    }
+
     for (var noteid in playingNotes) {
       playingNotes[noteid].stop();
     }

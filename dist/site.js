@@ -14788,6 +14788,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
     var ret = noteseq.makePlayable(null);
     ret.schedule = function(noteSequence) {
+      var contexts = [];
+
       file.tracks.forEach(function(track, idx) {
         idx = base + idx;
         if (mutedState[idx]) return null;
@@ -14795,8 +14797,12 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
         var instrument = instruments[track.instrument + '_' + idx];
         var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
         var context = MUSIC.NoteSequence.context(instrument)
+
+        contexts.push(context);
         schedule(noteSequence, file, track, eventPreprocessor, onStop, context);
       });
+
+      return contexts;
     };
 
     return ret;
