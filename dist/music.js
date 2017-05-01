@@ -14245,7 +14245,7 @@ MUSIC.NoteSequence.prototype.pushCallback = function(array){
   this._funseq.push({t:startTime, f: f});
 };
 
-MUSIC.NoteSequence.prototype.push = function(array){
+MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = array[1];
   var duration = array[2];
@@ -14253,12 +14253,14 @@ MUSIC.NoteSequence.prototype.push = function(array){
   this._noteid++;
   var mynoteid = this._noteid;
 
-  this._funseq.push({t:startTime, f: function(ctx){
+  this._funseq.push({t:startTime, f: function(param){
+    var ctx = baseCtx || param;
     var playing;
     playing = ctx.instrument.note(noteNum);
     ctx.setPlaying(mynoteid, playing);
   }});
-  this._funseq.push({t:startTime + duration, f: function(ctx){
+  this._funseq.push({t:startTime + duration, f: function(param){
+    var ctx = baseCtx || param;
     ctx.unsetPlaying(mynoteid);
   }});
 
@@ -14470,6 +14472,13 @@ var defaultFromPatterns = function(patterns) {
 };
 
 var nullPlay = {stop: function(){}};
+var hasScheduleMethod = function(pattern) {
+  return !!pattern.schedule;
+};
+
+var hasNotScheduleMethod = function(pattern) {
+  return !pattern.schedule;
+};
 
 MUSIC.Song = function(input, patternsOrOptions, options){
   var patterns;
@@ -14505,18 +14514,29 @@ MUSIC.Song = function(input, patternsOrOptions, options){
         patternArray.push(input[i][j]);
       };
       var playableArray = patternArray.map(getFromPatterns) 
-      var multiPlayable = new MUSIC.MultiPlayable(playableArray);
-      var playing = nullPlay;
-      var duration = multiPlayable.duration();
 
-      funseq.push({t: j*measure, f: function(context) {
-        playing = multiPlayable.play();
-        context.playing.push(playing);
-      }});
-      funseq.push({t: j*measure+duration, f: function(context) {
-        playing.stop();
-        context.playing = context.playing.filter(function(x){ return x != playing; });
-      }});
+      var schedulable = playableArray.filter(hasScheduleMethod);
+      var notSchedulable = playableArray.filter(hasNotScheduleMethod);
+
+      if (notSchedulable.length > 0) {
+        var multiPlayable = new MUSIC.MultiPlayable(notSchedulable);
+        var playing = nullPlay;
+        var duration = multiPlayable.duration();
+
+        funseq.push({t: j*measure, f: function(context) {
+          playing = multiPlayable.play();
+          context.playing.push(playing);
+        }});
+        funseq.push({t: j*measure+duration, f: function(context) {
+          playing.stop();
+          context.playing = context.playing.filter(function(x){ return x != playing; });
+        }});
+      }
+
+      schedulable.forEach(function(s) {
+        var delayedFunseq = MUSIC.Utils.DelayedFunctionSeq(funseq, j*measure);
+        s.schedule(new MUSIC.NoteSequence(delayedFunseq));
+      });
 
     })();
   };
@@ -14596,23 +14616,42 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
     var array = eventsArray.slice(0).sort(function(e1, e2) {
       return e1.t - e2.t;
     });
-    
+
     var timeoutHandlers = [];
     var eventCount = array.length;
 
     var clockHandler = clock.start(function(t) {
+      var lastEvent;
       var callingCriteria = function(element) {
         return element.t - t < 1000 && element.t - t >= 0;
       };
 
-      var schedule = function(event) {
-        var timeoutHandler = setTimeout(function(){
+      var pending = [];
+      var processPending = function() {
+        if (!pending.length) return;
+
+        var currentPending = pending;
+        pending = [];
+
+        var timeoutHandler = setTimeout(function() {
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
-          event.f(parameter);
-          eventCount--;
-          if (eventCount === 0) clockHandler.stop();
-        }, event.t - t);
+
+          for (var i=0; i<currentPending.length; i++) {
+            currentPending[i].f(parameter);
+            eventCount--;
+            if (eventCount === 0) clockHandler.stop();
+          }
+        }, currentPending[0].t - t);
         timeoutHandlers.push(timeoutHandler);
+      };
+
+      var addSchedule = function(event) {
+        if (lastEvent && lastEvent.t - t !== event.t - t) {
+          processPending();
+        }
+
+        pending.push(event);
+        lastEvent = event;
       };
 
       var nextElement;
@@ -14621,7 +14660,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
         if (array.length > 0) {
           nextElement = array[0];
           if (callingCriteria(nextElement)) {
-            schedule(nextElement);
+            addSchedule(nextElement);
             array.shift(); // remove first element
           } else {
             break;
@@ -14630,6 +14669,8 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
           break;
         }
       }
+
+      processPending();
     });
 
     return {
@@ -14668,6 +14709,24 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
     fcn();
   }, t: ms});
   runningFunSeq = funseq.start();
+};
+
+MUSIC.Utils.DelayedFunctionSeq = function(inner, delay) {
+  var start = function(params) {
+    return inner.start(params);
+  };
+
+  var push = function(params) {
+    return inner.push({
+      f: params.f,
+      t: params.t + delay
+    });
+  };
+
+  return {
+    start: start,
+    push: push
+  };
 };
 
 

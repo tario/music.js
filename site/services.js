@@ -315,19 +315,23 @@ musicShowCaseApp.service("Historial", [function() {
 }]);
 
 musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, TICKS_PER_BEAT) {
-  var noteseq = function(file, track, eventPreprocessor, onStop) {
-    var noteseq = new MUSIC.NoteSequence();
+
+  var schedule = function(noteseq, file, track, eventPreprocessor, onStop, ctx) {
     var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
     var scale = 60000 / file.bpm / TICKS_PER_BEAT;
 
     for (var i=0; i<events.length; i++) {
       var evt = track.events[i];
-      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale]));
+      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale]), ctx);
     }
 
     noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
     noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
+  };
 
+  var noteseq = function(file, track, eventPreprocessor, onStop) {
+    var noteseq = new MUSIC.NoteSequence();
+    schedule(noteseq, file, track, eventPreprocessor, onStop);
     return noteseq;
   };
 
@@ -345,7 +349,20 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       return !!track;
     });
 
-    return new MUSIC.MultiPlayable(playableArray);
+    var ret = new MUSIC.MultiPlayable(playableArray);
+    ret.schedule = function(noteSequence) {
+      file.tracks.forEach(function(track, idx) {
+        idx = base + idx;
+        if (mutedState[idx]) return null;
+
+        var instrument = instruments[track.instrument + '_' + idx];
+        var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
+        var context = MUSIC.NoteSequence.context(instrument)
+        schedule(noteSequence, file, track, eventPreprocessor, onStop, context);
+      });
+    };
+
+    return ret;
   };
 
   var higher = function(a,b) {

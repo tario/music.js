@@ -60,7 +60,7 @@ MUSIC.NoteSequence.prototype.pushCallback = function(array){
   this._funseq.push({t:startTime, f: f});
 };
 
-MUSIC.NoteSequence.prototype.push = function(array){
+MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = array[1];
   var duration = array[2];
@@ -68,12 +68,14 @@ MUSIC.NoteSequence.prototype.push = function(array){
   this._noteid++;
   var mynoteid = this._noteid;
 
-  this._funseq.push({t:startTime, f: function(ctx){
+  this._funseq.push({t:startTime, f: function(param){
+    var ctx = baseCtx || param;
     var playing;
     playing = ctx.instrument.note(noteNum);
     ctx.setPlaying(mynoteid, playing);
   }});
-  this._funseq.push({t:startTime + duration, f: function(ctx){
+  this._funseq.push({t:startTime + duration, f: function(param){
+    var ctx = baseCtx || param;
     ctx.unsetPlaying(mynoteid);
   }});
 

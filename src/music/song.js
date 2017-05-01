@@ -33,6 +33,13 @@ var defaultFromPatterns = function(patterns) {
 };
 
 var nullPlay = {stop: function(){}};
+var hasScheduleMethod = function(pattern) {
+  return !!pattern.schedule;
+};
+
+var hasNotScheduleMethod = function(pattern) {
+  return !pattern.schedule;
+};
 
 MUSIC.Song = function(input, patternsOrOptions, options){
   var patterns;
@@ -68,18 +75,29 @@ MUSIC.Song = function(input, patternsOrOptions, options){
         patternArray.push(input[i][j]);
       };
       var playableArray = patternArray.map(getFromPatterns) 
-      var multiPlayable = new MUSIC.MultiPlayable(playableArray);
-      var playing = nullPlay;
-      var duration = multiPlayable.duration();
 
-      funseq.push({t: j*measure, f: function(context) {
-        playing = multiPlayable.play();
-        context.playing.push(playing);
-      }});
-      funseq.push({t: j*measure+duration, f: function(context) {
-        playing.stop();
-        context.playing = context.playing.filter(function(x){ return x != playing; });
-      }});
+      var schedulable = playableArray.filter(hasScheduleMethod);
+      var notSchedulable = playableArray.filter(hasNotScheduleMethod);
+
+      if (notSchedulable.length > 0) {
+        var multiPlayable = new MUSIC.MultiPlayable(notSchedulable);
+        var playing = nullPlay;
+        var duration = multiPlayable.duration();
+
+        funseq.push({t: j*measure, f: function(context) {
+          playing = multiPlayable.play();
+          context.playing.push(playing);
+        }});
+        funseq.push({t: j*measure+duration, f: function(context) {
+          playing.stop();
+          context.playing = context.playing.filter(function(x){ return x != playing; });
+        }});
+      }
+
+      schedulable.forEach(function(s) {
+        var delayedFunseq = MUSIC.Utils.DelayedFunctionSeq(funseq, j*measure);
+        s.schedule(new MUSIC.NoteSequence(delayedFunseq));
+      });
 
     })();
   };
