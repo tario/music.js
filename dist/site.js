@@ -16555,7 +16555,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           playDone();
         }).play();
 
-        var stop = playing.stop;
+        var stop = playing.stop.bind(playing);
         playing.stop = function() {
           playDone();
           stop();
@@ -16789,6 +16789,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.play = function() {
     $q.all(instSet.all)
       .then(function(instruments) {
+        if (playing) playing.stop();
+
         playing = Pattern.patternCompose($scope.file, instruments, 0, function() {
           $scope.recipe.raise("pattern_play_stopped");
           playing = null;

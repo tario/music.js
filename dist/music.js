@@ -14227,10 +14227,11 @@ MUSIC.NoteSequence.Playing = function(runningFunSeq, ctx) {
   this._runningFunSeq = runningFunSeq;
   this._context = ctx;
 };
+
 MUSIC.NoteSequence.Playing.prototype.stop = function() {
   if (this._context.playing) this._context.playing.stop();
-  this._runningFunSeq.stop();
   this._context.stop();
+  this._runningFunSeq.stop();
 };
 
 MUSIC.NoteSequence.prototype.paddingTo = function(time){
