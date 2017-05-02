@@ -14199,12 +14199,14 @@ MUSIC.NoteSequence = function(funseq) {
   this._funseq = funseq;
   this._totalduration = 0;
   this._noteid = 0;
+  this._contextList = [];
 };
 
-MUSIC.NoteSequence.Playable = function(noteseq, instrument, duration) {
+MUSIC.NoteSequence.Playable = function(noteseq, instrument, duration, contextList) {
   this._noteseq = noteseq;
   this._instrument = instrument;
   this._duration = duration;
+  this._contextList = contextList || [];
 };
 
 MUSIC.NoteSequence.Playable.prototype.loop = function(times) {
@@ -14216,7 +14218,7 @@ MUSIC.NoteSequence.Playable.prototype.duration = function() {
 };
 
 MUSIC.NoteSequence.Playable.prototype.play = function(options) {
-  var context = MUSIC.NoteSequence.context(this._instrument)
+  var context = MUSIC.NoteSequence.context(this._instrument, this._contextList);
   this._runningFunSeq = this._noteseq._funseq.start(context);
   return new MUSIC.NoteSequence.Playing(this._runningFunSeq, context);
 };
@@ -14225,10 +14227,11 @@ MUSIC.NoteSequence.Playing = function(runningFunSeq, ctx) {
   this._runningFunSeq = runningFunSeq;
   this._context = ctx;
 };
+
 MUSIC.NoteSequence.Playing.prototype.stop = function() {
   if (this._context.playing) this._context.playing.stop();
-  this._runningFunSeq.stop();
   this._context.stop();
+  this._runningFunSeq.stop();
 };
 
 MUSIC.NoteSequence.prototype.paddingTo = function(time){
@@ -14245,7 +14248,7 @@ MUSIC.NoteSequence.prototype.pushCallback = function(array){
   this._funseq.push({t:startTime, f: f});
 };
 
-MUSIC.NoteSequence.prototype.push = function(array){
+MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = array[1];
   var duration = array[2];
@@ -14253,12 +14256,20 @@ MUSIC.NoteSequence.prototype.push = function(array){
   this._noteid++;
   var mynoteid = this._noteid;
 
-  this._funseq.push({t:startTime, f: function(ctx){
+  if (baseCtx) {
+    if (this._contextList.indexOf(baseCtx)===-1) {
+      this._contextList.push(baseCtx);
+    }
+  }
+
+  this._funseq.push({t:startTime, f: function(param){
+    var ctx = baseCtx || param;
     var playing;
     playing = ctx.instrument.note(noteNum);
     ctx.setPlaying(mynoteid, playing);
   }});
-  this._funseq.push({t:startTime + duration, f: function(ctx){
+  this._funseq.push({t:startTime + duration, f: function(param){
+    var ctx = baseCtx || param;
     ctx.unsetPlaying(mynoteid);
   }});
 
@@ -14266,10 +14277,10 @@ MUSIC.NoteSequence.prototype.push = function(array){
 };
 
 MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
-  return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration);
+  return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration, this._contextList);
 };
 
-MUSIC.NoteSequence.context = function(instrument) {
+MUSIC.NoteSequence.context = function(instrument, subctx) {
   var playingNotes = {};
   var setPlaying = function(noteid, p) {
     playingNotes[noteid] = p.play();
@@ -14283,6 +14294,12 @@ MUSIC.NoteSequence.context = function(instrument) {
   };
 
   var stop = function() {
+    if (subctx) {
+      for (var i=0; i<subctx.length; i++) {
+        subctx[i].stop();
+      }
+    }
+
     for (var noteid in playingNotes) {
       playingNotes[noteid].stop();
     }
@@ -14437,12 +14454,19 @@ MUSIC.SequenceParser.parse = function(input, noteSeq) {
 })();
 (function() {
 
-var PlayingSong = function(funseq, options) {
+var PlayingSong = function(funseq, patternContexts, options) {
   this._context = {playing: [], onStop: options && options.onStop};
+  this._patternContexts = patternContexts;
   this._funseqHandler = funseq.start(this._context);
 };
 
 PlayingSong.prototype.stop = function() {
+  if (this._patternContexts && this._patternContexts.length) {
+    this._patternContexts.forEach(function(ctx) {
+      ctx.stop();
+    });
+  }
+
   this._context.playing.forEach(function(playing) {
     playing.stop();
   });
@@ -14470,9 +14494,18 @@ var defaultFromPatterns = function(patterns) {
 };
 
 var nullPlay = {stop: function(){}};
+var hasScheduleMethod = function(pattern) {
+  return !!pattern.schedule;
+};
+
+var hasNotScheduleMethod = function(pattern) {
+  return !pattern.schedule;
+};
 
 MUSIC.Song = function(input, patternsOrOptions, options){
   var patterns;
+  var self = this;
+
   if (arguments.length === 2) {
     return MUSIC.Song.bind(this)(input, {}, patternsOrOptions);
   } else {
@@ -14505,18 +14538,29 @@ MUSIC.Song = function(input, patternsOrOptions, options){
         patternArray.push(input[i][j]);
       };
       var playableArray = patternArray.map(getFromPatterns) 
-      var multiPlayable = new MUSIC.MultiPlayable(playableArray);
-      var playing = nullPlay;
-      var duration = multiPlayable.duration();
 
-      funseq.push({t: j*measure, f: function(context) {
-        playing = multiPlayable.play();
-        context.playing.push(playing);
-      }});
-      funseq.push({t: j*measure+duration, f: function(context) {
-        playing.stop();
-        context.playing = context.playing.filter(function(x){ return x != playing; });
-      }});
+      var schedulable = playableArray.filter(hasScheduleMethod);
+      var notSchedulable = playableArray.filter(hasNotScheduleMethod);
+
+      if (notSchedulable.length > 0) {
+        var multiPlayable = new MUSIC.MultiPlayable(notSchedulable);
+        var playing = nullPlay;
+        var duration = multiPlayable.duration();
+
+        funseq.push({t: j*measure, f: function(context) {
+          playing = multiPlayable.play();
+          context.playing.push(playing);
+        }});
+        funseq.push({t: j*measure+duration, f: function(context) {
+          playing.stop();
+          context.playing = context.playing.filter(function(x){ return x != playing; });
+        }});
+      }
+
+      schedulable.forEach(function(s) {
+        var delayedFunseq = MUSIC.Utils.DelayedFunctionSeq(funseq, j*measure);
+        self._patternContexts = (self._patternContexts||[]).concat(s.schedule(new MUSIC.NoteSequence(delayedFunseq)));
+      });
 
     })();
   };
@@ -14534,7 +14578,7 @@ MUSIC.Song.prototype.duration = function() {
 };
 
 MUSIC.Song.prototype.play = function(options) {
-  return new PlayingSong(this._funseq, options);
+  return new PlayingSong(this._funseq,  this._patternContexts, options);
 };
 
 })();
@@ -14596,23 +14640,42 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
     var array = eventsArray.slice(0).sort(function(e1, e2) {
       return e1.t - e2.t;
     });
-    
+
     var timeoutHandlers = [];
     var eventCount = array.length;
 
     var clockHandler = clock.start(function(t) {
+      var lastEvent;
       var callingCriteria = function(element) {
         return element.t - t < 1000 && element.t - t >= 0;
       };
 
-      var schedule = function(event) {
-        var timeoutHandler = setTimeout(function(){
+      var pending = [];
+      var processPending = function() {
+        if (!pending.length) return;
+
+        var currentPending = pending;
+        pending = [];
+
+        var timeoutHandler = setTimeout(function() {
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
-          event.f(parameter);
-          eventCount--;
-          if (eventCount === 0) clockHandler.stop();
-        }, event.t - t);
+
+          for (var i=0; i<currentPending.length; i++) {
+            currentPending[i].f(parameter);
+            eventCount--;
+            if (eventCount === 0) clockHandler.stop();
+          }
+        }, currentPending[0].t - t);
         timeoutHandlers.push(timeoutHandler);
+      };
+
+      var addSchedule = function(event) {
+        if (lastEvent && lastEvent.t - t !== event.t - t) {
+          processPending();
+        }
+
+        pending.push(event);
+        lastEvent = event;
       };
 
       var nextElement;
@@ -14621,7 +14684,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
         if (array.length > 0) {
           nextElement = array[0];
           if (callingCriteria(nextElement)) {
-            schedule(nextElement);
+            addSchedule(nextElement);
             array.shift(); // remove first element
           } else {
             break;
@@ -14630,6 +14693,8 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
           break;
         }
       }
+
+      processPending();
     });
 
     return {
@@ -14668,6 +14733,24 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
     fcn();
   }, t: ms});
   runningFunSeq = funseq.start();
+};
+
+MUSIC.Utils.DelayedFunctionSeq = function(inner, delay) {
+  var start = function(params) {
+    return inner.start(params);
+  };
+
+  var push = function(params) {
+    return inner.push({
+      f: params.f,
+      t: params.t + delay
+    });
+  };
+
+  return {
+    start: start,
+    push: push
+  };
 };
 
 
@@ -15571,7 +15654,8 @@ var typeNames = ["script","null","oscillator","notesplit","rise","adsr",
 "note_condition", "signal_monitor", "signal_constant", "note_delay",
 "sample_rate_reduction", "bit_crushing",
 "signal_scale", "signal_not",
-"signal_or", "signal_and", "signal_nor", "signal_nand", "delay"];
+"signal_or", "signal_and", "signal_nor", "signal_nand", "delay", "note_frequency_generator",
+"note_time_shift"];
 
 var monophonerPacker = objToArrayPacker([
   ["force_note_cut", booleanPacker]
@@ -15631,7 +15715,9 @@ var instrumentPacker = objToArrayPacker([
       signal_or: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
       signal_and: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
       signal_nor: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
-      signal_nand: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]])
+      signal_nand: objToArrayPacker(["second_signal", ["modulation", modl(["second_signal"])]]),
+      note_frequency_generator: objToArrayPacker(["time_constant"]),
+      note_time_shift: objToArrayPacker(["time"])
     }
   )],
 ]);

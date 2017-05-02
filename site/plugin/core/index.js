@@ -1,6 +1,9 @@
 module.export = function(m) {
 
   m.lang("en", {
+    note_frequency_generator: {
+      time_constant: "Time Constant"
+    },
     note_condition: {
       note_on: "Note ON",
       note_off: "Note OFF",
@@ -120,6 +123,12 @@ module.export = function(m) {
     red_noise: {
       description: 'Red noise generator'
     },
+    note_time_shift: {
+      description: 'delays or move forward all events on track',
+      tooltip: {
+        time: 'Time to shift both start and end time of the event. Can be negative or positive'
+      }
+    },
     note_padding: {
       description: 'Note Padding',
       tooltip: {
@@ -198,10 +207,14 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    note_frequency_generator: {
+      time_constant: "Constante de tiempo"
+    },
     note_condition: {
       note_on: "Nota Activa",
       note_off: "Nota Inactiva",
-      time_constant: "Constante de tiempo"
+      leave_time_constant: "c. de tiempo al entrar",
+      enter_time_constant: "c. de tiempo al salir",
     },
     signal_constant: {
       tooltip: {
@@ -315,6 +328,12 @@ module.export = function(m) {
     },
     red_noise: {
       description: 'Generador de ruido rojo'
+    },
+    note_time_shift: {
+      description: 'Demora o adelanta todos los eventos en la pista',
+      tooltip: {
+        time: 'Tiempo a desplazar tanto el inicio como el final del evento. Puede ser positivo o negativo'
+      }
     },
     note_padding: {
       description: 'Relleno de nota',
@@ -865,6 +884,55 @@ module.export = function(m) {
     return ret;
   });
 
+  m.type("note_frequency_generator", {
+    template: "note_frequency_generator", 
+    description: "core.note_frequency_generator.description",
+    _default: {
+      time_constant: 0.01
+    }
+  }, function(data, subobjects) {
+    var frequency = function(notenum) {
+        return 16.35 * Math.pow(2, notenum/12);
+    };
+
+    var time_constant = 0.01;
+
+    var nullPlaying = { stop: function() {} };
+
+    var ret = function(music) {
+      var audioParamModulation = music.audioParamModulation;
+      var baseNode = music;
+
+      if (!audioParamModulation) {
+        baseNode = baseNode.constant(0);
+        audioParamModulation = baseNode._destination.offset;
+      }
+
+      var note = function(n) {
+        return {
+          play: function() {
+            audioParamModulation.cancelScheduledValues(0.0);
+            audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime, time_constant);
+
+            return nullPlaying;
+          }
+        };
+      };
+
+      return MUSIC.instrumentExtend({
+        note: note
+      });      
+    };
+
+    ret.update = function(data) {
+      time_constant = parseFloat(data.time_constant)||0.0001;
+    };
+
+    ret.update(data);
+
+    return ret;
+  });
+
   m.type("note_condition", {template: "note_condition", description: "core.note_condition.description", _default: {
     note_on: 1.0,
     note_off: 0.0,
@@ -1339,6 +1407,46 @@ module.export = function(m) {
 
         return ret;
       });
+
+
+  m.type("note_time_shift",
+      {
+          template: "generic_wrapper_editor", 
+          parameters: [
+            {name: "time", value: 0, tooltip: 'core.note_time_shift.tooltip.time'}
+          ], 
+          description: "core.note_time_shift.description"
+      },  function(data, subobjects) {
+        if (!subobjects) return;
+        var wrapped = subobjects[0];
+        if (!wrapped) return;
+        var time;
+
+        var eventPreprocessor = function(event) {
+          var s = event[1];
+          s = s + time * 1000;
+          if (s < 0 ) s = 0;
+
+          return [event[0], s, event[2]];
+        };
+
+        var ret = function(music) {
+          var ret = wrapped(music);
+          ret.eventPreprocessor = eventPreprocessor;
+          return ret;
+        };
+
+        ret.update = function(data) {
+          time = parseFloat(data.time);
+          return this;
+        };
+
+        ret.update(data);
+
+        return ret;
+      });
+
+
 
   m.type("transpose",
       {

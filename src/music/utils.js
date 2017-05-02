@@ -56,23 +56,42 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
     var array = eventsArray.slice(0).sort(function(e1, e2) {
       return e1.t - e2.t;
     });
-    
+
     var timeoutHandlers = [];
     var eventCount = array.length;
 
     var clockHandler = clock.start(function(t) {
+      var lastEvent;
       var callingCriteria = function(element) {
         return element.t - t < 1000 && element.t - t >= 0;
       };
 
-      var schedule = function(event) {
-        var timeoutHandler = setTimeout(function(){
+      var pending = [];
+      var processPending = function() {
+        if (!pending.length) return;
+
+        var currentPending = pending;
+        pending = [];
+
+        var timeoutHandler = setTimeout(function() {
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
-          event.f(parameter);
-          eventCount--;
-          if (eventCount === 0) clockHandler.stop();
-        }, event.t - t);
+
+          for (var i=0; i<currentPending.length; i++) {
+            currentPending[i].f(parameter);
+            eventCount--;
+            if (eventCount === 0) clockHandler.stop();
+          }
+        }, currentPending[0].t - t);
         timeoutHandlers.push(timeoutHandler);
+      };
+
+      var addSchedule = function(event) {
+        if (lastEvent && lastEvent.t - t !== event.t - t) {
+          processPending();
+        }
+
+        pending.push(event);
+        lastEvent = event;
       };
 
       var nextElement;
@@ -81,7 +100,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
         if (array.length > 0) {
           nextElement = array[0];
           if (callingCriteria(nextElement)) {
-            schedule(nextElement);
+            addSchedule(nextElement);
             array.shift(); // remove first element
           } else {
             break;
@@ -90,6 +109,8 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
           break;
         }
       }
+
+      processPending();
     });
 
     return {
@@ -128,6 +149,24 @@ MUSIC.Utils.FunctionSeq.preciseTimeout = function(fcn, ms) {
     fcn();
   }, t: ms});
   runningFunSeq = funseq.start();
+};
+
+MUSIC.Utils.DelayedFunctionSeq = function(inner, delay) {
+  var start = function(params) {
+    return inner.start(params);
+  };
+
+  var push = function(params) {
+    return inner.push({
+      f: params.f,
+      t: params.t + delay
+    });
+  };
+
+  return {
+    start: start,
+    push: push
+  };
 };
 
 

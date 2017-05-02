@@ -14495,7 +14495,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                   var last_type = _last_type[channel];
                   var __cache = ___cache[channel];
 
-                  if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
+/*>                  if (!last_type.has(descriptor)||last_type.get(descriptor) === descriptor.type) {
                     if (subobjects.length === 1) {
                       if (__cache.has(descriptor) && __cache.get(descriptor)[subobjects[0].id]) {
                         return $q(function(resolve) {
@@ -14511,7 +14511,7 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
                         });
                       }
                     }
-                  }
+                  }*/
 
                   last_type.set(descriptor, descriptor.type);
 
@@ -14751,37 +14751,61 @@ musicShowCaseApp.service("Historial", [function() {
 }]);
 
 musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, TICKS_PER_BEAT) {
-  var noteseq = function(file, track, eventPreprocessor, onStop) {
-    var noteseq = new MUSIC.NoteSequence();
+
+  var schedule = function(noteseq, file, track, eventPreprocessor, onStop, ctx) {
     var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
     var scale = 60000 / file.bpm / TICKS_PER_BEAT;
 
     for (var i=0; i<events.length; i++) {
       var evt = track.events[i];
-      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale]));
+      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale]), ctx);
     }
 
     noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
     noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
+  };
 
+  var noteseq = function(file, track, eventPreprocessor, onStop) {
+    var noteseq = new MUSIC.NoteSequence();
+    schedule(noteseq, file, track, eventPreprocessor, onStop);
     return noteseq;
   };
 
   var patternCompose = function(file, instruments, base, onStop) {
+    var noteseq = new MUSIC.NoteSequence();
     var mutedState = getMutedState(file);
-    var playableArray = file.tracks.map(function(track, idx) {
+
+    file.tracks.forEach(function(track, idx) {
       idx = base + idx;
       if (mutedState[idx]) return null;
 
       var instrument = instruments[track.instrument + '_' + idx];
       var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
       
-      return noteseq(file, track, eventPreprocessor, onStop).makePlayable(instrument);
-    }).filter(function(track) {
-      return !!track;
+      var context = MUSIC.NoteSequence.context(instrument);
+      schedule(noteseq, file, track, eventPreprocessor, onStop, context);
     });
 
-    return new MUSIC.MultiPlayable(playableArray);
+    var ret = noteseq.makePlayable(null);
+    ret.schedule = function(noteSequence) {
+      var contexts = [];
+
+      file.tracks.forEach(function(track, idx) {
+        idx = base + idx;
+        if (mutedState[idx]) return null;
+
+        var instrument = instruments[track.instrument + '_' + idx];
+        var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
+        var context = MUSIC.NoteSequence.context(instrument)
+
+        contexts.push(context);
+        schedule(noteSequence, file, track, eventPreprocessor, onStop, context);
+      });
+
+      return contexts;
+    };
+
+    return ret;
   };
 
   var higher = function(a,b) {
@@ -14914,7 +14938,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var builtIns = [
     "site/builtin/defaultProject.json",
     "site/builtin/samples.json",
-    "site/builtin/smb-underworld.json"
+    "site/builtin/smb-underworld.json",
+    "site/builtin/smb-overworld.json"
   ];
 
   var loadBuiltIn = function(uri) {
@@ -16531,7 +16556,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           playDone();
         }).play();
 
-        var stop = playing.stop;
+        var stop = playing.stop.bind(playing);
         playing.stop = function() {
           playDone();
           stop();
@@ -16765,6 +16790,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.play = function() {
     $q.all(instSet.all)
       .then(function(instruments) {
+        if (playing) playing.stop();
+
         playing = Pattern.patternCompose($scope.file, instruments, 0, function() {
           $scope.recipe.raise("pattern_play_stopped");
           playing = null;
@@ -17360,9 +17387,13 @@ musicShowCaseApp.controller("MainController",
         .then(function(files) {
           if (files.length > 0) {
             var better = files.reduce(moreImportant, files[0]);
-            document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+            if (better && better.type !== 'project') {
+              document.location = "#/editor/" + id + "/" + better.type+"/"+better.id;
+            } else {
+              document.location = "#/editor/" + id;
+            }
           } else {
-            document.location="#/editor/" + id;
+            document.location = "#/editor/" + id;
           }
         });
     });
