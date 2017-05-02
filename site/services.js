@@ -502,7 +502,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
   var builtIns = [
     "site/builtin/defaultProject.json",
     "site/builtin/samples.json",
-    "site/builtin/smb-underworld.json"
+    "site/builtin/smb-underworld.json",
+    "site/builtin/smb-overworld.json"
   ];
 
   var loadBuiltIn = function(uri) {
