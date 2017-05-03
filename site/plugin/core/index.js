@@ -470,7 +470,8 @@ module.export = function(m) {
         return instrument(context_or_music);
       }
 
-      var music = (new MUSIC.AudioDestinationWrapper({audio: context_or_music}, destination)).sfxBase();
+      var context = new MUSIC.Context();
+      var music = (new MUSIC.AudioDestinationWrapper(context, destination)).sfxBase();
       var ret = instrument(music);
 
       ret.dispose = function(){
