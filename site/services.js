@@ -503,7 +503,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     "site/builtin/defaultProject.json",
     "site/builtin/samples.json",
     "site/builtin/smb-underworld.json",
-    "site/builtin/smb-overworld.json"
+    "site/builtin/smb-overworld.json",
+    "site/builtin/bomberman.json"
   ];
 
   var loadBuiltIn = function(uri) {
