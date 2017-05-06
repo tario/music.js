@@ -490,11 +490,18 @@ module.export = function(m) {
         return instrument(music);
       } else if (instrument.length === 2) {
         var instr = instrument(context, destination);
+        var nullPlay = function() { return {stop :function(){}} };
 
         return {
           note: function(n) {
             var wrappedContext = new DisposableAudioContextWrapper(context);
-            var playable = instr.note(n, wrappedContext, destination);
+            var playable;
+
+            if (instr) {
+              playable = instr.note(n, wrappedContext, destination); 
+            } else {
+              playable = { play: nullPlay };
+            }
 
             return MUSIC.playablePipeExtend(playable)
               .onError(function(err) {
