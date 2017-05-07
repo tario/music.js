@@ -401,14 +401,29 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     });
   };
 
-  var findClipS = function(track, self, s) {
+  var concat = function(a, b) {
+    return a.concat(b);
+  };
+
+  var _not = function(self) {
+    return function(evt) {
+      return evt !== self;
+    };
+  };
+
+  var findClipS = function(pattern, track, self, s) {
     var nearest = function(c1, c2) {
       return Math.abs(self.s - c1) < Math.abs(self.s - c2) ? c1 : c2;
     };
 
-    var allEvents = track.events.filter(function(evt) {
-      return evt !== self;
-    });
+    var allEvents = pattern.tracks.map(function(track) {
+      return track.events.filter(_not(self));
+    }).reduce(concat);
+
+    var allOtherEvents = pattern.tracks.map(function(tr) {
+      if (track === tr) return [];
+      return tr.events.filter(_not(self));
+    }).reduce(concat);
 
     if (allEvents.length === 0) return 0;
 
@@ -416,24 +431,33 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       return evt.s + evt.l;
     }).concat(allEvents.map(function(evt) {
       return evt.s - self.l;
+    })).concat(allOtherEvents.map(function(evt) {
+      return evt.s;
     }));
 
     return clips.reduce(nearest);
   };       
 
-  var findClipL = function(track, self, s) {
+  var findClipL = function(pattern, track, self, s) {
     var nearest = function(c1, c2) {
       return Math.abs(self.s + self.l - c1) < Math.abs(self.s + self.l - c2) ? c1 : c2;
     };
 
-    var allEvents = track.events.filter(function(evt) {
-      return evt !== self;
-    });
+    var allEvents = pattern.tracks.map(function(track) {
+      return track.events.filter(_not(self));
+    }).reduce(concat);
+
+    var allOtherEvents = pattern.tracks.map(function(tr) {
+      if (track === tr) return [];
+      return tr.events.filter(_not(self));
+    }).reduce(concat);
 
     if (allEvents.length === 0) return 0;
     var clips = allEvents.map(function(evt) {
       return evt.s;
-    });
+    }).concat(allOtherEvents.map(function(evt) {
+      return evt.s + evt.l;
+    }));
 
     return clips.reduce(nearest) - self.s;
   }; 

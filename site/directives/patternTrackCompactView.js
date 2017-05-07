@@ -76,7 +76,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
             var exactPosition = Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
             exactPosition = Math.floor(exactPosition);
-            var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+            var clipS = Pattern.findClipS(scope.pattern, scope.track, evt, exactPosition);
 
             if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
               evt.s = clipS;
@@ -100,7 +100,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
             var exactPosition = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
             exactPosition = Math.floor(exactPosition);
-            var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+            var clipS = Pattern.findClipS(scope.pattern, scope.track, evt, exactPosition);
 
             if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
               evt.s = clipS;
@@ -154,7 +154,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
         scope.mouseMove = function(event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
-          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
+          var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
 
           if (!event.target.classList.contains("track-compact-view")) return;
 
@@ -182,7 +182,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
         scope.mouseMoveEvent = function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
-          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
+          var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
 
           var exactL = dragevt.s + 
             Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) -

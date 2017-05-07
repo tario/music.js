@@ -584,20 +584,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         return c1 > c2 ? c1 : c2;
       };
 
-      var findClipS = function(self, s) {
-        var previousEvents = scope.track.events.filter(function(evt) {
-          return evt.s + evt.l <= s && evt !== self;
-        });
-
-        if (previousEvents.length === 0) return 0;
-
-        var clips = previousEvents.map(function(evt) {
-          return evt.s + evt.l;
-        });
-
-        return clips.reduce(max);
-      };
-
       var moveEvent = function(evt, offsetX) {
         return function(event) {
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
@@ -605,7 +591,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
           var exactPosition = Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
           exactPosition = Math.floor(exactPosition);
-          var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+          var clipS = Pattern.findClipS(scope.pattern, scope.track, evt, exactPosition);
 
           if (!event.target.classList.contains("event-list")) return;
 
@@ -633,7 +619,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
           var exactPosition = dragevt.s + Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
           exactPosition = Math.floor(exactPosition);
-          var clipS = Pattern.findClipS(scope.track, evt, exactPosition);
+          var clipS = Pattern.findClipS(scope.pattern, scope.track, evt, exactPosition);
 
           if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
             evt.s = clipS;
@@ -767,7 +753,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         scope.mouseMove = function(event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
-          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
+          var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
 
           if (!event.target.classList.contains("event-list")) return;
 
@@ -791,7 +777,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         scope.mouseMoveEvent = function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
-          var clipL = Pattern.findClipL(scope.track, evt, evt.s);
+          var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
 
           var exactL = dragevt.s + 
             Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) -
