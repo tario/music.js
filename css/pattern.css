@@ -216,3 +216,28 @@ input.responsive-input {
 .track-button-panel .track-flag.enabled {
   color: #ff0000;
 }
+
+.multi-track-container {
+  position: relative;
+}
+
+.playing-line {
+  margin-left: 139px;
+  height: 100%;
+  width: 0px;
+
+  border-left-color: white;
+  border-left-width: 2px;
+  border-left-style: solid;
+
+  z-index: 400;
+}
+
+.playing-line .playing-time-marker {
+  width: 10px;
+  height: 20px;
+  background-color: white;
+  margin-left: -6px;
+  margin-top: -20px;
+  overflow: visible;;
+}

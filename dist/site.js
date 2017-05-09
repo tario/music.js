@@ -14261,6 +14261,55 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 }]);
 
 
+musicShowCaseApp.directive("playingLine", ["$timeout", "TICKS_PER_BEAT", function($timeout, TICKS_PER_BEAT) {
+  return {
+    scope: {},
+    replace: true,
+    templateUrl: "site/templates/directives/playingLine.html",
+    link: function(scope, element) {
+      var t0;
+      var playing = true;
+      var bpm;
+      var parent = scope.$parent;
+
+      var callback = function() {
+        if (parent && parent.file && playing) {
+          var ticks = TICKS_PER_BEAT * (window.performance.now() - t0) * bpm / 60000;
+          var displacement = ticks*parent.zoomLevel*parent.beatWidth/TICKS_PER_BEAT;
+
+          console.log(displacement);
+          element.css("left", (displacement) + "px");
+        }
+        requestAnimationFrame(callback);
+      };
+
+      var playingLine = $(element);
+      var requestId = requestAnimationFrame(callback);
+
+      scope.$on('startClock', function(evt, _t0) {
+        playing = true;
+        bpm = parent.file.bpm;
+        t0 = _t0;
+      });
+
+      scope.$on('stopClock', function(evt) {
+        playing = false;
+      });
+
+      scope.$on('resetClock', function(evt) {
+        playing = false;
+        element.css("left", "0px");
+      });
+
+
+      scope.$on('$destroy', function() {
+        cancelAnimationFrame(requestId);
+      });
+    }
+  };
+}]);
+
+
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.directive("recipeBlink", ["$parse", "$timeout", "Recipe", function($parse, $timeout, Recipe) {
   return {
@@ -14749,6 +14798,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
     noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
     noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
+
+    var totalBeats = file.measure * file.measureCount;
   };
 
   var noteseq = function(file, track, eventPreprocessor, onStop) {
@@ -16722,8 +16773,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   });  
 }]);
 
-musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$scope", "$timeout", "$routeParams", "$http", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 'ErrMessage',
-  function($q, $translate, $scope, $timeout, $routeParams, $http, MusicContext, FileRepository, Pattern, InstrumentSet, Export, ErrMessage) {
+musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$scope", "$timeout", "$routeParams", "$http", "TICKS_PER_BEAT", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 'ErrMessage',
+  function($q, $translate, $scope, $timeout, $routeParams, $http, TICKS_PER_BEAT, MusicContext, FileRepository, Pattern, InstrumentSet, Export, ErrMessage) {
   var id = $routeParams.id;
 
   $scope.exportItem = function() {
@@ -16793,20 +16844,30 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.stop = function() {
+    $scope.$broadcast("stopClock");
+    $scope.$broadcast("resetClock");
     if (playing) playing.stop();
     $scope.recipe.raise("pattern_play_stopped");
     playing = null;
   };
 
   $scope.play = function() {
+    var playingLine = $(".playing-line");
+
     $q.all(instSet.all)
       .then(function(instruments) {
         if (playing) playing.stop();
 
-        playing = Pattern.patternCompose($scope.file, instruments, 0, function() {
+        var onStop = function() {
+          $scope.$broadcast("stopClock");
+          $scope.$broadcast("resetClock");
           $scope.recipe.raise("pattern_play_stopped");
           playing = null;
-        }).play();
+        };
+
+        playing = Pattern.patternCompose($scope.file, instruments, 0, onStop).play();
+
+        $scope.$broadcast("startClock", window.performance.now());
       });
   };
 

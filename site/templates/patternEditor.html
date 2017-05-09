@@ -81,90 +81,93 @@
 
   <h1 translate="pattern.tracks"></h1>
 
-  <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': mutedState[$index]}">
-    <div class="row-fluid">
-      <div class="vertical-margin span2 track-button-panel">
-        <div class="show-contextual-tooltip inline">
-          <button ng-click="removeTrack($index)" class="btn btn-primary btn-remove-track">X</button>
-          <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.remove_track"></div>
-        </div>
-        <div class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.muted}" ng-click="track.muted=!track.muted; updateMuted()">M
-          <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.muted"></div>
-        </div>
-        <div class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.solo}" ng-click="track.solo=!track.solo; updateMuted()">S
-          <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.solo"></div>
-        </div>
-      </div>
-      <div class="vertical-margin span10 show-contextual-tooltip">
-        <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedTrack === $index}">
-          <pattern-track-compact-view
-            measure-count="file.measureCount"
-            measure="file.measure"
-            pattern="file"
-            track="file.tracks[$index]"
-            beat-width="beatWidth"
-            zoom-level="zoomLevel"></pattern-track-compact-view>
-        </div>
+  <div class="multi-track-container">
+    <playing-line bpm="file.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line"></playing-line>
 
-        <div class="help-tooltip contextual-tooltip">{{'pattern.tooltip.compact_view_p1' | translate}}<br/> {{'pattern.tooltip.compact_view_p2' | translate}}</div>
-      </div>
-    </div>
-    <div class="row-fluid" ng-if="file.selectedTrack == $index" ng-class="{'enabled-instrument': file.tracks[file.selectedTrack].instrument}" >
-        <div class="span2">
-        <!-- Instrument drop zone -->
-            <div recipe-blink="'pattern_instrument_dropzone'" class="pattern-drop-lateral show-contextual-tooltip" ng-drop="true" ng-drop-success="onDropComplete($data,$event); recipe.raise('instrument_dropped')">
-              <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard-o"></span>
-              <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
-              <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
-              <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.drop_zone"></div>
-            </div>
-
-            <div class="show-contextual-tooltip row-fluid track-flags-panel">
-              <div class="span2">
-                <input type="checkbox" class="regular-checkbox" ng-change="updateMuted()" ng-model="track.muted" />
-              </div>
-              <div class="span10">
-                <div class="track-muted-state" ng-class="{'track-muted': track.muted}" translate="pattern.track_muted"></div>
-              </div>
-              <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.muted"></div>
-            </div>
-
-            <div class="show-contextual-tooltip row-fluid track-flags-panel">
-              <div class="span2">
-                <input type="checkbox" class="regular-checkbox" ng-change="updateMuted()" ng-model="track.solo" />
-              </div>
-              <div class="span10">
-                <div class="track-muted-state" ng-class="{'track-muted': track.solo}" translate="pattern.track_solo"></div>
-              </div>
-              <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.solo"></div>
-            </div>
-        </div>  
-
-        <div class="span10 show-contextual-tooltip">
-          <music-event-editor 
-            measure-count="file.measureCount"
-            measure="file.measure"
-            track="file.tracks[file.selectedTrack]"
-            pattern="file"
-            beat-width="beatWidth"
-            zoom-level="zoomLevel"
-            recipe="recipe"></music-event-editor>
-
-          <recipe-tooltip rt-id="'pattern_track_event_area'"></recipe-tooltip>
-
-          <div class="help-tooltip contextual-tooltip long-tooltip">
-            {{'pattern.tooltip.editor_notes_p1' | translate }}
-            <br/>
-            * {{'pattern.tooltip.editor_notes_p2' | translate }}
-            <br/>
-            * {{'pattern.tooltip.editor_notes_p3' | translate }}
-            <br/>
-            * {{'pattern.tooltip.editor_notes_p4' | translate }}
+    <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': mutedState[$index]}">
+      <div class="row-fluid">
+        <div class="vertical-margin span2 track-button-panel">
+          <div class="show-contextual-tooltip inline">
+            <button ng-click="removeTrack($index)" class="btn btn-primary btn-remove-track">X</button>
+            <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.remove_track"></div>
+          </div>
+          <div class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.muted}" ng-click="track.muted=!track.muted; updateMuted()">M
+            <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.muted"></div>
+          </div>
+          <div class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.solo}" ng-click="track.solo=!track.solo; updateMuted()">S
+            <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.solo"></div>
           </div>
         </div>
+        <div class="vertical-margin span10 show-contextual-tooltip">
+          <div class="track-compact-view-wrapper" ng-class="{selected: file.selectedTrack === $index}">
+            <pattern-track-compact-view
+              measure-count="file.measureCount"
+              measure="file.measure"
+              pattern="file"
+              track="file.tracks[$index]"
+              beat-width="beatWidth"
+              zoom-level="zoomLevel"></pattern-track-compact-view>
+          </div>
+
+          <div class="help-tooltip contextual-tooltip">{{'pattern.tooltip.compact_view_p1' | translate}}<br/> {{'pattern.tooltip.compact_view_p2' | translate}}</div>
+        </div>
+      </div>
+      <div class="row-fluid" ng-if="file.selectedTrack == $index" ng-class="{'enabled-instrument': file.tracks[file.selectedTrack].instrument}" >
+          <div class="span2">
+          <!-- Instrument drop zone -->
+              <div recipe-blink="'pattern_instrument_dropzone'" class="pattern-drop-lateral show-contextual-tooltip" ng-drop="true" ng-drop-success="onDropComplete($data,$event); recipe.raise('instrument_dropped')">
+                <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard-o"></span>
+                <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
+                <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
+                <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.drop_zone"></div>
+              </div>
+
+              <div class="show-contextual-tooltip row-fluid track-flags-panel">
+                <div class="span2">
+                  <input type="checkbox" class="regular-checkbox" ng-change="updateMuted()" ng-model="track.muted" />
+                </div>
+                <div class="span10">
+                  <div class="track-muted-state" ng-class="{'track-muted': track.muted}" translate="pattern.track_muted"></div>
+                </div>
+                <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.muted"></div>
+              </div>
+
+              <div class="show-contextual-tooltip row-fluid track-flags-panel">
+                <div class="span2">
+                  <input type="checkbox" class="regular-checkbox" ng-change="updateMuted()" ng-model="track.solo" />
+                </div>
+                <div class="span10">
+                  <div class="track-muted-state" ng-class="{'track-muted': track.solo}" translate="pattern.track_solo"></div>
+                </div>
+                <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.solo"></div>
+              </div>
+          </div>  
+
+          <div class="span10 show-contextual-tooltip">
+            <music-event-editor 
+              measure-count="file.measureCount"
+              measure="file.measure"
+              track="file.tracks[file.selectedTrack]"
+              pattern="file"
+              beat-width="beatWidth"
+              zoom-level="zoomLevel"
+              recipe="recipe"></music-event-editor>
+
+            <recipe-tooltip rt-id="'pattern_track_event_area'"></recipe-tooltip>
+
+            <div class="help-tooltip contextual-tooltip long-tooltip">
+              {{'pattern.tooltip.editor_notes_p1' | translate }}
+              <br/>
+              * {{'pattern.tooltip.editor_notes_p2' | translate }}
+              <br/>
+              * {{'pattern.tooltip.editor_notes_p3' | translate }}
+              <br/>
+              * {{'pattern.tooltip.editor_notes_p4' | translate }}
+            </div>
+          </div>
+      </div>
     </div>
   </div>
-
   <div class="row-fluid margin-top-20">
     <div class="span2 show-contextual-tooltip">
       <button ng-click="addTrack()" class="btn btn-primary" translate="common.add"></button>

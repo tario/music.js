@@ -327,6 +327,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
     noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
     noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
+
+    var totalBeats = file.measure * file.measureCount;
   };
 
   var noteseq = function(file, track, eventPreprocessor, onStop) {
