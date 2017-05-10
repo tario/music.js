@@ -63,3 +63,15 @@
 .player.btn.recording {
   color: #f00;
 }
+
+.pattern-block-area-container {
+  padding-top: 20px;
+}
+
+.pattern-block-area {
+  padding-top: 5px;
+}
+
+.pattern-block-area-container .with-playing-line-container {
+  position: relative;
+}

@@ -118,6 +118,9 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.stop = function() {
+    $scope.$broadcast("stopClock");
+    $scope.$broadcast("resetClock");
+
     if (playing) playing.stop();
     $scope.recipe.raise("song_play_stopped");
     playing = null;
@@ -154,8 +157,14 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           })
         , {measure: measure});
 
+        $scope.zoomLevel=1;
+        $scope.beatWidth = 154 / $scope.file.measure;
+        $scope.$broadcast("startClock", window.performance.now());
         playing = song.play({
           onStop: function() {
+            $scope.$broadcast("stopClock");
+            $scope.$broadcast("resetClock");
+
             $scope.recipe.raise("song_play_stopped");
             playing = null;
             if ($scope.currentRec) $scope.currentRec.stop();

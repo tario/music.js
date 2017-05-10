@@ -62,42 +62,46 @@
   <hr class="soften"></hr>
 
   <div class="pattern-block-area-container">
-    <div class="pattern-block-area">
-      <div class="track" ng-repeat="track in file.tracks track by $index" ng-init="trackIdx = $index">
-        <div 
-          class="pattern-block"
-          ng-repeat="block in track.blocks track by $index"
-          ng-drop="true"
-          ng-drop-success="onDropComplete($data,$event,block,trackIdx)",
-          recipe-blink="'song_pattern_dropzone_' + trackIdx + '_' + $index">
+    <div class="with-playing-line-container">
+      <playing-line bpm="file.bpm" zoom-level="1" beat-width="20" class="overlay playing-line"></playing-line>
+
+      <div class="pattern-block-area">
+        <div class="track" ng-repeat="track in file.tracks track by $index" ng-init="trackIdx = $index">
+          <div 
+            class="pattern-block"
+            ng-repeat="block in track.blocks track by $index"
+            ng-drop="true"
+            ng-drop-success="onDropComplete($data,$event,block,trackIdx)",
+            recipe-blink="'song_pattern_dropzone_' + trackIdx + '_' + $index">
 
 
-          <div ng-show="block" class="show-contextual-tooltip">
-            <p translate="song.drop_pattern"></p>
-            <div class="help-tooltip contextual-tooltip" translate="song.tooltip.drop_pattern"></div>
-          </div>
-
-
-          <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap:file.measure) + '%', 'padding-right': ((block|block_length:indexMap:file.measure)*4 - 4) + 'px'}">
-            <span class="fa fa-music"></span>
-            <div class="overlay text-container">
-              <p ng-show="!(block && block.id)" translate="song.tooltip.drop_pattern">
-              </p>
-              <p ng-show="block && block.id">
-                {{block | block_name:indexMap}}
-              </p>
+            <div ng-show="block" class="show-contextual-tooltip">
+              <p translate="song.drop_pattern"></p>
+              <div class="help-tooltip contextual-tooltip" translate="song.tooltip.drop_pattern"></div>
             </div>
-            <div class="overlay">
-              <span class="pattern-mini-button fa fa-remove show-contextual-tooltip" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
-                <div class="help-tooltip contextual-tooltip" translate="song.tooltip.remove_block"></div>
-              </span>
-              <span ng-class="{'playing': block.playing}" class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block, trackIdx)" ng-mousedown="$event.stopPropagation()">
-                <div class="help-tooltip contextual-tooltip" translate="song.tooltip.play_block"></div>
-              </span>
-            </div>
-          </div>
 
-          <recipe-tooltip rt-id="'song_pattern_dropzone_' + trackIdx + '_' + $index"></recipe-tooltip>
+
+            <div class="overlay block-content" ng-show="block && block.id" ng-drag="true" ng-drag-data="{fromBlock: block}" ng-style="{'width': 100* (block|block_length:indexMap:file.measure) + '%', 'padding-right': ((block|block_length:indexMap:file.measure)*4 - 4) + 'px'}">
+              <span class="fa fa-music"></span>
+              <div class="overlay text-container">
+                <p ng-show="!(block && block.id)" translate="song.tooltip.drop_pattern">
+                </p>
+                <p ng-show="block && block.id">
+                  {{block | block_name:indexMap}}
+                </p>
+              </div>
+              <div class="overlay">
+                <span class="pattern-mini-button fa fa-remove show-contextual-tooltip" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
+                  <div class="help-tooltip contextual-tooltip" translate="song.tooltip.remove_block"></div>
+                </span>
+                <span ng-class="{'playing': block.playing}" class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block, trackIdx)" ng-mousedown="$event.stopPropagation()">
+                  <div class="help-tooltip contextual-tooltip" translate="song.tooltip.play_block"></div>
+                </span>
+              </div>
+            </div>
+
+            <recipe-tooltip rt-id="'song_pattern_dropzone_' + trackIdx + '_' + $index"></recipe-tooltip>
+          </div>
         </div>
       </div>
     </div>

@@ -221,14 +221,23 @@ input.responsive-input {
   position: relative;
 }
 
-.playing-line {
+.playing-line.pattern-playing-line {
   margin-left: 139px;
+}
+
+.playing-line.song-playing-line {
+  margin-left: 0px;
+}
+
+.playing-line {
   height: 100%;
   width: 0px;
 
   border-left-color: white;
   border-left-width: 2px;
   border-left-style: solid;
+
+  overflow: visible;
 
   z-index: 400;
 }
@@ -239,5 +248,4 @@ input.responsive-input {
   background-color: white;
   margin-left: -6px;
   margin-top: -20px;
-  overflow: visible;;
 }

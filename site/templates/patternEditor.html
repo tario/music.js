@@ -82,7 +82,7 @@
   <h1 translate="pattern.tracks"></h1>
 
   <div class="multi-track-container">
-    <playing-line bpm="file.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line"></playing-line>
+    <playing-line bpm="file.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line pattern-playing-line"></playing-line>
 
     <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': mutedState[$index]}">
       <div class="row-fluid">

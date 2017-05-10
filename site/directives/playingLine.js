@@ -5,7 +5,7 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "TICKS_PER_BEAT", functio
     templateUrl: "site/templates/directives/playingLine.html",
     link: function(scope, element) {
       var t0;
-      var playing = true;
+      var playing = false;
       var bpm;
       var parent = scope.$parent;
 
@@ -14,7 +14,6 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "TICKS_PER_BEAT", functio
           var ticks = TICKS_PER_BEAT * (window.performance.now() - t0) * bpm / 60000;
           var displacement = ticks*parent.zoomLevel*parent.beatWidth/TICKS_PER_BEAT;
 
-          console.log(displacement);
           element.css("left", (displacement) + "px");
         }
         requestAnimationFrame(callback);
