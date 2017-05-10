@@ -239,7 +239,7 @@ input.responsive-input {
 
   overflow: visible;
 
-  z-index: 40000;
+  z-index: 1049;
 }
 
 .playing-line .playing-time-marker {
