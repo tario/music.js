@@ -1317,24 +1317,33 @@ module.export = function(m) {
 
     var factor = 0.5;
     var ret = function(music) {
-      var phaser = 0;
-      var t0 = 0;
-      var f = function(t) {
-        phaser += factor;
-        if (phaser >= 1.0) {
-          phaser -= 1.0;
-          t0 = t;
-        }
-        return t0;
-      };
+      var sampleRate = music._audio.audio.sampleRate;
+      var sampleRateFactor = sampleRate*factor;
+      var exp = Math.round(Math.log2(sampleRateFactor));
+      sampleRateFactor = Math.pow(2, exp);
 
-      return wrapped(music.formula(f));
+      var modl = MUSIC.modulator(function(pl) {
+        var base = pl.sfxBase();
+        var modlGenerator = base
+          .signal_scale({base: 0, top: 1/sampleRateFactor})
+          .oscillator({
+            type: 'sawtooth',
+            fixed_frequency: sampleRateFactor
+          });
+
+        var inst = new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(modlGenerator), {start: true});
+        inst.note(0).play();
+
+        return inst;
+      });
+
+      return wrapped(music.delay(modl));
     };
 
     ret.update = function(data) {
       factor = data.factor;
-      if (factor < 1/64) factor=1/64;
 
+      if (factor < 1/64) factor = 1/64;
       return this;
     };
 
