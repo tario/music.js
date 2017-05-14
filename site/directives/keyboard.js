@@ -1,12 +1,12 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", function($timeout, $uibModal, Midi) {
   return {
     scope: {
       instrument: '=instrument'
     },
     templateUrl: "site/templates/keyboard.html",
     link: function(scope, element, attrs) {
-      var midiAccess;
+      var inputs;
       var onMIDIMessage = function(event) {
         var command = event.data[0];
         var value = event.data[1];
@@ -26,35 +26,20 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
           oct.update();
         }
       };
-
-      var onMIDIFailure = function() {
-
+      var listener = Midi.registerEventListener(onMIDIMessage);
+      var updateMidiStatus = function() {
+        Midi.getStatus()
+          .then(function(data) {
+            $timeout(function() {
+              scope.midiConnected = data.connected;
+            });
+          });
       };
 
-      var onMIDISuccess = function(midi) {
-        var inputs = midi.inputs.values();
-
-        for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
-            input.value.onmidimessage = onMIDIMessage;
-        }
-
-        midiAccess = midi;
-      };
-
-      if (navigator.requestMIDIAccess) {
-          navigator.requestMIDIAccess({
-              sysex: false
-          }).then(onMIDISuccess, onMIDIFailure);
-      }
+      updateMidiStatus();
 
       scope.$on("$destroy", function() {
-        if (midiAccess) {
-          var inputs = midiAccess.inputs.values();
-          
-          for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
-              input.value.onmidimessage = null;
-          }
-        }
+        listener.destroy();
       });
 
       var keyCodeToNote = {
@@ -68,6 +53,13 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
 
       var update = function(octave) {
         return octave.update();
+      };
+
+      scope.midiSetup = function() {
+        var modalIns = $uibModal.open({
+          templateUrl: "site/templates/modal/midiSettings.html",
+          controller: "midiSettingsModalCtrl"
+        }).result.then(updateMidiStatus);
       };
 
       scope.stopAll = function() {

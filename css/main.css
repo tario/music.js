@@ -533,3 +533,22 @@ input.white-bg {
 .project-references {
   margin-top: 20px;
 }
+
+.midi-setup {
+  margin-left: 25px;
+  cursor: pointer;
+}
+
+.midi-connected-text {
+  color: #00ff00;
+  margin-bottom: 10px;
+}
+
+.midi-disconnected-text {
+  color: #ff0000;
+  margin-bottom: 10px;
+}
+
+.midi-settings-title {
+  margin-bottom: 20px;
+}

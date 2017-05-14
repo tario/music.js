@@ -12584,6 +12584,12 @@ musicShowCaseApp.constant("localforage", localforage);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  midi: {
+    settings: 'MIDI Settings',
+    inputs: 'Inputs',
+    connected: 'MIDI Input Connected',
+    disconnected: 'MIDI Input Disconnectd (Click to setup)'
+  },
   open_project: {
     p1: 'Select the project you want to open',
     title: 'Open Project'
@@ -12803,6 +12809,12 @@ musicShowCaseApp.constant("enTranslations", enTranslations);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var esTranslations = {
+  midi: {
+    settings: 'Opciones de MIDI',
+    inputs: 'Entradas',
+    connected: 'Entrada MIDI Conectada',
+    disconnected: 'Entrada MIDI Desconectada (Click para configurar)'
+  },
   open_project: {
     p1: 'Selecciona el proyecto que quieras abrir',
     title: 'Abrir Proyecto'
@@ -13865,14 +13877,14 @@ musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($pars
 
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
+musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", function($timeout, $uibModal, Midi) {
   return {
     scope: {
       instrument: '=instrument'
     },
     templateUrl: "site/templates/keyboard.html",
     link: function(scope, element, attrs) {
-      var midiAccess;
+      var inputs;
       var onMIDIMessage = function(event) {
         var command = event.data[0];
         var value = event.data[1];
@@ -13892,35 +13904,20 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
           oct.update();
         }
       };
-
-      var onMIDIFailure = function() {
-
+      var listener = Midi.registerEventListener(onMIDIMessage);
+      var updateMidiStatus = function() {
+        Midi.getStatus()
+          .then(function(data) {
+            $timeout(function() {
+              scope.midiConnected = data.connected;
+            });
+          });
       };
 
-      var onMIDISuccess = function(midi) {
-        var inputs = midi.inputs.values();
-
-        for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
-            input.value.onmidimessage = onMIDIMessage;
-        }
-
-        midiAccess = midi;
-      };
-
-      if (navigator.requestMIDIAccess) {
-          navigator.requestMIDIAccess({
-              sysex: false
-          }).then(onMIDISuccess, onMIDIFailure);
-      }
+      updateMidiStatus();
 
       scope.$on("$destroy", function() {
-        if (midiAccess) {
-          var inputs = midiAccess.inputs.values();
-          
-          for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
-              input.value.onmidimessage = null;
-          }
-        }
+        listener.destroy();
       });
 
       var keyCodeToNote = {
@@ -13934,6 +13931,13 @@ musicShowCaseApp.directive("keyboard", ["$timeout", function($timeout) {
 
       var update = function(octave) {
         return octave.update();
+      };
+
+      scope.midiSetup = function() {
+        var modalIns = $uibModal.open({
+          templateUrl: "site/templates/modal/midiSettings.html",
+          controller: "midiSettingsModalCtrl"
+        }).result.then(updateMidiStatus);
       };
 
       scope.stopAll = function() {
@@ -15935,6 +15939,97 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
   return IndexFactory;
 }]);
 
+var musicJs = angular.module("MusicShowCaseApp");
+musicJs.factory("Midi", ['$q', function($q) {
+  var midiAccessRequested;
+  if (navigator.requestMIDIAccess) {
+      midiAccessRequested = navigator.requestMIDIAccess({ sysex: false });
+  }
+
+  var wrapInput = function(input) {
+    var enable = function() {
+      input.onmidimessage = onMIDIMessage;
+      input.enabled = true;
+    };
+
+    var disable = function() {
+      input.onmidimessage = null;
+      input.enabled = false;
+    };
+
+    var update = function() {
+      if (this.enabled) {
+        enable()
+      } else {
+        disable();
+      }
+    };
+
+    var ret = {
+      enabled: !!input.onmidimessage,
+      enable: enable,
+      disable: disable,
+      update: update,
+      name: input.name
+    };
+
+    return ret;
+  };
+
+  var getStatus = function() {
+    return midiAccessRequested
+      .then(function(midiAccess) {
+        var data = {connected: false};
+        var inputs = midiAccess.inputs.values();
+
+        for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
+          if (input.value.onmidimessage) {
+            data.connected = true;
+          }
+        }
+        return data;
+      });
+  };
+
+  var getInputs = function() {
+    return midiAccessRequested
+      .then(function(midiAccess) {
+        var retInputs = [];
+        var inputs = midiAccess.inputs.values();
+
+        for (var input = inputs.next(); input && !input.done; input = inputs.next()) {
+            retInputs.push(wrapInput(input.value));
+        }
+        return retInputs;
+      });
+  };
+
+  var eventListeners = [];
+  var registerEventListener = function(callback) {
+    var destroy = function() {
+      eventListeners = eventListeners.filter(function(c) { return c !== callback; });
+    };
+
+    eventListeners.push(callback);
+
+    return {
+      destroy: destroy
+    };
+  };
+
+  var onMIDIMessage = function(event) {
+    eventListeners.forEach(function(callback) {
+      callback(event);
+    });
+  };
+
+  return {
+    getInputs: getInputs,
+    registerEventListener: registerEventListener,
+    getStatus: getStatus
+  };
+}]);
+
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'Index', 'FileRepository', function($q, $timeout, $rootScope, $http, Index, FileRepository) {
 
@@ -17623,6 +17718,17 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.controller("infoModalCtrl", ["$scope", "$uibModalInstance", function($scope, $uibModalInstance) {
   $scope.dismiss = function() {
     $uibModalInstance.dismiss();
+  };
+}]);
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+musicShowCaseApp.controller("midiSettingsModalCtrl", ["$scope", "$q", "$timeout", "$uibModalInstance", "Midi", function($scope, $q, $timeout, $uibModalInstance, Midi) {
+  Midi.getInputs().then(function(inputs) {
+    $scope.inputs = inputs;
+  });
+
+  $scope.done = function() {
+    $uibModalInstance.close();
   };
 }]);
 

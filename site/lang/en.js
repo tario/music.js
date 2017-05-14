@@ -1,5 +1,11 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 var enTranslations = {
+  midi: {
+    settings: 'MIDI Settings',
+    inputs: 'Inputs',
+    connected: 'MIDI Input Connected',
+    disconnected: 'MIDI Input Disconnected (Click to setup)'
+  },
   open_project: {
     p1: 'Select the project you want to open',
     title: 'Open Project'
