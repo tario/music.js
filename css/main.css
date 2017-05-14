@@ -550,5 +550,15 @@ input.white-bg {
 }
 
 .midi-settings-title {
+  margin-top: 20px;
   margin-bottom: 20px;
+}
+
+.padding10 {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+input.width100p {
+  width: 100%;
 }

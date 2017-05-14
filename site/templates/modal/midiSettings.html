@@ -12,6 +12,19 @@
       {{input.name}}
     </div>
   </div>
+
+
+  <h1 class="midi-settings-title" translate="midi.events"></h1>
+
+  <div class="row-fluid">
+    <div class="span3 padding10" translate="midi.octave">Octave</div>
+    <div class="span3"><input class="width100p" type="number" step="1" ng-model="config.octave" ng-change="updateConfig()"></div>
+  </div>
+
+  <div class="row-fluid">
+    <div class="span3 padding10" translate="midi.transpose">Transpose</div>
+    <div class="span3"><input class="width100p" type="number" step="1" ng-model="config.transpose" ng-change="updateConfig()"></div>
+  </div>
 </div>
 
 <div class="modal-footer musicapp">

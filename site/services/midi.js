@@ -1,6 +1,7 @@
 var musicJs = angular.module("MusicShowCaseApp");
 musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localforage) {
   var setupStore = new Sync();
+  var midiSetupRequested;
   var storeInputEnabled = setupStore.sync(function(inputId, enabled) {
     return localforage.getItem("midiSetup")
       .then(function(midiSetup) {
@@ -94,14 +95,30 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
   };
 
   var onMIDIMessage = function(event) {
-    eventListeners.forEach(function(callback) {
-      callback(event);
+    midiSetupRequested.then(function(cfg) {
+      event.data[1] = event.data[1] - cfg.octave*12 + cfg.transpose;
+      eventListeners.forEach(function(callback) {
+        callback(event);
+      });
     });
   };
 
+  var reloadConfig = function() {
+    midiSetupRequested = localforage.getItem("midiSetup")
+      .then(function(midiSetup) {
+        if (!midiSetup) midiSetup = {};
+        if (typeof midiSetup.octave === 'undefined') midiSetup.octave = 3;
+        if (typeof midiSetup.transpose === 'undefined') midiSetup.transpose = 0;
+
+        return midiSetup;
+      });
+  };
+
+  reloadConfig();
+
   $q.all({
     inputs: getInputs(),
-    midiSetup: localforage.getItem("midiSetup")
+    midiSetup: midiSetupRequested
   }).then(function(result) {
     var midiSetup = result.midiSetup;
 
@@ -114,9 +131,28 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
     }
   });
 
+  var getConfig = function() {
+    return midiSetupRequested;
+  };
+
+  var setConfig = setupStore.sync(function(cfg) {
+    return localforage.getItem("midiSetup")
+      .then(function(midiSetup) {
+        midiSetup = midiSetup || {};
+        midiSetup.inputs = midiSetup.inputs || {};
+        midiSetup.octave = cfg.octave;
+        midiSetup.transpose = cfg.transpose;
+
+        return localforage.setItem("midiSetup", midiSetup);
+      })
+      .then(reloadConfig);
+  });
+
   return {
     getInputs: getInputs,
     registerEventListener: registerEventListener,
-    getStatus: getStatus
+    getStatus: getStatus,
+    getConfig: getConfig,
+    setConfig: setConfig
   };
 }]);

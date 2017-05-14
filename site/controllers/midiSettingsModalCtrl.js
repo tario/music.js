@@ -4,6 +4,14 @@ musicShowCaseApp.controller("midiSettingsModalCtrl", ["$scope", "$q", "$timeout"
     $scope.inputs = inputs;
   });
 
+  Midi.getConfig().then(function(config) {
+    $scope.config = config;
+  });
+
+  $scope.updateConfig = function() {
+    Midi.setConfig($scope.config);
+  };
+
   $scope.done = function() {
     $uibModalInstance.close();
   };

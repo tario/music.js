@@ -4,7 +4,10 @@ var esTranslations = {
     settings: 'Opciones de MIDI',
     inputs: 'Entradas',
     connected: 'Entrada MIDI Conectada',
-    disconnected: 'Entrada MIDI Desconectada (Click para configurar)'
+    disconnected: 'Entrada MIDI Desconectada (Click para configurar)',
+    events: 'Eventos',
+    octave: 'Octava Base',
+    transpose: 'Transposicion'
   },
   open_project: {
     p1: 'Selecciona el proyecto que quieras abrir',

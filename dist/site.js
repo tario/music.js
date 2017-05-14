@@ -12588,7 +12588,10 @@ var enTranslations = {
     settings: 'MIDI Settings',
     inputs: 'Inputs',
     connected: 'MIDI Input Connected',
-    disconnected: 'MIDI Input Disconnected (Click to setup)'
+    disconnected: 'MIDI Input Disconnected (Click to setup)',
+    events: 'Events',
+    octave: 'Base Octave',
+    transpose: 'Transpose'
   },
   open_project: {
     p1: 'Select the project you want to open',
@@ -12813,7 +12816,10 @@ var esTranslations = {
     settings: 'Opciones de MIDI',
     inputs: 'Entradas',
     connected: 'Entrada MIDI Conectada',
-    disconnected: 'Entrada MIDI Desconectada (Click para configurar)'
+    disconnected: 'Entrada MIDI Desconectada (Click para configurar)',
+    events: 'Eventos',
+    octave: 'Octava Base',
+    transpose: 'Transposicion'
   },
   open_project: {
     p1: 'Selecciona el proyecto que quieras abrir',
@@ -13890,7 +13896,7 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", functio
         var value = event.data[1];
         var velocity = event.data[2];
 
-        var octaveNumber = Math.floor((value-36)/12);
+        var octaveNumber = Math.floor(value/12);
         if (octaveNumber < 0) return;
 
         var oct = scope.octaves[octaveNumber];
@@ -15920,6 +15926,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
 var musicJs = angular.module("MusicShowCaseApp");
 musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localforage) {
   var setupStore = new Sync();
+  var midiSetupRequested;
   var storeInputEnabled = setupStore.sync(function(inputId, enabled) {
     return localforage.getItem("midiSetup")
       .then(function(midiSetup) {
@@ -16013,14 +16020,30 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
   };
 
   var onMIDIMessage = function(event) {
-    eventListeners.forEach(function(callback) {
-      callback(event);
+    midiSetupRequested.then(function(cfg) {
+      event.data[1] = event.data[1] - cfg.octave*12 + cfg.transpose;
+      eventListeners.forEach(function(callback) {
+        callback(event);
+      });
     });
   };
 
+  var reloadConfig = function() {
+    midiSetupRequested = localforage.getItem("midiSetup")
+      .then(function(midiSetup) {
+        if (!midiSetup) midiSetup = {};
+        if (typeof midiSetup.octave === 'undefined') midiSetup.octave = 3;
+        if (typeof midiSetup.transpose === 'undefined') midiSetup.transpose = 0;
+
+        return midiSetup;
+      });
+  };
+
+  reloadConfig();
+
   $q.all({
     inputs: getInputs(),
-    midiSetup: localforage.getItem("midiSetup")
+    midiSetup: midiSetupRequested
   }).then(function(result) {
     var midiSetup = result.midiSetup;
 
@@ -16033,10 +16056,29 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
     }
   });
 
+  var getConfig = function() {
+    return midiSetupRequested;
+  };
+
+  var setConfig = setupStore.sync(function(cfg) {
+    return localforage.getItem("midiSetup")
+      .then(function(midiSetup) {
+        midiSetup = midiSetup || {};
+        midiSetup.inputs = midiSetup.inputs || {};
+        midiSetup.octave = cfg.octave;
+        midiSetup.transpose = cfg.transpose;
+
+        return localforage.setItem("midiSetup", midiSetup);
+      })
+      .then(reloadConfig);
+  });
+
   return {
     getInputs: getInputs,
     registerEventListener: registerEventListener,
-    getStatus: getStatus
+    getStatus: getStatus,
+    getConfig: getConfig,
+    setConfig: setConfig
   };
 }]);
 
@@ -17761,6 +17803,14 @@ musicShowCaseApp.controller("midiSettingsModalCtrl", ["$scope", "$q", "$timeout"
   Midi.getInputs().then(function(inputs) {
     $scope.inputs = inputs;
   });
+
+  Midi.getConfig().then(function(config) {
+    $scope.config = config;
+  });
+
+  $scope.updateConfig = function() {
+    Midi.setConfig($scope.config);
+  };
 
   $scope.done = function() {
     $uibModalInstance.close();

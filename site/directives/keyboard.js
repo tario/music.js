@@ -12,7 +12,7 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", functio
         var value = event.data[1];
         var velocity = event.data[2];
 
-        var octaveNumber = Math.floor((value-36)/12);
+        var octaveNumber = Math.floor(value/12);
         if (octaveNumber < 0) return;
 
         var oct = scope.octaves[octaveNumber];
