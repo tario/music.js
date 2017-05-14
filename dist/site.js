@@ -12588,7 +12588,7 @@ var enTranslations = {
     settings: 'MIDI Settings',
     inputs: 'Inputs',
     connected: 'MIDI Input Connected',
-    disconnected: 'MIDI Input Disconnectd (Click to setup)'
+    disconnected: 'MIDI Input Disconnected (Click to setup)'
   },
   open_project: {
     p1: 'Select the project you want to open',
@@ -15738,7 +15738,7 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
+musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', function($q, $timeout, Sync, localforage) {
   function CantRemove(id, file) {
       this.id = id;
       this.file = file;
@@ -15746,28 +15746,6 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       this.type = "cantremove";
   }
   CantRemove.prototype = new Error
-
-  var Sync = function() {
-    var promise = $q.when();
-    this.sync = function(f) {
-      return function() {
-        var _args = arguments;
-        var _self = this;
-        var defer = $q.defer();
-
-        promise = promise.then(function() {
-          return f.apply(_self, _args)
-            .then(function(value) {
-              defer.resolve(value);
-            })
-            .catch(function(err) {
-              defer.reject(err);
-            });
-        });
-        return defer.promise;
-      };
-    };
-  };
 
   var IndexFactory = function(indexName) {
     var entryChange = new Sync();
@@ -15940,7 +15918,19 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
 }]);
 
 var musicJs = angular.module("MusicShowCaseApp");
-musicJs.factory("Midi", ['$q', function($q) {
+musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localforage) {
+  var setupStore = new Sync();
+  var storeInputEnabled = setupStore.sync(function(inputId, enabled) {
+    return localforage.getItem("midiSetup")
+      .then(function(midiSetup) {
+        midiSetup = midiSetup || {};
+        midiSetup.inputs = midiSetup.inputs || {};
+        midiSetup.inputs[inputId] = enabled;
+
+        return localforage.setItem("midiSetup", midiSetup);
+      });
+  });
+
   var midiAccessRequested;
   if (navigator.requestMIDIAccess) {
       midiAccessRequested = navigator.requestMIDIAccess({ sysex: false });
@@ -15950,11 +15940,15 @@ musicJs.factory("Midi", ['$q', function($q) {
     var enable = function() {
       input.onmidimessage = onMIDIMessage;
       input.enabled = true;
+
+      storeInputEnabled(input.id, true);
     };
 
     var disable = function() {
       input.onmidimessage = null;
       input.enabled = false;
+
+      storeInputEnabled(input.id, false);
     };
 
     var update = function() {
@@ -15970,7 +15964,8 @@ musicJs.factory("Midi", ['$q', function($q) {
       enable: enable,
       disable: disable,
       update: update,
-      name: input.name
+      name: input.name,
+      id: input.id
     };
 
     return ret;
@@ -16022,6 +16017,21 @@ musicJs.factory("Midi", ['$q', function($q) {
       callback(event);
     });
   };
+
+  $q.all({
+    inputs: getInputs(),
+    midiSetup: localforage.getItem("midiSetup")
+  }).then(function(result) {
+    var midiSetup = result.midiSetup;
+
+    if (midiSetup && midiSetup.inputs) {
+      result.inputs.forEach(function(input) {
+        if (midiSetup.inputs[input.id]) {
+          input.enable();
+        }
+      });
+    }
+  });
 
   return {
     getInputs: getInputs,
@@ -16235,6 +16245,31 @@ musicShowCaseApp.factory("Recipe", ['$q', '$timeout', '$rootScope', '$http', 'In
       loadTranslations: loadTranslations,
       getBlinks: getBlinks
     };
+}]);
+
+var musicJs = angular.module("MusicShowCaseApp");
+musicJs.factory("Sync", ['$q', function($q) {
+  return function() {
+    var promise = $q.when();
+    this.sync = function(f) {
+      return function() {
+        var _args = arguments;
+        var _self = this;
+        var defer = $q.defer();
+
+        promise = promise.then(function() {
+          return f.apply(_self, _args)
+            .then(function(value) {
+              defer.resolve(value);
+            })
+            .catch(function(err) {
+              defer.reject(err);
+            });
+        });
+        return defer.promise;
+      };
+    };
+  };
 }]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");

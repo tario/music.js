@@ -1,5 +1,17 @@
 var musicJs = angular.module("MusicShowCaseApp");
-musicJs.factory("Midi", ['$q', function($q) {
+musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localforage) {
+  var setupStore = new Sync();
+  var storeInputEnabled = setupStore.sync(function(inputId, enabled) {
+    return localforage.getItem("midiSetup")
+      .then(function(midiSetup) {
+        midiSetup = midiSetup || {};
+        midiSetup.inputs = midiSetup.inputs || {};
+        midiSetup.inputs[inputId] = enabled;
+
+        return localforage.setItem("midiSetup", midiSetup);
+      });
+  });
+
   var midiAccessRequested;
   if (navigator.requestMIDIAccess) {
       midiAccessRequested = navigator.requestMIDIAccess({ sysex: false });
@@ -9,11 +21,15 @@ musicJs.factory("Midi", ['$q', function($q) {
     var enable = function() {
       input.onmidimessage = onMIDIMessage;
       input.enabled = true;
+
+      storeInputEnabled(input.id, true);
     };
 
     var disable = function() {
       input.onmidimessage = null;
       input.enabled = false;
+
+      storeInputEnabled(input.id, false);
     };
 
     var update = function() {
@@ -29,7 +45,8 @@ musicJs.factory("Midi", ['$q', function($q) {
       enable: enable,
       disable: disable,
       update: update,
-      name: input.name
+      name: input.name,
+      id: input.id
     };
 
     return ret;
@@ -81,6 +98,21 @@ musicJs.factory("Midi", ['$q', function($q) {
       callback(event);
     });
   };
+
+  $q.all({
+    inputs: getInputs(),
+    midiSetup: localforage.getItem("midiSetup")
+  }).then(function(result) {
+    var midiSetup = result.midiSetup;
+
+    if (midiSetup && midiSetup.inputs) {
+      result.inputs.forEach(function(input) {
+        if (midiSetup.inputs[input.id]) {
+          input.enable();
+        }
+      });
+    }
+  });
 
   return {
     getInputs: getInputs,

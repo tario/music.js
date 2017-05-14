@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q, $timeout, localforage) {
+musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', function($q, $timeout, Sync, localforage) {
   function CantRemove(id, file) {
       this.id = id;
       this.file = file;
@@ -7,28 +7,6 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', '_localforage', function($q
       this.type = "cantremove";
   }
   CantRemove.prototype = new Error
-
-  var Sync = function() {
-    var promise = $q.when();
-    this.sync = function(f) {
-      return function() {
-        var _args = arguments;
-        var _self = this;
-        var defer = $q.defer();
-
-        promise = promise.then(function() {
-          return f.apply(_self, _args)
-            .then(function(value) {
-              defer.resolve(value);
-            })
-            .catch(function(err) {
-              defer.reject(err);
-            });
-        });
-        return defer.promise;
-      };
-    };
-  };
 
   var IndexFactory = function(indexName) {
     var entryChange = new Sync();
