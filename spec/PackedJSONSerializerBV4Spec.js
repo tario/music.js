@@ -204,7 +204,25 @@ describe("PackedJSONSerializerBV3", function() {
             "data": {
               "time": "0.35"
             }
-          });  
+          });
+
+
+  instruments.push({
+            "type": "wave_shaper",
+            "data": {
+              "samples": "256",
+              "f": "t"
+            }
+          });
+
+  instruments.push({
+            "type": "wave_shaper",
+            "data": {
+              "samples": "512",
+              "f": "t > 0 ? 1 : -1"
+            }
+          });
+
 
   DeserializerTest.test(SerializerOracle.PackedJSONBV4.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
     instruments: instruments

@@ -1,6 +1,12 @@
 module.export = function(m) {
 
   m.lang("en", {
+    wave_shaper: {
+      samples: 'Samples',
+      tooltip: {
+        formula: 'Formula for wave shaping'
+      }
+    },
     note_frequency_generator: {
       time_constant: "Time Constant"
     },
@@ -207,6 +213,12 @@ module.export = function(m) {
   });
 
   m.lang("es", {
+    wave_shaper: {
+      samples: 'Muestras',
+      tooltip: {
+        formula: 'Formula para cambio de onda'
+      }
+    },
     note_frequency_generator: {
       time_constant: "Constante de tiempo"
     },
@@ -1350,6 +1362,36 @@ module.export = function(m) {
     ret.update(data);
 
     return ret;
+  });
+
+  m.type("wave_shaper", {
+    template: 'wave_shaper',
+    description: 'Waveshaper',
+    _default: {
+      f: 't',
+      samples: 32768
+    }
+  }, function(data, subobjects) {
+    if (!subobjects) return;
+    var wrapped = subobjects[0];
+    if (!wrapped) return;
+
+    var f = function(t) { return t; };
+    var samples = 32767;
+
+    var ret = function(music) {
+      return wrapped(music.wave_shaper({f: f, samples: samples}));
+    };
+
+    ret.update = function(data) {
+      f = eval("(function(t) { return " + data.f + "; })");
+      samples = data.samples;
+      return this;
+    };
+
+    ret.update(data);
+
+    return ret;    
   });
 
   m.type("bit_crushing", {
