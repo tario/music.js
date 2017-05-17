@@ -13421,66 +13421,26 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
     scope: {
       terms: "=terms"
     },
-    template: '<canvas class="wavegraph"></canvas>',
+    template: '<function-graph f="f"></function-graph>',
     link: function(scope, element, attrs) {
-      var f = function(t){
-        var ret = 0;
-        for (var i=1;i<scope.terms.sin.length;i++) {
-          var a = scope.terms.sin[i];
-          var b = scope.terms.cos[i];
+      var termsChanged = function() {
+        scope.f = function(t){
+          var ret = 0;
+          for (var i=1;i<scope.terms.sin.length;i++) {
+            var a = scope.terms.sin[i];
+            var b = scope.terms.cos[i];
 
-          ret = ret + a * Math.sin(t*2*Math.PI*i);
-          ret = ret + b * Math.cos(t*2*Math.PI*i);
-        }
-        return ret;
-      };
-
-      var redraw = function() {
-        var canvas = element.children("canvas")[0];
-        var context = canvas.getContext('2d');
-
-        canvas.width = canvas.clientWidth/4;
-        canvas.height = canvas.clientHeight/4;
-
-        var drawLine = function(x0, y0, x1, y1, color) {
-          context.save();
-          context.beginPath();
-          context.moveTo(x0, y0);
-          context.lineTo(x1, y1);
-          context.strokeStyle = color;
-          context.lineWidth = 1;
-          context.stroke();
-          context.restore(); 
-        };
-
-        var drawFunc = function(color) {
-          context.save();
-          context.save();
-          context.translate(0,canvas.height/2);
-          context.scale(canvas.width,canvas.height/2);
-
-          context.moveTo(0, -f(0)*0.8);
-          for (var i=1; i<=64; i++) {
-            var t = i/64;
-            context.lineTo(t, -f(t)*0.8);
+            ret = ret + a * Math.sin(t*2*Math.PI*i);
+            ret = ret + b * Math.cos(t*2*Math.PI*i);
           }
-          context.restore();
-          context.lineJoin = 'round';
-          context.lineWidth = 1;
-          context.strokeStyle = color;
-          context.stroke();
-          context.restore();
+          return ret;
         };
-
-        drawLine(0, canvas.height/2, canvas.width, canvas.height/2, 'aqua');
-        drawFunc("#FFF");
-
-
       };
 
-      scope.$on("termschanged", fn.debounce(function() {
-        redraw();
-      },500));
+      scope.f = function() { return 0; };
+      scope.$on("termschanged", fn.debounce(termsChanged,10));
+
+      termsChanged();
     }
   };
 }]);
@@ -13877,6 +13837,67 @@ musicShowCaseApp.directive("ngScrollLeft", ["$parse", "$timeout", function($pars
           scrollVarSetter(scope, $(element).scrollLeft());
         });
       });
+    }
+  };
+}]);
+
+
+musicShowCaseApp.directive("functionGraph", ["$timeout", "$parse", function($timeout, $parse) {
+  return {
+    scope: {},
+    replace: true,
+    template: '<canvas class="wavegraph"></canvas>',
+    link: function(scope, element, attrs) {
+      var f;
+      scope.$parent.$watch(attrs.f, function(_f) {
+        f = _f;
+        if (f) redraw();
+      });
+
+      var redraw = function() {
+        var canvas = element[0];
+        var context = canvas.getContext('2d');
+
+        canvas.width = canvas.clientWidth/4;
+        canvas.height = canvas.clientHeight/4;
+
+        var drawLine = function(x0, y0, x1, y1, color) {
+          context.save();
+          context.beginPath();
+          context.moveTo(x0, y0);
+          context.lineTo(x1, y1);
+          context.strokeStyle = color;
+          context.lineWidth = 1;
+          context.stroke();
+          context.restore(); 
+        };
+
+        var drawFunc = function(color) {
+          context.save();
+          context.save();
+          context.translate(0,canvas.height/2);
+          context.scale(canvas.width,canvas.height/2);
+
+          context.moveTo(0, -f(0)*0.8);
+          for (var i=1; i<=64; i++) {
+            var t = i/64;
+            context.lineTo(t, -f(t)*0.8);
+          }
+          context.restore();
+          context.lineJoin = 'round';
+          context.lineWidth = 1;
+          context.strokeStyle = color;
+          context.stroke();
+          context.restore();
+        };
+
+        drawLine(0, canvas.height/2, canvas.width, canvas.height/2, 'aqua');
+        drawFunc("#FFF");
+      };
+
+      /*scope.$on("termschanged", fn.debounce(function() {
+        redraw();
+      },500));*/
     }
   };
 }]);
@@ -15927,6 +15948,7 @@ var musicJs = angular.module("MusicShowCaseApp");
 musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localforage) {
   var setupStore = new Sync();
   var midiSetupRequested;
+  var midiLoaded;
   var storeInputEnabled = setupStore.sync(function(inputId, enabled) {
     return localforage.getItem("midiSetup")
       .then(function(midiSetup) {
@@ -15979,7 +16001,10 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
   };
 
   var getStatus = function() {
-    return midiAccessRequested
+    return midiLoaded
+      .then(function() {
+        return midiAccessRequested
+      })
       .then(function(midiAccess) {
         var data = {connected: false};
         var inputs = midiAccess.inputs.values();
@@ -16041,7 +16066,7 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
 
   reloadConfig();
 
-  $q.all({
+  midiLoaded = $q.all({
     inputs: getInputs(),
     midiSetup: midiSetupRequested
   }).then(function(result) {
