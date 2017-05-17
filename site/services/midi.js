@@ -2,6 +2,7 @@ var musicJs = angular.module("MusicShowCaseApp");
 musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localforage) {
   var setupStore = new Sync();
   var midiSetupRequested;
+  var midiLoaded;
   var storeInputEnabled = setupStore.sync(function(inputId, enabled) {
     return localforage.getItem("midiSetup")
       .then(function(midiSetup) {
@@ -54,7 +55,10 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
   };
 
   var getStatus = function() {
-    return midiAccessRequested
+    return midiLoaded
+      .then(function() {
+        return midiAccessRequested
+      })
       .then(function(midiAccess) {
         var data = {connected: false};
         var inputs = midiAccess.inputs.values();
@@ -116,7 +120,7 @@ musicJs.factory("Midi", ['$q', 'Sync', '_localforage', function($q, Sync, localf
 
   reloadConfig();
 
-  $q.all({
+  midiLoaded = $q.all({
     inputs: getInputs(),
     midiSetup: midiSetupRequested
   }).then(function(result) {
