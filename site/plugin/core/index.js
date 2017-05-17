@@ -3,7 +3,17 @@ module.export = function(m) {
   m.lang("en", {
     wave_shaper: {
       samples: 'Samples',
+      preset: 'Preset',
+      type: {
+        unchanged: 'Unchanged',
+        sawtri: 'Saw to triangle',
+        sawsqr: 'Saw to Square',
+        sawsqr125: 'Saw to Square 12.5%',
+        sawsqr25: 'Saw to Square 25%',
+        sawsqr75: 'Saw to Square 75%'
+      },
       tooltip: {
+        preset: 'Preset config, you can use it as starting point to build your custom configs',
         formula: 'Formula for wave shaping'
       }
     },
@@ -215,7 +225,17 @@ module.export = function(m) {
   m.lang("es", {
     wave_shaper: {
       samples: 'Muestras',
+      preset: 'Preset',
+      type: {
+        unchanged: 'Sin cambios',
+        sawtri: 'Cierra a Triangulo',
+        sawsqr: 'Cierra a Cuadrada',
+        sawsqr125: 'Cierra a Cuadrada 12.5%',
+        sawsqr25: 'Cierra a Cuadrada 25%',
+        sawsqr75: 'Cierra a Cuadrada 75%'
+      },
       tooltip: {
+        preset: 'Configuracion preestablecida, puedes usarla como punto de partida para personalizar tus propias opciones',
         formula: 'Formula para cambio de onda'
       }
     },

@@ -5,6 +5,11 @@ musicShowCaseApp.directive("functionGraph", ["$timeout", "$parse", function($tim
     template: '<canvas class="wavegraph"></canvas>',
     link: function(scope, element, attrs) {
       var f;
+      var t0 = parseFloat(attrs.t0);
+      var tf = parseFloat(attrs.tf);
+      var samples = parseInt(attrs.samples);
+      var scaley = parseFloat(attrs.scaley);
+
       scope.$parent.$watch(attrs.f, function(_f) {
         f = _f;
         if (f) redraw();
@@ -34,10 +39,11 @@ musicShowCaseApp.directive("functionGraph", ["$timeout", "$parse", function($tim
           context.translate(0,canvas.height/2);
           context.scale(canvas.width,canvas.height/2);
 
-          context.moveTo(0, -f(0)*0.8);
-          for (var i=1; i<=64; i++) {
-            var t = i/64;
-            context.lineTo(t, -f(t)*0.8);
+          context.moveTo(0, -f(t0)*scaley);
+          for (var i=1; i<=samples; i++) {
+            var x = i/samples;
+            var t = (tf-t0) * x + t0;
+            context.lineTo(x, -f(t)*scaley);
           }
           context.restore();
           context.lineJoin = 'round';

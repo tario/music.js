@@ -1,10 +1,29 @@
-<div>
+<div ng-init="f = f_t(file.data.f)">
   <div class="row-fluid">
-    <div class="span1">
+    <div class="span2">
+      <p class="serie-label" translate="core.wave_shaper.preset"></p>
+    </div>
+    <div class="span6">
+      <div class="show-contextual-tooltip">
+        <select class="preset" ng-model="file.data.f" ng-change="f = f_t(file.data.f)">
+            <option value="t" translate="core.wave_shaper.type.unchanged"></option>
+            <option value="t>0 ? t*2-1 : -t*2-1" translate="core.wave_shaper.type.sawtri"></option>
+            <option value="t>0 ? 1 : -1" translate="core.wave_shaper.type.sawsqr"></option>
+            <option value="t>0.75 ? 1 : -1" translate="core.wave_shaper.type.sawsqr125"></option>
+            <option value="t>0.5 ? 1 : -1" translate="core.wave_shaper.type.sawsqr25"></option>
+            <option value="t>-0.5 ? 1 : -1" translate="core.wave_shaper.type.sawsqr75"></option>
+        </select>
+        <div class="help-tooltip contextual-tooltip" translate="core.wave_shaper.tooltip.preset"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row-fluid">
+    <div class="span2">
       <p class="serie-label">f(t)= </p>
     </div>
-    <div class="span7 show-contextual-tooltip" ng-init="file.data.serie.sin = file.data.serie.sin || '0'">
-      <input class="serie" type="text" ng-model="file.data.f" />
+    <div class="span6 show-contextual-tooltip">
+      <input class="serie" type="text" ng-model="file.data.f" ng-change="f = f_t(file.data.f)"/>
       <div class="help-tooltip contextual-tooltip" translate="core.wave_shaper.tooltip.formula"></div>
     </div>
     <div class="span2">
@@ -13,5 +32,12 @@
     <div class="span2">
       <input class="serie" type="number" step="1" ng-model="file.data.samples" />
     </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span2"></div>
+    <div class="span8">
+      <function-graph f="f" samples="64" t0="-1" tf="1" scaley="0.8"></function-graph>
+    </div>
+    <div class="span2"></div>
   </div>
 </div>

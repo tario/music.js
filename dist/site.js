@@ -13111,6 +13111,10 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         scope.$broadcast('termschanged');
       };
 
+      scope.f_t = function(str) {
+        return eval("(function(t) { return " + str + "; })");
+      };
+
       scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms, resolution) {
 
         try {
@@ -13421,7 +13425,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
     scope: {
       terms: "=terms"
     },
-    template: '<function-graph f="f"></function-graph>',
+    template: '<function-graph f="f" samples=64 t0="0" tf="1" scaley="0.8"></function-graph>',
     link: function(scope, element, attrs) {
       var termsChanged = function() {
         scope.f = function(t){
@@ -13849,6 +13853,11 @@ musicShowCaseApp.directive("functionGraph", ["$timeout", "$parse", function($tim
     template: '<canvas class="wavegraph"></canvas>',
     link: function(scope, element, attrs) {
       var f;
+      var t0 = parseFloat(attrs.t0);
+      var tf = parseFloat(attrs.tf);
+      var samples = parseInt(attrs.samples);
+      var scaley = parseFloat(attrs.scaley);
+
       scope.$parent.$watch(attrs.f, function(_f) {
         f = _f;
         if (f) redraw();
@@ -13878,10 +13887,11 @@ musicShowCaseApp.directive("functionGraph", ["$timeout", "$parse", function($tim
           context.translate(0,canvas.height/2);
           context.scale(canvas.width,canvas.height/2);
 
-          context.moveTo(0, -f(0)*0.8);
-          for (var i=1; i<=64; i++) {
-            var t = i/64;
-            context.lineTo(t, -f(t)*0.8);
+          context.moveTo(0, -f(t0)*scaley);
+          for (var i=1; i<=samples; i++) {
+            var x = i/samples;
+            var t = (tf-t0) * x + t0;
+            context.lineTo(x, -f(t)*scaley);
           }
           context.restore();
           context.lineJoin = 'round';
@@ -13894,10 +13904,6 @@ musicShowCaseApp.directive("functionGraph", ["$timeout", "$parse", function($tim
         drawLine(0, canvas.height/2, canvas.width, canvas.height/2, 'aqua');
         drawFunc("#FFF");
       };
-
-      /*scope.$on("termschanged", fn.debounce(function() {
-        redraw();
-      },500));*/
     }
   };
 }]);

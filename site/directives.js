@@ -18,6 +18,10 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         scope.$broadcast('termschanged');
       };
 
+      scope.f_t = function(str) {
+        return eval("(function(t) { return " + str + "; })");
+      };
+
       scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms, resolution) {
 
         try {
@@ -328,7 +332,7 @@ musicShowCaseApp.directive("customOscGraph", ["$timeout", function($timeout) {
     scope: {
       terms: "=terms"
     },
-    template: '<function-graph f="f"></function-graph>',
+    template: '<function-graph f="f" samples=64 t0="0" tf="1" scaley="0.8"></function-graph>',
     link: function(scope, element, attrs) {
       var termsChanged = function() {
         scope.f = function(t){
