@@ -312,6 +312,7 @@ var WaveShaper = function(music, next, options) {
     for (var i=0; i<samples; i++) {
       array[i] = f(i*2 / samples - 1);
     }
+
     return array;
   };
 

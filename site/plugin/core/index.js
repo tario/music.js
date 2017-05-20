@@ -5,12 +5,22 @@ module.export = function(m) {
       samples: 'Samples',
       preset: 'Preset',
       type: {
-        unchanged: 'Unchanged',
-        sawtri: 'Saw to triangle',
+        _default: 'Default',
         sawsqr: 'Saw to Square',
         sawsqr125: 'Saw to Square 12.5%',
         sawsqr25: 'Saw to Square 25%',
-        sawsqr75: 'Saw to Square 75%'
+        sawsqr75: 'Saw to Square 75%',
+        bit_crushing1: 'Bit Crushing 1 bit',
+        bit_crushing2: 'Bit Crushing 2 bit',
+        bit_crushing4: 'Bit Crushing 4 bit',
+        bit_crushing8: 'Bit Crushing 8 bit',
+        fuzzy: 'Fuzzy',
+        fuzzy2: 'Fuzzy2',
+        fuzzy_wave_rectify: 'Fuzzy Wave Rectify',
+        half_wave_rectify: 'Half Wave Rectify',
+        octaver: 'Octaver',
+        parabolic_rectify: 'Parabolic Rectify',
+        peak_murderer: 'Peak Murderer'
       },
       tooltip: {
         preset: 'Preset config, you can use it as starting point to build your custom configs',
@@ -227,12 +237,22 @@ module.export = function(m) {
       samples: 'Muestras',
       preset: 'Preset',
       type: {
-        unchanged: 'Sin cambios',
-        sawtri: 'Cierra a Triangulo',
+        _default: 'Por defecto',
         sawsqr: 'Cierra a Cuadrada',
         sawsqr125: 'Cierra a Cuadrada 12.5%',
         sawsqr25: 'Cierra a Cuadrada 25%',
-        sawsqr75: 'Cierra a Cuadrada 75%'
+        sawsqr75: 'Cierra a Cuadrada 75%',
+        bit_crushing1: 'Reduce bits 1 bit',
+        bit_crushing2: 'Reduce bits 2 bit',
+        bit_crushing4: 'Reduce bits 4 bit',
+        bit_crushing8: 'Reduce bits 8 bit',
+        fuzzy: 'Difuminado',
+        fuzzy2: 'Difuminado2',
+        fuzzy_wave_rectify: 'Rectificador de onda difuminado',
+        half_wave_rectify: 'Rectificador de media onda',
+        octaver: 'Octaveador',
+        parabolic_rectify: 'Rectificador Parabolico',
+        peak_murderer: 'Asesino de picos'
       },
       tooltip: {
         preset: 'Configuracion preestablecida, puedes usarla como punto de partida para personalizar tus propias opciones',

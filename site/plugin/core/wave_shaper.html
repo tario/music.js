@@ -6,12 +6,27 @@
     <div class="span6">
       <div class="show-contextual-tooltip">
         <select class="preset" ng-model="file.data.f" ng-change="f = f_t(file.data.f)">
-            <option value="t" translate="core.wave_shaper.type.unchanged"></option>
-            <option value="t>0 ? t*2-1 : -t*2-1" translate="core.wave_shaper.type.sawtri"></option>
+            <option value="t" translate="core.wave_shaper.type._default"></option>
             <option value="t>0 ? 1 : -1" translate="core.wave_shaper.type.sawsqr"></option>
             <option value="t>0.75 ? 1 : -1" translate="core.wave_shaper.type.sawsqr125"></option>
             <option value="t>0.5 ? 1 : -1" translate="core.wave_shaper.type.sawsqr25"></option>
             <option value="t>-0.5 ? 1 : -1" translate="core.wave_shaper.type.sawsqr75"></option>
+
+            <option value="Math.floor(t + 0.5)" translate="core.wave_shaper.type.bit_crushing1"></option>
+            <option value="Math.floor(t*2 + 0.5) * 0.5" translate="core.wave_shaper.type.bit_crushing2"></option>
+            <option value="Math.floor(t*4 + 0.5) * 0.25" translate="core.wave_shaper.type.bit_crushing4"></option>
+            <option value="Math.floor(t*8 + 0.5) * 0.125" translate="core.wave_shaper.type.bit_crushing8"></option>
+
+            <option value="t>0 ? t : -t" translate="core.wave_shaper.type.fuzzy_wave_rectify"></option>
+            <option value="t>0 ? t : 0" translate="core.wave_shaper.type.half_wave_rectify"></option>
+
+            <option value="t + (Math.random()*0.8-0.4)*t" translate="core.wave_shaper.type.fuzzy"></option>
+            <option value="t + (Math.random()*4.0-2.0)*t" translate="core.wave_shaper.type.fuzzy2"></option>
+            <option value="t*t" translate="core.wave_shaper.type.parabolic_rectify"></option>
+
+            <option value="t<-0.38 ? t*3.225806+2.2258 : (t<0.38? -t*2.6315 : t*3.225806 - 2.2258)" translate="core.wave_shaper.type.octaver"></option>
+            <option value="t<0.7? 1.1764*t + 0.1764 : -t*4.66 + 4.26" translate="core.wave_shaper.type.peak_murderer"></option>
+            
         </select>
         <div class="help-tooltip contextual-tooltip" translate="core.wave_shaper.tooltip.preset"></div>
       </div>
@@ -36,7 +51,7 @@
   <div class="row-fluid">
     <div class="span2"></div>
     <div class="span8">
-      <function-graph f="f" samples="64" t0="-1" tf="1" scaley="0.8"></function-graph>
+      <function-graph f="f" samples="512" t0="-1" tf="1" scaley="0.8"></function-graph>
     </div>
     <div class="span2"></div>
   </div>
