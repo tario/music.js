@@ -13111,8 +13111,16 @@ musicShowCaseApp.directive("musicObjectEditor", ["$timeout", "$http", "TypeServi
         scope.$broadcast('termschanged');
       };
 
-      scope.f_t = function(str) {
-        return eval("(function(t) { return " + str + "; })");
+      scope.f_t = function(str, state) {
+        try {
+          var ret = eval("(function(t) { return " + str + "; })");
+          delete state.error;
+
+          return ret;
+        } catch(e) {
+          state.error = e.toString();
+          throw e;
+        }
       };
 
       scope.oscTermsUpdateFromWaveForm = fn.debounce(function(waveform, terms, resolution) {

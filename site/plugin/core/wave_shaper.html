@@ -1,11 +1,11 @@
-<div ng-init="f = f_t(file.data.f)">
+<div ng-init="ws_f = {}; f = f_t(file.data.f, ws_f)">
   <div class="row-fluid">
     <div class="span2">
       <p class="serie-label" translate="core.wave_shaper.preset"></p>
     </div>
     <div class="span6">
       <div class="show-contextual-tooltip">
-        <select class="preset" ng-model="file.data.f" ng-change="f = f_t(file.data.f)">
+        <select class="preset" ng-model="file.data.f" ng-change="f = f_t(file.data.f, ws_f)">
             <option value="t" translate="core.wave_shaper.type._default"></option>
             <option value="t>0 ? 1 : -1" translate="core.wave_shaper.type.sawsqr"></option>
             <option value="t>0.75 ? 1 : -1" translate="core.wave_shaper.type.sawsqr125"></option>
@@ -38,7 +38,7 @@
       <p class="serie-label">f(t)= </p>
     </div>
     <div class="span6 show-contextual-tooltip">
-      <input class="serie" type="text" ng-model="file.data.f" ng-change="f = f_t(file.data.f)"/>
+      <input ng-class='{"invalid-text": ws_f.error}' class="serie" type="text" ng-model="file.data.f" ng-change="f = f_t(file.data.f, ws_f)"/>
       <div class="help-tooltip contextual-tooltip" translate="core.wave_shaper.tooltip.formula"></div>
     </div>
     <div class="span2">
@@ -48,6 +48,15 @@
       <input class="serie" type="number" step="1" ng-model="file.data.samples" />
     </div>
   </div>
+  <div class="row-fluid invalid-text">
+    <div class="span2">
+    </div>
+    <div class="span7" ng-show="ws_f.error">
+      {{ws_f.error}}
+    </div>
+  </div>
+
+
   <div class="row-fluid">
     <div class="span2"></div>
     <div class="span8">
