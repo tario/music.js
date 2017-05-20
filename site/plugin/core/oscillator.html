@@ -1,7 +1,26 @@
 <div class="generic-parameter oscillator">
-<div style="display: inherit" class="show-contextual-tooltip">{{'core.oscillator.osc_type' | translate}}: <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="('core.oscillator.type.'+type)|translate for type in ['square', 'sine', 'sawtooth', 'triangle', 'custom']">
-</select>
-  <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.osc_type"></div>
+
+<div class="row-fluid">
+  <div class="span4">
+    <p style="display: inherit" class="serie-label show-contextual-tooltip">{{'core.oscillator.osc_type' | translate}}
+      <div class="help-tooltip contextual-tooltip" translate="core.oscillator.tooltip.osc_type"></div>
+    </p>
+  </div>
+  <div class="span8">
+    <select ng-init="file.data.oscillatorType = file.data.oscillatorType || 'square'" ng-model="file.data.oscillatorType" ng-options="('core.oscillator.type.'+type)|translate for type in ['square', 'sine', 'sawtooth', 'triangle', 'custom']">
+    </select>  
+  </div>
+</div>
+
+<div ng-show="file.data.oscillatorType == 'square'">
+  <div class="row-fluid">
+    <div class="span4">
+      <p class="serie-label" translate="core.oscillator.pulsewidth"></p>
+    </div>
+    <div class="span2">
+      <input class="serie" type="text" ng-model="file.data.pulsewidth"/>
+    </div>
+  </div>
 </div>
 
 <div ng-if="file.data.oscillatorType == 'custom'">
@@ -146,7 +165,7 @@
   </div>
 </div>
 
-<div ng-repeat="modulation in modulations">
+<div ng-repeat="modulation in modulations" ng-show="modulation.name==='detune' || file.data.oscillatorType == 'square'">
 <div class="show-contextual-tooltip">
   <h1>{{('core.oscillator.modl.' + modulation.name)|translate}}</h1>
   <div class="music-object-editor" music-stack init-file="modulation.value"></div>

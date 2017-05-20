@@ -100,6 +100,7 @@ module.export = function(m) {
       }
     },
     oscillator: {
+      pulsewidth: 'Pulse Width (%)',
       time_constant: 'Time constant (freq change)',
       osc_type: 'Osc. type',
       preset: 'Preset',
@@ -108,7 +109,8 @@ module.export = function(m) {
       terms: 'Terms',
       fixed_frequency: 'Fixed frequency',
       modl: {
-        detune: 'Detune modulation'
+        detune: 'Detune modulation',
+        pulsewidth: 'Pulse Width modulation'
       },
       type: {
         sine: 'sine',
@@ -132,7 +134,8 @@ module.export = function(m) {
         graph: 'This box shows a graph for the final waveform result',
         fixed_frequency: 'Enable this, if you want to fix the frequency of the oscillator to a given value',
         modl: {
-          detune: 'You can setup the effects for detune modulation here. If you leave it empty, there will be no modulation at all'
+          detune: 'You can setup the effects for detune modulation here. If you leave it empty, there will be no modulation at all',
+          pulsewidth: 'You can setup the effects for pulse width modulation here (0 to 1). If you leave it empty, there will be no modulation at all'
         },
         time_constant: 'Exponential time constant for frequency change, the lower the value, the faster will be the change (zero is not admitted)'
       }
@@ -332,6 +335,7 @@ module.export = function(m) {
       }
     },
     oscillator: {
+      pulsewidth: 'Ancho del pulso (%)',
       time_constant: 'Const. de tiempo (freq)',
       osc_type: 'Tipo de Osc.',
       preset: 'Preset',
@@ -340,7 +344,8 @@ module.export = function(m) {
       terms: 'Terminos',
       fixed_frequency: 'Fijar frecuencia',
       modl: {
-        detune: 'Modulacion del detune'
+        detune: 'Modulacion del detune',
+        pulsewidth: 'Modulacion del Ancho de Pulso'
       },      
       type: {
         sine: 'senoidal',
@@ -364,7 +369,8 @@ module.export = function(m) {
         graph: 'Esta caja contiene un grafico de la forma de onda que se obtiene con las configuraciones',
         fixed_frequency: 'Activa esto, si quieres que la frecuencia del oscilador sea fija a un determinado valor',
         modl: {
-          detune: 'Puedes determinar los efectos para modular el *detune* aqui. Si dejas esto vacio, no habra ninguna modulacion'
+          detune: 'Puedes determinar los efectos para modular el *detune* aqui. Si dejas esto vacio, no habra ninguna modulacion',
+          pulsewidth: 'Puedes determinar los efectos para modular el ancho de pulso aqui. Si dejas esto vacio, no habra ninguna modulacion'
         },
         time_constant: 'Determina la constante de tiempo exponencial para el cambio de frecuencias, cuanto mas bajo sea el valor el cambio sera mas rapido (no se admite cero)'
       }
@@ -747,8 +753,14 @@ module.export = function(m) {
 
   var defaultModWrapper = function(x){return x;};
   m.type("oscillator", {template: "oscillator", description: "Oscillator", stackAppend: oscillatorStackAppend,
-    components: ["detune"]}, function(data, subobjects, components) {
+    components: ["detune", "pulsewidth"], _default: {pulsewidth: 0.5}}, function(data, subobjects, components) {
     if (!data) return;
+      var pulse = function(threshold) {
+        return function(t) {
+          return t>threshold ? 1: -1;
+        };
+      };
+
       return function(music, options){
           var props = {
             type: data.oscillatorType ||"square",
@@ -766,7 +778,22 @@ module.export = function(m) {
             });
           };
 
-          var generator = music.oscillator(props);
+          var base = music;
+
+          if (props.type === 'square') {
+            if (components.pulsewidth) {
+              props.type = 'sawtooth';
+              var adder = music.wave_shaper({f: pulse(0.05), samples: 44100}).gain(0.1);
+              modulatorInstruments.pulsewidth = components.pulsewidth(adder);
+
+              base = adder.gain(0.5);
+            } else if (data.pulsewidth != 0.5) {
+              props.type = 'sawtooth';
+              base = music.wave_shaper({f: pulse(data.pulsewidth*2-1), samples: 44100});
+            }
+          }
+
+          var generator = base.oscillator(props);
           var inner = new MUSIC.MonoNoteInstrument(new MUSIC.Instrument(generator), {start: true});
 
           return new MUSIC.MultiInstrument(function() {
