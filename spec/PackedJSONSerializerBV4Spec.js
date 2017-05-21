@@ -223,7 +223,6 @@ describe("PackedJSONSerializerBV3", function() {
             }
           });
 
-
   DeserializerTest.test(SerializerOracle.PackedJSONBV4.serialize, MUSIC.Formats.PackedJSONSerializerB.deserialize, {
     instruments: instruments
   });
