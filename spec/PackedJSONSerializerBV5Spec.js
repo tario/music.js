@@ -48,7 +48,7 @@ describe("PackedJSONSerializerBV5", function() {
         }
       },
       "time_constant": 0.005,
-      "pulsewidth": "0.75"
+      "pulse_width": "0.75"
     }
   });
 
@@ -73,7 +73,7 @@ describe("PackedJSONSerializerBV5", function() {
             "array": []
           }
         },
-        "pulsewidth": {
+        "pulse_width": {
           "type": "stack",
           "data": {
             "array": [
@@ -119,7 +119,7 @@ describe("PackedJSONSerializerBV5", function() {
             "array": []
           }
         },
-        "pulsewidth": {
+        "pulse_width": {
           "type": "stack",
           "data": {
             "array": [
@@ -142,7 +142,7 @@ describe("PackedJSONSerializerBV5", function() {
         }
       },
       "time_constant": 0.005,
-      "pulsewidth": "0.75"
+      "pulse_width": "0.75"
     }
   });
 

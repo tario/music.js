@@ -100,7 +100,7 @@ module.export = function(m) {
       }
     },
     oscillator: {
-      pulsewidth: 'Pulse Width (%)',
+      pulse_width: 'Pulse Width (%)',
       time_constant: 'Time constant (freq change)',
       osc_type: 'Osc. type',
       preset: 'Preset',
@@ -110,7 +110,7 @@ module.export = function(m) {
       fixed_frequency: 'Fixed frequency',
       modl: {
         detune: 'Detune modulation',
-        pulsewidth: 'Pulse Width modulation'
+        pulse_width: 'Pulse Width modulation'
       },
       type: {
         sine: 'sine',
@@ -135,7 +135,7 @@ module.export = function(m) {
         fixed_frequency: 'Enable this, if you want to fix the frequency of the oscillator to a given value',
         modl: {
           detune: 'You can setup the effects for detune modulation here. If you leave it empty, there will be no modulation at all',
-          pulsewidth: 'You can setup the effects for pulse width modulation here (0 to 1). If you leave it empty, there will be no modulation at all'
+          pulse_width: 'You can setup the effects for pulse width modulation here (0 to 1). If you leave it empty, there will be no modulation at all'
         },
         time_constant: 'Exponential time constant for frequency change, the lower the value, the faster will be the change (zero is not admitted)'
       }
@@ -335,7 +335,7 @@ module.export = function(m) {
       }
     },
     oscillator: {
-      pulsewidth: 'Ancho del pulso (%)',
+      pulse_width: 'Ancho del pulso (%)',
       time_constant: 'Const. de tiempo (freq)',
       osc_type: 'Tipo de Osc.',
       preset: 'Preset',
@@ -345,7 +345,7 @@ module.export = function(m) {
       fixed_frequency: 'Fijar frecuencia',
       modl: {
         detune: 'Modulacion del detune',
-        pulsewidth: 'Modulacion del Ancho de Pulso'
+        pulse_width: 'Modulacion del Ancho de Pulso'
       },      
       type: {
         sine: 'senoidal',
@@ -370,7 +370,7 @@ module.export = function(m) {
         fixed_frequency: 'Activa esto, si quieres que la frecuencia del oscilador sea fija a un determinado valor',
         modl: {
           detune: 'Puedes determinar los efectos para modular el *detune* aqui. Si dejas esto vacio, no habra ninguna modulacion',
-          pulsewidth: 'Puedes determinar los efectos para modular el ancho de pulso aqui. Si dejas esto vacio, no habra ninguna modulacion'
+          pulse_width: 'Puedes determinar los efectos para modular el ancho de pulso aqui. Si dejas esto vacio, no habra ninguna modulacion'
         },
         time_constant: 'Determina la constante de tiempo exponencial para el cambio de frecuencias, cuanto mas bajo sea el valor el cambio sera mas rapido (no se admite cero)'
       }
@@ -753,7 +753,7 @@ module.export = function(m) {
 
   var defaultModWrapper = function(x){return x;};
   m.type("oscillator", {template: "oscillator", description: "Oscillator", stackAppend: oscillatorStackAppend,
-    components: ["detune", "pulsewidth"], _default: {pulsewidth: 0.5}}, function(data, subobjects, components) {
+    components: ["detune", "pulse_width"], _default: {pulse_width: 0.5}}, function(data, subobjects, components) {
     if (!data) return;
       var pulse = function(threshold) {
         return function(t) {
@@ -781,15 +781,15 @@ module.export = function(m) {
           var base = music;
 
           if (props.type === 'square') {
-            if (components.pulsewidth) {
+            if (components.pulse_width) {
               props.type = 'sawtooth';
               var adder = music.wave_shaper({f: pulse(0.05), samples: 44100}).gain(0.1);
-              modulatorInstruments.pulsewidth = components.pulsewidth(adder);
+              modulatorInstruments.pulse_width = components.pulse_width(adder);
 
               base = adder.gain(0.5);
-            } else if (data.pulsewidth != 0.5) {
+            } else if (data.pulse_width != 0.5) {
               props.type = 'sawtooth';
-              base = music.wave_shaper({f: pulse(data.pulsewidth*2-1), samples: 44100});
+              base = music.wave_shaper({f: pulse(data.pulse_width*2-1), samples: 44100});
             }
           }
 
