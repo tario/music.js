@@ -787,7 +787,7 @@ module.export = function(m) {
               modulatorInstruments.pulse_width = components.pulse_width(adder);
 
               base = adder.gain(0.5);
-            } else if (data.pulse_width != 0.5) {
+            } else if (data.pulse_width != 0.5 && data.pulse_width) {
               props.type = 'sawtooth';
               base = music.wave_shaper({f: pulse(data.pulse_width*2-1), samples: 44100});
             }
