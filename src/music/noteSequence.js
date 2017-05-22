@@ -68,11 +68,6 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var startTime = array[1];
   var duration = array[2];
 
-  if (duration <= 0) {
-    // negative or zero duration events are ignored
-    return;
-  }
-
   this._noteid++;
   var mynoteid = this._noteid;
 

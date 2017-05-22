@@ -14254,11 +14254,6 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var startTime = array[1];
   var duration = array[2];
 
-  if (duration <= 0) {
-    // negative or zero duration events are ignored
-    return;
-  }
-
   this._noteid++;
   var mynoteid = this._noteid;
 
@@ -14644,7 +14639,12 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
 
   var start = function(parameter) {
     var array = eventsArray.slice(0).sort(function(e1, e2) {
-      return e1.t - e2.t;
+      var dt = e1.t - e2.t;
+      if (dt===0) {
+        return eventsArray.indexOf(e1) - eventsArray.indexOf(e2);
+      }
+
+      return dt;
     });
 
     var timeoutHandlers = [];
