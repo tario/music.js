@@ -1,5 +1,8 @@
 <div class="event-area-container" ng-scroll-top="track.scroll" ng-scroll-left="pattern.scrollLeft">
   <div class="event-area" ng-style="{width: measureCount*measure*beatWidth*zoomLevel + 'px'}">
+    <playing-line bpm="pattern.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line pattern-playing-line"></playing-line>
+
+
     <div class="overlay zebra">
 
     </div>

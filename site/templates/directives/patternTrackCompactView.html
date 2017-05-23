@@ -1,4 +1,8 @@
 <div ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)" class="track-compact-view event-area" ng-style="mainGridStyle">
+  <div class="overlay" ng-style='{"left": (-pattern.scrollLeft)+"px"}'>
+    <playing-line bpm="pattern.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line pattern-playing-line"></playing-line>
+  </div>
+
   <div ng-class="{selected: selected===evt}" ng-repeat="evt in track.events track by $index" class="note" ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':(evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT - pattern.scrollLeft)+'px', 'z-index': evt.s}">
     <div class="note-label overlay">{{noteName(evt.n)}}</div>
     <div class="drag-event-section" ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-5)+'px', 'height':'20px'}"

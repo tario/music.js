@@ -221,10 +221,6 @@ input.responsive-input {
   position: relative;
 }
 
-.playing-line.pattern-playing-line {
-  margin-left: 139px;
-}
-
 .playing-line.song-playing-line {
   margin-left: 0px;
 }

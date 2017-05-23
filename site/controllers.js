@@ -157,8 +157,6 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           })
         , {measure: measure});
 
-        $scope.zoomLevel=1;
-        $scope.beatWidth = 154 / $scope.file.measure;
         $scope.$broadcast("startClock", window.performance.now());
         playing = song.play({
           onStop: function() {
