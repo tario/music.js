@@ -703,7 +703,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         return storageIndex.getOrphan(createdFilesIndex.map(getId));
       })
       .then(function(orphanFiles) {
-        return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin));
+        return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin))
+          .catch(function(e) {
+            console.error(e);
+          });
       });
   };
 
