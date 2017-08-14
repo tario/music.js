@@ -14208,7 +14208,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
             var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
-            if (!event.target.classList.contains("track-compact-view")) return;
+            if (!event.target.parentElement.classList.contains("track-compact-view")) return;
 
             var exactPosition = Math.floor((event.offsetX - offsetX) / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
             exactPosition = Math.floor(exactPosition);
@@ -14292,7 +14292,7 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
 
-          if (!event.target.classList.contains("track-compact-view")) return;
+          if (!event.target.parentElement.classList.contains("track-compact-view")) return;
 
           var exactL = Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT) - evt.s;
 
