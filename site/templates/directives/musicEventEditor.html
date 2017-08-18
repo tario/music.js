@@ -1,5 +1,5 @@
 <div class="event-area-container" ng-scroll-top="track.scroll" ng-scroll-left="pattern.scrollLeft">
-  <div class="event-area" ng-style="{width: measureCount*measure*beatWidth*zoomLevel + 'px'}">
+  <div ng-class="{'cursor-none': !!shadowEvt}" class="event-area" ng-style="{width: measureCount*measure*beatWidth*zoomLevel + 'px'}">
     <playing-line bpm="pattern.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line pattern-playing-line"></playing-line>
 
 
@@ -12,7 +12,12 @@
     <div class="overlay maingrid" ng-style="mainGridStyle">
 
     </div>
-    <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">
+
+    <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">   
+      <div ng-mousedown="addFromShadow()" ng-mousemove="shadowMouseMove($event)" class="note note-shadow" ng-style="{'width': (shadowEvt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':(shadowEvt.s*zoomLevel*beatWidth/TICKS_PER_BEAT - pattern.scrollLeft)+'px', 'bottom': shadowEvt.n*20+'px'}">
+        <div class="note-label overlay">{{noteName(shadowEvt.n)}}</div>
+      </div>
+
       <div 
         draggable="false"
         ng-repeat="evt in track.events track by $index"
@@ -46,6 +51,7 @@
     </div>
   </div>
 </div>
+
 
 <div class="row">
   <div class="span6"></div>

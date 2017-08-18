@@ -91,6 +91,22 @@ input.smallinput {
   overflow: visible;
 }
 
+.event-area.cursor-none {
+  cursor: none;
+}
+
+.event-area .note.note-shadow {
+  background: none;
+  color: #aaaaaa;
+  border-right-color: #aaaaaa;
+  border-right-style: solid;
+  border-left-color: #aaaaaa;
+  border-left-style: solid;
+  border-width: 2px;
+  z-index: 0;
+  cursor: none !important;
+}
+
 .event-area .note:hover {
   cursor: all-scroll;
 }
