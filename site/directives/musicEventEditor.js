@@ -103,6 +103,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         scope.track.events.push(evt);
       };
 
+      scope.mouseMoveResizeEvent = function() {
+        clearShadow();
+      };
+
       scope.shadowMouseMove = function(event) {
         scope.shadowEvt.s = scope.shadowEvt.s + Math.floor(event.offsetX / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
       };

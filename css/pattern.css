@@ -96,7 +96,7 @@ input.smallinput {
 }
 
 .event-area .note.note-shadow {
-  background: none;
+  background: none !important;
   color: #aaaaaa;
   border-right-color: #aaaaaa;
   border-right-style: solid;
@@ -129,11 +129,11 @@ input.smallinput {
 }
 
 .note .resize-section {
-  width: 5px;
+  width: 20px;
   height: 100%;
   cursor: e-resize;
   position: absolute;
-  right: 0;
+  right: -10px;
 }
 
 .note .drag-event-section {
