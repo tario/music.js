@@ -462,8 +462,19 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     }));
 
     return clips.reduce(nearest) - self.s;
-  }; 
+  };
 
+  var cutEvent = function(pattern, track, self) {
+    var allEvents = track.events.filter(_not(self));
+
+    allEvents.filter(function(evt) {
+      return evt.s > self.s;
+    }).forEach(function(evt) {
+      if (self.s + self.l > evt.s) {
+        self.l = evt.s - self.s;
+      }
+    });
+  };
 
   return {
     noteseq: noteseq,
@@ -471,7 +482,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     computeMeasureCount: computeMeasureCount,
     getMutedState: getMutedState,
     findClipL: findClipL,
-    findClipS: findClipS
+    findClipS: findClipS,
+    cutEvent: cutEvent
   };
 }]);
 
