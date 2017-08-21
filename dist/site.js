@@ -13798,14 +13798,29 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       var defaultMouseLeave = clearShadow;
 
       var defaultMouseMove = function(event) {
+        var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
         if (!event.target.classList.contains("event-list")) {
           return;
         }
 
+
         scope.shadowEvt = scope.shadowEvt || {};
         scope.shadowEvt.n = Math.floor(120 - event.offsetY / 20);
-        scope.shadowEvt.s = Math.floor(Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT);
         scope.shadowEvt.l = defaultL;
+
+        if (scope.shadowEvt.s) {
+          var exactPosition = Math.floor(event.offsetX / scope.beatWidth / scope.zoomLevel * TICKS_PER_BEAT);
+          exactPosition = Math.floor(exactPosition);
+          var clipS = Pattern.findClipS(scope.pattern, scope.track, {s: exactPosition, l: defaultL}, exactPosition);
+
+          if (Math.abs(exactPosition - clipS - clipDistance / 2) < clipDistance) {
+            scope.shadowEvt.s = clipS;
+            return;
+          }
+        }
+
+        scope.shadowEvt.s = Math.floor(Math.floor(event.offsetX / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT);
+        if (scope.shadowEvt.s < 0) scope.shadowEvt.s = 0;
       };
 
       var semitoneToNote = function(n) {
@@ -13873,7 +13888,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         scope.mouseUpEvent = cancelMove;
         scope.mouseUp = cancelMove;
 
-        scope.track.events.push(evt);
+        scope.track.events.push(newEvt);
       };
 
       scope.mouseMoveResizeEvent = function() {
@@ -13881,7 +13896,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.shadowMouseMove = function(event) {
-        scope.shadowEvt.s = scope.shadowEvt.s + Math.floor(event.offsetX / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+        var deltaS = Math.floor(event.offsetX / 2 / scope.beatWidth) * 2 / scope.zoomLevel * TICKS_PER_BEAT;
+        if (deltaS > 0) scope.shadowEvt.s = scope.shadowEvt.s + deltaS;
       };
 
       scope.addFromShadow = function() {

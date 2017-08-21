@@ -129,11 +129,11 @@ input.smallinput {
 }
 
 .note .resize-section {
-  width: 20px;
+  width: 10px;
   height: 100%;
   cursor: e-resize;
   position: absolute;
-  right: -10px;
+  right: 0px;
 }
 
 .note .drag-event-section {
