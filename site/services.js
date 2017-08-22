@@ -476,6 +476,17 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     });
   };
 
+  var collision = function(track, self) {
+    var allEvents = track.events.filter(_not(self));
+    return allEvents.some(function(evt) {
+      if (evt.n !== self.n) return false;
+      if (evt.s <= self.s && self.s < evt.s + evt.l) return true;
+      if (self.s <= evt.s && evt.s < self.s + self.l) return true;
+
+      return false;
+    });
+  };
+
   return {
     noteseq: noteseq,
     patternCompose: patternCompose,
@@ -483,7 +494,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     getMutedState: getMutedState,
     findClipL: findClipL,
     findClipS: findClipS,
-    cutEvent: cutEvent
+    cutEvent: cutEvent,
+    collision: collision
   };
 }]);
 

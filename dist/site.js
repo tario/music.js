@@ -13874,6 +13874,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
         newEvt = angular.copy(newEvt);
 
+        if (Pattern.collision(scope.track, newEvt)) return;
+
         scope.$emit("patternSelectEvent", newEvt);
         scope.selected = newEvt;
 
@@ -13929,6 +13931,25 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         return c1 > c2 ? c1 : c2;
       };
 
+      var preventCollision = function(evt, f) {
+        return function() {
+          var savedEvt = angular.copy(evt);
+          var ret = f.apply(null, arguments);
+
+          if (Pattern.collision(scope.track, evt)) {
+            evt.n = savedEvt.n;
+            evt.s = savedEvt.s;
+            evt.l = savedEvt.l;
+            return;
+          }
+
+          if (evt.n !== savedEvt.n || evt.l !== savedEvt.l || evt.s !== savedEvt.s) {
+            scope.$emit("trackChanged", scope.track);
+            scope.$emit("eventChanged", {oldevt: savedEvt, evt:evt, track: scope.track});
+          }
+        };
+      };
+
       var moveEvent = function(evt, offsetX) {
         return function(event) {
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
@@ -13951,9 +13972,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
           var oldN = evt.n;
           evt.n = Math.floor(120 - event.offsetY / 20);
-
-          scope.$emit("trackChanged", scope.track);
-          scope.$emit("eventChanged", {oldevt: oldevt, evt:evt, track: scope.track});
         };
       };
 
@@ -13976,8 +13994,6 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
           evt.n = dragevt.n;
           if (evt.s < 0) evt.s = 0;
-          scope.$emit("trackChanged", scope.track);
-          scope.$emit("eventChanged", {oldevt: oldevt, evt:evt, track: scope.track});
         };
       };
 
@@ -14056,8 +14072,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         scope.$emit("patternSelectEvent", evt);
         scope.selected = evt;
 
-        scope.mouseMove = moveEvent(evt, event.offsetX);
-        scope.mouseMoveEvent = moveEventFromEvent(evt, event.offsetX);
+        scope.mouseMove = preventCollision(evt, moveEvent(evt, event.offsetX));
+        scope.mouseMoveEvent = preventCollision(evt, moveEventFromEvent(evt, event.offsetX));
 
         clearShadow();
 
@@ -14082,7 +14098,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
         scope.$emit("patternSelectEvent", evt);
         scope.selected = evt;
 
-        scope.mouseMove = function(event) {
+        scope.mouseMove = preventCollision(evt, function(event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
@@ -14101,12 +14117,9 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
             defaultL = evt.l;
           }
-  
-          scope.$emit("trackChanged", scope.track);
-          scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
-        };
+        });
 
-        scope.mouseMoveEvent = function(dragevt, event) {
+        scope.mouseMoveEvent = preventCollision(evt, function(dragevt, event) {
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
@@ -14126,10 +14139,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
             defaultL = evt.l;
           }
-
-          scope.$emit("trackChanged", scope.track);
-          scope.$emit("eventChanged", {oldevt:oldevt, evt:evt, track: scope.track});
-        };        
+        });
 
         scope.mouseUpResizeEvent = cancelMove;
         scope.mouseUpEvent = cancelMove;
@@ -15126,6 +15136,17 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     });
   };
 
+  var collision = function(track, self) {
+    var allEvents = track.events.filter(_not(self));
+    return allEvents.some(function(evt) {
+      if (evt.n !== self.n) return false;
+      if (evt.s <= self.s && self.s < evt.s + evt.l) return true;
+      if (self.s <= evt.s && evt.s < self.s + self.l) return true;
+
+      return false;
+    });
+  };
+
   return {
     noteseq: noteseq,
     patternCompose: patternCompose,
@@ -15133,7 +15154,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     getMutedState: getMutedState,
     findClipL: findClipL,
     findClipS: findClipS,
-    cutEvent: cutEvent
+    cutEvent: cutEvent,
+    collision: collision
   };
 }]);
 
