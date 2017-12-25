@@ -15355,6 +15355,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var _moveToRecycleBin = function(id) {
     var getId = function(x){ return x.id; };
+    var isProjectType = function(file) {
+      return file.type === 'project';
+    };
+
     return storageIndex.willRemove(id)
       .then(function() {
         return storageIndex.getEntry(id)
@@ -15384,7 +15388,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           });
       })
       .then(function() {
-        return storageIndex.getOrphan(createdFilesIndex.map(getId));
+        return storageIndex.getOrphan(
+          createdFilesIndex.map(getId),
+          createdFilesIndex.filter(isProjectType).map(getId));
       })
       .then(function(orphanFiles) {
         return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin))
@@ -15908,9 +15914,9 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
   var IndexFactory = function(indexName) {
     var entryChange = new Sync();
 
-    var storageIndex;
     var reload = function() {
       // load stoargeIndex
+      var storageIndex;
       storageIndex = localforage.getItem(indexName)
         .then(function(array){
           return array||[];
@@ -15925,7 +15931,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     };
 
     var removeEntry = entryChange.sync(function(id) {
-      return storageIndex
+      return reload()
         .then(function(index) {
           if (!index) return;
           index = index.filter(function(x) { return x.id !== id; });
@@ -15935,7 +15941,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     });
 
     var getEntry = function(id) {
-      return storageIndex
+      return reload()
         .then(function(index) {
           if (!index) return null;
           return index.filter(function(x) { return x.id === id; })[0];
@@ -15943,7 +15949,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     };
 
     var createEntry = entryChange.sync(function(data) {
-      return storageIndex
+      return reload()
         .then(function(index) {
           index = index || [];
 
@@ -15958,7 +15964,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     });
 
     var updateEntry = entryChange.sync(function(id, attributes) {
-      return storageIndex
+      return reload()
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
           localFile.name = attributes.name;
@@ -15974,7 +15980,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     });
 
     var getAll = function() {
-      return storageIndex
+      return reload()
         .then(function(index) {
           var ic = IndexFactory.isolatedContext;
           if (ic) {
@@ -15999,7 +16005,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     };
 
     var willRemove = function(id) {
-      return storageIndex
+      return reload()
         .then(function(index) {
           var localFile = index.filter(function(x) { return x.id === id; })[0];
 
@@ -16021,10 +16027,10 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
         });
     };
 
-    var getOrphan = function(extraIds) {
-      return storageIndex
+    var getOrphan = function(extraIds, extraProjectIds) {
+      return reload()
         .then(function(index) {
-          var projectIds = index.filter(isProjectType).map(getId);
+          var projectIds = index.filter(isProjectType).map(getId).concat(extraProjectIds);
           var ids = index.map(getId).concat(extraIds||[]);
           var isOrphan = function(file) {
             if (file.project) {
@@ -16042,7 +16048,7 @@ musicShowCaseApp.factory("Index", ['$q', '$timeout', 'Sync', '_localforage', fun
     };
 
     var getFreeItems = function() {
-      return storageIndex
+      return reload()
         .then(function(index) {
           var referenced = {};
           index.forEach(function(file) {

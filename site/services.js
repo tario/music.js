@@ -695,6 +695,10 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
 
   var _moveToRecycleBin = function(id) {
     var getId = function(x){ return x.id; };
+    var isProjectType = function(file) {
+      return file.type === 'project';
+    };
+
     return storageIndex.willRemove(id)
       .then(function() {
         return storageIndex.getEntry(id)
@@ -724,7 +728,9 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           });
       })
       .then(function() {
-        return storageIndex.getOrphan(createdFilesIndex.map(getId));
+        return storageIndex.getOrphan(
+          createdFilesIndex.map(getId),
+          createdFilesIndex.filter(isProjectType).map(getId));
       })
       .then(function(orphanFiles) {
         return $q.all(orphanFiles.map(getId).map(_moveToRecycleBin))
