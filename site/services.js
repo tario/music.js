@@ -339,11 +339,9 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
   var patternCompose = function(file, instruments, base, onStop) {
     var noteseq = new MUSIC.NoteSequence();
-    var mutedState = getMutedState(file);
 
     file.tracks.forEach(function(track, idx) {
       idx = base + idx;
-      if (mutedState[idx]) return null;
 
       var instrument = instruments[track.instrument + '_' + idx];
       var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
@@ -358,7 +356,6 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
       file.tracks.forEach(function(track, idx) {
         idx = base + idx;
-        if (mutedState[idx]) return null;
 
         var instrument = instruments[track.instrument + '_' + idx];
         var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
@@ -500,10 +497,10 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 }]);
 
 
-musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", function(FileRepository, MusicObjectFactory) {
-  return function(music) {
-
+musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory", "MusicContext", function(FileRepository, MusicObjectFactory, MusicContext) {
+  var ret = function(music) {
     var musicObjectFactory;
+    var trackControl = {};
 
     var set = {};
     var created = [];
@@ -511,10 +508,12 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       trackNo = trackNo || 0;
       var _id = id + "_" + trackNo;
       if (!set[_id]) {
+        trackControl[trackNo] = trackControl[trackNo] || music.gain(1.0);
+
         set[_id] = FileRepository.getFile(id)
           .then(function(file) {
             if (!musicObjectFactory) musicObjectFactory = MusicObjectFactory();
-            return musicObjectFactory.create(file.contents, music);
+            return musicObjectFactory.create(file.contents, trackControl[trackNo]);
           })
           .then(function(obj){
             created.push(obj);
@@ -537,11 +536,22 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
       }
     };
 
+    var mute = function(trackNo, muteState) {
+      trackControl[trackNo] = trackControl[trackNo] || music.gain(1.0);
+      trackControl[trackNo].update(muteState ? 0.0 : 1.0);
+    };
+
     return {
       load: load,
+      mute: mute,
       all: set,
       dispose: dispose
     };
+  };
+
+  return function(music) {
+    if (music) return ret(music);
+    return MusicContext.runFcn(ret);
   };
 }]);
 

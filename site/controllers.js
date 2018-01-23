@@ -380,6 +380,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.updateMuted = function() {
     $scope.mutedState = Pattern.getMutedState($scope.file);
     $scope.fileChanged();
+
+    $scope.file.tracks.forEach(function(track, idx) {
+      instSet.mute(idx, $scope.mutedState[idx]);
+    });
   };
 
   $scope.removeItem = function() {
@@ -519,6 +523,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.$watch("file.measure", computeMeasureCount);
 
   var instrument = new WeakMap();
+
   $scope.updateInstrument = function(trackNo) {
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
@@ -556,6 +561,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
         $scope.fileIndex = file.index;
         $scope.file = file.contents;
         $scope.mutedState = Pattern.getMutedState($scope.file);
+        $scope.updateMuted();
+
         if (!$scope.file.tracks) $scope.file.tracks=[{}];
 
         $scope.file.tracks.forEach(function(track, idx) {
