@@ -67,6 +67,7 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = array[1];
   var duration = array[2];
+  var options = array[3];
 
   this._noteid++;
   var mynoteid = this._noteid;
@@ -80,7 +81,7 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   this._funseq.push({t:startTime, f: function(param){
     var ctx = baseCtx || param;
     var playing;
-    playing = ctx.instrument.note(noteNum);
+    playing = ctx.instrument.note(noteNum, options);
     ctx.setPlaying(mynoteid, playing);
   }});
   this._funseq.push({t:startTime + duration, f: function(param){

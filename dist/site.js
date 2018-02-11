@@ -14982,7 +14982,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
     for (var i=0; i<events.length; i++) {
       var evt = track.events[i];
-      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale]), ctx);
+      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale, {tc: evt.tc}]), ctx);
     }
 
     noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);

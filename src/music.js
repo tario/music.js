@@ -715,13 +715,19 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
     var resetd = false;
     var playable = {};
-    playable.setFreq = function(frequency) {
+    playable.setFreq = function(frequency, noteOptions) {
       if (options.fixed_frequency) return;
 
-      var tc = time_constant||0.1;
-      if (resetd) tc = 0.0001;
-      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
+      var tc;
 
+      if (noteOptions && noteOptions.tc) {
+        tc = noteOptions.tc;
+      } else {
+        tc = time_constant||0.1;
+        if (resetd) tc = 0.0001;
+      }
+
+      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
       resetd = false;
     };
 

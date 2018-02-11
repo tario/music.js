@@ -856,7 +856,7 @@ module.export = function(m) {
       var lastNoteInst = null;
       var noteCount = 0;
       
-      var note = function(n) {
+      var note = function(n, options) {
         var innerNote;
 
         var createPlaying = function() {
@@ -884,7 +884,7 @@ module.export = function(m) {
 
           return MUSIC.playablePipeExtend({play: play});
         } else {
-          lastNoteInst = inst.note(n);
+          lastNoteInst = inst.note(n, options);
           innerNote = lastNoteInst;
 
           var play = function(){
@@ -1125,10 +1125,10 @@ module.export = function(m) {
       var lastReleaseV0;
 
       var noteCount = 0;
-      var note = function(n) {
+      var note = function(n, options) {
         var innerNote;
 
-        var noteInst = inst.note(n);
+        var noteInst = inst.note(n, options);
 
         var play = function(){
           var playing = noteInst.play();
@@ -1326,8 +1326,8 @@ module.export = function(m) {
         var ret = function(music) {
           var inst = wrapped(music);
 
-          var note = function(n) {
-            var noteInst = inst.note(n);  
+          var note = function(n, options) {
+            var noteInst = inst.note(n, options);  
             var play = function() {
               var playing;
               var _delay = delay;
@@ -1594,8 +1594,8 @@ module.export = function(m) {
           var x = Object.create(wr);
 
           var originalNote = wr.note.bind(wr);
-          x.note = function(n) {
-            return originalNote(n+tr);
+          x.note = function(n, options) {
+            return originalNote(n+tr, options);
           };
 
           return x;

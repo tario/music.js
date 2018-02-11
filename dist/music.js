@@ -13093,13 +13093,19 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
     var resetd = false;
     var playable = {};
-    playable.setFreq = function(frequency) {
+    playable.setFreq = function(frequency, noteOptions) {
       if (options.fixed_frequency) return;
 
-      var tc = time_constant||0.1;
-      if (resetd) tc = 0.0001;
-      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
+      var tc;
 
+      if (noteOptions && noteOptions.tc) {
+        tc = noteOptions.tc;
+      } else {
+        tc = time_constant||0.1;
+        if (resetd) tc = 0.0001;
+      }
+
+      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
       resetd = false;
     };
 
@@ -13773,24 +13779,24 @@ var instrumentExtend = function(obj) {
 
   obj.stopDelay = function(ms) {
     return instrumentExtend({
-      note: function(noteNum) {
-        return delayedNote(obj.note(noteNum), ms);
+      note: function(noteNum, options) {
+        return delayedNote(obj.note(noteNum, options), ms);
       }
     });
   };
 
   obj.perNoteWrap = function(wrapper) {
     return instrumentExtend({
-      note: function(noteNum) {
-        return wrapper(obj.note(noteNum));
+      note: function(noteNum, options) {
+        return wrapper(obj.note(noteNum, options));
       }
     });
   };
 
   obj.mapNote = function(fcn) {
     return instrumentExtend({
-      note: function(noteNum) {
-        return obj.note(fcn(noteNum));
+      note: function(noteNum, options) {
+        return obj.note(fcn(noteNum), options);
       }
     });
   };
@@ -13827,7 +13833,7 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
     return queue[0]||0;
   };
 
-  this.note = function(notenum) {
+  this.note = function(notenum, options) {
     var c = maxChannels();
     var playingIdx = freeIdx(c);
     var instrument = instrumentArray[playingIdx];
@@ -13841,7 +13847,7 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
     if (queue.length > c) queue.shift();
 
     onUse[playingIdx] = true;
-    return instrument.note(notenum)
+    return instrument.note(notenum, options)
       .onStop(function() {
         onUse[playingIdx] = false;
       });
@@ -13865,9 +13871,9 @@ MUSIC.MonoNoteInstrument = function(inner) {
   var playingInst;
   var count = 0;
 
-  this.note = function(notenum) {
+  this.note = function(notenum, options) {
     if (!noteInst) {
-      noteInst = inner.note(notenum);
+      noteInst = inner.note(notenum, options);
     }
 
     return MUSIC.playablePipeExtend({
@@ -13876,7 +13882,7 @@ MUSIC.MonoNoteInstrument = function(inner) {
           playingInst = noteInst.play(param);
         }
 
-        noteInst.setValue(notenum);
+        noteInst.setValue(notenum, options);
 
         count++;
         return {stop: function() {
@@ -13909,8 +13915,8 @@ MUSIC.Instrument = function(soundFactory) {
         var soundInstance = fr.play(param);
 
         if (fr.setFreq) {
-          this.setValue = function(n) {
-            fr.setFreq(frequency(n));
+          this.setValue = function(n, options) {
+            fr.setFreq(frequency(n), options);
           };
 
           this.reset = fr.reset.bind(fr);
@@ -13950,9 +13956,9 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     }
   };
 
-  this.note = function(noteNum) {
+  this.note = function(noteNum, options) {
     return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
-      return instrument.note(noteNum);
+      return instrument.note(noteNum, options);
     })));
   };
 
@@ -14253,6 +14259,7 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = array[1];
   var duration = array[2];
+  var options = array[3];
 
   this._noteid++;
   var mynoteid = this._noteid;
@@ -14266,7 +14273,7 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   this._funseq.push({t:startTime, f: function(param){
     var ctx = baseCtx || param;
     var playing;
-    playing = ctx.instrument.note(noteNum);
+    playing = ctx.instrument.note(noteNum, options);
     ctx.setPlaying(mynoteid, playing);
   }});
   this._funseq.push({t:startTime + duration, f: function(param){
@@ -15479,6 +15486,40 @@ var booleanPacker = {
   }
 };
 
+var patternEventPacker = {
+  pack: function(obj) {
+    var firstElement = obj.n;
+    for (var k in obj) {
+      if (k!=='n' && k!=='s' && k !== 'l') {
+        if (firstElement === obj.n) {
+          firstElement = {n: obj.n};
+        }
+        firstElement[k] = obj[k];
+      }
+    };
+
+    return [firstElement, obj.s, obj.l];
+  },
+  unpack: function(array) {
+    var firstElement = array[0];
+    if (typeof firstElement === 'number') {
+      return {
+        n: array[0],
+        s: array[1],
+        l: array[2]
+      };
+    } else {
+      var ret = {};
+      for (var k in firstElement) {
+        ret[k] = firstElement[k];
+      }
+      ret.s = array[1];
+      ret.l = array[2];
+      return ret;
+    }
+  }
+};
+
 var patternPacker = objToArrayPacker([
   "measure",
   "measureCount",
@@ -15486,7 +15527,7 @@ var patternPacker = objToArrayPacker([
   "selectedTrack",
   "scrollLeft",
   ["tracks", array(
-    objToArrayPacker([["muted", booleanPacker], ["solo", booleanPacker], "scroll",["events", flatten(array(objToArrayPacker(["n","s","l"])),3)], "instrument"])
+    objToArrayPacker([["muted", booleanPacker], ["solo", booleanPacker], "scroll",["events", flatten(array(patternEventPacker),3)], "instrument"])
   )]
 ]);
 

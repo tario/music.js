@@ -33,24 +33,24 @@ var instrumentExtend = function(obj) {
 
   obj.stopDelay = function(ms) {
     return instrumentExtend({
-      note: function(noteNum) {
-        return delayedNote(obj.note(noteNum), ms);
+      note: function(noteNum, options) {
+        return delayedNote(obj.note(noteNum, options), ms);
       }
     });
   };
 
   obj.perNoteWrap = function(wrapper) {
     return instrumentExtend({
-      note: function(noteNum) {
-        return wrapper(obj.note(noteNum));
+      note: function(noteNum, options) {
+        return wrapper(obj.note(noteNum, options));
       }
     });
   };
 
   obj.mapNote = function(fcn) {
     return instrumentExtend({
-      note: function(noteNum) {
-        return obj.note(fcn(noteNum));
+      note: function(noteNum, options) {
+        return obj.note(fcn(noteNum), options);
       }
     });
   };
@@ -87,7 +87,7 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
     return queue[0]||0;
   };
 
-  this.note = function(notenum) {
+  this.note = function(notenum, options) {
     var c = maxChannels();
     var playingIdx = freeIdx(c);
     var instrument = instrumentArray[playingIdx];
@@ -101,7 +101,7 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
     if (queue.length > c) queue.shift();
 
     onUse[playingIdx] = true;
-    return instrument.note(notenum)
+    return instrument.note(notenum, options)
       .onStop(function() {
         onUse[playingIdx] = false;
       });
@@ -125,9 +125,9 @@ MUSIC.MonoNoteInstrument = function(inner) {
   var playingInst;
   var count = 0;
 
-  this.note = function(notenum) {
+  this.note = function(notenum, options) {
     if (!noteInst) {
-      noteInst = inner.note(notenum);
+      noteInst = inner.note(notenum, options);
     }
 
     return MUSIC.playablePipeExtend({
@@ -136,7 +136,7 @@ MUSIC.MonoNoteInstrument = function(inner) {
           playingInst = noteInst.play(param);
         }
 
-        noteInst.setValue(notenum);
+        noteInst.setValue(notenum, options);
 
         count++;
         return {stop: function() {
@@ -169,8 +169,8 @@ MUSIC.Instrument = function(soundFactory) {
         var soundInstance = fr.play(param);
 
         if (fr.setFreq) {
-          this.setValue = function(n) {
-            fr.setFreq(frequency(n));
+          this.setValue = function(n, options) {
+            fr.setFreq(frequency(n), options);
           };
 
           this.reset = fr.reset.bind(fr);
@@ -210,9 +210,9 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     }
   };
 
-  this.note = function(noteNum) {
+  this.note = function(noteNum, options) {
     return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
-      return instrument.note(noteNum);
+      return instrument.note(noteNum, options);
     })));
   };
 

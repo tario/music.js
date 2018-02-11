@@ -80,6 +80,40 @@ var booleanPacker = {
   }
 };
 
+var patternEventPacker = {
+  pack: function(obj) {
+    var firstElement = obj.n;
+    for (var k in obj) {
+      if (k!=='n' && k!=='s' && k !== 'l') {
+        if (firstElement === obj.n) {
+          firstElement = {n: obj.n};
+        }
+        firstElement[k] = obj[k];
+      }
+    };
+
+    return [firstElement, obj.s, obj.l];
+  },
+  unpack: function(array) {
+    var firstElement = array[0];
+    if (typeof firstElement === 'number') {
+      return {
+        n: array[0],
+        s: array[1],
+        l: array[2]
+      };
+    } else {
+      var ret = {};
+      for (var k in firstElement) {
+        ret[k] = firstElement[k];
+      }
+      ret.s = array[1];
+      ret.l = array[2];
+      return ret;
+    }
+  }
+};
+
 var patternPacker = objToArrayPacker([
   "measure",
   "measureCount",
@@ -87,7 +121,7 @@ var patternPacker = objToArrayPacker([
   "selectedTrack",
   "scrollLeft",
   ["tracks", array(
-    objToArrayPacker([["muted", booleanPacker], ["solo", booleanPacker], "scroll",["events", flatten(array(objToArrayPacker(["n","s","l"])),3)], "instrument"])
+    objToArrayPacker([["muted", booleanPacker], ["solo", booleanPacker], "scroll",["events", flatten(array(patternEventPacker),3)], "instrument"])
   )]
 ]);
 
