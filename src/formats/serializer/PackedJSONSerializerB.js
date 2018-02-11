@@ -232,10 +232,10 @@ var oscillatorPacker = objToArrayPacker([
   ["terms", nullable(objToArrayPacker(["sin", "cos"]))],
   ["modulation", nullable(objToArrayPacker([
     ["detune", recursiveInstrumentPacker],
-    ["pulsewidth", nullable(recursiveInstrumentPacker)]
+    ["pulse_width", nullable(recursiveInstrumentPacker)]
   ]))],
   "time_constant",
-  "pulsewidth"
+  "pulse_width"
 ]);
 
 var frequencyFilterPacker = objToArrayPacker([
