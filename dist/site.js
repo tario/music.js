@@ -14692,6 +14692,8 @@ musicShowCaseApp.factory("MusicObjectFactory", ["MusicContext", "$q", "TypeServi
 
               if (type.components) {
                 type.components.forEach(function(componentName) {
+                  if (!descriptor.data.modulation) return;
+
                   var value = descriptor.data.modulation[componentName];
                   if (!value) return;
                   if (!value.data) return;
