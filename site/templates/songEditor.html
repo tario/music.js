@@ -90,9 +90,12 @@
                   {{block | block_name:indexMap}}
                 </p>
               </div>
-              <div class="overlay">
+              <div class="overlay" ng-dblclick="patternEdit(block)">
                 <span class="pattern-mini-button fa fa-remove show-contextual-tooltip" ng-click="remove(block)" ng-mousedown="$event.stopPropagation()">
                   <div class="help-tooltip contextual-tooltip" translate="song.tooltip.remove_block"></div>
+                </span>
+                <span class="pattern-mini-button fa fa-pencil show-contextual-tooltip" ng-click="patternEdit(block)" ng-mousedown="$event.stopPropagation()">
+                  <div class="help-tooltip contextual-tooltip" translate="song.tooltip.edit_block"></div>
                 </span>
                 <span ng-class="{'playing': block.playing}" class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block, trackIdx)" ng-mousedown="$event.stopPropagation()">
                   <div class="help-tooltip contextual-tooltip" translate="song.tooltip.play_block"></div>

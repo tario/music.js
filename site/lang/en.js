@@ -204,7 +204,8 @@ var enTranslations = {
       note_event_p2: 'Drag to change the value and/or starting time',
       note_event_p3: 'Note event. Click to select and edit it',
       muted: 'Disable the track in order to silence it',
-      solo: 'Isolate the track so that it is the only one that plays. Can be more than one'
+      solo: 'Isolate the track so that it is the only one that plays. Can be more than one',
+      instrument_edit: "Click this button to edit the instrument"
     }
   },
   song: {
@@ -216,7 +217,8 @@ var enTranslations = {
       download: "Click to record the song and download the audio file",
       drop_pattern: "Drop zone for patterns, drop here a pattern from the panel on the left",
       remove_block: "Click here to remove the pattern and leave the block empty",
-      play_block: "Click here to play this block only"
+      play_block: "Click here to play this block only",
+      edit_block: "Click here to edit the pattern used by this block"
     }
   },
   BUTTON_LANG_EN: 'English',

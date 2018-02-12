@@ -118,6 +118,13 @@
                 <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
                 <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
                 <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.drop_zone"></div>
+
+                <div class="overlay" ng-dblclick="instrumentEdit(track)">
+                  <span class="pattern-mini-button fa fa-pencil show-contextual-tooltip" ng-click="instrumentEdit(track)" ng-mousedown="$event.stopPropagation()">
+                    <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.instrument_edit"></div>
+                  </span>
+                </div>
+
               </div>
 
               <div class="show-contextual-tooltip row-fluid track-flags-panel">

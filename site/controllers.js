@@ -58,6 +58,10 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
   $scope.$emit('switchProject', $routeParams.project);
 
+  $scope.patternEdit = function(block) {
+    document.location = "#/editor/" + $routeParams.project + "/pattern/" + block.id;
+  };
+
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
   };
@@ -367,6 +371,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.$emit('switchProject', $routeParams.project); 
+
+  $scope.instrumentEdit = function(track) {
+    document.location = "#/editor/" + $routeParams.project + "/instrument/" + track.instrument;
+  };
 
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;

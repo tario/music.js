@@ -196,6 +196,10 @@ input.responsive-input {
   margin-top: 10px;
 }
 
+.pattern-drop-lateral {
+  position: relative;
+}
+
 .track-muted .enabled-instrument .pattern-drop-lateral {
   background-color: #555555;
 }

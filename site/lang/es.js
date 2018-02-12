@@ -195,7 +195,8 @@ var esTranslations = {
       note_event_p2: 'Arrastra para cambiar el valor o el tiempo de comienzo en la secuencia',
       note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo',
       muted: 'Desactiva la pista haciendo que no se reproduzca',
-      solo: 'Aisla la pista de manera que sea la unica que se reproduzca. Pueden aislarse varias'
+      solo: 'Aisla la pista de manera que sea la unica que se reproduzca. Pueden aislarse varias',
+      instrument_edit: 'Clickea este boton para editar el instrumento'
     }
   },
   song: {
@@ -207,7 +208,8 @@ var esTranslations = {
       download: "Click para grabar la cancion a un archivo de audio y descargarlo",
       drop_pattern: "Area para soltar los patrones, arrastra aqui patrones desde el panel izquierdo",
       remove_block: "Click aqui para eliminar el patron y dejar el bloque vacio",
-      play_block: "Click aqui para reproducir este bloque aislado"
+      play_block: "Click aqui para reproducir este bloque aislado",
+      edit_block: "Click aqui para saltar a la edicion del patron utilizado en este bloque"
     }
   },
   stack: {

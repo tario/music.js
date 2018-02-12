@@ -12788,7 +12788,8 @@ var enTranslations = {
       note_event_p2: 'Drag to change the value and/or starting time',
       note_event_p3: 'Note event. Click to select and edit it',
       muted: 'Disable the track in order to silence it',
-      solo: 'Isolate the track so that it is the only one that plays. Can be more than one'
+      solo: 'Isolate the track so that it is the only one that plays. Can be more than one',
+      instrument_edit: "Click this button to edit the instrument"
     }
   },
   song: {
@@ -12800,7 +12801,8 @@ var enTranslations = {
       download: "Click to record the song and download the audio file",
       drop_pattern: "Drop zone for patterns, drop here a pattern from the panel on the left",
       remove_block: "Click here to remove the pattern and leave the block empty",
-      play_block: "Click here to play this block only"
+      play_block: "Click here to play this block only",
+      edit_block: "Click here to edit the pattern used by this block"
     }
   },
   BUTTON_LANG_EN: 'English',
@@ -13007,7 +13009,8 @@ var esTranslations = {
       note_event_p2: 'Arrastra para cambiar el valor o el tiempo de comienzo en la secuencia',
       note_event_p3: 'Evento de nota. Clickea para seleccionarlo y editarlo',
       muted: 'Desactiva la pista haciendo que no se reproduzca',
-      solo: 'Aisla la pista de manera que sea la unica que se reproduzca. Pueden aislarse varias'
+      solo: 'Aisla la pista de manera que sea la unica que se reproduzca. Pueden aislarse varias',
+      instrument_edit: 'Clickea este boton para editar el instrumento'
     }
   },
   song: {
@@ -13019,7 +13022,8 @@ var esTranslations = {
       download: "Click para grabar la cancion a un archivo de audio y descargarlo",
       drop_pattern: "Area para soltar los patrones, arrastra aqui patrones desde el panel izquierdo",
       remove_block: "Click aqui para eliminar el patron y dejar el bloque vacio",
-      play_block: "Click aqui para reproducir este bloque aislado"
+      play_block: "Click aqui para reproducir este bloque aislado",
+      edit_block: "Click aqui para saltar a la edicion del patron utilizado en este bloque"
     }
   },
   stack: {
@@ -16878,6 +16882,10 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 
   $scope.$emit('switchProject', $routeParams.project);
 
+  $scope.patternEdit = function(block) {
+    document.location = "#/editor/" + $routeParams.project + "/pattern/" + block.id;
+  };
+
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
   };
@@ -17187,6 +17195,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.$emit('switchProject', $routeParams.project); 
+
+  $scope.instrumentEdit = function(track) {
+    document.location = "#/editor/" + $routeParams.project + "/instrument/" + track.instrument;
+  };
 
   $scope.instrumentMap = {};
   $scope.beatWidth = 10;
