@@ -1121,6 +1121,7 @@ module.export = function(m) {
 
       var inst = wrapped(secondGainNode);
       var lastAttackTime;
+      var lastAttackStartTime;
       var lastReleaseTime;
       var lastReleaseV0;
 
@@ -1142,11 +1143,12 @@ module.export = function(m) {
 
             if (lastReleaseTime) {
               var t = currentTime - lastReleaseTime;
-              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime * timeConstantToTimeFactor);
+              lastAttackStartTime = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime * timeConstantToTimeFactor);
             } else {
-              audioParam.value = 0.0;
+              lastAttackStartTime = 0.0;
             }
 
+            audioParam.value = lastAttackStartTime;
             audioParam.setTargetAtTime(1.0, currentTime, attackTime * timeConstantToTimeFactor);
 
             secondAudioParam.cancelScheduledValues(0.0);
@@ -1175,7 +1177,7 @@ module.export = function(m) {
                 var t = currentTime - lastAttackTime;
 
                 lastReleaseTime = currentTime;
-                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime * timeConstantToTimeFactor);
+                lastReleaseV0 = targetExponentialCurve(lastAttackStartTime, 1.0, t, attackTime * timeConstantToTimeFactor);
 
                 audioParam.cancelScheduledValues(0.0);
                 audioParam.value = lastReleaseV0;
@@ -1238,6 +1240,7 @@ module.export = function(m) {
       var secondAudioParam = secondGainNode._destination.gain;
 
       var lastAttackTime;
+      var lastAttackStartTime;
       var lastReleaseTime;
       var lastReleaseV0;
 
@@ -1254,10 +1257,12 @@ module.export = function(m) {
 
             if (lastReleaseTime) {
               var t = currentTime - lastReleaseTime;
-              audioParam.value = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime * timeConstantToTimeFactor);
+              lastAttackStartTime = targetExponentialCurve(lastReleaseV0, 0.0, t, releaseTime * timeConstantToTimeFactor);
             } else {
-              audioParam.value = 0.0;
+              lastAttackStartTime = 0.0;
             }
+
+            audioParam.value = lastAttackStartTime;
 
             audioParam.setTargetAtTime(1.0, currentTime, attackTime * timeConstantToTimeFactor);
 
@@ -1281,7 +1286,7 @@ module.export = function(m) {
                 var t = currentTime - lastAttackTime;
 
                 lastReleaseTime = currentTime;
-                lastReleaseV0 = targetExponentialCurve(0.0, 1.0, t, attackTime * timeConstantToTimeFactor);
+                lastReleaseV0 = targetExponentialCurve(lastAttackStartTime, 1.0, t, attackTime * timeConstantToTimeFactor);
 
                 audioParam.cancelScheduledValues(0.0);
                 audioParam.value = lastReleaseV0;
