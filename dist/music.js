@@ -12608,11 +12608,11 @@ MUSIC.EffectsPipeline.prototype = {
   },
 
   signal_nand: function(value) {
-    return this.not().and(value||1);
+    return this.signal_not().and(value||1);
   },
 
   signal_or: function(value) {
-    return this.not().nor(value||0);
+    return this.signal_not().nor(value||0);
   },
 
   signal_nor: function(value) {
@@ -12622,7 +12622,7 @@ MUSIC.EffectsPipeline.prototype = {
       return {
         apply: function(currentTime, audioParam, music) {
           return modl.apply(currentTime, audioParam, music, function(modulatorFactory, f) {
-            return f(modulatorFactory.not());
+            return f(modulatorFactory.signal_not());
           });
         }
       };
@@ -12634,7 +12634,7 @@ MUSIC.EffectsPipeline.prototype = {
     };
     update(value);
 
-    var ret = andNode.not();
+    var ret = andNode.signal_not();
     ret.update = update;
     return ret;
   },
