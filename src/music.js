@@ -230,11 +230,11 @@ MUSIC.EffectsPipeline.prototype = {
   },
 
   signal_nand: function(value) {
-    return this.signal_not().and(value||1);
+    return this.signal_not().signal_and(value||1);
   },
 
   signal_or: function(value) {
-    return this.signal_not().nor(value||0);
+    return this.signal_not().signal_nor(value||0);
   },
 
   signal_nor: function(value) {
@@ -250,7 +250,7 @@ MUSIC.EffectsPipeline.prototype = {
       };
     };
 
-    var andNode = this.and(1);
+    var andNode = this.signal_and(1);
     var update = function(value) {
       andNode.update(negateModl(value));
     };
