@@ -12608,11 +12608,11 @@ MUSIC.EffectsPipeline.prototype = {
   },
 
   signal_nand: function(value) {
-    return this.signal_not().and(value||1);
+    return this.signal_not().signal_and(value||1);
   },
 
   signal_or: function(value) {
-    return this.signal_not().nor(value||0);
+    return this.signal_not().signal_nor(value||0);
   },
 
   signal_nor: function(value) {
@@ -12628,7 +12628,7 @@ MUSIC.EffectsPipeline.prototype = {
       };
     };
 
-    var andNode = this.and(1);
+    var andNode = this.signal_and(1);
     var update = function(value) {
       andNode.update(negateModl(value));
     };
@@ -12748,19 +12748,30 @@ MUSIC.Effects.register = function(effectName, fcn) {
   };
 };
 
-var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+var audioContext;
 MUSIC.Context = function(options) {
-  var audio = audioContext;
+  var audio;
   var music = this;
-  var gainNode = audio.createGain();
+  var gainNode;
+
   options = options || {};
 
-  gainNode.gain.value = 1.0; 
-  
-  if (!options.nooutput) gainNode.connect(audio.destination);
+  this.resume = function() {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-  this._destination = gainNode;
-  this.audio = audio;
+      audio = audioContext;
+
+      var gainNode = audio.createGain();
+      gainNode.gain.value = 1.0; 
+      if (!options.nooutput) gainNode.connect(audio.destination);
+
+      music.audio = audio;
+      music._destination = gainNode;
+    }
+
+    audioContext.resume();
+  };
 
   this.record = function(options, callback) {
     var recorder = new WebAudioRecorder(gainNode, {
@@ -12785,6 +12796,7 @@ MUSIC.Context = function(options) {
 
   MUSIC.EffectsPipeline.bind(this)(music, this);
 };
+
 MUSIC.Context.prototype = new MUSIC.EffectsPipeline();
 
 MUSIC.SoundLib.FormulaGenerator = function(audio, nextProvider, fcn) {

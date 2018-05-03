@@ -257,6 +257,15 @@ musicShowCaseApp.service("MusicContext", function() {
   };
 
   return {
+    resumeAudio: function() {
+      if (!music) {
+        context = new MUSIC.Context();
+        music = context.sfxBase(); 
+      }
+
+      context.resume();
+    },
+
     runFcn: function(f) {
       if (!music) {
         context = new MUSIC.Context();

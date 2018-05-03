@@ -1,5 +1,5 @@
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
-musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", function($timeout, $uibModal, Midi) {
+musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", "MusicContext", function($timeout, $uibModal, Midi, MusicContext) {
   return {
     scope: {
       instrument: '=instrument'
@@ -102,18 +102,27 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", functio
         };
       };
 
+      var gesture = function() {
+        MusicContext.resumeAudio();
+      };
+
       var mouseOff = function(octave) {
+        gesture();
+
         octave.mouse = {};
         octave.update();
       };
 
       scope.mouseLeave = function(octave, idx) {
-        octave.mouse[idx] = false;
+        gesture();
 
+        octave.mouse[idx] = false;
         octave.update();
       };
 
       scope.mouseEnter = function(octave, idx) {
+        gesture();
+
         scope.octaves.forEach(mouseOff);
         octave.mouse[idx] = true;
 
@@ -121,6 +130,8 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", functio
       };
 
       var keyDownHandler = function(e) {
+        gesture();
+
         if (document.activeElement.tagName.toLowerCase() === "input") return;
 
         var keyCode = e.keyCode;
@@ -135,6 +146,8 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", functio
       }
 
       var keyUpHandler = function(e) {
+        gesture();
+
         var keyCode = e.keyCode;
         var noteName = keyCodeToNote[keyCode];
         if (!noteName) return;
@@ -148,10 +161,20 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", functio
 
       $(document).bind("keydown", keyDownHandler);
       $(document).bind("keyup", keyUpHandler);
+      
+      var pianoFirstRow = $(element).find(".piano-firstrow .key");
+      var pianoSecondRow = $(element).find(".piano-secondrow .key");
+      
+      pianoFirstRow.bind("click", gesture);
+      pianoSecondRow.bind("click", gesture);
 
       scope.$on("$destroy", function() {
         $(document).unbind("keydown", keyDownHandler);
         $(document).unbind("keyup", keyUpHandler);
+
+        pianoFirstRow.unbind("click", gesture);
+        pianoSecondRow.unbind("click", gesture);
+
         scope.octaves.forEach(function(octave) {
           octave.stopAll();
         });
