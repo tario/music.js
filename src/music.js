@@ -370,29 +370,24 @@ MUSIC.Effects.register = function(effectName, fcn) {
   };
 };
 
-var audioContext;
+var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
 MUSIC.Context = function(options) {
-  var audio;
+  var audio = audioContext;
   var music = this;
-  var gainNode;
+  var gainNode = audio.createGain();
 
   options = options || {};
+  gainNode.gain.value = 1.0; 
+  if (!options.nooutput) gainNode.connect(audio.destination);
+
+  music.audio = audio;
+  music._destination = gainNode;
 
   this.resume = function() {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-      audio = audioContext;
-
-      var gainNode = audio.createGain();
-      gainNode.gain.value = 1.0; 
-      if (!options.nooutput) gainNode.connect(audio.destination);
-
-      music.audio = audio;
-      music._destination = gainNode;
+    if (audioContext.state !== 'running') {
+      audioContext.resume();
     }
-
-    audioContext.resume();
   };
 
   this.record = function(options, callback) {

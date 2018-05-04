@@ -133,6 +133,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   var playing = null;
 
   $scope.play = function() {
+    MusicContext.resumeAudio();
+
     $scope.stop();
     $q.all(instSet.all)
       .then(function(instruments){
@@ -181,6 +183,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.patternPlay = function(block, songTrackIdx) {
+    MusicContext.resumeAudio();
+
     var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
@@ -449,6 +453,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.play = function() {
+    MusicContext.resumeAudio();
+
     var playingLine = $(".playing-line");
 
     $q.all(instSet.all)
@@ -546,6 +552,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.onDropComplete = function(instrument,event) {
+    MusicContext.resumeAudio();
+
     if (instrument.type !== 'instrument') return;
 
     var trackNo = $scope.file.selectedTrack;
@@ -597,8 +605,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     }
   };
 
+  var playButton = $("button.play-button");
+
+  playButton.bind("click", MusicContext.resumeAudio);
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
+    playButton.unbind("click", MusicContext.resumeAudio);
     $(document).unbind("keydown", keyDownHandler);
 
     instSet.dispose();

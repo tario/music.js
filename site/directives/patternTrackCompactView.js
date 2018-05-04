@@ -1,4 +1,4 @@
-musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", "Pattern", function($timeout, TICKS_PER_BEAT, Recipe, Pattern) {
+musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", "Pattern", "MusicContext", function($timeout, TICKS_PER_BEAT, Recipe, Pattern, MusicContext) {
   return {
     scope: {
       /* Current pattern */
@@ -69,6 +69,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
         var moveEvent = function(evt, offsetX) {
           return function(event) {
+            MusicContext.resumeAudio();
+
             var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -95,6 +97,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
         var moveEventFromEvent = function(evt, offsetX) {
           return function(dragevt, event) {
+            MusicContext.resumeAudio();
+
             var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -152,6 +156,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
         event.preventDefault();
 
         scope.mouseMove = function(event) {
+          MusicContext.resumeAudio();
+
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
@@ -180,6 +186,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
         };
 
         scope.mouseMoveEvent = function(dragevt, event) {
+          MusicContext.resumeAudio();
+
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);

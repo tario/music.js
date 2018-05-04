@@ -13798,7 +13798,7 @@ musicShowCaseApp.directive("keyboard", ["$timeout", "$uibModal", "Midi", "MusicC
 
 }]);
 
-musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "Pattern", function($timeout, TICKS_PER_BEAT, Pattern) {
+musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "Pattern", "MusicContext", function($timeout, TICKS_PER_BEAT, Pattern, MusicContext) {
   return {
     scope: {
       /* Current pattern */
@@ -13979,6 +13979,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
       var moveEvent = function(evt, offsetX) {
         return function(event) {
+          MusicContext.resumeAudio();
+
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -14005,6 +14007,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       var moveEventFromEvent = function(evt, offsetX) {
         clearShadow();
         return function(dragevt, event) {
+          MusicContext.resumeAudio();
+
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -14031,6 +14035,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.mouseDown = function(event) {
+        MusicContext.resumeAudio();
+
         if (!event.target.classList.contains("event-list")) return;
         var newEvt = {
           n: Math.floor(120 - event.offsetY / 20),
@@ -14091,6 +14097,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.mouseDownEvent = function(evt, event) {
+        MusicContext.resumeAudio();
+
         event.preventDefault();
         document.activeElement.blur();
 
@@ -14120,6 +14128,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.mouseDownResizeEvent = function(evt, event) {
+        MusicContext.resumeAudio();
+
         event.preventDefault();
 
         scope.$emit("patternSelectEvent", evt);
@@ -14245,7 +14255,7 @@ musicShowCaseApp.directive("ngfLoader", ["$parse", function($parse) {
   };
 }]);
 
-musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", "Pattern", function($timeout, TICKS_PER_BEAT, Recipe, Pattern) {
+musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BEAT", "Recipe", "Pattern", "MusicContext", function($timeout, TICKS_PER_BEAT, Recipe, Pattern, MusicContext) {
   return {
     scope: {
       /* Current pattern */
@@ -14316,6 +14326,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
         var moveEvent = function(evt, offsetX) {
           return function(event) {
+            MusicContext.resumeAudio();
+
             var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -14342,6 +14354,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
 
         var moveEventFromEvent = function(evt, offsetX) {
           return function(dragevt, event) {
+            MusicContext.resumeAudio();
+
             var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
             var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -14399,6 +14413,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
         event.preventDefault();
 
         scope.mouseMove = function(event) {
+          MusicContext.resumeAudio();
+
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
@@ -14427,6 +14443,8 @@ musicShowCaseApp.directive("patternTrackCompactView", ["$timeout", "TICKS_PER_BE
         };
 
         scope.mouseMoveEvent = function(dragevt, event) {
+          MusicContext.resumeAudio();
+
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var clipL = Pattern.findClipL(scope.pattern, scope.track, evt, evt.s);
@@ -16992,6 +17010,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   var playing = null;
 
   $scope.play = function() {
+    MusicContext.resumeAudio();
+
     $scope.stop();
     $q.all(instSet.all)
       .then(function(instruments){
@@ -17040,6 +17060,8 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.patternPlay = function(block, songTrackIdx) {
+    MusicContext.resumeAudio();
+
     var pattern = $scope.indexMap[block.id].contents;
     var doNothing = function() {};
 
@@ -17308,6 +17330,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.play = function() {
+    MusicContext.resumeAudio();
+
     var playingLine = $(".playing-line");
 
     $q.all(instSet.all)
@@ -17405,6 +17429,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   };
 
   $scope.onDropComplete = function(instrument,event) {
+    MusicContext.resumeAudio();
+
     if (instrument.type !== 'instrument') return;
 
     var trackNo = $scope.file.selectedTrack;
@@ -17456,8 +17482,12 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     }
   };
 
+  var playButton = $("button.play-button");
+
+  playButton.bind("click", MusicContext.resumeAudio);
   $(document).bind("keydown", keyDownHandler);
   $scope.$on("$destroy", function() {
+    playButton.unbind("click", MusicContext.resumeAudio);
     $(document).unbind("keydown", keyDownHandler);
 
     instSet.dispose();

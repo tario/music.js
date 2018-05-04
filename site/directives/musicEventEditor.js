@@ -1,4 +1,4 @@
-musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "Pattern", function($timeout, TICKS_PER_BEAT, Pattern) {
+musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "Pattern", "MusicContext", function($timeout, TICKS_PER_BEAT, Pattern, MusicContext) {
   return {
     scope: {
       /* Current pattern */
@@ -179,6 +179,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
       var moveEvent = function(evt, offsetX) {
         return function(event) {
+          MusicContext.resumeAudio();
+
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -205,6 +207,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       var moveEventFromEvent = function(evt, offsetX) {
         clearShadow();
         return function(dragevt, event) {
+          MusicContext.resumeAudio();
+
           var clipDistance = TICKS_PER_BEAT / scope.zoomLevel;
           var oldevt = {n:evt.n, s:evt.s, l:evt.l};
 
@@ -231,6 +235,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.mouseDown = function(event) {
+        MusicContext.resumeAudio();
+
         if (!event.target.classList.contains("event-list")) return;
         var newEvt = {
           n: Math.floor(120 - event.offsetY / 20),
@@ -291,6 +297,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.mouseDownEvent = function(evt, event) {
+        MusicContext.resumeAudio();
+
         event.preventDefault();
         document.activeElement.blur();
 
@@ -320,6 +328,8 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       };
 
       scope.mouseDownResizeEvent = function(evt, event) {
+        MusicContext.resumeAudio();
+
         event.preventDefault();
 
         scope.$emit("patternSelectEvent", evt);
