@@ -469,7 +469,6 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
         };
 
         playing = Pattern.patternCompose($scope.file, instruments, 0, onStop).play();
-
         $scope.$broadcast("startClock", window.performance.now());
       });
   };

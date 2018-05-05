@@ -61,6 +61,12 @@ var instrumentExtend = function(obj) {
     };
   }
 
+  if (!obj.note) {
+    obj.note = function(n, options) {
+      return this.schedule_note(n, options, 0.0);
+    };
+  }
+
   return obj;
 };
 
@@ -109,14 +115,14 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
 
   instrumentExtend(this);
 
-  this.eventPreprocessor = function(event) {
+  this.eventPreprocessor = function(event, events) {
     var instrument = instrumentArray[0]
     if (!instrument) {
       instrument = innerFactory();
       instrumentArray[0] = instrument;
     }
 
-    return (instrument.eventPreprocessor||function(x){return x; })(event);
+    return (instrument.eventPreprocessor||function(x){return x; })(event, events);
   };
 };
 
@@ -147,6 +153,26 @@ MUSIC.MonoNoteInstrument = function(inner) {
     });
   };
 
+  this.schedule_note = function(notenum, options, delay) {
+    if (!noteInst) {
+      noteInst = inner.note(notenum, options);
+    }
+
+    return MUSIC.playablePipeExtend({
+      play: function(param) {
+        if (!playingInst) {
+          playingInst = noteInst.play(param);
+        }
+
+        noteInst.setValueOnTime(notenum, options, delay);
+
+        return {stop: function() {
+          noteInst.cancelScheduledValues();
+        }};
+      } 
+    });
+  };
+
   this.dispose = function() {
     if (playingInst) {
       playingInst.stop();
@@ -159,6 +185,25 @@ MUSIC.MonoNoteInstrument = function(inner) {
 };
 
 MUSIC.Instrument = function(soundFactory) {
+  if (soundFactory.schedule_freq) {
+    this.schedule_note = function(notenum, options, delay, duration) {
+      if (notenum === undefined) return undefined;
+      var freq = frequency(notenum);
+
+      return MUSIC.playablePipeExtend({
+        play: function(param) {
+          var fr = soundFactory.schedule_freq(freq, delay);
+          var soundInstance = fr.play(param);
+          return {
+            stop: function() {
+              soundInstance.stop();
+            }
+          }
+        }
+      });
+    };
+  }
+
   this.note = function(notenum) {
     if (notenum === undefined) return undefined;
 
@@ -171,6 +216,18 @@ MUSIC.Instrument = function(soundFactory) {
         if (fr.setFreq) {
           this.setValue = function(n, options) {
             fr.setFreq(frequency(n), options);
+          };
+
+          this.reset = fr.reset.bind(fr);
+        }
+
+        if (fr.cancelScheduledValues) {
+          this.cancelScheduledValues = fr.cancelScheduledValues.bind(fr);
+        }
+
+        if (fr.setFreqOnTime) {
+          this.setValueOnTime = function(n, options, delay) {
+            fr.setFreqOnTime(frequency(n), options, delay);
           };
 
           this.reset = fr.reset.bind(fr);
@@ -222,19 +279,50 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     });
   };
 
+  if (instrumentArray().every(function(i) { return i.schedule_note; })) {
+    this.schedule_note = function(noteNum, options, delay, duration) {
+      return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
+        return instrument.schedule_note(noteNum, options, delay, duration);
+      })));
+    };
+  }
+
   instrumentExtend(this);
 
-  this.eventPreprocessor = function(event) {
+  this.eventPreprocessor = function(event, events) {
     var array = instrumentArray();
     if (!array.length) return event;
 
-    var events = array.map(function(instrument) {
-      return instrument.eventPreprocessor(event);
+    var processedEvents = array.map(function(instrument) {
+      return instrument.eventPreprocessor(event, events);
     });
 
-    return events.reduce(function(acc, e1) {
-      return acc[2] > e1[2] ? acc : e1;
-    });
+    if (processedEvents.length === 1) {
+      return processedEvents[0];
+    } else {
+      var n = 0, s = 0, l = 0;
+      var options = {};
+
+      for (var i=0; i<processedEvents.length; i++) {
+        var evt = processedEvents[i];
+        n = n + evt[0];
+        s = s + evt[1];
+        l = l + evt[2];
+
+        if (evt[3]) {
+          for (var k in evt[3]) {
+            options[k] = evt[3][k];
+          }
+        }
+      }
+
+      return [
+        Math.floor(n/processedEvents.length),
+        s/processedEvents.length,
+        l/processedEvents.length,
+        options
+      ];
+    }
   };
 };
 

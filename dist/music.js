@@ -13063,6 +13063,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   if (!isFinite(time_constant) || isNaN(time_constant) || time_constant <= 0) time_constant = 0.01;
 
   var osc;
+
   osc = music.audio.createOscillator();
   osc.connect(audioDestination);
 
@@ -13090,6 +13091,22 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     osc.type = options.type;    
   }
 
+  this.schedule_freq = function(newFreq, delay) {
+    var tc;
+    tc = time_constant||0.1;
+
+    var stop = function() {};
+    var play = function() {
+      osc.frequency.setTargetAtTime(newFreq, music.audio.currentTime, tc);
+      return {
+        stop: stop
+      };
+    };
+
+    return {
+      play: play
+    };
+  };
 
   this.freq = function(newFreq) {
     var frequency = options.fixed_frequency ? options.fixed_frequency : newFreq
@@ -13098,9 +13115,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       osc.frequency.value = frequency;
     }    
 
-    var resetd = false;
     var playable = {};
+
     playable.setFreq = function(frequency, noteOptions) {
+      playable.setFreqOnTime(frequency, noteOptions, 0);
+    };
+
+    playable.cancelScheduledValues = function() {
+      osc.frequency.cancelScheduledValues(0.0);
+    };
+
+    playable.setFreqOnTime = function(frequency, noteOptions, delay) {
       if (options.fixed_frequency) return;
 
       var tc;
@@ -13109,15 +13134,12 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         tc = noteOptions.tc;
       } else {
         tc = time_constant||0.1;
-        if (resetd) tc = 0.0001;
       }
 
-      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
-      resetd = false;
+      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime + delay, tc);
     };
 
     playable.reset = function() {
-      resetd = true;
     };
 
     playable.play = function(param) {
@@ -13814,6 +13836,12 @@ var instrumentExtend = function(obj) {
     };
   }
 
+  if (!obj.note) {
+    obj.note = function(n, options) {
+      return this.schedule_note(n, options, 0.0);
+    };
+  }
+
   return obj;
 };
 
@@ -13862,14 +13890,14 @@ MUSIC.PolyphonyInstrument = function(innerFactory, maxChannels) {
 
   instrumentExtend(this);
 
-  this.eventPreprocessor = function(event) {
+  this.eventPreprocessor = function(event, events) {
     var instrument = instrumentArray[0]
     if (!instrument) {
       instrument = innerFactory();
       instrumentArray[0] = instrument;
     }
 
-    return (instrument.eventPreprocessor||function(x){return x; })(event);
+    return (instrument.eventPreprocessor||function(x){return x; })(event, events);
   };
 };
 
@@ -13900,6 +13928,26 @@ MUSIC.MonoNoteInstrument = function(inner) {
     });
   };
 
+  this.schedule_note = function(notenum, options, delay) {
+    if (!noteInst) {
+      noteInst = inner.note(notenum, options);
+    }
+
+    return MUSIC.playablePipeExtend({
+      play: function(param) {
+        if (!playingInst) {
+          playingInst = noteInst.play(param);
+        }
+
+        noteInst.setValueOnTime(notenum, options, delay);
+
+        return {stop: function() {
+          noteInst.cancelScheduledValues();
+        }};
+      } 
+    });
+  };
+
   this.dispose = function() {
     if (playingInst) {
       playingInst.stop();
@@ -13912,6 +13960,25 @@ MUSIC.MonoNoteInstrument = function(inner) {
 };
 
 MUSIC.Instrument = function(soundFactory) {
+  if (soundFactory.schedule_freq) {
+    this.schedule_note = function(notenum, options, delay, duration) {
+      if (notenum === undefined) return undefined;
+      var freq = frequency(notenum);
+
+      return MUSIC.playablePipeExtend({
+        play: function(param) {
+          var fr = soundFactory.schedule_freq(freq, delay);
+          var soundInstance = fr.play(param);
+          return {
+            stop: function() {
+              soundInstance.stop();
+            }
+          }
+        }
+      });
+    };
+  }
+
   this.note = function(notenum) {
     if (notenum === undefined) return undefined;
 
@@ -13924,6 +13991,18 @@ MUSIC.Instrument = function(soundFactory) {
         if (fr.setFreq) {
           this.setValue = function(n, options) {
             fr.setFreq(frequency(n), options);
+          };
+
+          this.reset = fr.reset.bind(fr);
+        }
+
+        if (fr.cancelScheduledValues) {
+          this.cancelScheduledValues = fr.cancelScheduledValues.bind(fr);
+        }
+
+        if (fr.setFreqOnTime) {
+          this.setValueOnTime = function(n, options, delay) {
+            fr.setFreqOnTime(frequency(n), options, delay);
           };
 
           this.reset = fr.reset.bind(fr);
@@ -13975,19 +14054,50 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     });
   };
 
+  if (instrumentArray().every(function(i) { return i.schedule_note; })) {
+    this.schedule_note = function(noteNum, options, delay, duration) {
+      return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
+        return instrument.schedule_note(noteNum, options, delay, duration);
+      })));
+    };
+  }
+
   instrumentExtend(this);
 
-  this.eventPreprocessor = function(event) {
+  this.eventPreprocessor = function(event, events) {
     var array = instrumentArray();
     if (!array.length) return event;
 
-    var events = array.map(function(instrument) {
-      return instrument.eventPreprocessor(event);
+    var processedEvents = array.map(function(instrument) {
+      return instrument.eventPreprocessor(event, events);
     });
 
-    return events.reduce(function(acc, e1) {
-      return acc[2] > e1[2] ? acc : e1;
-    });
+    if (processedEvents.length === 1) {
+      return processedEvents[0];
+    } else {
+      var n = 0, s = 0, l = 0;
+      var options = {};
+
+      for (var i=0; i<processedEvents.length; i++) {
+        var evt = processedEvents[i];
+        n = n + evt[0];
+        s = s + evt[1];
+        l = l + evt[2];
+
+        if (evt[3]) {
+          for (var k in evt[3]) {
+            options[k] = evt[3][k];
+          }
+        }
+      }
+
+      return [
+        Math.floor(n/processedEvents.length),
+        s/processedEvents.length,
+        l/processedEvents.length,
+        options
+      ];
+    }
   };
 };
 
@@ -14277,16 +14387,25 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
     }
   }
 
-  this._funseq.push({t:startTime, f: function(param){
-    var ctx = baseCtx || param;
-    var playing;
-    playing = ctx.instrument.note(noteNum, options);
-    ctx.setPlaying(mynoteid, playing);
-  }});
-  this._funseq.push({t:startTime + duration, f: function(param){
-    var ctx = baseCtx || param;
-    ctx.unsetPlaying(mynoteid);
-  }});
+  if (baseCtx && baseCtx.instrument && baseCtx.instrument.schedule_note) {
+    this._funseq.push({t:startTime, f: function(param, delay) {
+      var playing = baseCtx.instrument.schedule_note(noteNum, options, delay/1000, duration/1000);
+      baseCtx.setPlaying(mynoteid, playing);
+    }, externalSchedule: true});
+  } else {
+
+    console.warn("UNSUPPORTED WEBAUDIO SCHEDULE FOR note n=" + noteNum + " at " + startTime + " (fallback to setTimeout)");
+
+    this._funseq.push({t:startTime, f: function(param){
+      var ctx = baseCtx || param;
+      var playing = ctx.instrument.note(noteNum, options);
+      ctx.setPlaying(mynoteid, playing);
+    }});
+    this._funseq.push({t:startTime + duration, f: function(param){
+      var ctx = baseCtx || param;
+      ctx.unsetPlaying(mynoteid);
+    }});
+  }
 
   if (startTime + duration > this._totalduration) this._totalduration = startTime + duration;
 };
@@ -14677,13 +14796,21 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
         var currentPending = pending;
         pending = [];
 
+        for (var i=0; i<currentPending.length; i++) {
+          if (currentPending[i].externalSchedule) {
+            currentPending[i].f(parameter, currentPending[i].t - t);
+          }
+        }
+
         var timeoutHandler = setTimeout(function() {
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
 
           for (var i=0; i<currentPending.length; i++) {
-            currentPending[i].f(parameter);
-            eventCount--;
-            if (eventCount === 0) clockHandler.stop();
+            if (!currentPending[i].externalSchedule) {
+              currentPending[i].f(parameter, 0);
+              eventCount--;
+              if (eventCount === 0) clockHandler.stop();
+            }
           }
         }, currentPending[0].t - t);
         timeoutHandlers.push(timeoutHandler);
@@ -14763,7 +14890,8 @@ MUSIC.Utils.DelayedFunctionSeq = function(inner, delay) {
   var push = function(params) {
     return inner.push({
       f: params.f,
-      t: params.t + delay
+      t: params.t + delay,
+      externalSchedule: params.externalSchedule
     });
   };
 

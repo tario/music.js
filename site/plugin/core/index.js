@@ -855,7 +855,7 @@ module.export = function(m) {
       var lastPlaying = null;
       var lastNoteInst = null;
       var noteCount = 0;
-      
+
       var note = function(n, options) {
         var innerNote;
 
@@ -949,16 +949,16 @@ module.export = function(m) {
         audioParamModulation = baseNode._destination.offset;
       }
 
-      return {
-        note: function() {
-          var currentTime = music._audio.audio.currentTime;
-          audioParamModulation.cancelScheduledValues(0.0);
-          audioParamModulation.value = 0.0;
-          audioParamModulation.setTargetAtTime(target, currentTime, fallTime/6);
+      return MUSIC.instrumentExtend({
+        schedule_note: function(n, options, delay) {
+          var startTime = music._audio.audio.currentTime + delay;
+          audioParamModulation.cancelScheduledValues(startTime);
+          audioParamModulation.setValueAtTime(0.0, startTime);
+          audioParamModulation.setTargetAtTime(target, startTime, fallTime/6);
 
           return nullPlay;
         }
-      };
+      });
     };
 
     ret.update = function(data) {
@@ -995,11 +995,11 @@ module.export = function(m) {
         audioParamModulation = baseNode._destination.offset;
       }
 
-      var note = function(n) {
+      var schedule_note = function(n, options, delay, duration) {
         return {
           play: function() {
-            audioParamModulation.cancelScheduledValues(0.0);
-            audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime, time_constant);
+            audioParamModulation.cancelScheduledValues(music._audio.audio.currentTime);
+            audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime + delay, time_constant);
 
             return nullPlaying;
           }
@@ -1007,7 +1007,7 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
-        note: note
+        schedule_note: schedule_note
       });      
     };
 
@@ -1038,6 +1038,29 @@ module.export = function(m) {
       }
 
       var noteCount = 0;
+      var schedule_note = function(n, options, delay, duration) {
+        var stop = function() {
+          var endTime = music._audio.audio.currentTime;
+          audioParamModulation.cancelScheduledValues(0.0);
+          audioParamModulation.setTargetAtTime(note_off, endTime, leave_time_constant);
+        };
+
+        var play = function() {
+          var startTime = music._audio.audio.currentTime + delay;
+          audioParamModulation.cancelScheduledValues(startTime);
+          audioParamModulation.setTargetAtTime(note_on, startTime, enter_time_constant);
+          audioParamModulation.setTargetAtTime(note_off, startTime + duration, leave_time_constant);
+
+          return {
+            stop: stop
+          };
+        };
+
+        return MUSIC.playablePipeExtend({
+          play: play
+        });
+      };
+
       var note = function(n) {
         var play = function(){
           var currentLevel = audioParamModulation.value;
@@ -1062,7 +1085,8 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
-        note: note
+        note: note,
+        schedule_note: schedule_note
       });
     };
 
@@ -1100,15 +1124,44 @@ module.export = function(m) {
 
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var resetOnCut = false;
-    var infinitesimalAttackTime = 0.000001;
+    var infinitesimalAttackTime = 0.01;
     var timeConstantToTimeFactor = 1/6;
+    var overlappingTolerance = 0.01;
 
-    var eventPreprocessor = function(event) {
+    var eventPreprocessor = function(event, events) {
       var l = event[2];
-      l = l - releaseTime * 1000;
-      if (l <0 ) l = 0;
+      var options = JSON.parse(JSON.stringify(event[3]));
 
-      return [event[0], event[1], l];
+      if (!resetOnCut) {
+        for (var i=0; i<events.length; i++) {
+          if (events[i][1] !== event[1] || events[i][0] !== event[0]) {
+            if (event[1] < events[i][1] + events[i][2] &&
+                event[1] + event[2] > events[i][1] + events[i][2]) {
+
+              options.noReset = true;
+            }
+          }
+        }
+      }
+
+      var endTime = event[1] + event[2];
+      var decayTime = event[1] + attackTime;
+
+      for (var i=0; i<events.length; i++) {
+        if ((events[i][1] !== event[1] || events[i][0] !== event[0]) && events[i][1] > event[1]) {
+          if (events[i][1] < endTime + overlappingTolerance &&
+              events[i][1] + events[i][2] > endTime) {
+            options.noRelease = true;
+          }
+
+          if (events[i][1] < decayTime + overlappingTolerance &&
+              events[i][1] + events[i][2] > decayTime) {
+            options.noDecay = true;
+          }
+        }
+      }
+
+      return [event[0], event[1], l, options];
     };
 
     var ret = function(music) {
@@ -1185,8 +1238,51 @@ module.export = function(m) {
             });
       };
 
+      var schedule_note = function(n, options, delay, duration) {
+        var currentTime = gainNode.currentTime();
+        var startTime = currentTime + delay;
+        var endTime = startTime + duration;
+
+        options = options || {};
+
+        var innerNote = inst.schedule_note(n, options, delay, duration);
+        return MUSIC.playablePipeExtend({
+          play: function(param) {
+            var playing = innerNote.play();
+
+            if (!options.noReset) {
+              audioParam.setTargetAtTime(1.0, startTime, attackTime * timeConstantToTimeFactor);
+              secondAudioParam.setTargetAtTime(1.0, startTime, attackTime * timeConstantToTimeFactor);
+            }
+
+            if (!options.noDecay) {
+              if (startTime + attackTime < endTime) {
+                audioParam.setTargetAtTime(sustainLevel, startTime + attackTime, decayTime * timeConstantToTimeFactor);
+              }
+            }
+
+            if (!options.noRelease) {
+              audioParam.setTargetAtTime(0.0, endTime, releaseTime * timeConstantToTimeFactor);
+            }
+
+            return {
+              stop: function() {
+                playing.stop();
+
+                secondAudioParam.cancelScheduledValues(0.0);
+                secondAudioParam.setTargetAtTime(0.0, gainNode.currentTime(), 0.01);
+                audioParam.cancelScheduledValues(0.0);
+                audioParam.setTargetAtTime(0.0, gainNode.currentTime(), 0.01);
+              }
+            }
+          }
+        });
+
+      };
+
       return MUSIC.instrumentExtend({
         note: note,
+        schedule_note: inst.schedule_note && schedule_note,
         eventPreprocessor: eventPreprocessor
       });
     };
@@ -1198,6 +1294,8 @@ module.export = function(m) {
     ret.update = function(data) {
       samples = data.samples || 100;  
       attackTime = parseFloat(_def(data.attackTime, 0.4)) || infinitesimalAttackTime;
+      if (attackTime < infinitesimalAttackTime) attackTime = infinitesimalAttackTime;
+
       decayTime = parseFloat(_def(data.decayTime,0.4));
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
@@ -1220,15 +1318,44 @@ module.export = function(m) {
   }},  function(data, subobjects) {
     var samples, attackTime, decayTime, sustainLevel, releaseTime;
     var resetOnCut = false;
-    var infinitesimalAttackTime = 0.000001;
+    var infinitesimalAttackTime = 0.01;
     var timeConstantToTimeFactor = 1/6;
+    var overlappingTolerance = 0.01;
 
-    var eventPreprocessor = function(event) {
+    var eventPreprocessor = function(event, events) {
       var l = event[2];
-      l = l - releaseTime * 1000;
-      if (l <0 ) l = 0;
+      var options = JSON.parse(JSON.stringify(event[3]));
 
-      return [event[0], event[1], l];
+      if (!resetOnCut) {
+        for (var i=0; i<events.length; i++) {
+          if (events[i][1] !== event[1] || events[i][0] !== event[0]) {
+            if (event[1] < events[i][1] + events[i][2] &&
+                event[1] + event[2] > events[i][1] + events[i][2]) {
+
+              options.noReset = true;
+            }
+          }
+        }
+      }
+
+      var endTime = event[1] + event[2];
+      var decayTime = event[1] + attackTime;
+
+      for (var i=0; i<events.length; i++) {
+        if ((events[i][1] !== event[1] || events[i][0] !== event[0]) && events[i][1] > event[1]) {
+          if (events[i][1] < endTime + overlappingTolerance &&
+              events[i][1] + events[i][2] > endTime) {
+            options.noRelease = true;
+          }
+
+          if (events[i][1] < decayTime + overlappingTolerance &&
+              events[i][1] + events[i][2] > decayTime) {
+            options.noDecay = true;
+          }
+        }
+      }
+
+      return [event[0], event[1], l, options];
     };
 
     var ret = function(music) {
@@ -1294,8 +1421,49 @@ module.export = function(m) {
             });
       };
 
+      var schedule_note = function(n, options, delay, duration) {
+        var currentTime = gainNode.currentTime();
+        var startTime = currentTime + delay;
+        var endTime = startTime + duration;
+
+        options = options || {};
+
+        return MUSIC.playablePipeExtend({
+          play: function(param) {
+            audioParam.cancelScheduledValues(startTime);
+            secondAudioParam.cancelScheduledValues(startTime);
+
+            if (!options.noReset) {
+              audioParam.setTargetAtTime(1.0, startTime, attackTime * timeConstantToTimeFactor);
+              secondAudioParam.setTargetAtTime(1.0, startTime, attackTime * timeConstantToTimeFactor);
+            }
+
+            if (!options.noDecay && sustainLevel !== 1.0) {
+              if (startTime + attackTime < endTime) {
+                audioParam.setTargetAtTime(sustainLevel, startTime + attackTime, decayTime * timeConstantToTimeFactor);
+              }
+            }
+
+            if (!options.noRelease) {
+              audioParam.setTargetAtTime(0.0, endTime, releaseTime * timeConstantToTimeFactor);
+            }
+
+            return {
+              stop: function() {
+                secondAudioParam.cancelScheduledValues(0.0);
+                secondAudioParam.setTargetAtTime(0.0, gainNode.currentTime(), 0.01);
+                audioParam.cancelScheduledValues(0.0);
+                audioParam.setTargetAtTime(0.0, gainNode.currentTime(), 0.01);
+              }
+            }
+          }
+        });
+
+      };
+
       return MUSIC.instrumentExtend({
         note: note,
+        schedule_note: schedule_note,
         eventPreprocessor: eventPreprocessor
       });
     };
@@ -1307,6 +1475,8 @@ module.export = function(m) {
     ret.update = function(data) {
       samples = data.samples || 100;  
       attackTime = parseFloat(_def(data.attackTime, 0.4))||infinitesimalAttackTime;
+      if (attackTime < infinitesimalAttackTime) attackTime = infinitesimalAttackTime;
+
       decayTime = parseFloat(_def(data.decayTime,0.4));
       sustainLevel = parseFloat(_def(data.sustainLevel,0.8));
       releaseTime = parseFloat(_def(data.releaseTime,0.4));
@@ -1328,6 +1498,8 @@ module.export = function(m) {
         if (!wrapped) return;
 
         var delay = 100; //ms
+        var _delayS = 0.1;
+
         var ret = function(music) {
           var inst = wrapped(music);
 
@@ -1351,13 +1523,18 @@ module.export = function(m) {
             return MUSIC.playablePipeExtend({play: play});
           };
 
+
           return MUSIC.instrumentExtend({
-            note: note
+            note: note,
+            schedule_note: inst.schedule_note && function(n, options, delay, duration) {
+              return inst.schedule_note(n, options, delay + _delayS, duration)
+            }
           });
         };
 
         ret.update = function(data) {
           delay = data.delay * 1000;
+          _delayS = data.delay;
 
           return this;
         };
@@ -1515,16 +1692,22 @@ module.export = function(m) {
         if (!wrapped) return;
         var time;
 
-        var eventPreprocessor = function(event) {
-          var l = event[2];
-          l = l - time * 1000;
-          if (l <0 ) l = 0;
-
-          return [event[0], event[1], l];
-        };
-
         var ret = function(music) {
           var ret = wrapped(music);
+          var originalEventPreprocessor = ret.eventPreprocessor;
+
+          var eventPreprocessor = function(event, events) {
+            var l = event[2];
+            l = l - time * 1000;
+            if (l <0 ) l = 0;
+
+            if (originalEventPreprocessor) {
+              return originalEventPreprocessor([event[0], event[1], l, event[3]], events);
+            } else {
+              return [event[0], event[1], l, event[3]];
+            }
+          };
+
           ret.eventPreprocessor = eventPreprocessor;
           return ret;
         };
@@ -1553,12 +1736,12 @@ module.export = function(m) {
         if (!wrapped) return;
         var time;
 
-        var eventPreprocessor = function(event) {
+        var eventPreprocessor = function(event, events) {
           var s = event[1];
           s = s + time * 1000;
           if (s < 0 ) s = 0;
 
-          return [event[0], s, event[2]];
+          return [event[0], s, event[2], event[3]];
         };
 
         var ret = function(music) {
@@ -1603,8 +1786,14 @@ module.export = function(m) {
             return originalNote(n+tr, options);
           };
 
-          return x;
+          if (wr.schedule_note) {
+            var originalScheduleNote = wr.schedule_note.bind(wr);
+            x.schedule_note = function(n, options, delay, duration) {
+              return originalScheduleNote(n+tr, options, delay, duration);
+            };
+          }
 
+          return x;
         };
 
         ret.update = function(data) {
@@ -1645,7 +1834,8 @@ module.export = function(m) {
             nodes.push(node)
             
             var inner = wrapped(node, options);
-            return new MUSIC.MultiInstrument(function() {
+
+            var x = new MUSIC.MultiInstrument(function() {
               var instrumentArray = [inner];
               for (var k in modulatorInstruments) {
                 instrumentArray.push(modulatorInstruments[k]);
@@ -1653,6 +1843,8 @@ module.export = function(m) {
 
               return instrumentArray;
             });
+
+            return x;
           };
 
 
@@ -1945,6 +2137,51 @@ module.export = function(m) {
               return noteSeq.makePlayable(instrument);
             }
             
+          },
+
+          schedule_note: instrument.schedule_note && function(n, options, delay, totalNoteDuration) {
+            var box = (duration + gap)/1000;
+            var currentDelay = delay;
+            var i=0;
+            var durationS = duration/1000;
+            var playableArray = [];
+
+            for(var currentDelay = delay; currentDelay < totalNoteDuration + delay; currentDelay += box) {
+              if (i===total) {
+                if (loop) {
+                  i=0;
+                } else {
+                  var remainingTime = totalNoteDuration - currentDelay - gap/1000;
+                  if (remainingTime > 0.0) {
+                    playableArray.push(instrument.schedule_note(scale.add(n, i*interval), options, currentDelay, remainingTime));
+                  }
+                  break;
+                }
+              }
+
+              playableArray.push(instrument.schedule_note(scale.add(n, i*interval), options, currentDelay, durationS));
+              i++;
+            }
+
+            var play = function() {
+              var stoppableArray = playableArray.map(function(p) {
+                return p.play();
+              });
+
+              var stop = function() {
+                if (stoppableArray.length) {
+                  stoppableArray.slice(-1)[0].stop();
+                }
+              };
+
+              return {
+                stop: stop
+              };
+            };
+
+            return MUSIC.playablePipeExtend({
+              play: play
+            });
           }
         };
 
