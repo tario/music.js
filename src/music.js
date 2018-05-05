@@ -685,6 +685,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
   if (!isFinite(time_constant) || isNaN(time_constant) || time_constant <= 0) time_constant = 0.01;
 
   var osc;
+
   osc = music.audio.createOscillator();
   osc.connect(audioDestination);
 
@@ -712,6 +713,22 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     osc.type = options.type;    
   }
 
+  this.schedule_freq = function(newFreq, delay) {
+    var tc;
+    tc = time_constant||0.1;
+
+    var stop = function() {};
+    var play = function() {
+      osc.frequency.setTargetAtTime(newFreq, music.audio.currentTime, tc);
+      return {
+        stop: stop
+      };
+    };
+
+    return {
+      play: play
+    };
+  };
 
   this.freq = function(newFreq) {
     var frequency = options.fixed_frequency ? options.fixed_frequency : newFreq
@@ -720,9 +737,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
       osc.frequency.value = frequency;
     }    
 
-    var resetd = false;
     var playable = {};
+
     playable.setFreq = function(frequency, noteOptions) {
+      playable.setFreqOnTime(frequency, noteOptions, 0);
+    };
+
+    playable.cancelScheduledValues = function() {
+      osc.frequency.cancelScheduledValues(0.0);
+    };
+
+    playable.setFreqOnTime = function(frequency, noteOptions, delay) {
       if (options.fixed_frequency) return;
 
       var tc;
@@ -731,15 +756,12 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         tc = noteOptions.tc;
       } else {
         tc = time_constant||0.1;
-        if (resetd) tc = 0.0001;
       }
 
-      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime, tc);
-      resetd = false;
+      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime + delay, tc);
     };
 
     playable.reset = function() {
-      resetd = true;
     };
 
     playable.play = function(param) {

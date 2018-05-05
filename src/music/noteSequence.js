@@ -78,16 +78,25 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
     }
   }
 
-  this._funseq.push({t:startTime, f: function(param){
-    var ctx = baseCtx || param;
-    var playing;
-    playing = ctx.instrument.note(noteNum, options);
-    ctx.setPlaying(mynoteid, playing);
-  }});
-  this._funseq.push({t:startTime + duration, f: function(param){
-    var ctx = baseCtx || param;
-    ctx.unsetPlaying(mynoteid);
-  }});
+  if (baseCtx && baseCtx.instrument && baseCtx.instrument.schedule_note) {
+    this._funseq.push({t:startTime, f: function(param, delay) {
+      var playing = baseCtx.instrument.schedule_note(noteNum, options, delay/1000, duration/1000);
+      baseCtx.setPlaying(mynoteid, playing);
+    }, externalSchedule: true});
+  } else {
+
+    console.warn("UNSUPPORTED WEBAUDIO SCHEDULE FOR note n=" + noteNum + " at " + startTime + " (fallback to setTimeout)");
+
+    this._funseq.push({t:startTime, f: function(param){
+      var ctx = baseCtx || param;
+      var playing = ctx.instrument.note(noteNum, options);
+      ctx.setPlaying(mynoteid, playing);
+    }});
+    this._funseq.push({t:startTime + duration, f: function(param){
+      var ctx = baseCtx || param;
+      ctx.unsetPlaying(mynoteid);
+    }});
+  }
 
   if (startTime + duration > this._totalduration) this._totalduration = startTime + duration;
 };

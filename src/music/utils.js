@@ -78,13 +78,21 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
         var currentPending = pending;
         pending = [];
 
+        for (var i=0; i<currentPending.length; i++) {
+          if (currentPending[i].externalSchedule) {
+            currentPending[i].f(parameter, currentPending[i].t - t);
+          }
+        }
+
         var timeoutHandler = setTimeout(function() {
           timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
 
           for (var i=0; i<currentPending.length; i++) {
-            currentPending[i].f(parameter);
-            eventCount--;
-            if (eventCount === 0) clockHandler.stop();
+            if (!currentPending[i].externalSchedule) {
+              currentPending[i].f(parameter, 0);
+              eventCount--;
+              if (eventCount === 0) clockHandler.stop();
+            }
           }
         }, currentPending[0].t - t);
         timeoutHandlers.push(timeoutHandler);
@@ -164,7 +172,8 @@ MUSIC.Utils.DelayedFunctionSeq = function(inner, delay) {
   var push = function(params) {
     return inner.push({
       f: params.f,
-      t: params.t + delay
+      t: params.t + delay,
+      externalSchedule: params.externalSchedule
     });
   };
 

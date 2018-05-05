@@ -15036,9 +15036,13 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
     var scale = 60000 / file.bpm / TICKS_PER_BEAT;
 
-    for (var i=0; i<events.length; i++) {
-      var evt = track.events[i];
-      noteseq.push(eventPreprocessor([evt.n, evt.s * scale, evt.l * scale, {tc: evt.tc}]), ctx);
+    var scaledEvents = events.map(function(evt) {
+      return [evt.n, evt.s * scale, evt.l * scale, {tc: evt.tc}];
+    });
+
+    for (var i=0; i<scaledEvents.length; i++) {
+      var evt = scaledEvents[i];
+      noteseq.push(eventPreprocessor(evt, scaledEvents), ctx);
     }
 
     noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
@@ -17346,7 +17350,6 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
         };
 
         playing = Pattern.patternCompose($scope.file, instruments, 0, onStop).play();
-
         $scope.$broadcast("startClock", window.performance.now());
       });
   };
