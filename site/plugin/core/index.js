@@ -1135,8 +1135,8 @@ module.export = function(m) {
       if (!resetOnCut) {
         for (var i=0; i<events.length; i++) {
           if (events[i][1] !== event[1] || events[i][0] !== event[0]) {
-            if (event[1] < events[i][1] + events[i][2] &&
-                event[1] + event[2] > events[i][1] + events[i][2]) {
+            if (event[1] + overlappingTolerance < events[i][1] + events[i][2] &&
+                event[1] + event[2] > events[i][1] + events[i][2] + overlappingTolerance) {
 
               options.noReset = true;
             }
@@ -1329,8 +1329,8 @@ module.export = function(m) {
       if (!resetOnCut) {
         for (var i=0; i<events.length; i++) {
           if (events[i][1] !== event[1] || events[i][0] !== event[0]) {
-            if (event[1] < events[i][1] + events[i][2] &&
-                event[1] + event[2] > events[i][1] + events[i][2]) {
+            if (event[1] + overlappingTolerance < events[i][1] + events[i][2] &&
+                event[1] + event[2] > events[i][1] + events[i][2] + overlappingTolerance) {
 
               options.noReset = true;
             }
