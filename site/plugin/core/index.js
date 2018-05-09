@@ -1533,8 +1533,8 @@ module.export = function(m) {
         };
 
         ret.update = function(data) {
-          delay = data.delay * 1000;
-          _delayS = data.delay;
+          delay = parseFloat(data.delay) * 1000;
+          _delayS = parseFloat(data.delay);
 
           return this;
         };
