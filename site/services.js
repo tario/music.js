@@ -580,6 +580,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     "site/builtin/smb-underworld.json",
     "site/builtin/smb-overworld.json",
     "site/builtin/bomberman.json",
+    "site/builtin/entertainer.json",
     "site/builtin/eva-thanatos.json"
   ];
 
