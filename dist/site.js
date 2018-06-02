@@ -14650,14 +14650,6 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
     templateUrl: 'site/templates/directives/recycleBinCompactView.html',
     scope: {},
     link: function(scope, element, attrs) {
-      scope.iconForType = function(type) {
-        if (type === "instrument") return "keyboard-o";
-        if (type === "song") return "th";
-        if (type === "pattern") return "music";
-        if (type === "project") return "folder-o";
-        return "question";
-      };
-
       var observer = FileRepository.observeRecycled(function() {
         FileRepository.searchRecycled(null, {limit: 10})
           .then(function(result) {
@@ -14702,6 +14694,35 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
   };
 }]);
 
+
+var musicShowCaseApp = angular.module("MusicShowCaseApp");
+
+musicShowCaseApp.filter("icon_from_type", function() {
+  return function(type) {
+    if (type === "instrument") return "keyboard";
+    if (type === "song") return "th";
+    if (type === "pattern") return "music";
+    if (type === "fx") return "magic";
+    if (type === "project") return "folder";
+    return "question";
+  };
+});
+
+musicShowCaseApp.directive("typeIcon", ["$parse", function($parse) {
+  return {
+    restrict: 'A',
+    scope: {},
+    replace: true,
+    template: '<span class="fa fa-{{typeIcon | icon_from_type}}">',
+    link: function(scope, element, attrs) {
+      var iconTypeName = $parse(attrs.typeIcon);
+
+      scope.$parent.$watch(iconTypeName, function(newValue) {
+        scope.typeIcon = iconTypeName(scope.$parent);
+      });
+    }
+  };
+}]);
 
 var musicShowCaseApp = angular.module("MusicShowCaseApp");
 
@@ -17858,15 +17879,6 @@ musicShowCaseApp.controller("MainController",
     });
   },200);
 
-  $scope.iconForType = function(type) {
-    if (type === "instrument") return "keyboard-o";
-    if (type === "song") return "th";
-    if (type === "pattern") return "music";
-    if (type === "fx") return "magic";
-    if (type === "project") return "folder-o";
-    return "question";
-  }
-
   $scope.removeProject = function() {
     FileRepository.moveToRecycleBin($scope.project.index.id)
       .then(function() {
@@ -18162,15 +18174,6 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
   $scope.dismiss = function() {
     $uibModalInstance.dismiss();
   };
-
-  $scope.iconForType = function(type) {
-    if (type === "instrument") return "keyboard-o";
-    if (type === "song") return "th";
-    if (type === "pattern") return "music";
-    if (type === "fx") return "magic";
-    if (type === "project") return "folder-o";
-    return "question";
-  }
 
   var immediateUpdateSearch = function() {
     FileRepository.searchRecycled($scope.searchKeyword, {limit: 10})

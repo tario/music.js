@@ -4,14 +4,6 @@ musicShowCaseApp.directive("recycleBinCompactView", ["$timeout", "$uibModal", "F
     templateUrl: 'site/templates/directives/recycleBinCompactView.html',
     scope: {},
     link: function(scope, element, attrs) {
-      scope.iconForType = function(type) {
-        if (type === "instrument") return "keyboard-o";
-        if (type === "song") return "th";
-        if (type === "pattern") return "music";
-        if (type === "project") return "folder-o";
-        return "question";
-      };
-
       var observer = FileRepository.observeRecycled(function() {
         FileRepository.searchRecycled(null, {limit: 10})
           .then(function(result) {

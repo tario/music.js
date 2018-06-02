@@ -4,15 +4,6 @@ musicShowCaseApp.controller("recycleBinModalCtrl", ["$scope", "$timeout", "$uibM
     $uibModalInstance.dismiss();
   };
 
-  $scope.iconForType = function(type) {
-    if (type === "instrument") return "keyboard-o";
-    if (type === "song") return "th";
-    if (type === "pattern") return "music";
-    if (type === "fx") return "magic";
-    if (type === "project") return "folder-o";
-    return "question";
-  }
-
   var immediateUpdateSearch = function() {
     FileRepository.searchRecycled($scope.searchKeyword, {limit: 10})
       .then(function(results) {

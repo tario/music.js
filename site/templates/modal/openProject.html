@@ -12,7 +12,7 @@
         </li>
 
         <li ng-repeat="file in files track by $index">
-          <a ng-click="select(file.id)" ng-dblclick="open(file.id)" href=""><span class="fa fa-folder-o"></span> {{file.name}}</a>
+          <a ng-click="select(file.id)" ng-dblclick="open(file.id)" href=""><span class="fa fa-folder"></span> {{file.name}}</a>
         </li>
         <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} {{'common.more' | translate}}) ...</li>
       </ul>

@@ -976,15 +976,6 @@ musicShowCaseApp.controller("MainController",
     });
   },200);
 
-  $scope.iconForType = function(type) {
-    if (type === "instrument") return "keyboard-o";
-    if (type === "song") return "th";
-    if (type === "pattern") return "music";
-    if (type === "fx") return "magic";
-    if (type === "project") return "folder-o";
-    return "question";
-  }
-
   $scope.removeProject = function() {
     FileRepository.moveToRecycleBin($scope.project.index.id)
       .then(function() {

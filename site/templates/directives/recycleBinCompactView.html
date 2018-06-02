@@ -4,7 +4,7 @@
   <ul class="show-hint" ng-show="files.length">
     <div class="hint left-200" translate="recycle.compact_hint_restore"></div>
     <li ng-dblclick="restore(file)" ng-repeat="file in files">
-      <span class="fa fa-{{iconForType(file.type)}}"></span> {{file.name}}
+      <span type-icon="file.type"></span> {{file.name}}
     </li>
   </ul>
   <p ng-show="!files.length" class="text-center">--- {{'recycle.EMPTY'|translate}} ---</p>

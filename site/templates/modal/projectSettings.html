@@ -29,7 +29,7 @@
     <div class="span6">
       <ul class="nav bs-docs-sidenav">
         <li ng-repeat="file in files track by $index">
-          <a ng-dblclick="add(file)" href=""><span class="fa fa-folder-o"></span> {{file.name}}</a>
+          <a ng-dblclick="add(file)" href=""><span class="fa fa-folder"></span> {{file.name}}</a>
         </li>
         <li ng-show="filesTotal > files.length"> ... ({{filesTotal - files.length}} {{'common.more' | translate}}) ...</li>
       </ul>
@@ -37,7 +37,7 @@
     <div class="span6 bordered-square">
       <ul class="nav bs-docs-sidenav">
         <li ng-dblclick="remove(file)" ng-repeat="file in refs track by $index">
-          <a href=""><span class="fa fa-folder-o"></span> {{file.name}}</a>
+          <a href=""><span class="fa fa-folder"></span> {{file.name}}</a>
         </li>
       </ul>
     </div>
