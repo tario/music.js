@@ -114,13 +114,13 @@
           <div class="span2">
           <!-- Instrument drop zone -->
               <div recipe-blink="'pattern_instrument_dropzone'" class="pattern-drop-lateral show-contextual-tooltip" ng-drop="true" ng-drop-success="onDropComplete($data,$event); recipe.raise('instrument_dropped')">
-                <span ng-show="file.tracks[file.selectedTrack].instrument" class="fa fa-keyboard"></span>
+                <span ng-show="file.tracks[file.selectedTrack].instrument" type-icon="file.tracks[file.selectedTrack].instrument | instrument_type:instrumentMap"></span>
                 <p>{{file.tracks[file.selectedTrack].instrument ? (file.tracks[file.selectedTrack].instrument | instrument_name:instrumentMap) : ('pattern.drop_instrument' | translate) }}</p>
                 <recipe-tooltip rt-id="'pattern_instrument_dropzone'"></recipe-tooltip>
                 <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.drop_zone"></div>
 
-                <div class="overlay" ng-dblclick="instrumentEdit(track)">
-                  <span class="pattern-mini-button fa fa-pencil show-contextual-tooltip" ng-click="instrumentEdit(track)" ng-mousedown="$event.stopPropagation()">
+                <div ng-show="(file.tracks[file.selectedTrack].instrument | instrument_type:instrumentMap) == 'instrument'" class="overlay" ng-dblclick="instrumentEdit(track)">
+                  <span class="pattern-mini-button fa fa-edit show-contextual-tooltip" ng-click="instrumentEdit(track)" ng-mousedown="$event.stopPropagation()">
                     <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.instrument_edit"></div>
                   </span>
                 </div>

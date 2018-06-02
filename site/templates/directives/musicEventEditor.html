@@ -15,7 +15,7 @@
 
     <div class="overlay event-list" ng-mousedown="mouseDown($event)" ng-mousemove="mouseMove($event)" ng-mouseup="mouseUp($event)" ng-mouseleave="mouseLeave($event)">   
       <div ng-mousedown="addFromShadow($event)" ng-mousemove="shadowMouseMove($event)" class="note note-shadow" ng-style="{'width': (shadowEvt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':(shadowEvt.s*zoomLevel*beatWidth/TICKS_PER_BEAT)+'px', 'bottom': shadowEvt.n*20+'px'}">
-        <div class="note-label overlay">{{noteName(shadowEvt.n)}}</div>
+        <div class="note-label overlay">{{track.instrument === 'tempo' ? shadowEvt.n : noteName(shadowEvt.n)}}</div>
       </div>
 
       <div 
@@ -24,7 +24,7 @@
         class="note show-contextual-tooltip" ng-class="{selected: selected===evt}"
         ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-2)+'px', 'left':evt.s*zoomLevel*beatWidth/TICKS_PER_BEAT+'px', 'bottom': evt.n*20+'px'}"
         >
-        <div class="overlay note-label">{{noteName(evt.n)}}</div>
+        <div class="overlay note-label">{{track.instrument === 'tempo' ? evt.n : noteName(evt.n)}}</div>
         <div class="drag-event-section" ng-style="{'width': (evt.l*zoomLevel*beatWidth/TICKS_PER_BEAT-5)+'px', 'height':'20px'}"
           draggable="false"
           ng-mousedown="mouseDownEvent(evt, $event)"
@@ -56,9 +56,9 @@
 
 <div class="row">
   <div class="span3"></div>
-  <div class="span1"><p class="serie-label pull-right">tc</p></div>
+  <div class="span1"><p ng-if="track.instrument !== 'tempo'" class="serie-label pull-right">tc</p></div>
   <div class="span2">
-    <input ng-disabled="!selected" type="number" step="0.000000001" class="responsive-input" ng-model="selected.tc"  ng-change="raiseEventChanged(selected, selected, track)"></input>
+    <input ng-if="track.instrument !== 'tempo'" ng-disabled="!selected" type="number" step="0.000000001" class="responsive-input" ng-model="selected.tc"  ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 
   <div class="span1"><p class="serie-label pull-right">start</p></div>
@@ -71,8 +71,11 @@
     <input ng-disabled="!selected" type="number" min="6" max="{{measureCount*measure*TICKS_PER_BEAT - selected.s}}" class="responsive-input" ng-model="selected.l" ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 
-  <div class="span1"><p class="serie-label pull-right">n</p></div>
   <div class="span1">
-    <input min="0" max="119" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
+    <p ng-if="track.instrument !== 'tempo'" class="serie-label pull-right">n</p>
+    <p ng-if="track.instrument === 'tempo'" class="serie-label pull-right">t</p>
+  </div>
+  <div class="span1">
+    <input min="0" max="1024" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
   </div>
 </div>

@@ -14700,6 +14700,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.filter("icon_from_type", function() {
   return function(type) {
     if (type === "instrument") return "keyboard";
+    if (type === "tempo") return "clock";
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";
@@ -15085,10 +15086,12 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       idx = base + idx;
 
       var instrument = instruments[track.instrument + '_' + idx];
-      var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
-      
-      var context = MUSIC.NoteSequence.context(instrument);
-      schedule(noteseq, file, track, eventPreprocessor, onStop, context);
+
+      if (instrument) {
+        var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
+        var context = MUSIC.NoteSequence.context(instrument);
+        schedule(noteseq, file, track, eventPreprocessor, onStop, context);
+      }
     });
 
     var ret = noteseq.makePlayable(null);
@@ -15253,12 +15256,17 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 
         set[_id] = FileRepository.getFile(id)
           .then(function(file) {
-            if (!musicObjectFactory) musicObjectFactory = MusicObjectFactory();
-            return musicObjectFactory.create(file.contents, trackControl[trackNo]);
-          })
-          .then(function(obj){
-            created.push(obj);
-            return obj;
+            if (file.index.type === 'instrument') {
+              if (!musicObjectFactory) musicObjectFactory = MusicObjectFactory();
+              return musicObjectFactory.create(file.contents, trackControl[trackNo])
+                .then(function(obj){
+                  created.push(obj);
+                  return obj;
+                });
+
+            } else {
+              return null;
+            }
           });
       } 
 
@@ -15329,6 +15337,20 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         });
       });
   };
+
+  var createDefault = function(id, type, name, content) {
+    createdFilesIndex.push({
+      project: "default",
+      type: type,
+      id: id,
+      name: name
+    });
+
+    createdFiles[id] = content;
+  };
+
+  createDefault('tempo', 'tempo', 'Tempo', {})
+
   var builtInLoaded = $q.all(builtIns.map(loadBuiltIn));
 
   var createId = function() {
@@ -15713,7 +15735,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           if (options.type) {
             if (options.type.indexOf(x.type) === -1) return false;
           }
-          return options.project.indexOf(x.project) !== -1;
+          return x.type === 'tempo' || options.project.indexOf(x.project) !== -1;
         };
       } else {
         if (options.type) {
@@ -16909,6 +16931,12 @@ musicShowCaseApp.filter("instrument_name", function() {
   };
 });
 
+musicShowCaseApp.filter("instrument_type", function() {
+  return function(instrumentId, instrumentMap) {
+    return instrumentMap[instrumentId] && instrumentMap[instrumentId] ? instrumentMap[instrumentId].type : 'instrument';
+  };
+});
+
 musicShowCaseApp.filter("block_name", function() {
   return function(block, indexMap) {
     return indexMap[block.id] && indexMap[block.id].index ? indexMap[block.id].index.name : block.id;
@@ -17443,12 +17471,13 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.updateInstrument = function(trackNo) {
     if (!$scope.file.tracks[trackNo]) return;
     if (!$scope.file.tracks[trackNo].instrument) return;
+
     return $q.all({
       musicObject: instSet.load($scope.file.tracks[trackNo].instrument, trackNo),
       index: FileRepository.getIndex($scope.file.tracks[trackNo].instrument)
     }).then(function(result) {
         $scope.instrumentMap[$scope.file.tracks[trackNo].instrument] = result.index;
-        instrument.set($scope.file.tracks[trackNo], result.musicObject);
+        if (result.musicObject) instrument.set($scope.file.tracks[trackNo], result.musicObject);
         return result.musicObject;
     });
   };
@@ -17456,7 +17485,10 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.onDropComplete = function(instrument,event) {
     MusicContext.resumeAudio();
 
-    if (instrument.type !== 'instrument') return;
+    if (
+      instrument.type !== 'instrument' &&
+      instrument.type !== 'tempo'
+    ) return;
 
     var trackNo = $scope.file.selectedTrack;
 
@@ -17872,7 +17904,7 @@ musicShowCaseApp.controller("MainController",
   $scope.keywordUpdated = fn.debounce(function() {
     if (currentObserver) currentObserver.close();
     currentObserver = FileRepository.search($scope.searchKeyword, {
-      project: $scope.projectFilter, type: ['instrument', 'pattern', 'song', 'fx']
+      project: $scope.projectFilter, type: ['instrument', 'pattern', 'song', 'fx', 'tempo']
     }).observe(function(files) {
       $scope.filesTotal = files.total;
       $scope.files = files.results;

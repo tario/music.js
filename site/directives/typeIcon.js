@@ -3,6 +3,7 @@ var musicShowCaseApp = angular.module("MusicShowCaseApp");
 musicShowCaseApp.filter("icon_from_type", function() {
   return function(type) {
     if (type === "instrument") return "keyboard";
+    if (type === "tempo") return "clock";
     if (type === "song") return "th";
     if (type === "pattern") return "music";
     if (type === "fx") return "magic";

@@ -359,10 +359,12 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       idx = base + idx;
 
       var instrument = instruments[track.instrument + '_' + idx];
-      var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
-      
-      var context = MUSIC.NoteSequence.context(instrument);
-      schedule(noteseq, file, track, eventPreprocessor, onStop, context);
+
+      if (instrument) {
+        var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
+        var context = MUSIC.NoteSequence.context(instrument);
+        schedule(noteseq, file, track, eventPreprocessor, onStop, context);
+      }
     });
 
     var ret = noteseq.makePlayable(null);
@@ -527,12 +529,17 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
 
         set[_id] = FileRepository.getFile(id)
           .then(function(file) {
-            if (!musicObjectFactory) musicObjectFactory = MusicObjectFactory();
-            return musicObjectFactory.create(file.contents, trackControl[trackNo]);
-          })
-          .then(function(obj){
-            created.push(obj);
-            return obj;
+            if (file.index.type === 'instrument') {
+              if (!musicObjectFactory) musicObjectFactory = MusicObjectFactory();
+              return musicObjectFactory.create(file.contents, trackControl[trackNo])
+                .then(function(obj){
+                  created.push(obj);
+                  return obj;
+                });
+
+            } else {
+              return null;
+            }
           });
       } 
 
@@ -603,6 +610,20 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         });
       });
   };
+
+  var createDefault = function(id, type, name, content) {
+    createdFilesIndex.push({
+      project: "default",
+      type: type,
+      id: id,
+      name: name
+    });
+
+    createdFiles[id] = content;
+  };
+
+  createDefault('tempo', 'tempo', 'Tempo', {})
+
   var builtInLoaded = $q.all(builtIns.map(loadBuiltIn));
 
   var createId = function() {
@@ -987,7 +1008,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           if (options.type) {
             if (options.type.indexOf(x.type) === -1) return false;
           }
-          return options.project.indexOf(x.project) !== -1;
+          return x.type === 'tempo' || options.project.indexOf(x.project) !== -1;
         };
       } else {
         if (options.type) {
