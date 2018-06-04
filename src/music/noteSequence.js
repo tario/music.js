@@ -1,6 +1,6 @@
 (function() {
 
-MUSIC.NoteSequence = function(funseq) {
+MUSIC.NoteSequence = function(funseq, options) {
   var clock;
   if (!funseq){
     clock = MUSIC.Utils.Clock(
@@ -11,6 +11,7 @@ MUSIC.NoteSequence = function(funseq) {
     funseq = MUSIC.Utils.FunctionSeq(clock, setTimeout, clearTimeout);
   }
 
+  this._time = options && options.time;
   this._funseq = funseq;
   this._totalduration = 0;
   this._noteid = 0;
@@ -49,24 +50,25 @@ MUSIC.NoteSequence.Playing.prototype.stop = function() {
   this._runningFunSeq.stop();
 };
 
-MUSIC.NoteSequence.prototype.paddingTo = function(time){
-  this._totalduration = time;
+MUSIC.NoteSequence.prototype.paddingTo = function(ticks){
+  this._totalduration = this._time(ticks);
 };
-
+/*
 MUSIC.NoteSequence.prototype.padding = function(time){
   this._totalduration = this._totalduration + time;
 };
-
+*/
 MUSIC.NoteSequence.prototype.pushCallback = function(array){
-  var startTime = array[0];
+  var startTime = this._time(array[0]);
   var f = array[1];
   this._funseq.push({t:startTime, f: f});
 };
 
 MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
-  var startTime = array[1];
-  var duration = array[2];
+  var startTime = this._time(array[1]);
+  var duration = this._time(array[1]+array[2]) - startTime;
+
   var options = array[3];
 
   this._noteid++;

@@ -1698,7 +1698,7 @@ module.export = function(m) {
 
           var eventPreprocessor = function(event, events) {
             var l = event[2];
-            l = l - time * 1000;
+            l = l - time;
             if (l <0 ) l = 0;
 
             if (originalEventPreprocessor) {

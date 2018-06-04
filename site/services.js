@@ -329,10 +329,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
   var schedule = function(noteseq, file, track, eventPreprocessor, onStop, ctx) {
     var events = track.events.sort(function(e1, e2) { return e1.s - e2.s; });
-    var scale = 60000 / file.bpm / TICKS_PER_BEAT;
-
     var scaledEvents = events.map(function(evt) {
-      return [evt.n, evt.s * scale, evt.l * scale, {tc: evt.tc}];
+      return [evt.n, evt.s, evt.l, {tc: evt.tc}];
     });
 
     for (var i=0; i<scaledEvents.length; i++) {
@@ -340,8 +338,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       noteseq.push(eventPreprocessor(evt, scaledEvents), ctx);
     }
 
-    noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure * scale);
-    noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure * scale, onStop]);
+    noteseq.paddingTo(TICKS_PER_BEAT * file.measureCount * file.measure);
+    noteseq.pushCallback([TICKS_PER_BEAT*file.measureCount * file.measure, onStop]);
 
     var totalBeats = file.measure * file.measureCount;
   };
@@ -353,7 +351,14 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, base, onStop) {
-    var noteseq = new MUSIC.NoteSequence();
+    var noteseq = new MUSIC.NoteSequence(null,
+    {
+      // TODO Generate timeFunc based on bpm changes
+      time: MUSIC.Math.ticksToTime({
+        bpm: file.bpm,
+        ticks_per_beat: TICKS_PER_BEAT
+      })
+    });
 
     file.tracks.forEach(function(track, idx) {
       idx = base + idx;

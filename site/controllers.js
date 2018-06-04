@@ -159,15 +159,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           return patterns[id];
         };        
 
-        var scale = 60000 / $scope.file.bpm / TICKS_PER_BEAT;
-        var measure = TICKS_PER_BEAT * $scope.file.measure * scale;
         var song = new MUSIC.Song(
           $scope.file.tracks.map(function(track, songTrackIdx) {
             return track.blocks.map(function(block) {
               return createPattern(block.id, songTrackIdx);
             });
           })
-        , {measure: measure});
+        , {measure: $scope.file.measure, bpm: $scope.file.bpm, ticks_per_beat: TICKS_PER_BEAT});
 
         $scope.$broadcast("startClock", window.performance.now());
         playing = song.play({

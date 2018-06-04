@@ -60,7 +60,7 @@ MUSIC.Song = function(input, patternsOrOptions, options){
 
   options = options || {};
   var getFromPatterns = options.pattern|| defaultFromPatterns(patterns);
-  var measure = options.measure || 500;
+  var measure = (options.measure || 500) * options.ticks_per_beat;
   var funseq;
   if (!funseq){
     var clock = MUSIC.Utils.Clock(
@@ -75,7 +75,20 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   var totalMeasures = input[0].length;
 
   this._funseq = funseq;
-  this._duration = totalMeasures * measure;
+
+  // TODO Generate timeFunc based on bpm changes
+  var time = MUSIC.Math.ticksToTime({
+    bpm: options.bpm,
+    ticks_per_beat: options.ticks_per_beat
+  });
+
+  this._duration = time(totalMeasures * measure);
+
+  var timeFunc = function(baseTicks) {
+    return function(ticks) {
+      return time(baseTicks+ticks);
+    };
+  };
 
   for (var j = 0; j < totalMeasures; j++) {
     (function() {
@@ -104,14 +117,15 @@ MUSIC.Song = function(input, patternsOrOptions, options){
       }
 
       schedulable.forEach(function(s) {
-        var delayedFunseq = MUSIC.Utils.DelayedFunctionSeq(funseq, j*measure);
-        self._patternContexts = (self._patternContexts||[]).concat(s.schedule(new MUSIC.NoteSequence(delayedFunseq)));
+        self._patternContexts = (self._patternContexts||[]).concat(s.schedule(new MUSIC.NoteSequence(funseq, {
+          time: timeFunc(j*measure)
+        })));
       });
 
     })();
   };
 
-  funseq.push({t: totalMeasures*measure, f: function(context) {
+  funseq.push({t: timeFunc(0)(totalMeasures*measure), f: function(context) {
     if (context.onStop) {
       context.onStop();
     }
