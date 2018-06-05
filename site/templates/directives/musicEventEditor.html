@@ -55,27 +55,25 @@
 
 
 <div class="row">
-  <div class="span3"></div>
-  <div class="span1"><p ng-if="track.instrument !== 'tempo'" class="serie-label pull-right">tc</p></div>
-  <div class="span2">
-    <input ng-if="track.instrument !== 'tempo'" ng-disabled="!selected" type="number" step="0.000000001" class="responsive-input" ng-model="selected.tc"  ng-change="raiseEventChanged(selected, selected, track)"></input>
-  </div>
-
-  <div class="span1"><p class="serie-label pull-right">start</p></div>
+  <div class="span1"><p class="serie-label pull-left">start</p></div>
   <div class="span1">
     <input ng-disabled="!selected" type="number" min="0" max="{{measureCount*measure*TICKS_PER_BEAT - selected.l}}" class="responsive-input" ng-model="selected.s" ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 
-  <div class="span1"><p class="serie-label pull-right">len.</p></div>
+  <div class="span1"><p class="serie-label pull-left">len.</p></div>
   <div class="span1">
     <input ng-disabled="!selected" type="number" min="6" max="{{measureCount*measure*TICKS_PER_BEAT - selected.s}}" class="responsive-input" ng-model="selected.l" ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 
   <div class="span1">
-    <p ng-if="track.instrument !== 'tempo'" class="serie-label pull-right">n</p>
-    <p ng-if="track.instrument === 'tempo'" class="serie-label pull-right">t</p>
+    <p ng-if="track.instrument !== 'tempo'" class="serie-label pull-left">n</p>
+    <p ng-if="track.instrument === 'tempo'" class="serie-label pull-left">bpm</p>
   </div>
   <div class="span1">
     <input min="0" max="1024" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
+  </div>
+  <div class="span1"><p ng-if="track.instrument !== 'tempo'" class="serie-label pull-left">tc</p></div>
+  <div class="span2">
+    <input ng-if="track.instrument !== 'tempo'" ng-disabled="!selected" type="number" step="0.000000001" class="responsive-input" ng-model="selected.tc"  ng-change="raiseEventChanged(selected, selected, track)"></input>
   </div>
 </div>

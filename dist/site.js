@@ -15078,12 +15078,30 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
   };
 
   var patternCompose = function(file, instruments, base, onStop) {
+    var isTempoTrack = function(track, idx) {
+      idx = base + idx;
+      var instrument = instruments[track.instrument + '_' + idx];
+      return instrument.tempo;
+    };
+
+    var getEvents = function(track) {
+      return track.events;
+    };
+
+    var concat = function(a, b) {
+      return a.concat(b);
+    };
+
+    var byStart = function(a, b) {
+      return a.s-b.s;
+    };
+
     var noteseq = new MUSIC.NoteSequence(null,
     {
-      // TODO Generate timeFunc based on bpm changes
       time: MUSIC.Math.ticksToTime({
         bpm: file.bpm,
-        ticks_per_beat: TICKS_PER_BEAT
+        ticks_per_beat: TICKS_PER_BEAT,
+        bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart)
       })
     });
 
@@ -15092,7 +15110,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
       var instrument = instruments[track.instrument + '_' + idx];
 
-      if (instrument) {
+      if (!instrument.tempo) {
         var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
         var context = MUSIC.NoteSequence.context(instrument);
         schedule(noteseq, file, track, eventPreprocessor, onStop, context);
@@ -15270,7 +15288,7 @@ musicShowCaseApp.service("InstrumentSet", ["FileRepository", "MusicObjectFactory
                 });
 
             } else {
-              return null;
+              return {tempo: true};
             }
           });
       } 
