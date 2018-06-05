@@ -127,6 +127,7 @@ var enTranslations = {
     stop: 'Stop',
     record: 'Rec.',
     bpm: 'Bpm',
+    bpm_lc: 'bpm',
     add: 'Add',
     tooltip: {
       playing_speed: 'Playing speed, number of beats per minute',

@@ -127,6 +127,7 @@ var esTranslations = {
     stop: 'Detener',
     record: 'Rec.',
     bpm: 'Ppm',
+    bpm_lc: 'ppm',
     add: 'Agreg.',
     tooltip: {
       playing_speed: 'Velocidad de reproduccion, cantidad de pulsos por minuto',

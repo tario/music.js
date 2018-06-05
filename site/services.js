@@ -408,6 +408,16 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       return contexts;
     };
 
+    ret.timeToTicks = function() {
+      return MUSIC.Math.timeToTicks({
+        bpm: file.bpm,
+        ticks_per_beat: TICKS_PER_BEAT,
+        bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart)
+      });
+    }; 
+
+    ret.bpm_events = file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart);
+
     return ret;
   };
 
@@ -639,7 +649,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       project: "default",
       type: type,
       id: id,
-      name: name
+      name: name,
+      noExportable: true
     });
 
     createdFiles[id] = content;
@@ -976,7 +987,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
                       builtIn: builtIn,
                       type: localFile.type,
                       ref: localFile.ref,
-                      project: localFile.project
+                      project: localFile.project,
+                      noExportable: localFile.noExportable
                     },
                     contents: JSON.parse(JSON.stringify(createdFiles[id]))
                   };

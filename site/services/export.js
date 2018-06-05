@@ -29,6 +29,9 @@ musicShowCaseApp.factory("Export", ['$q', 'FileRepository', function($q, FileRep
     return FileRepository.getFile(id)
       .then(function(file) {
         if (!file) return [];
+        if (file.index.noExportable) {
+          return [];
+        }
 
         ret.push({
           name: file.index.name,

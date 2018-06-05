@@ -5,6 +5,7 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
     templateUrl: "site/templates/directives/playingLine.html",
     link: function(scope, element, attrs) {
       var t0;
+      var timeToTicks;
       var playing = false;
       var getBpm = $parse(attrs.bpm);
       var getZoomLevel = $parse(attrs.zoomLevel);
@@ -14,7 +15,7 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
 
       var callback = function() {
         if (bpm && playing) {
-          var ticks = TICKS_PER_BEAT * (window.performance.now() - t0) * bpm / 60000;
+          var ticks = timeToTicks((window.performance.now() - t0));
           var displacement = ticks*zoomLevel*beatWidth/TICKS_PER_BEAT;
 
           element.css("left", (displacement) + "px");
@@ -25,12 +26,13 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
       var playingLine = $(element);
       var requestId = requestAnimationFrame(callback);
 
-      scope.$on('startClock', function(evt, _t0) {
+      scope.$on('startClock', function(evt, _t0, _timeToTicks) {
         playing = true;
         bpm = getBpm(scope.$parent);
         zoomLevel = getZoomLevel(scope.$parent);
         beatWidth = getBeatWidth(scope.$parent);
 
+        timeToTicks = _timeToTicks;
         t0 = _t0;
       });
 

@@ -155,7 +155,6 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
           changedBpm.bpm = $scope.file.bpm;
 
           patterns[id] = Pattern.patternCompose(changedBpm, instruments, songTrackIdx*SONG_MAX_TRACKS, function() {});
-
           return patterns[id];
         };        
 
@@ -165,9 +164,13 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
               return createPattern(block.id, songTrackIdx);
             });
           })
-        , {measure: $scope.file.measure, bpm: $scope.file.bpm, ticks_per_beat: TICKS_PER_BEAT});
+        , {
+            measure: $scope.file.measure,
+            bpm: $scope.file.bpm,
+            ticks_per_beat: TICKS_PER_BEAT
+          });
 
-        $scope.$broadcast("startClock", window.performance.now());
+        $scope.$broadcast("startClock", window.performance.now(), song.timeToTicks());
         playing = song.play({
           onStop: function() {
             $scope.$broadcast("stopClock");
@@ -472,8 +475,11 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
           playing = null;
         };
 
-        playing = Pattern.patternCompose($scope.file, instruments, 0, onStop).play();
-        $scope.$broadcast("startClock", window.performance.now());
+        var pattern = Pattern.patternCompose($scope.file, instruments, 0, onStop);
+        playing = pattern.play();
+
+        var timeToTicks = pattern.timeToTicks();
+        $scope.$broadcast("startClock", window.performance.now(), timeToTicks);
       });
   };
 
@@ -504,6 +510,8 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
 
   var beep = function(instrument, n) {
       if (!instrument) return;
+      if (!instrument.note) return;
+
       if (lastPlaying) lastPlaying.stop();
       lastPlaying = instrument.note(n).play();
 

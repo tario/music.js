@@ -91,6 +91,7 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
 
     this._funseq.push({t:startTime, f: function(param){
       var ctx = baseCtx || param;
+      if (!ctx.instrument.note) return;
       var playing = ctx.instrument.note(noteNum, options);
       ctx.setPlaying(mynoteid, playing);
     }});

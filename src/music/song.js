@@ -76,19 +76,48 @@ MUSIC.Song = function(input, patternsOrOptions, options){
 
   this._funseq = funseq;
 
-  // TODO Generate timeFunc based on bpm changes
+  var byStart = function(a, b) {
+    return a.s-b.s;
+  };
+
+  // tempo events 
+  var bpm_events = [];
+  for (var j = 0; j < totalMeasures; j++) {
+    var patternArray = [];
+    for (var i = 0 ; i < input.length; i++) {
+      var pattern = getFromPatterns(input[i][j]);
+      if (pattern.bpm_events) {
+        var displacedBpmEvents = pattern.bpm_events.map(function(evt) {
+          return {n: evt.n, s: evt.s + j*measure, l: evt.l};
+        });
+        bpm_events = bpm_events.concat(displacedBpmEvents);
+      }
+    };
+  }
+
+  bpm_events = bpm_events.sort(byStart);
+
   var time = MUSIC.Math.ticksToTime({
     bpm: options.bpm,
-    ticks_per_beat: options.ticks_per_beat
+    ticks_per_beat: options.ticks_per_beat,
+    bpm_events: bpm_events
   });
 
-  this._duration = time(totalMeasures * measure);
+  this.timeToTicks = function() {
+    return MUSIC.Math.timeToTicks({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: bpm_events
+    });
+  };
 
   var timeFunc = function(baseTicks) {
     return function(ticks) {
       return time(baseTicks+ticks);
     };
   };
+
+  this._duration = time(totalMeasures * measure);
 
   for (var j = 0; j < totalMeasures; j++) {
     (function() {
