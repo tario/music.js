@@ -32,7 +32,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
 
         scope.shadowEvt = scope.shadowEvt || {};
-        scope.shadowEvt.n = Math.floor(120 - event.offsetY / 20);
+        scope.shadowEvt.n = Math.floor(upperLimit() - event.offsetY / 20);
         scope.shadowEvt.l = defaultL;
 
         if (scope.shadowEvt.s) {
@@ -154,6 +154,10 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
       scope.mouseMove = defaultMouseMove;
       scope.mouseMoveEvent = clearShadow;
 
+      var upperLimit = function() {
+        return scope.track.instrument === 'tempo' ? 1024 : 120;
+      };
+
       var max = function(c1, c2) {
         return c1 > c2 ? c1 : c2;
       };
@@ -200,7 +204,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
           if (evt.s < 0) evt.s = 0;
 
           var oldN = evt.n;
-          evt.n = Math.floor(120 - event.offsetY / 20);
+          evt.n = Math.floor(upperLimit() - event.offsetY / 20);
         };
       };
 
@@ -239,7 +243,7 @@ musicShowCaseApp.directive("musicEventEditor", ["$timeout", "TICKS_PER_BEAT", "P
 
         if (!event.target.classList.contains("event-list")) return;
         var newEvt = {
-          n: Math.floor(120 - event.offsetY / 20),
+          n: Math.floor(upperLimit() - event.offsetY / 20),
           s: Math.floor(event.offsetX / scope.beatWidth) / scope.zoomLevel * TICKS_PER_BEAT,
           l: defaultL
         };

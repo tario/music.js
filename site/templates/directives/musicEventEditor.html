@@ -1,5 +1,5 @@
 <div class="event-area-container" ng-scroll-top="track.scroll" ng-scroll-left="pattern.scrollLeft">
-  <div ng-class="{'cursor-none': !!shadowEvt}" class="event-area" ng-style="{width: measureCount*measure*beatWidth*zoomLevel + 'px'}">
+  <div ng-class="{'cursor-none': !!shadowEvt, 'tempo': track.instrument === 'tempo'}" class="event-area" ng-style="{width: measureCount*measure*beatWidth*zoomLevel + 'px'}">
     <playing-line bpm="pattern.bpm" zoom-level="zoomLevel" beat-width="beatWidth" class="overlay playing-line pattern-playing-line"></playing-line>
 
 
@@ -69,8 +69,11 @@
     <p ng-if="track.instrument !== 'tempo'" class="serie-label pull-left">n</p>
     <p ng-if="track.instrument === 'tempo'" class="serie-label pull-left" translate="common.bpm_lc"></p>
   </div>
-  <div class="span1">
-    <input min="0" max="1024" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
+  <div ng-if="track.instrument !== 'tempo'" class="span1">
+    <input min="0" max="119" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
+  </div>
+  <div ng-if="track.instrument === 'tempo'" class="span2">
+    <input min="0" max="1023" ng-disabled="!selected" type="number" class="responsive-input" ng-model="selected.n" ng-change="raiseEventChanged({n:-1}, selected, track)"></input>
   </div>
   <div class="span1"><p ng-if="track.instrument !== 'tempo'" class="serie-label pull-left">tc</p></div>
   <div class="span2">

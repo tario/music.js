@@ -29,6 +29,10 @@ input.smallinput {
   height: 2400px;
 }
 
+.event-area.tempo {
+  height: 20480px;
+}
+
 .event-area .maingrid {
   background-image: linear-gradient(to right, white 2px, transparent 1px), linear-gradient(to bottom, white 2px, transparent 1px);    
 }

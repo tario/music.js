@@ -113,7 +113,7 @@ MUSIC.Math.integrateBpmEvents = function(options) {
     return {
       s: bpmEvent1.s,
       l: l,
-      n: bpmEvent1.n
+      n: Math.max(bpmEvent1.n, 1)
     };
   };
 
