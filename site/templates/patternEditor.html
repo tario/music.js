@@ -82,17 +82,17 @@
   <h1 translate="pattern.tracks"></h1>
 
   <div class="multi-track-container">
-    <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': mutedState[$index]}">
+    <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': track.instrument !== 'tempo' && mutedState[$index]}">
       <div class="row-fluid">
         <div class="vertical-margin span2 track-button-panel">
           <div class="show-contextual-tooltip inline">
             <button ng-click="removeTrack($index)" class="btn btn-primary btn-remove-track">X</button>
             <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.remove_track"></div>
           </div>
-          <div class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.muted}" ng-click="track.muted=!track.muted; updateMuted()">M
+          <div ng-show="track.instrument !== 'tempo'" class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.muted}" ng-click="track.muted=!track.muted; updateMuted()">M
             <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.muted"></div>
           </div>
-          <div class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.solo}" ng-click="track.solo=!track.solo; updateMuted()">S
+          <div ng-show="track.instrument !== 'tempo'" class="show-contextual-tooltip inline track-flag pull-right" ng-class="{enabled: track.solo}" ng-click="track.solo=!track.solo; updateMuted()">S
             <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.solo"></div>
           </div>
         </div>
@@ -127,7 +127,7 @@
 
               </div>
 
-              <div class="show-contextual-tooltip row-fluid track-flags-panel">
+              <div ng-show="track.instrument !== 'tempo'" class="show-contextual-tooltip row-fluid track-flags-panel">
                 <div class="span2">
                   <input type="checkbox" class="regular-checkbox" ng-change="updateMuted()" ng-model="track.muted" />
                 </div>
@@ -137,7 +137,7 @@
                 <div class="help-tooltip contextual-tooltip" translate="pattern.tooltip.muted"></div>
               </div>
 
-              <div class="show-contextual-tooltip row-fluid track-flags-panel">
+              <div ng-show="track.instrument !== 'tempo'"  class="show-contextual-tooltip row-fluid track-flags-panel">
                 <div class="span2">
                   <input type="checkbox" class="regular-checkbox" ng-change="updateMuted()" ng-model="track.solo" />
                 </div>
