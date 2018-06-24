@@ -14069,7 +14069,11 @@ MUSIC.MultiInstrument = function(instrumentArray) {
     if (!array.length) return event;
 
     var processedEvents = array.map(function(instrument) {
-      return instrument.eventPreprocessor(event, events);
+      if (instrument.eventPreprocessor) {
+        return instrument.eventPreprocessor(event, events);
+      } else {
+        return event;
+      }
     });
 
     if (processedEvents.length === 1) {

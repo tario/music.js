@@ -550,7 +550,7 @@ module.export = function(m) {
         var instr = instrument(context, destination);
         var nullPlay = function() { return {stop :function(){}} };
 
-        return {
+        var ret = {
           note: function(n) {
             var wrappedContext = new DisposableAudioContextWrapper(context);
             var playable;
@@ -570,6 +570,21 @@ module.export = function(m) {
               });
           }
         };
+
+        if (instr.schedule_note) {
+          ret.schedule_note = function(n, options, delay, duration) {
+            var playable;
+            if (instr) {
+              playable = instr.schedule_note(n, options, delay, duration);
+            } else {
+              playable = { play: nullPlay };
+            }
+
+            return playable;
+          }
+        }
+
+        return ret;
       }
     };
   };
