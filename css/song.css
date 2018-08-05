@@ -18,6 +18,16 @@
   z-index:9999;
 }
 
+.measure-number-track {
+  margin-top: -25px;
+}
+
+.measure-number {
+  width: 150px;
+  margin: 2px;
+  display: inline-block;
+}
+
 .pattern-block {
   height: 60px;
   width: 150px;

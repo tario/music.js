@@ -66,6 +66,12 @@
       <playing-line bpm="file.bpm" zoom-level="1" beat-width="154 / file.measure" class="overlay playing-line"></playing-line>
 
       <div class="pattern-block-area">
+
+        <div class="track measure-number-track">
+          <div class="measure-number" ng-repeat="block in file.tracks[0].blocks track by $index">
+            {{::$index}}
+          </div>
+        </div>
         <div class="track" ng-repeat="track in file.tracks track by $index" ng-init="trackIdx = $index">
           <div 
             class="pattern-block"
