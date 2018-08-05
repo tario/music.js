@@ -571,11 +571,17 @@ module.export = function(m) {
           }
         };
 
+        if (instr.currentTime) {
+          ret.currentTime = function() {
+            return instr.currentTime();
+          };
+        }
+
         if (instr.schedule_note) {
-          ret.schedule_note = function(n, options, delay, duration) {
+          ret.schedule_note = function(n, options, start, duration) {
             var playable;
             if (instr) {
-              playable = instr.schedule_note(n, options, delay, duration);
+              playable = instr.schedule_note(n, options, start, duration);
             } else {
               playable = { play: nullPlay };
             }
@@ -965,8 +971,10 @@ module.export = function(m) {
       }
 
       return MUSIC.instrumentExtend({
-        schedule_note: function(n, options, delay) {
-          var startTime = music._audio.audio.currentTime + delay;
+        currentTime: function() {
+          return music._audio.audio.currentTime;
+        },
+        schedule_note: function(n, options, startTime) {
           audioParamModulation.cancelScheduledValues(startTime);
           audioParamModulation.setValueAtTime(0.0, startTime);
           audioParamModulation.setTargetAtTime(target, startTime, fallTime/6);
@@ -1010,11 +1018,11 @@ module.export = function(m) {
         audioParamModulation = baseNode._destination.offset;
       }
 
-      var schedule_note = function(n, options, delay, duration) {
+      var schedule_note = function(n, options, start, duration) {
         return {
           play: function() {
             audioParamModulation.cancelScheduledValues(music._audio.audio.currentTime);
-            audioParamModulation.setTargetAtTime(frequency(n), music._audio.audio.currentTime + delay, time_constant);
+            audioParamModulation.setTargetAtTime(frequency(n), start, time_constant);
 
             return nullPlaying;
           }
@@ -1022,6 +1030,9 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
+        currentTime: function() {
+          return music._audio.audio.currentTime;
+        },
         schedule_note: schedule_note
       });      
     };
@@ -1053,7 +1064,7 @@ module.export = function(m) {
       }
 
       var noteCount = 0;
-      var schedule_note = function(n, options, delay, duration) {
+      var schedule_note = function(n, options, startTime, duration) {
         var stop = function() {
           var endTime = music._audio.audio.currentTime;
           audioParamModulation.cancelScheduledValues(0.0);
@@ -1061,7 +1072,6 @@ module.export = function(m) {
         };
 
         var play = function() {
-          var startTime = music._audio.audio.currentTime + delay;
           audioParamModulation.cancelScheduledValues(startTime);
           audioParamModulation.setTargetAtTime(note_on, startTime, enter_time_constant);
           audioParamModulation.setTargetAtTime(note_off, startTime + duration, leave_time_constant);
@@ -1100,6 +1110,9 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
+        currentTime: function() {
+          return music._audio.audio.currentTime;
+        },
         note: note,
         schedule_note: schedule_note
       });
@@ -1253,14 +1266,12 @@ module.export = function(m) {
             });
       };
 
-      var schedule_note = function(n, options, delay, duration) {
-        var currentTime = gainNode.currentTime();
-        var startTime = currentTime + delay;
+      var schedule_note = function(n, options, startTime, duration) {
         var endTime = startTime + duration;
 
         options = options || {};
 
-        var innerNote = inst.schedule_note(n, options, delay, duration);
+        var innerNote = inst.schedule_note(n, options, startTime, duration);
         return MUSIC.playablePipeExtend({
           play: function(param) {
             var playing = innerNote.play();
@@ -1296,6 +1307,9 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
+        currentTime: function() {
+          return music._audio.audio.currentTime;
+        },
         note: note,
         schedule_note: inst.schedule_note && schedule_note,
         eventPreprocessor: eventPreprocessor
@@ -1436,9 +1450,7 @@ module.export = function(m) {
             });
       };
 
-      var schedule_note = function(n, options, delay, duration) {
-        var currentTime = gainNode.currentTime();
-        var startTime = currentTime + delay;
+      var schedule_note = function(n, options, startTime, duration) {
         var endTime = startTime + duration;
 
         options = options || {};
@@ -1477,6 +1489,9 @@ module.export = function(m) {
       };
 
       return MUSIC.instrumentExtend({
+        currentTime: function() {
+          return music._audio.audio.currentTime;
+        },
         note: note,
         schedule_note: schedule_note,
         eventPreprocessor: eventPreprocessor
@@ -1540,9 +1555,12 @@ module.export = function(m) {
 
 
           return MUSIC.instrumentExtend({
+            currentTime: function() {
+              return music._audio.audio.currentTime;
+            },
             note: note,
-            schedule_note: inst.schedule_note && function(n, options, delay, duration) {
-              return inst.schedule_note(n, options, delay + _delayS, duration)
+            schedule_note: inst.schedule_note && function(n, options, startTime, duration) {
+              return inst.schedule_note(n, options, startTime + _delayS, duration)
             }
           });
         };
@@ -1801,10 +1819,14 @@ module.export = function(m) {
             return originalNote(n+tr, options);
           };
 
+          if (wr.currentTime) {
+            x.currentTime = wr.currentTime.bind(wr);
+          }
+
           if (wr.schedule_note) {
             var originalScheduleNote = wr.schedule_note.bind(wr);
-            x.schedule_note = function(n, options, delay, duration) {
-              return originalScheduleNote(n+tr, options, delay, duration);
+            x.schedule_note = function(n, options, startTime, duration) {
+              return originalScheduleNote(n+tr, options, startTime, duration);
             };
           }
 
@@ -2130,6 +2152,9 @@ module.export = function(m) {
         var instrument = wrapped(music);
 
         var arpeggiator = {
+          currentTime: function() {
+            return music._audio.audio.currentTime;
+          },
           note: function(n) {
             var noteSeq = new MUSIC.NoteSequence();
             var box = duration + gap;
@@ -2154,27 +2179,27 @@ module.export = function(m) {
             
           },
 
-          schedule_note: instrument.schedule_note && function(n, options, delay, totalNoteDuration) {
+          schedule_note: instrument.schedule_note && function(n, options, startTime, totalNoteDuration) {
             var box = (duration + gap)/1000;
-            var currentDelay = delay;
+            var currentStartTime = startTime;
             var i=0;
             var durationS = duration/1000;
             var playableArray = [];
 
-            for(var currentDelay = delay; currentDelay < totalNoteDuration + delay; currentDelay += box) {
+            for(var currentStartTime = startTime; currentStartTime < totalNoteDuration + startTime; currentStartTime += box) {
               if (i===total) {
                 if (loop) {
                   i=0;
                 } else {
-                  var remainingTime = totalNoteDuration - currentDelay - gap/1000;
+                  var remainingTime = totalNoteDuration + startTime - currentStartTime - gap/1000;
                   if (remainingTime > 0.0) {
-                    playableArray.push(instrument.schedule_note(scale.add(n, i*interval), options, currentDelay, remainingTime));
+                    playableArray.push(instrument.schedule_note(scale.add(n, i*interval), options, currentStartTime, remainingTime));
                   }
                   break;
                 }
               }
 
-              playableArray.push(instrument.schedule_note(scale.add(n, i*interval), options, currentDelay, durationS));
+              playableArray.push(instrument.schedule_note(scale.add(n, i*interval), options, currentStartTime, durationS));
               i++;
             }
 

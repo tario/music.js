@@ -118,6 +118,7 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   };
 
   this._duration = time(totalMeasures * measure);
+  this.songCtx = {};
 
   for (var j = 0; j < totalMeasures; j++) {
     (function() {
@@ -146,9 +147,10 @@ MUSIC.Song = function(input, patternsOrOptions, options){
       }
 
       schedulable.forEach(function(s) {
-        self._patternContexts = (self._patternContexts||[]).concat(s.schedule(new MUSIC.NoteSequence(funseq, {
+        var scheduleContexts = s.schedule(new MUSIC.NoteSequence(funseq, {
           time: timeFunc(j*measure)
-        })));
+        }), self.songCtx);
+        self._patternContexts = (self._patternContexts||[]).concat(scheduleContexts);
       });
 
     })();
@@ -167,6 +169,9 @@ MUSIC.Song.prototype.duration = function() {
 };
 
 MUSIC.Song.prototype.play = function(options) {
+  if (this.songCtx.referenceInstrument) {
+    this.songCtx.sequenceStartTime = this.songCtx.referenceInstrument.currentTime();
+  }
   return new PlayingSong(this._funseq,  this._patternContexts, options);
 };
 

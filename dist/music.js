@@ -13091,13 +13091,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     osc.type = options.type;    
   }
 
-  this.schedule_freq = function(newFreq, delay) {
+  this.currentTime = function() {
+    return music.audio.currentTime;
+  };
+
+  this.schedule_freq = function(newFreq, start) {
     var tc;
     tc = time_constant||0.1;
 
     var stop = function() {};
     var play = function() {
-      osc.frequency.setTargetAtTime(newFreq, music.audio.currentTime, tc);
+      osc.frequency.setTargetAtTime(newFreq, start, tc);
       return {
         stop: stop
       };
@@ -13118,14 +13122,14 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     var playable = {};
 
     playable.setFreq = function(frequency, noteOptions) {
-      playable.setFreqOnTime(frequency, noteOptions, 0);
+      playable.setFreqOnTime(frequency, noteOptions, music.audio.currentTime);
     };
 
     playable.cancelScheduledValues = function() {
       osc.frequency.cancelScheduledValues(0.0);
     };
 
-    playable.setFreqOnTime = function(frequency, noteOptions, delay) {
+    playable.setFreqOnTime = function(frequency, noteOptions, start) {
       if (options.fixed_frequency) return;
 
       var tc;
@@ -13136,7 +13140,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         tc = time_constant||0.1;
       }
 
-      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime + delay, tc);
+      osc.frequency.setTargetAtTime(frequency, start, tc);
     };
 
     playable.reset = function() {
@@ -13837,6 +13841,7 @@ var instrumentExtend = function(obj) {
   }
 
   if (!obj.note) {
+    debugger;
     obj.note = function(n, options) {
       return this.schedule_note(n, options, 0.0);
     };
@@ -13928,7 +13933,11 @@ MUSIC.MonoNoteInstrument = function(inner) {
     });
   };
 
-  this.schedule_note = function(notenum, options, delay) {
+  this.currentTime = function() {
+    return inner.currentTime();
+  };
+
+  this.schedule_note = function(notenum, options, start) {
     if (!noteInst) {
       noteInst = inner.note(notenum, options);
     }
@@ -13939,7 +13948,7 @@ MUSIC.MonoNoteInstrument = function(inner) {
           playingInst = noteInst.play(param);
         }
 
-        noteInst.setValueOnTime(notenum, options, delay);
+        noteInst.setValueOnTime(notenum, options, start);
 
         return {stop: function() {
           noteInst.cancelScheduledValues();
@@ -13961,13 +13970,17 @@ MUSIC.MonoNoteInstrument = function(inner) {
 
 MUSIC.Instrument = function(soundFactory) {
   if (soundFactory.schedule_freq) {
-    this.schedule_note = function(notenum, options, delay, duration) {
+    this.currentTime = function() {
+      return soundFactory.currentTime();
+    };
+
+    this.schedule_note = function(notenum, options, startTime, duration) {
       if (notenum === undefined) return undefined;
       var freq = frequency(notenum);
 
       return MUSIC.playablePipeExtend({
         play: function(param) {
-          var fr = soundFactory.schedule_freq(freq, delay);
+          var fr = soundFactory.schedule_freq(freq, startTime);
           var soundInstance = fr.play(param);
           return {
             stop: function() {
@@ -14001,8 +14014,8 @@ MUSIC.Instrument = function(soundFactory) {
         }
 
         if (fr.setFreqOnTime) {
-          this.setValueOnTime = function(n, options, delay) {
-            fr.setFreqOnTime(frequency(n), options, delay);
+          this.setValueOnTime = function(n, options, start) {
+            fr.setFreqOnTime(frequency(n), options, start);
           };
 
           this.reset = fr.reset.bind(fr);
@@ -14055,9 +14068,17 @@ MUSIC.MultiInstrument = function(instrumentArray) {
   };
 
   if (instrumentArray().every(function(i) { return i.schedule_note; })) {
-    this.schedule_note = function(noteNum, options, delay, duration) {
+    this.currentTime = function() {
+
+      var instrument = instrumentArray().filter(function(i) { return i.currentTime; })[0];
+      if (!instrument) return 0;
+
+      return instrument.currentTime();
+    };
+
+    this.schedule_note = function(noteNum, options, startTime, duration) {
       return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
-        return instrument.schedule_note(noteNum, options, delay, duration);
+        return instrument.schedule_note(noteNum, options, startTime, duration);
       })));
     };
   }
@@ -14609,8 +14630,17 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   }
 
   if (baseCtx && baseCtx.instrument && baseCtx.instrument.schedule_note) {
-    this._funseq.push({t:startTime, f: function(param, delay) {
-      var playing = baseCtx.instrument.schedule_note(noteNum, options, delay/1000, duration/1000);
+    if (baseCtx.instrument.currentTime) {
+      baseCtx.songCtx.referenceInstrument = baseCtx.instrument;
+    }
+
+    this._funseq.push({t:startTime, f: function(param) {
+      var playing = baseCtx.instrument.schedule_note(
+        noteNum,
+        options,
+        baseCtx.sequenceStartTime() + startTime/1000,
+        duration/1000);
+
       baseCtx.setPlaying(mynoteid, playing);
     }, externalSchedule: true});
   } else {
@@ -14636,7 +14666,7 @@ MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
   return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration, this._contextList);
 };
 
-MUSIC.NoteSequence.context = function(instrument, subctx) {
+MUSIC.NoteSequence.context = function(instrument, subctx, songCtx) {
   var playingNotes = {};
   var setPlaying = function(noteid, p) {
     playingNotes[noteid] = p.play();
@@ -14663,11 +14693,21 @@ MUSIC.NoteSequence.context = function(instrument, subctx) {
     playingNotes = {};
   };
 
+  var sequenceStartTime = function() {
+    if (!songCtx.sequenceStartTime) {
+      songCtx.sequenceStartTime = this.instrument.currentTime();
+    }
+
+    return songCtx.sequenceStartTime;
+  };
+
   return {
+    sequenceStartTime: sequenceStartTime,
     setPlaying: setPlaying,
     unsetPlaying: unsetPlaying,
     instrument: instrument,
-    stop: stop
+    stop: stop,
+    songCtx: songCtx
   };
 };
 
@@ -14928,6 +14968,7 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   };
 
   this._duration = time(totalMeasures * measure);
+  this.songCtx = {};
 
   for (var j = 0; j < totalMeasures; j++) {
     (function() {
@@ -14956,9 +14997,10 @@ MUSIC.Song = function(input, patternsOrOptions, options){
       }
 
       schedulable.forEach(function(s) {
-        self._patternContexts = (self._patternContexts||[]).concat(s.schedule(new MUSIC.NoteSequence(funseq, {
+        var scheduleContexts = s.schedule(new MUSIC.NoteSequence(funseq, {
           time: timeFunc(j*measure)
-        })));
+        }), self.songCtx);
+        self._patternContexts = (self._patternContexts||[]).concat(scheduleContexts);
       });
 
     })();
@@ -14977,6 +15019,9 @@ MUSIC.Song.prototype.duration = function() {
 };
 
 MUSIC.Song.prototype.play = function(options) {
+  if (this.songCtx.referenceInstrument) {
+    this.songCtx.sequenceStartTime = this.songCtx.referenceInstrument.currentTime();
+  }
   return new PlayingSong(this._funseq,  this._patternContexts, options);
 };
 

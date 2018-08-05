@@ -62,6 +62,7 @@ var instrumentExtend = function(obj) {
   }
 
   if (!obj.note) {
+    debugger;
     obj.note = function(n, options) {
       return this.schedule_note(n, options, 0.0);
     };
@@ -153,7 +154,11 @@ MUSIC.MonoNoteInstrument = function(inner) {
     });
   };
 
-  this.schedule_note = function(notenum, options, delay) {
+  this.currentTime = function() {
+    return inner.currentTime();
+  };
+
+  this.schedule_note = function(notenum, options, start) {
     if (!noteInst) {
       noteInst = inner.note(notenum, options);
     }
@@ -164,7 +169,7 @@ MUSIC.MonoNoteInstrument = function(inner) {
           playingInst = noteInst.play(param);
         }
 
-        noteInst.setValueOnTime(notenum, options, delay);
+        noteInst.setValueOnTime(notenum, options, start);
 
         return {stop: function() {
           noteInst.cancelScheduledValues();
@@ -186,13 +191,17 @@ MUSIC.MonoNoteInstrument = function(inner) {
 
 MUSIC.Instrument = function(soundFactory) {
   if (soundFactory.schedule_freq) {
-    this.schedule_note = function(notenum, options, delay, duration) {
+    this.currentTime = function() {
+      return soundFactory.currentTime();
+    };
+
+    this.schedule_note = function(notenum, options, startTime, duration) {
       if (notenum === undefined) return undefined;
       var freq = frequency(notenum);
 
       return MUSIC.playablePipeExtend({
         play: function(param) {
-          var fr = soundFactory.schedule_freq(freq, delay);
+          var fr = soundFactory.schedule_freq(freq, startTime);
           var soundInstance = fr.play(param);
           return {
             stop: function() {
@@ -226,8 +235,8 @@ MUSIC.Instrument = function(soundFactory) {
         }
 
         if (fr.setFreqOnTime) {
-          this.setValueOnTime = function(n, options, delay) {
-            fr.setFreqOnTime(frequency(n), options, delay);
+          this.setValueOnTime = function(n, options, start) {
+            fr.setFreqOnTime(frequency(n), options, start);
           };
 
           this.reset = fr.reset.bind(fr);
@@ -280,9 +289,17 @@ MUSIC.MultiInstrument = function(instrumentArray) {
   };
 
   if (instrumentArray().every(function(i) { return i.schedule_note; })) {
-    this.schedule_note = function(noteNum, options, delay, duration) {
+    this.currentTime = function() {
+
+      var instrument = instrumentArray().filter(function(i) { return i.currentTime; })[0];
+      if (!instrument) return 0;
+
+      return instrument.currentTime();
+    };
+
+    this.schedule_note = function(noteNum, options, startTime, duration) {
       return MUSIC.playablePipeExtend(new MultiNote(instrumentArray().map(function(instrument){ 
-        return instrument.schedule_note(noteNum, options, delay, duration);
+        return instrument.schedule_note(noteNum, options, startTime, duration);
       })));
     };
   }

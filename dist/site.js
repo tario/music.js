@@ -15113,6 +15113,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       })
     });
 
+    var songCtx = {};
     file.tracks.forEach(function(track, idx) {
       idx = base + idx;
 
@@ -15120,21 +15121,22 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
       if (!instrument.tempo) {
         var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
-        var context = MUSIC.NoteSequence.context(instrument);
+        var context = MUSIC.NoteSequence.context(instrument, null, songCtx);
         schedule(noteseq, file, track, eventPreprocessor, onStop, context);
       }
     });
 
     var ret = noteseq.makePlayable(null);
-    ret.schedule = function(noteSequence) {
+    ret.schedule = function(noteSequence, songCtx) {
       var contexts = [];
+      songCtx = songCtx || {};
 
       file.tracks.forEach(function(track, idx) {
         idx = base + idx;
 
         var instrument = instruments[track.instrument + '_' + idx];
         var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
-        var context = MUSIC.NoteSequence.context(instrument)
+        var context = MUSIC.NoteSequence.context(instrument, null, songCtx);
 
         contexts.push(context);
         schedule(noteSequence, file, track, eventPreprocessor, onStop, context);

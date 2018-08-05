@@ -81,8 +81,17 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   }
 
   if (baseCtx && baseCtx.instrument && baseCtx.instrument.schedule_note) {
-    this._funseq.push({t:startTime, f: function(param, delay) {
-      var playing = baseCtx.instrument.schedule_note(noteNum, options, delay/1000, duration/1000);
+    if (baseCtx.instrument.currentTime) {
+      baseCtx.songCtx.referenceInstrument = baseCtx.instrument;
+    }
+
+    this._funseq.push({t:startTime, f: function(param) {
+      var playing = baseCtx.instrument.schedule_note(
+        noteNum,
+        options,
+        baseCtx.sequenceStartTime() + startTime/1000,
+        duration/1000);
+
       baseCtx.setPlaying(mynoteid, playing);
     }, externalSchedule: true});
   } else {
@@ -108,7 +117,7 @@ MUSIC.NoteSequence.prototype.makePlayable = function(instrument) {
   return new MUSIC.NoteSequence.Playable(this, instrument, this._totalduration, this._contextList);
 };
 
-MUSIC.NoteSequence.context = function(instrument, subctx) {
+MUSIC.NoteSequence.context = function(instrument, subctx, songCtx) {
   var playingNotes = {};
   var setPlaying = function(noteid, p) {
     playingNotes[noteid] = p.play();
@@ -135,11 +144,21 @@ MUSIC.NoteSequence.context = function(instrument, subctx) {
     playingNotes = {};
   };
 
+  var sequenceStartTime = function() {
+    if (!songCtx.sequenceStartTime) {
+      songCtx.sequenceStartTime = this.instrument.currentTime();
+    }
+
+    return songCtx.sequenceStartTime;
+  };
+
   return {
+    sequenceStartTime: sequenceStartTime,
     setPlaying: setPlaying,
     unsetPlaying: unsetPlaying,
     instrument: instrument,
-    stop: stop
+    stop: stop,
+    songCtx: songCtx
   };
 };
 

@@ -713,13 +713,17 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     osc.type = options.type;    
   }
 
-  this.schedule_freq = function(newFreq, delay) {
+  this.currentTime = function() {
+    return music.audio.currentTime;
+  };
+
+  this.schedule_freq = function(newFreq, start) {
     var tc;
     tc = time_constant||0.1;
 
     var stop = function() {};
     var play = function() {
-      osc.frequency.setTargetAtTime(newFreq, music.audio.currentTime, tc);
+      osc.frequency.setTargetAtTime(newFreq, start, tc);
       return {
         stop: stop
       };
@@ -740,14 +744,14 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
     var playable = {};
 
     playable.setFreq = function(frequency, noteOptions) {
-      playable.setFreqOnTime(frequency, noteOptions, 0);
+      playable.setFreqOnTime(frequency, noteOptions, music.audio.currentTime);
     };
 
     playable.cancelScheduledValues = function() {
       osc.frequency.cancelScheduledValues(0.0);
     };
 
-    playable.setFreqOnTime = function(frequency, noteOptions, delay) {
+    playable.setFreqOnTime = function(frequency, noteOptions, start) {
       if (options.fixed_frequency) return;
 
       var tc;
@@ -758,7 +762,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
         tc = time_constant||0.1;
       }
 
-      osc.frequency.setTargetAtTime(frequency, music.audio.currentTime + delay, tc);
+      osc.frequency.setTargetAtTime(frequency, start, tc);
     };
 
     playable.reset = function() {
