@@ -15089,7 +15089,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     var isTempoTrack = function(track, idx) {
       idx = base + idx;
       var instrument = instruments[track.instrument + '_' + idx];
-      return instrument.tempo;
+      return instrument && instrument.tempo;
     };
 
     var getEvents = function(track) {
@@ -15119,7 +15119,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
       var instrument = instruments[track.instrument + '_' + idx];
 
-      if (!instrument.tempo) {
+      if (instrument && !instrument.tempo) {
         var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
         var context = MUSIC.NoteSequence.context(instrument, null, songCtx);
         schedule(noteseq, file, track, eventPreprocessor, onStop, context);
@@ -15135,11 +15135,14 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
         idx = base + idx;
 
         var instrument = instruments[track.instrument + '_' + idx];
-        var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
-        var context = MUSIC.NoteSequence.context(instrument, null, songCtx);
 
-        contexts.push(context);
-        schedule(noteSequence, file, track, eventPreprocessor, onStop, context);
+        if (instrument) {
+          var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
+          var context = MUSIC.NoteSequence.context(instrument, null, songCtx);
+
+          contexts.push(context);
+          schedule(noteSequence, file, track, eventPreprocessor, onStop, context);
+        }
       });
 
       return contexts;
