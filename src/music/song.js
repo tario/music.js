@@ -120,6 +120,10 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   this._duration = time(totalMeasures * measure);
   this.songCtx = {};
 
+  funseq.push({t: 0, f: function() {
+    self.songCtx.sequenceStartTime = self.songCtx.referenceInstrument.currentTime();
+  }, externalSchedule: true});
+
   for (var j = 0; j < totalMeasures; j++) {
     (function() {
       var patternArray = [];
@@ -169,9 +173,6 @@ MUSIC.Song.prototype.duration = function() {
 };
 
 MUSIC.Song.prototype.play = function(options) {
-  if (this.songCtx.referenceInstrument) {
-    this.songCtx.sequenceStartTime = this.songCtx.referenceInstrument.currentTime();
-  }
   return new PlayingSong(this._funseq,  this._patternContexts, options);
 };
 
