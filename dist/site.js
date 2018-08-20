@@ -15261,6 +15261,11 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
         self.l = evt.s - self.s;
       }
     });
+
+    var measureTicks = pattern.measure * TICKS_PER_BEAT;
+    if ((self.s + self.l) % measureTicks < self.s % measureTicks) {
+      self.l = self.l - (self.s + self.l) % measureTicks;
+    }
   };
 
   var collision = function(track, self) {

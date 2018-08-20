@@ -62,7 +62,6 @@ var instrumentExtend = function(obj) {
   }
 
   if (!obj.note) {
-    debugger;
     obj.note = function(n, options) {
       return this.schedule_note(n, options, 0.0);
     };
