@@ -2156,7 +2156,11 @@ module.export = function(m) {
             return music._audio.audio.currentTime;
           },
           note: function(n) {
-            var noteSeq = new MUSIC.NoteSequence();
+            var noteSeq = new MUSIC.NoteSequence(null, {
+              time: function(t) {
+                return t;
+              }
+            });
             var box = duration + gap;
 
             if (total > 0) noteSeq.push([n, 0, duration]);

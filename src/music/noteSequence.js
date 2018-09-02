@@ -53,11 +53,11 @@ MUSIC.NoteSequence.Playing.prototype.stop = function() {
 MUSIC.NoteSequence.prototype.paddingTo = function(ticks){
   this._totalduration = this._time(ticks);
 };
-/*
+
 MUSIC.NoteSequence.prototype.padding = function(time){
   this._totalduration = this._totalduration + time;
 };
-*/
+
 MUSIC.NoteSequence.prototype.pushCallback = function(array){
   var startTime = this._time(array[0]);
   var f = array[1];
