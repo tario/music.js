@@ -15567,17 +15567,148 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       });
   };
 
+  var getPatternSongs = function(options) {
+    var byProject = function(file) {
+      return file.project === options.project;
+    };
+
+    var byType = function(file) {
+      return file.type === 'pattern' || file.type === 'song';
+    };
+
+    var typeSong = function(file) {
+      return file.type === 'song';
+    };
+
+    var loadFile = function(file) {
+      return getFile(file.id);
+    };
+
+    return $q.all({
+        storage: storageIndex.getAll(),
+        builtin: createdFilesIndex
+      }).then(function(result) {
+        var files = result.storage.concat(result.builtin);
+        var fileIndexes = files.filter(byProject).filter(byType);
+
+        if (fileIndexes.some(typeSong)) {
+          fileIndexes = fileIndexes.filter(typeSong);
+        }
+
+        return $q.all(fileIndexes.map(loadFile));
+      });
+  };
+
+  var mode = function(files, fcn) {
+    var obj = {};
+    files.forEach(function(file) {
+      var value = fcn(file);
+      obj[value] = (obj[value] || 0) + 1;
+    });
+
+    var maxcount = 0;
+    var _m;
+    for (var k in obj) {
+      var count = obj[k];
+      if (count > maxcount) {
+        _m = k;
+        maxcount = count;
+      }
+    };
+
+    return _m;
+  };
+
+  var getDefaultMeasure = function(options) {
+    return getPatternSongs(options)
+      .then(function(files) {
+        if (!files.length) return 4;
+
+        return mode(files, function(file) {
+          return file.contents.measure;
+        });
+      });
+  };
+
+  var getDefaultBPM = function(options) {
+    return getPatternSongs(options)
+      .then(function(files) {
+        if (!files.length) return 140;
+
+        return mode(files, function(file) {
+          return file.contents.bpm;
+        });
+      });
+  };
+
+  var getFile = function(id) {
+      var builtIn = false;
+      var changed = false;
+      return builtInLoaded
+        .then(function() {
+          var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
+          if (localFile) {
+            builtIn = true;
+            return localFile;
+          }
+
+          return storageIndex.getEntry(id);
+        })
+        .then(function(localFile) {
+          return localforage.getItem(id)
+            .then(function(serialized) {
+              if (serialized) {
+                var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
+                return {
+                  index: {
+                    name: localFile.name,
+                    id: localFile.id,
+                    builtIn: builtIn,
+                    type: localFile.type,
+                    ref: localFile.ref||getRefs(localFile.type, contents),
+                    updated: true,
+                    project: localFile.project
+                  },
+                  contents: contents
+                };
+              } else {
+                if (localFile) {
+                  return {
+                    index: {
+                      name: localFile.name,
+                      id: localFile.id,
+                      builtIn: builtIn,
+                      type: localFile.type,
+                      ref: localFile.ref,
+                      project: localFile.project,
+                      noExportable: localFile.noExportable
+                    },
+                    contents: JSON.parse(JSON.stringify(createdFiles[id]))
+                  };
+                };
+              }
+            });
+        });
+    };  
+
   var createFile = function(options) {
     var newid = options.id || createId();
 
     var contents = options.contents || defaultFile[options.type] || {};
 
-    hist[newid] = hist[newid] || Historial();
-    hist[newid].registerVersion(JSON.stringify(contents));
+    return $q.all({
+      defaultMeasure: getDefaultMeasure(options),
+      defaultBPM: getDefaultBPM(options)
+    }).then(function(value) {
+      contents.measure = parseInt(value.defaultMeasure);
+      contents.bpm = parseInt(value.defaultBPM);
+    }).then(function() {
+      hist[newid] = hist[newid] || Historial();
+      hist[newid].registerVersion(JSON.stringify(contents));
 
-    var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
-    return localforage.setItem(newid, serialized)
-      .then(function() {
+      var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
+      return localforage.setItem(newid, serialized)
+    }).then(function() {
         return storageIndex.createEntry({
           type: options.type,
           name: options.name,
@@ -15585,15 +15716,18 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
           id: newid,
           ref: options.ref
         });
-      })
-      .then(function() {
-        return recycleIndex.reload();
-      })
-      .then(function() {
+    })
+    .then(function() {
+      return recycleIndex.reload();
+    })
+    .then(function() {
         genericStateEmmiter.emit("changed");
         recycledEmmiter.emit("changed");
         return newid;
-      });
+    })
+    .catch(function(err) {
+      debugger;
+    });
   };
 
 
@@ -15693,55 +15827,7 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
       return storageIndex.getEntry(id);
     },
     updateFile: updateFile,
-    getFile: function(id) {
-      var builtIn = false;
-      var changed = false;
-      return builtInLoaded
-        .then(function() {
-          var localFile = createdFilesIndex.filter(function(x) {return x.id === id; })[0];
-          if (localFile) {
-            builtIn = true;
-            return localFile;
-          }
-
-          return storageIndex.getEntry(id);
-        })
-        .then(function(localFile) {
-          return localforage.getItem(id)
-            .then(function(serialized) {
-              if (serialized) {
-                var contents = MUSIC.Formats.MultiSerializer.deserialize(localFile.type, serialized);
-                return {
-                  index: {
-                    name: localFile.name,
-                    id: localFile.id,
-                    builtIn: builtIn,
-                    type: localFile.type,
-                    ref: localFile.ref||getRefs(localFile.type, contents),
-                    updated: true,
-                    project: localFile.project
-                  },
-                  contents: contents
-                };
-              } else {
-                if (localFile) {
-                  return {
-                    index: {
-                      name: localFile.name,
-                      id: localFile.id,
-                      builtIn: builtIn,
-                      type: localFile.type,
-                      ref: localFile.ref,
-                      project: localFile.project,
-                      noExportable: localFile.noExportable
-                    },
-                    contents: JSON.parse(JSON.stringify(createdFiles[id]))
-                  };
-                };
-              }
-            });
-        });
-    },
+    getFile: getFile,
     observeRecycled: function(callback) {
       recycleIndex.reload()
         .then(function() {
