@@ -631,7 +631,8 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
     "site/builtin/smb-overworld.json",
     "site/builtin/bomberman.json",
     "site/builtin/entertainer.json",
-    "site/builtin/eva-thanatos.json"
+    "site/builtin/eva-thanatos.json",
+    "site/builtin/bioshock-solace.json"
   ];
 
   var loadBuiltIn = function(uri) {
