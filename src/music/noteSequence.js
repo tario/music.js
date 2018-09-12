@@ -2,6 +2,8 @@
 
 MUSIC.NoteSequence = function(funseq, options) {
   var clock;
+  var songCtx = options && options.songCtx;
+
   if (!funseq){
     clock = MUSIC.Utils.Clock(
       window.performance.now.bind(window.performance),
@@ -9,6 +11,9 @@ MUSIC.NoteSequence = function(funseq, options) {
       clearInterval,
       500);
     funseq = MUSIC.Utils.FunctionSeq(clock, setTimeout, clearTimeout);
+    funseq.push({t: 0, f: function() {
+      songCtx.sequenceStartTime = songCtx.referenceInstrument.currentTime();
+    }, externalSchedule: true});
   }
 
   this._time = options && options.time;

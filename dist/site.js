@@ -15104,16 +15104,17 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       return a.s-b.s;
     };
 
+    var songCtx = {};
     var noteseq = new MUSIC.NoteSequence(null,
     {
       time: MUSIC.Math.ticksToTime({
         bpm: file.bpm,
         ticks_per_beat: TICKS_PER_BEAT,
         bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart)
-      })
+      }),
+      songCtx: songCtx
     });
 
-    var songCtx = {};
     file.tracks.forEach(function(track, idx) {
       idx = base + idx;
 
