@@ -14516,6 +14516,19 @@ MUSIC.Math.integrateBpmEvents = function(options) {
 };
 
 MUSIC.Math.ticksToTime = function(options) {
+  if (options.start) {
+    var time = MUSIC.Math.ticksToTime({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: options.bpm_events
+    });
+
+    var startTime = time(options.start);
+    return function(ticks) {
+      return time(ticks) - startTime;
+    };
+  }
+
   var bpm = options.bpm;
   var ticks_per_beat = options.ticks_per_beat;
 
@@ -14531,6 +14544,25 @@ MUSIC.Math.ticksToTime = function(options) {
 };
 
 MUSIC.Math.timeToTicks = function(options) {
+  if (options.start) {
+    var ret = MUSIC.Math.timeToTicks({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: options.bpm_events
+    });
+
+    var time = MUSIC.Math.ticksToTime({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: options.bpm_events
+    });
+
+    var startTime = time(options.start);
+    return function(time) {
+      return ret(time + startTime);
+    };
+  }
+
   var bpm = options.bpm;
   var ticks_per_beat = options.ticks_per_beat;
 
@@ -14613,6 +14645,8 @@ MUSIC.NoteSequence.prototype.padding = function(time){
 
 MUSIC.NoteSequence.prototype.pushCallback = function(array){
   var startTime = this._time(array[0]);
+  if (startTime < 0) return;
+
   var f = array[1];
   this._funseq.push({t:startTime, f: f});
 };
@@ -14621,6 +14655,15 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = this._time(array[1]);
   var duration = this._time(array[1]+array[2]) - startTime;
+
+  if (startTime < 0) {
+    if (startTime + duration < 0) {
+      return;
+    } else {
+      duration = duration + startTime;
+      startTime = 0;
+    }
+  }
 
   var options = array[3];
 
@@ -14954,14 +14997,16 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   var time = MUSIC.Math.ticksToTime({
     bpm: options.bpm,
     ticks_per_beat: options.ticks_per_beat,
-    bpm_events: bpm_events
+    bpm_events: bpm_events,
+    start: options.start || 0
   });
 
   this.timeToTicks = function() {
     return MUSIC.Math.timeToTicks({
       bpm: options.bpm,
       ticks_per_beat: options.ticks_per_beat,
-      bpm_events: bpm_events
+      bpm_events: bpm_events,
+      start: options.start || 0
     });
   };
 

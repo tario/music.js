@@ -12708,6 +12708,7 @@ var enTranslations = {
     'export': 'Export',
     reset: 'Reset',
     play: 'Play',
+    pause: 'Pause',
     stop: 'Stop',
     record: 'Rec.',
     bpm: 'Bpm',
@@ -12797,12 +12798,11 @@ var enTranslations = {
     drop_pattern: "Drop pattern here",
     tooltip: {
       measure_beats: "Amount of beats per measure. Make sure this value match the measure length of the patterns",
-      play: "Click to play the song",
+      play: "Click to play/pause the song",
       stop: "Click to stop playing the song",
       download: "Click to record the song and download the audio file",
       drop_pattern: "Drop zone for patterns, drop here a pattern from the panel on the left",
       remove_block: "Click here to remove the pattern and leave the block empty",
-      play_block: "Click here to play this block only",
       edit_block: "Click here to edit the pattern used by this block"
     }
   },
@@ -12939,6 +12939,7 @@ var esTranslations = {
     'export': 'Exportar',
     reset: 'Fabr.',
     play: 'Reprod.',
+    pause: 'Pausar',
     stop: 'Detener',
     record: 'Rec.',
     bpm: 'Ppm',
@@ -13019,12 +13020,11 @@ var esTranslations = {
     drop_pattern: "Suelta el patron aqui",
     tooltip: {
       measure_beats: "Pulsos/Compas. Tiene que coincidir con el de los patrones que se usan",
-      play: "Click para reproducir la cancion",
+      play: "Click para reproducir/pausar la cancion",
       stop: "Click para detener la reproduccion",
       download: "Click para grabar la cancion a un archivo de audio y descargarlo",
       drop_pattern: "Area para soltar los patrones, arrastra aqui patrones desde el panel izquierdo",
       remove_block: "Click aqui para eliminar el patron y dejar el bloque vacio",
-      play_block: "Click aqui para reproducir este bloque aislado",
       edit_block: "Click aqui para saltar a la edicion del patron utilizado en este bloque"
     }
   },
@@ -14511,10 +14511,16 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
 
       var bpm, zoomLevel, beatWidth;
 
+      var ticksToPX = function(ticks) {
+        zoomLevel = getZoomLevel(scope.$parent);
+        beatWidth = getBeatWidth(scope.$parent);
+        return ticks*zoomLevel*beatWidth/TICKS_PER_BEAT;
+      };
+
       var callback = function() {
         if (bpm && playing) {
           var ticks = timeToTicks((window.performance.now() - t0));
-          var displacement = ticks*zoomLevel*beatWidth/TICKS_PER_BEAT;
+          var displacement = ticksToPX(ticks);
 
           element.css("left", (displacement) + "px");
         }
@@ -14524,11 +14530,11 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
       var playingLine = $(element);
       var requestId = requestAnimationFrame(callback);
 
-      scope.$on('startClock', function(evt, _t0, _timeToTicks) {
+      scope.$on('startClock', function(evt, _timeToTicks) {
+        var _t0 = window.performance.now();
+
         playing = true;
         bpm = getBpm(scope.$parent);
-        zoomLevel = getZoomLevel(scope.$parent);
-        beatWidth = getBeatWidth(scope.$parent);
 
         timeToTicks = _timeToTicks;
         t0 = _t0;
@@ -14538,9 +14544,20 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
         playing = false;
       });
 
-      scope.$on('resetClock', function(evt) {
+      scope.$on('pauseClock', function(evt) {
+        var ticks = timeToTicks((window.performance.now() - t0));
+        var displacement = ticksToPX(ticks || 0);
+
         playing = false;
-        element.css("left", "0px");
+        scope.$emit('pausedClock', ticks);
+        element.css("left", (displacement) + "px");
+      });
+
+      scope.$on('resetClock', function(evt, baseTicks) {
+        var displacement = ticksToPX(baseTicks || 0);
+
+        playing = false;
+        element.css("left", (displacement) + "px");
       });
 
 
@@ -17130,8 +17147,28 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   $scope.indexMap = {};
   var id = $routeParams.id;
   var instSet = InstrumentSet();
+  var playingStartOffset = 0;
 
   $scope.$emit('switchProject', $routeParams.project);
+
+  var pxToTicks = function(px) {
+    var beatWidth = 154 / $scope.file.measure;
+    var zoomLevel = 1;
+    return TICKS_PER_BEAT*px/zoomLevel/beatWidth;
+  };
+
+  $scope.seek = function(event) {
+    if ($scope.currentRec) return;
+
+    playingStartOffset = pxToTicks(event.offsetX);
+    $scope.$broadcast("resetClock", playingStartOffset);
+
+    if ($scope.playing) {
+      $scope.playing.stop();
+      $scope.playing = null;
+      $scope.replay();
+    }
+  };
 
   $scope.patternEdit = function(block) {
     document.location = "#/editor/" + $routeParams.project + "/pattern/" + block.id;
@@ -17167,7 +17204,12 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   $scope.currentRec = null;
 
   $scope.record = function() {
-    $scope.stop();
+    if ($scope.playing) {
+      $scope.playing.stop();
+      $scope.playing = null;
+
+      $scope.$broadcast("pauseClock");
+    }
 
     var modalIns = $uibModal.open({
       templateUrl: "site/templates/modal/recordOptions.html",
@@ -17197,20 +17239,37 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   };
 
   $scope.stop = function() {
-    $scope.$broadcast("stopClock");
-    $scope.$broadcast("resetClock");
+    playingStartOffset = 0;
 
-    if (playing) playing.stop();
+    $scope.$broadcast("stopClock");
+    $scope.$broadcast("resetClock", playingStartOffset);
+
+    if ($scope.playing) $scope.playing.stop();
     $scope.recipe.raise("song_play_stopped");
-    playing = null;
+    $scope.playing = null;
   };
 
-  var playing = null;
+  $scope.playing = null;
+
+  $scope.$on('pausedClock', function(evt, ticks) {
+    playingStartOffset = ticks;    
+  });
 
   $scope.play = function() {
+    if ($scope.playing) {
+      $scope.playing.stop();
+      $scope.playing = null;
+
+      $scope.$broadcast("pauseClock");
+      return;
+    }
+
+    $scope.replay();
+  };
+
+  $scope.replay = function() {
     MusicContext.resumeAudio();
 
-    $scope.stop();
     $q.all(instSet.all)
       .then(function(instruments){
         var patterns = {};
@@ -17236,62 +17295,24 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
         , {
             measure: $scope.file.measure,
             bpm: $scope.file.bpm,
-            ticks_per_beat: TICKS_PER_BEAT
+            ticks_per_beat: TICKS_PER_BEAT,
+            start: playingStartOffset
           });
 
-        $scope.$broadcast("startClock", window.performance.now(), song.timeToTicks());
-        playing = song.play({
+        $scope.$broadcast("startClock", song.timeToTicks());
+        $scope.playing = song.play({
           onStop: function() {
             $scope.$broadcast("stopClock");
-            $scope.$broadcast("resetClock");
+            $scope.$broadcast("resetClock", playingStartOffset);
 
             $scope.recipe.raise("song_play_stopped");
-            playing = null;
+            $scope.playing = null;
             if ($scope.currentRec) $scope.currentRec.stop();
             $scope.currentRec = null;
             $timeout(function() {});
           }
         });
 
-      });
-
-
-  };
-
-  $scope.patternPlay = function(block, songTrackIdx) {
-    MusicContext.resumeAudio();
-
-    var pattern = $scope.indexMap[block.id].contents;
-    var doNothing = function() {};
-
-    pattern.tracks.forEach(function(track, idx) {
-      instSet.load(track.instrument, songTrackIdx*SONG_MAX_TRACKS + idx);
-    });
-
-    block.playing = true;
-    var playDone = function() {
-      $timeout(function() {
-        block.playing = false;
-      });
-    };
-
-    $q.all(instSet.all)
-      .then(function(instruments) {
-        $scope.stop();
-
-        var changedBpm = Object.create(pattern);
-        changedBpm.bpm = $scope.file.bpm;
-
-        playing = Pattern.patternCompose(changedBpm, instruments, songTrackIdx*SONG_MAX_TRACKS, function() {
-          playing = null;
-          playDone();
-        }).play();
-
-        var stop = playing.stop.bind(playing);
-        playing.stop = function() {
-          playDone();
-          stop();
-        };
       });
   };
 
@@ -17548,7 +17569,7 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
         playing = pattern.play();
 
         var timeToTicks = pattern.timeToTicks();
-        $scope.$broadcast("startClock", window.performance.now(), timeToTicks);
+        $scope.$broadcast("startClock", timeToTicks);
       });
   };
 

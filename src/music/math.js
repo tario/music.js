@@ -183,6 +183,19 @@ MUSIC.Math.integrateBpmEvents = function(options) {
 };
 
 MUSIC.Math.ticksToTime = function(options) {
+  if (options.start) {
+    var time = MUSIC.Math.ticksToTime({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: options.bpm_events
+    });
+
+    var startTime = time(options.start);
+    return function(ticks) {
+      return time(ticks) - startTime;
+    };
+  }
+
   var bpm = options.bpm;
   var ticks_per_beat = options.ticks_per_beat;
 
@@ -198,6 +211,25 @@ MUSIC.Math.ticksToTime = function(options) {
 };
 
 MUSIC.Math.timeToTicks = function(options) {
+  if (options.start) {
+    var ret = MUSIC.Math.timeToTicks({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: options.bpm_events
+    });
+
+    var time = MUSIC.Math.ticksToTime({
+      bpm: options.bpm,
+      ticks_per_beat: options.ticks_per_beat,
+      bpm_events: options.bpm_events
+    });
+
+    var startTime = time(options.start);
+    return function(time) {
+      return ret(time + startTime);
+    };
+  }
+
   var bpm = options.bpm;
   var ticks_per_beat = options.ticks_per_beat;
 

@@ -65,6 +65,8 @@ MUSIC.NoteSequence.prototype.padding = function(time){
 
 MUSIC.NoteSequence.prototype.pushCallback = function(array){
   var startTime = this._time(array[0]);
+  if (startTime < 0) return;
+
   var f = array[1];
   this._funseq.push({t:startTime, f: f});
 };
@@ -73,6 +75,15 @@ MUSIC.NoteSequence.prototype.push = function(array, baseCtx){
   var noteNum = array[0];
   var startTime = this._time(array[1]);
   var duration = this._time(array[1]+array[2]) - startTime;
+
+  if (startTime < 0) {
+    if (startTime + duration < 0) {
+      return;
+    } else {
+      duration = duration + startTime;
+      startTime = 0;
+    }
+  }
 
   var options = array[3];
 

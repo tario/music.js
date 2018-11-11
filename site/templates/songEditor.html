@@ -31,8 +31,8 @@
     </div>
     <div class="span6 player-controls pull-right">
       <div class="row-fluid">
-        <button recipe-blink="'song_play'" class="player btn btn-primary show-contextual-tooltip" ng-click="play(); recipe.raise('song_play_click')">
-          {{'common.play' | translate}}
+        <button recipe-blink="'song_play'" class="play-btn player btn btn-primary show-contextual-tooltip" ng-click="play(); recipe.raise('song_play_click')">
+          {{( playing ? 'common.pause' : 'common.play' ) | translate}}
           <recipe-tooltip rt-id="'song_play'"></recipe-tooltip>
           <div class="help-tooltip contextual-tooltip cap-right" translate="song.tooltip.play"></div>
         </button>
@@ -62,11 +62,11 @@
   <hr class="soften"></hr>
 
   <div class="pattern-block-area-container">
-    <div class="with-playing-line-container">
+    <div class="with-playing-line-container" ng-style="{'width': (154 * file.tracks[0].blocks.length) + 'px'}">
       <playing-line bpm="file.bpm" zoom-level="1" beat-width="154 / file.measure" class="overlay playing-line"></playing-line>
-
       <div class="pattern-block-area">
-
+        <div class="track seekbar" ng-click="seek($event)">
+        </div>
         <div class="track measure-number-track">
           <div class="measure-number" ng-repeat="block in file.tracks[0].blocks track by $index">
             {{::$index}}
@@ -102,9 +102,6 @@
                 </span>
                 <span class="pattern-mini-button fa fa-edit show-contextual-tooltip" ng-click="patternEdit(block)" ng-mousedown="$event.stopPropagation()">
                   <div class="help-tooltip contextual-tooltip" translate="song.tooltip.edit_block"></div>
-                </span>
-                <span ng-class="{'playing': block.playing}" class="pattern-mini-button fa fa-play show-contextual-tooltip" ng-click="patternPlay(block, trackIdx)" ng-mousedown="$event.stopPropagation()">
-                  <div class="help-tooltip contextual-tooltip" translate="song.tooltip.play_block"></div>
                 </span>
               </div>
             </div>

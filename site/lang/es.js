@@ -124,6 +124,7 @@ var esTranslations = {
     'export': 'Exportar',
     reset: 'Fabr.',
     play: 'Reprod.',
+    pause: 'Pausar',
     stop: 'Detener',
     record: 'Rec.',
     bpm: 'Ppm',
@@ -204,12 +205,11 @@ var esTranslations = {
     drop_pattern: "Suelta el patron aqui",
     tooltip: {
       measure_beats: "Pulsos/Compas. Tiene que coincidir con el de los patrones que se usan",
-      play: "Click para reproducir la cancion",
+      play: "Click para reproducir/pausar la cancion",
       stop: "Click para detener la reproduccion",
       download: "Click para grabar la cancion a un archivo de audio y descargarlo",
       drop_pattern: "Area para soltar los patrones, arrastra aqui patrones desde el panel izquierdo",
       remove_block: "Click aqui para eliminar el patron y dejar el bloque vacio",
-      play_block: "Click aqui para reproducir este bloque aislado",
       edit_block: "Click aqui para saltar a la edicion del patron utilizado en este bloque"
     }
   },

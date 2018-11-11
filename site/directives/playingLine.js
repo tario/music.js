@@ -13,10 +13,16 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
 
       var bpm, zoomLevel, beatWidth;
 
+      var ticksToPX = function(ticks) {
+        zoomLevel = getZoomLevel(scope.$parent);
+        beatWidth = getBeatWidth(scope.$parent);
+        return ticks*zoomLevel*beatWidth/TICKS_PER_BEAT;
+      };
+
       var callback = function() {
         if (bpm && playing) {
           var ticks = timeToTicks((window.performance.now() - t0));
-          var displacement = ticks*zoomLevel*beatWidth/TICKS_PER_BEAT;
+          var displacement = ticksToPX(ticks);
 
           element.css("left", (displacement) + "px");
         }
@@ -26,11 +32,11 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
       var playingLine = $(element);
       var requestId = requestAnimationFrame(callback);
 
-      scope.$on('startClock', function(evt, _t0, _timeToTicks) {
+      scope.$on('startClock', function(evt, _timeToTicks) {
+        var _t0 = window.performance.now();
+
         playing = true;
         bpm = getBpm(scope.$parent);
-        zoomLevel = getZoomLevel(scope.$parent);
-        beatWidth = getBeatWidth(scope.$parent);
 
         timeToTicks = _timeToTicks;
         t0 = _t0;
@@ -40,9 +46,20 @@ musicShowCaseApp.directive("playingLine", ["$timeout", "$parse", "TICKS_PER_BEAT
         playing = false;
       });
 
-      scope.$on('resetClock', function(evt) {
+      scope.$on('pauseClock', function(evt) {
+        var ticks = timeToTicks((window.performance.now() - t0));
+        var displacement = ticksToPX(ticks || 0);
+
         playing = false;
-        element.css("left", "0px");
+        scope.$emit('pausedClock', ticks);
+        element.css("left", (displacement) + "px");
+      });
+
+      scope.$on('resetClock', function(evt, baseTicks) {
+        var displacement = ticksToPX(baseTicks || 0);
+
+        playing = false;
+        element.css("left", (displacement) + "px");
       });
 
 

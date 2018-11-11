@@ -100,14 +100,16 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   var time = MUSIC.Math.ticksToTime({
     bpm: options.bpm,
     ticks_per_beat: options.ticks_per_beat,
-    bpm_events: bpm_events
+    bpm_events: bpm_events,
+    start: options.start || 0
   });
 
   this.timeToTicks = function() {
     return MUSIC.Math.timeToTicks({
       bpm: options.bpm,
       ticks_per_beat: options.ticks_per_beat,
-      bpm_events: bpm_events
+      bpm_events: bpm_events,
+      start: options.start || 0
     });
   };
 

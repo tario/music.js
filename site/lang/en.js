@@ -124,6 +124,7 @@ var enTranslations = {
     'export': 'Export',
     reset: 'Reset',
     play: 'Play',
+    pause: 'Pause',
     stop: 'Stop',
     record: 'Rec.',
     bpm: 'Bpm',
@@ -213,12 +214,11 @@ var enTranslations = {
     drop_pattern: "Drop pattern here",
     tooltip: {
       measure_beats: "Amount of beats per measure. Make sure this value match the measure length of the patterns",
-      play: "Click to play the song",
+      play: "Click to play/pause the song",
       stop: "Click to stop playing the song",
       download: "Click to record the song and download the audio file",
       drop_pattern: "Drop zone for patterns, drop here a pattern from the panel on the left",
       remove_block: "Click here to remove the pattern and leave the block empty",
-      play_block: "Click here to play this block only",
       edit_block: "Click here to edit the pattern used by this block"
     }
   },
