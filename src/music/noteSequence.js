@@ -12,7 +12,9 @@ MUSIC.NoteSequence = function(funseq, options) {
       500);
     funseq = MUSIC.Utils.FunctionSeq(clock, setTimeout, clearTimeout);
     funseq.push({t: 0, f: function() {
-      songCtx.sequenceStartTime = songCtx.referenceInstrument.currentTime();
+      if (songCtx.referenceInstrument) {
+        songCtx.sequenceStartTime = songCtx.referenceInstrument.currentTime();
+      }
     }, externalSchedule: true});
   }
 

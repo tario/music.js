@@ -380,6 +380,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
 musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$scope", "$timeout", "$routeParams", "$http", "TICKS_PER_BEAT", "MusicContext", "FileRepository", "Pattern", "InstrumentSet", 'Export', 'ErrMessage',
   function($q, $translate, $scope, $timeout, $routeParams, $http, TICKS_PER_BEAT, MusicContext, FileRepository, Pattern, InstrumentSet, Export, ErrMessage) {
   var id = $routeParams.id;
+  var playingStartOffset = 0;
 
   $scope.exportItem = function() {
     Export.exportFile($scope.fileIndex.name, $scope.fileIndex.id);
@@ -397,8 +398,23 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
   $scope.selectedTrack = 0;
   $scope.mutedState = [];
 
-  var playing = null;
   var instSet = InstrumentSet();
+
+  var pxToTicks = function(px) {
+    var beatWidth = 10;
+    return TICKS_PER_BEAT*px/$scope.zoomLevel/beatWidth;
+  };
+
+  $scope.seek = function(event) {
+    playingStartOffset = pxToTicks(event.offsetX + $scope.file.scrollLeft);
+    $scope.$broadcast("resetClock", playingStartOffset);
+
+    if ($scope.playing) {
+      $scope.playing.stop();
+      $scope.playing = null;
+      $scope.replay();
+    }
+  };
 
   $scope.updateMuted = function() {
     $scope.mutedState = Pattern.getMutedState($scope.file);
@@ -455,32 +471,60 @@ musicShowCaseApp.controller("PatternEditorController", ["$q", "$translate", "$sc
     $scope.fileChanged();
   };
 
+
   $scope.stop = function() {
+    playingStartOffset = 0;
+
     $scope.$broadcast("stopClock");
-    $scope.$broadcast("resetClock");
-    if (playing) playing.stop();
-    $scope.recipe.raise("pattern_play_stopped");
-    playing = null;
+    $scope.$broadcast("resetClock", playingStartOffset);
+
+    if ($scope.playing) $scope.playing.stop();
+    $scope.recipe.raise("song_play_stopped");
+    $scope.playing = null;
   };
 
+  $scope.$on('pausedClock', function(evt, ticks) {
+    playingStartOffset = ticks;    
+  });
+
   $scope.play = function() {
+    if ($scope.playing) {
+      $scope.playing.stop();
+      $scope.playing = null;
+
+      $scope.$broadcast("pauseClock");
+      return;
+    }
+
+    $scope.replay();
+  };
+
+  $scope.replay = function() {
     MusicContext.resumeAudio();
 
     var playingLine = $(".playing-line");
 
     $q.all(instSet.all)
       .then(function(instruments) {
-        if (playing) playing.stop();
+        if ($scope.playing) $scope.playing.stop();
 
         var onStop = function() {
           $scope.$broadcast("stopClock");
           $scope.$broadcast("resetClock");
           $scope.recipe.raise("pattern_play_stopped");
-          playing = null;
+
+          $timeout(function() {
+            $scope.playing = null;
+          });
+
+          playingStartOffset = 0;
         };
 
-        var pattern = Pattern.patternCompose($scope.file, instruments, 0, onStop);
-        playing = pattern.play();
+        var pattern = Pattern.patternCompose($scope.file, instruments, 0, onStop, {
+          start: playingStartOffset
+        });
+
+        $scope.playing = pattern.play();
 
         var timeToTicks = pattern.timeToTicks();
         $scope.$broadcast("startClock", timeToTicks);

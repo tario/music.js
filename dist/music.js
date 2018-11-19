@@ -14592,7 +14592,9 @@ MUSIC.NoteSequence = function(funseq, options) {
       500);
     funseq = MUSIC.Utils.FunctionSeq(clock, setTimeout, clearTimeout);
     funseq.push({t: 0, f: function() {
-      songCtx.sequenceStartTime = songCtx.referenceInstrument.currentTime();
+      if (songCtx.referenceInstrument) {
+        songCtx.sequenceStartTime = songCtx.referenceInstrument.currentTime();
+      }
     }, externalSchedule: true});
   }
 
@@ -15020,7 +15022,9 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   this.songCtx = {};
 
   funseq.push({t: 0, f: function() {
-    self.songCtx.sequenceStartTime = self.songCtx.referenceInstrument.currentTime();
+    if (self.songCtx.referenceInstrument) {
+      self.songCtx.sequenceStartTime = self.songCtx.referenceInstrument.currentTime();
+    }
   }, externalSchedule: true});
 
   for (var j = 0; j < totalMeasures; j++) {

@@ -350,7 +350,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
     return noteseq;
   };
 
-  var patternCompose = function(file, instruments, base, onStop) {
+  var patternCompose = function(file, instruments, base, onStop, options) {
+    var start = (options && options.start) || 0;
     var isTempoTrack = function(track, idx) {
       idx = base + idx;
       var instrument = instruments[track.instrument + '_' + idx];
@@ -375,7 +376,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       time: MUSIC.Math.ticksToTime({
         bpm: file.bpm,
         ticks_per_beat: TICKS_PER_BEAT,
-        bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart)
+        bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart),
+        start: start
       }),
       songCtx: songCtx
     });
@@ -418,7 +420,8 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
       return MUSIC.Math.timeToTicks({
         bpm: file.bpm,
         ticks_per_beat: TICKS_PER_BEAT,
-        bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart)
+        bpm_events: file.tracks.filter(isTempoTrack).map(getEvents).reduce(concat, []).sort(byStart),
+        start: start
       });
     }; 
 

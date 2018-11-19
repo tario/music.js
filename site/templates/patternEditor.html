@@ -55,7 +55,7 @@
     <div class="span6 player-controls pull-right">
       <div class="row-fluid">
         <button recipe-blink="'pattern_play'" class="player btn btn-primary show-contextual-tooltip play-button" ng-click="play(); recipe.raise('pattern_play_click')">
-          {{'common.play' | translate}}
+          {{( playing ? 'common.pause' : 'common.play' ) | translate}}
           <recipe-tooltip rt-id="'pattern_play'"></recipe-tooltip>
           <div class="help-tooltip contextual-tooltip cap-right" translate="pattern.tooltip.play"></div>
         </button>
@@ -82,6 +82,15 @@
   <h1 translate="pattern.tracks"></h1>
 
   <div class="multi-track-container">
+    <div class="row-fluid">
+      <div class="vertical-margin span2 track-button-panel height-0">
+      </div>
+      <div class="vertical-margin span10 height-0">
+        <div class="track seekbar" ng-click="seek($event)">
+        </div>
+
+      </div>
+    </div>
     <div ng-repeat="track in file.tracks track by $index" ng-class="{'track-muted': track.instrument !== 'tempo' && mutedState[$index]}">
       <div class="row-fluid">
         <div class="vertical-margin span2 track-button-panel">

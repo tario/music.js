@@ -123,7 +123,9 @@ MUSIC.Song = function(input, patternsOrOptions, options){
   this.songCtx = {};
 
   funseq.push({t: 0, f: function() {
-    self.songCtx.sequenceStartTime = self.songCtx.referenceInstrument.currentTime();
+    if (self.songCtx.referenceInstrument) {
+      self.songCtx.sequenceStartTime = self.songCtx.referenceInstrument.currentTime();
+    }
   }, externalSchedule: true});
 
   for (var j = 0; j < totalMeasures; j++) {
