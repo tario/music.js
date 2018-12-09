@@ -1,10 +1,8 @@
-MUSIC = {};
+window.MUSIC = window.MUSIC || {};
 
 (function() {
 MUSIC.SoundLib = MUSIC.SoundLib || {};
 MUSIC.Effects = MUSIC.Effects || {};
-MUSIC.Types = new TypeCast();
-
 
 MUSIC.playablePipeExtend = function(obj) {
   obj.during = function(duration) {

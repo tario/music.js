@@ -19,7 +19,7 @@ var TypeConversor = function(typeName) {
   };
 };
 
-TypeCast = function(){
+var TypeCast = function(){
   var typeConversors = {};
 
   this.register = function(typeName, conversor){
@@ -39,5 +39,8 @@ TypeCast = function(){
     return typeConversor.cast(obj);
   };
 };
+
+window.MUSIC = window.MUSIC || {};
+window.MUSIC.Types = new TypeCast();
 
 })();
