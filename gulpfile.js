@@ -8,6 +8,7 @@ const addsrc = require('gulp-add-src');
 const merge = require('merge-stream');
 const modifyFile = require('gulp-modify-file');
 const noop = require('gulp-noop');
+const path = require('path');
 
 const argv = require('yargs').argv;
 
@@ -53,12 +54,15 @@ gulp.task('build-lib-deps', function(cb) {
 
 gulp.task('build-lib', function(cb) {
   return gulp.src(["src/typecast.js", "src/music.js", "src/music/**/*.js", "src/formats/**/*.js"])
-            .pipe(sourcemaps.init().on('error', console.log))  
+            .pipe(sourcemaps.init().on('error', console.log))
               .pipe(babel({presets: ['@babel/env']}).on('error', console.log))
               .pipe(modifyFile(content => content.replace('"use strict"', "")))
               .pipe(maybeUglify())
+              .pipe(sourcemaps.mapSources((_path, file) => {
+                return path.relative(__dirname, file.base).replace('\\','/') + '/' + _path;
+              }))
               .pipe(concat("music.js"))
-            .pipe(sourcemaps.write(".", {sourceRoot: 'src'}))
+            .pipe(sourcemaps.write())
             .pipe(gulp.dest(DEST))
             .pipe(connect.reload());
 });
@@ -83,12 +87,15 @@ gulp.task('build-site', function(cb) {
             "site/controllers.js", 
             "site/controllers/*.js", 
             ])
-            .pipe(sourcemaps.init().on('error', console.log))  
+            .pipe(sourcemaps.init().on('error', console.log))
               .pipe(babel({presets: ['@babel/env']}).on('error', console.log))
               .pipe(modifyFile(content => content.replace('"use strict"', "")))
               .pipe(maybeUglify())
+              .pipe(sourcemaps.mapSources((_path, file) => {
+                return path.relative(__dirname, file.base).replace('\\','/') + '/' + _path;
+              }))
               .pipe(concat("site.js"))
-            .pipe(sourcemaps.write(".", {sourceRoot: 'site'}))
+            .pipe(sourcemaps.write())
             .pipe(gulp.dest(DEST))
             .pipe(connect.reload());
 });
