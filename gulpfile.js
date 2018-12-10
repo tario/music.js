@@ -8,6 +8,7 @@ const addsrc = require('gulp-add-src');
 const merge = require('merge-stream');
 const modifyFile = require('gulp-modify-file');
 const noop = require('gulp-noop');
+const filter = require('gulp-filter');
 const path = require('path');
 
 const argv = require('yargs').argv;
@@ -17,7 +18,7 @@ const babel = require('gulp-babel');
 
 const DEST = "dist/"
 
-gulp.task("build", ["copy-babel-polyfill", "build-lib-deps", "build-lib", "build-site-deps", "build-site"]);
+gulp.task("build", ["copy-babel-polyfill", "build-lib", "build-site"]);
 gulp.task("default", ["build", "webserver", "watch"]);
 
 gulp.task('webserver', function() {
@@ -45,18 +46,16 @@ gulp.task('copy-babel-polyfill', function(cb) {
   return babelRuntime.pipe(gulp.dest(DEST))
 });
 
-gulp.task('build-lib-deps', function(cb) {
-  return gulp.src(["src/lib/*.js", "src/lib/recorder/WebAudioRecorder.min.js"])
-            .pipe(maybeUglify())
-            .pipe(concat("music-deps.js"))
-            .pipe(gulp.dest(DEST));
-});
-
 gulp.task('build-lib', function(cb) {
-  return gulp.src(["src/typecast.js", "src/music.js", "src/music/**/*.js", "src/formats/**/*.js"])
+  const libFilter = filter(['**', '!*src/lib/**'], {restore: true});
+
+  return gulp.src(["src/lib/*.js", "src/lib/recorder/WebAudioRecorder.min.js", 
+            "src/typecast.js", "src/music.js", "src/music/**/*.js", "src/formats/**/*.js"])
             .pipe(sourcemaps.init().on('error', console.log))
+              .pipe(libFilter)
               .pipe(babel({presets: ['@babel/env']}).on('error', console.log))
               .pipe(modifyFile(content => content.replace('"use strict"', "")))
+              .pipe(libFilter.restore)
               .pipe(maybeUglify())
               .pipe(sourcemaps.mapSources((_path, file) => {
                 return path.relative(__dirname, file.base).replace('\\','/') + '/' + _path;
@@ -67,15 +66,10 @@ gulp.task('build-lib', function(cb) {
             .pipe(connect.reload());
 });
 
-gulp.task('build-site-deps', function(cb) {
-  return gulp.src(["site/lib/*.js", "site/lib/*/*.js", "site/lib/codemirror/**/*.js"])
-    .pipe(maybeUglify())
-    .pipe(concat("site-deps.js"))
-    .pipe(gulp.dest(DEST));
-});
-
 gulp.task('build-site', function(cb) {
+  const libFilter = filter(['**', '!*site/lib/**'], {restore: true});
   return gulp.src([
+            "site/lib/*.js", "site/lib/*/*.js", "site/lib/codemirror/**/*.js",
             "site/app.js",
             "site/lang/*.js",
             "site/langSettings.js",
@@ -88,8 +82,10 @@ gulp.task('build-site', function(cb) {
             "site/controllers/*.js", 
             ])
             .pipe(sourcemaps.init().on('error', console.log))
+              .pipe(libFilter)
               .pipe(babel({presets: ['@babel/env']}).on('error', console.log))
               .pipe(modifyFile(content => content.replace('"use strict"', "")))
+              .pipe(libFilter.restore)
               .pipe(maybeUglify())
               .pipe(sourcemaps.mapSources((_path, file) => {
                 return path.relative(__dirname, file.base).replace('\\','/') + '/' + _path;
