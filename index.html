@@ -3,6 +3,8 @@
 <script src="dist/polyfill.min.js"></script>
 <script src="dist/music.js?v=e0eab7"></script>
 <script src="dist/site.js?v=e0eab7"></script>
+<script src="https://cdn.ravenjs.com/3.26.4/angular/raven.min.js" crossorigin="anonymous"></script>
+
 <script src="src/soundfont/accordion-ogg.js"></script>
 <script src="src/soundfont/acoustic_grand_piano-ogg.js"></script>
 
@@ -17,6 +19,12 @@
 <link rel="stylesheet" href="css/song.css?v=e0eab7">
 <link rel="stylesheet" href="css/recipes.css?v=e0eab7">
 
+<script>
+  Raven
+    .config('https://e7c25bf5104e4a49a28cbc69ebe2871c@sentry.io/1414599')
+    .install()
+    .setRelease('0.7.0');
+</script>
 <script>
   if (location.host.split(":")[0] === "localhost") {
     document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>');

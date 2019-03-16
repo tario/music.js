@@ -10,8 +10,8 @@ MUSIC.Effects.forEach = function(cb) {
 MUSIC.Effects.WebAudioNodeWrapper = function (music, audioNode, next, onDispose) {
 
   this._destination = audioNode;
+  audioNode.connect(next._destination);
   setTimeout(function() { // this hack prevents a bug in current version of chrome
-    audioNode.connect(next._destination);
   });
 
   this.next = function() {
