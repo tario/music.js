@@ -284,7 +284,7 @@ describe("Music.Utils", function() {
             });
 
             it("should call function with " + type + " parameter " + parameter, function() {
-              expect(firstEvent).toHaveBeenCalledWith(parameter);
+              expect(firstEvent).toHaveBeenCalledWith(parameter, 0 /* Timediff */);
             });
           });
         };

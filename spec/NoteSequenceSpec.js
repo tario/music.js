@@ -45,15 +45,22 @@ describe("Music.NoteSequence", function() {
     spyOn(fakeInstrument, "note").and.callThrough();
   });
 
+  var fakeTime = MUSIC.Math.ticksToTime({
+    bpm: 60,
+    ticks_per_beat: 1000,
+    bpm_events: [],
+    start: 0
+  });
+
   it("should allow create NoteSequence for FunctionSequence and instrument", function(){
-    var seq = new MUSIC.NoteSequence(fakeFunSeq);
+    var seq = new MUSIC.NoteSequence(fakeFunSeq, {time: fakeTime});
     expect(seq.push).toEqual(jasmine.any(Function));
   })
 
   describe("when instantiated", function() {
     var noteseq;
     beforeEach(function() {
-      noteSeq = new MUSIC.NoteSequence(fakeFunSeq);
+      noteSeq = new MUSIC.NoteSequence(fakeFunSeq, {time: fakeTime});
     });
 
     describe("when called makePlayable", function() {
@@ -267,7 +274,7 @@ describe("Music.NoteSequence", function() {
 
         it("should output to funseq start calling function to call instrument.note with notenum " + noteNum, function(){
           fakeFunSeq.push.calls.argsFor(0)[0].f(baseContext);
-          expect(fakeInstrument.note).toHaveBeenCalledWith(noteNum);
+          expect(fakeInstrument.note).toHaveBeenCalledWith(noteNum, undefined /* options */);
         });
 
         describe("when start event is called",function() {
