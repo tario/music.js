@@ -53,6 +53,9 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   };
 
   var start = function(parameter) {
+    var eventBlockSize = 1000;
+    var eventBlock = [];
+
     var array = eventsArray.slice(0).sort(function(e1, e2) {
       var dt = e1.t - e2.t;
       if (dt===0) {
@@ -62,68 +65,46 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
       return dt;
     });
 
+    array.forEach(function(event) {
+      var idx = Math.floor(event.t / eventBlockSize);
+      eventBlock[idx] = eventBlock[idx] || [];
+      eventBlock[idx].push(event);
+    });
+
     var timeoutHandlers = [];
+    var timeoutHandlerFcn = function() {
+      timeoutHandlers = timeoutHandlers.filter(reject(this.timeoutHandler))
+      this.f(parameter, 0);
+    };
+
     var eventCount = array.length;
+    var processEventBlock = function(idx, t) {
+      var events = eventBlock[idx];
+      if (!events) return;
 
-    var clockHandler = clock.start(function(t) {
-      var lastEvent;
-      var callingCriteria = function(element) {
-        return element.t - t < 1000 && element.t - t >= 0;
-      };
+      for (var i=0; i<events.length; i++) {
+        var dt = events[i].t - t;
+        if (dt < 0) continue;
 
-      var pending = [];
-      var processPending = function() {
-        if (!pending.length) return;
-
-        var currentPending = pending;
-        pending = [];
-
-        for (var i=0; i<currentPending.length; i++) {
-          if (currentPending[i].externalSchedule) {
-            currentPending[i].f(parameter, currentPending[i].t - t);
-          }
-        }
-
-        var timeoutHandler = setTimeout(function() {
-          timeoutHandlers = timeoutHandlers.filter(reject(timeoutHandler))
-
-          for (var i=0; i<currentPending.length; i++) {
-            if (!currentPending[i].externalSchedule) {
-              currentPending[i].f(parameter, 0);
-              eventCount--;
-              if (eventCount === 0) clockHandler.stop();
-            }
-          }
-        }, currentPending[0].t - t);
-        timeoutHandlers.push(timeoutHandler);
-      };
-
-      var addSchedule = function(event) {
-        if (lastEvent && lastEvent.t - t !== event.t - t) {
-          processPending();
-        }
-
-        pending.push(event);
-        lastEvent = event;
-      };
-
-      var nextElement;
-
-      while(1) {
-        if (array.length > 0) {
-          nextElement = array[0];
-          if (callingCriteria(nextElement)) {
-            addSchedule(nextElement);
-            array.shift(); // remove first element
-          } else {
-            break;
-          }
+        if (events[i].externalSchedule) {
+          events[i].f(parameter, dt);
         } else {
-          break;
+          var cfg = {
+            f: events[i].f
+          };
+
+          cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
+          timeoutHandlers.push(cfg.timeoutHandler);
         }
       }
 
-      processPending();
+      eventBlock[idx] = null;
+    };
+
+    var clockHandler = clock.start(function(t) {
+      var currentIdx = Math.floor(t / eventBlockSize);
+      processEventBlock(currentIdx, t);
+      processEventBlock(currentIdx+1, t);
     });
 
     return {
