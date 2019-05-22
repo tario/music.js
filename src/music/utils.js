@@ -78,33 +78,56 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
     };
 
     var eventCount = array.length;
-    var processEventBlock = function(idx, t) {
-      var events = eventBlock[idx];
-      if (!events) return;
-
-      for (var i=0; i<events.length; i++) {
-        var dt = events[i].t - t;
-        if (dt < 0) continue;
-
-        if (events[i].externalSchedule) {
-          events[i].f(parameter, dt);
-        } else {
-          var cfg = {
-            f: events[i].f
-          };
-
-          cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
-          timeoutHandlers.push(cfg.timeoutHandler);
-        }
+    var next_t = 0;
+    var clockHandler = clock.start(function(t) {
+      if (t < next_t) {
+        return;
       }
 
-      eventBlock[idx] = null;
-    };
-
-    var clockHandler = clock.start(function(t) {
       var currentIdx = Math.floor(t / eventBlockSize);
-      processEventBlock(currentIdx, t);
-      processEventBlock(currentIdx+1, t);
+      var currentBlock = eventBlock[currentIdx];
+      var i;
+
+      if (currentBlock) {
+        for (i=0; i<currentBlock.length && currentBlock[i].t < t; i++) {
+        }
+        for (; i<currentBlock.length; i++) {
+          var dt = currentBlock[i].t - t;
+          if (currentBlock[i].externalSchedule) {
+            currentBlock[i].f(parameter, dt);
+          } else {
+            var cfg = {
+              f: currentBlock[i].f
+            };
+
+            cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
+            timeoutHandlers.push(cfg.timeoutHandler);
+          }
+        }
+
+        eventBlock[currentIdx] = null;
+        next_t = (currentIdx + 1) * eventBlockSize;
+      }
+
+      var nextBlock = eventBlock[currentIdx+1];
+      if (nextBlock) {
+        for (i=0; i<nextBlock.length; i++) {
+          var dt = nextBlock[i].t - t;
+          if (nextBlock[i].externalSchedule) {
+            nextBlock[i].f(parameter, dt);
+          } else {
+            var cfg = {
+              f: nextBlock[i].f
+            };
+
+            cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
+            timeoutHandlers.push(cfg.timeoutHandler);
+          }
+        }
+
+        eventBlock[currentIdx+1] = null
+        next_t = (currentIdx + 1) * eventBlockSize;
+      }
     });
 
     return {
