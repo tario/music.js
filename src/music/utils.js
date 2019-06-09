@@ -53,9 +53,7 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
   };
 
   var start = function(parameter) {
-    var eventBlockSize = 1000;
-    var eventBlock = [];
-
+    var maxDelta = (parameter || {}).maxDelta || 2000;
     var array = eventsArray.slice(0).sort(function(e1, e2) {
       var dt = e1.t - e2.t;
       if (dt===0) {
@@ -65,12 +63,6 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
       return dt;
     });
 
-    array.forEach(function(event) {
-      var idx = Math.floor(event.t / eventBlockSize);
-      eventBlock[idx] = eventBlock[idx] || [];
-      eventBlock[idx].push(event);
-    });
-
     var timeoutHandlers = [];
     var timeoutHandlerFcn = function() {
       timeoutHandlers = timeoutHandlers.filter(reject(this.timeoutHandler))
@@ -78,55 +70,38 @@ MUSIC.Utils.FunctionSeq = function(clock, setTimeout, clearTimeout) {
     };
 
     var eventCount = array.length;
+    var currentIdx = 0;
     var next_t = 0;
     var clockHandler = clock.start(function(t) {
       if (t < next_t) {
         return;
       }
 
-      var currentIdx = Math.floor(t / eventBlockSize);
-      var currentBlock = eventBlock[currentIdx];
-      var i;
-
-      if (currentBlock) {
-        for (i=0; i<currentBlock.length && currentBlock[i].t < t; i++) {
-        }
-        for (; i<currentBlock.length; i++) {
-          var dt = currentBlock[i].t - t;
-          if (currentBlock[i].externalSchedule) {
-            currentBlock[i].f(parameter, dt);
-          } else {
-            var cfg = {
-              f: currentBlock[i].f
-            };
-
-            cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
-            timeoutHandlers.push(cfg.timeoutHandler);
-          }
+      for (; currentIdx<array.length; currentIdx++) {
+        var evt = array[currentIdx];
+        if (!evt) {
+          break;
         }
 
-        eventBlock[currentIdx] = null;
-        next_t = (currentIdx + 1) * eventBlockSize;
-      }
-
-      var nextBlock = eventBlock[currentIdx+1];
-      if (nextBlock) {
-        for (i=0; i<nextBlock.length; i++) {
-          var dt = nextBlock[i].t - t;
-          if (nextBlock[i].externalSchedule) {
-            nextBlock[i].f(parameter, dt);
-          } else {
-            var cfg = {
-              f: nextBlock[i].f
-            };
-
-            cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
-            timeoutHandlers.push(cfg.timeoutHandler);
-          }
+        var dt = evt.t - t;
+        if (dt < 0) {
+          continue;
+        }
+        if (dt > maxDelta) {
+          break;
         }
 
-        eventBlock[currentIdx+1] = null
-        next_t = (currentIdx + 1) * eventBlockSize;
+        if (evt.externalSchedule) {
+          evt.f(parameter, dt);
+        } else {
+          var cfg = {
+            f: evt.f
+          };
+          cfg.timeoutHandler = setTimeout(timeoutHandlerFcn.bind(cfg), dt);
+          timeoutHandlers.push(cfg.timeoutHandler);
+        }
+
+        next_t = evt.t;
       }
     });
 

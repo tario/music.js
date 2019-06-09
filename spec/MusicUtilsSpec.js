@@ -229,10 +229,6 @@ describe("Music.Utils", function() {
           });
 
           describe("when funseq.stop() is NOT explicitly called", function() {
-            it("should NOT call stop on clock", function() {
-              expect(fakeClock.stopCalled).toEqual(undefined);
-            });
-
             it("should NOT call clearTimeout", function() {
               expect(fakeClearTimeout).not.toHaveBeenCalled();
             });
@@ -382,11 +378,7 @@ describe("Music.Utils", function() {
             describe("when clock signal " + signalTime, function() {
               [50, 150, 1500, 2500, 10000].forEach(function(t) {
                 describe("when event time is " + t, function() {
-                  var tIdx = Math.floor(t / 1000);
-                  var signalTimeIdx = Math.floor(signalTime / 1000);
-
-                  //if (t >= signalTime && t < signalTime + 1000) {
-                  if ((signalTimeIdx == tIdx || signalTimeIdx + 1 == tIdx) && t >= signalTime) {
+                  if (t >= signalTime && t < signalTime + 1000) {
                     it("should call setTimeout", function() {
                       var fakeClock = new FakeClock();
                       var fakeSetTimeout = jasmine.createSpy("mockSetTimeout");
@@ -420,7 +412,6 @@ describe("Music.Utils", function() {
                   }
 
                   var anotherSignalTime = signalTime + 1000;
-                  var anotherSignalTimeIdx = Math.floor(anotherSignalTime / 1000);
                   describe("when clock signal " + anotherSignalTime + " after that", function() {
                     var fakeClock;
                     var fakeSetTimeout;
@@ -435,19 +426,21 @@ describe("Music.Utils", function() {
 
                       fSeq.start({maxDelta: 1000});
                       // simulate clock signal
+                      if (signalTime === 0 && anotherSignalTime === 1000 && t === 1500) {
+                        console.log("X");
+                      }
                       fakeClock.fcn(signalTime);
                       fakeClock.fcn(anotherSignalTime);
                     });
 
-                    if ((signalTimeIdx == tIdx || signalTimeIdx + 1 == tIdx) && t >= signalTime) {
+                    if (t >= signalTime && t < signalTime + 1000) {
                       it("should call setTimeout only ONE time", function() {
                         expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), t-signalTime);
                         expect(fakeSetTimeout.calls.count()).toEqual(1);
                       });
                     } else {
-                      if ((anotherSignalTimeIdx == tIdx || anotherSignalTimeIdx + 1 == tIdx) && t >= anotherSignalTime) {
-                      //if (t >= anotherSignalTime && t < anotherSignalTime + 1000) {
-                        it("should call setTimeout ony ONE time", function() {
+                      if (t >= anotherSignalTime && t < anotherSignalTime + 1000) {
+                        it("should call setTimeout only ONE time", function() {
                           expect(fakeSetTimeout).toHaveBeenCalledWith(jasmine.any(Function), t-anotherSignalTime);
                           expect(fakeSetTimeout.calls.count()).toEqual(1);
                         });
@@ -471,7 +464,6 @@ describe("Music.Utils", function() {
         });
       });
     });
-
 
     describe("when there is two events", function() {
       describe("when event occurs at 100 and second event occurs at 200", function() {
