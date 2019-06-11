@@ -1435,8 +1435,6 @@ module.export = function(m) {
             .onStop(function() {
                 noteCount--;
 
-                console.log("NOTE STOP " + n);
-
                 var currentTime = gainNode.currentTime();
                 // don't release if noteCount > 0
                 if (noteCount > 0) return;

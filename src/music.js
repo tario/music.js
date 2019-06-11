@@ -751,6 +751,7 @@ MUSIC.SoundLib.Oscillator = function(music, destination, options) {
 
     playable.setFreqOnTime = function(frequency, noteOptions, start) {
       if (options.fixed_frequency) return;
+      if (!osc) return;
 
       var tc;
 
