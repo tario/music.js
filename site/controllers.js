@@ -283,6 +283,7 @@ musicShowCaseApp.controller("SongEditorController", ["$scope", "$uibModal", "$q"
   $scope.$watch("file.measure", checkPayload);
 
   $scope.onDropComplete = function($data,$event,block,songTrackIdx) {
+    if (!$data) return;
     if ($data.fromBlock) {
 
       var swapId = block.id;
