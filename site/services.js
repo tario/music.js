@@ -961,43 +961,35 @@ musicShowCaseApp.service("FileRepository", ["$http", "$q", "TypeService", "Histo
         });
     };  
 
-  var createFile = function(options) {
+  var createFile = async function(options) {
     var newid = options.id || createId();
+    var contents;
 
-    var contents = options.contents || defaultFile[options.type] || {};
+    if (options.contents) {
+      contents = options.contents;
+    } else {
+      contents = defaultFile[options.type] || {};
+      contents.measure = parseInt(await getDefaultMeasure(options));
+      contents.bpm = parseInt(await getDefaultBPM(options));
+    }
 
-    return $q.all({
-      defaultMeasure: getDefaultMeasure(options),
-      defaultBPM: getDefaultBPM(options)
-    }).then(function(value) {
-      contents.measure = parseInt(value.defaultMeasure);
-      contents.bpm = parseInt(value.defaultBPM);
-    }).then(function() {
-      hist[newid] = hist[newid] || Historial();
-      hist[newid].registerVersion(JSON.stringify(contents));
+    hist[newid] = hist[newid] || Historial();
+    hist[newid].registerVersion(JSON.stringify(contents));
 
-      var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
-      return localforage.setItem(newid, serialized)
-    }).then(function() {
-        return storageIndex.createEntry({
+    var serialized = MUSIC.Formats.MultiSerializer.serialize(options.type, contents);
+    await localforage.setItem(newid, serialized);
+    await storageIndex.createEntry({
           type: options.type,
           name: options.name,
           project: options.project,
           id: newid,
           ref: options.ref
         });
-    })
-    .then(function() {
-      return recycleIndex.reload();
-    })
-    .then(function() {
-        genericStateEmmiter.emit("changed");
-        recycledEmmiter.emit("changed");
-        return newid;
-    })
-    .catch(function(err) {
-      debugger;
-    });
+
+    await recycleIndex.reload();
+    genericStateEmmiter.emit("changed");
+    recycledEmmiter.emit("changed");
+    return newid;
   };
 
 
