@@ -404,7 +404,7 @@ musicShowCaseApp.service("Pattern", ["MUSIC", 'TICKS_PER_BEAT', function(MUSIC, 
 
         var instrument = instruments[track.instrument + '_' + idx];
 
-        if (instrument) {
+        if (instrument && !instrument.tempo) {
           var eventPreprocessor = instrument.eventPreprocessor || function(x){ return x; };
           var context = MUSIC.NoteSequence.context(instrument, null, songCtx);
 
