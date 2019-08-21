@@ -878,21 +878,23 @@ musicShowCaseApp.controller("MainController",
     return a.concat(b);
   };
 
-  var switchProject = function(projectId) {
+  var switchProject = async function(projectId) {
     var pFilter = [projectId];
 
-    return FileRepository.getFile(projectId).then(function(file) {
+    const file = await FileRepository.getFile(projectId);
+    if (file && file.index) {
       $scope.project = file;
 
-      return (file.index.ref||[]).concat([projectId]);
-    }).then(function(filter) {
-      $scope.projectFilter = filter.concat(['core']);
-      if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
-    })
-    .then(updateSearch)
-    .catch(function() {
-      document.location = "#";
-    });
+      const filter = (file.index.ref||[]).concat([projectId]);
+      $timeout(() => {
+        $scope.projectFilter = filter.concat(['core'])
+        if (filter.indexOf('default') !== -1) $scope.projectFilter.push(undefined);
+      });
+
+      updateSearch();
+    } else {
+      document.location = '#';
+    }
   };
 
   var updateSearch = fn.debounce(function() {
