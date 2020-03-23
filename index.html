@@ -1,23 +1,23 @@
 <head>
 
 <script src="dist/polyfill.min.js"></script>
-<script src="dist/music.js?v=e0eab7"></script>
-<script src="dist/site.js?v=e0eab7"></script>
+<script src="dist/music.js?v=ce8e25"></script>
+<script src="dist/site.js?v=ce8e25"></script>
 <script src="https://cdn.ravenjs.com/3.26.4/angular/raven.min.js" crossorigin="anonymous"></script>
 
 <script src="src/soundfont/accordion-ogg.js"></script>
 <script src="src/soundfont/acoustic_grand_piano-ogg.js"></script>
 
-<link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=e0eab7">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=ce8e25">
 <link rel="stylesheet" href="css/font-awesome.min.css">
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
-<link rel="stylesheet" href="css/codemirror.css?v=e0eab7">
-<link rel="stylesheet" href="css/recycle.css?v=e0eab7">
-<link rel="stylesheet" href="css/main.css?v=e0eab7">
-<link rel="stylesheet" href="css/pattern.css?v=e0eab7">
-<link rel="stylesheet" href="css/song.css?v=e0eab7">
-<link rel="stylesheet" href="css/recipes.css?v=e0eab7">
+<link rel="stylesheet" href="css/codemirror.css?v=ce8e25">
+<link rel="stylesheet" href="css/recycle.css?v=ce8e25">
+<link rel="stylesheet" href="css/main.css?v=ce8e25">
+<link rel="stylesheet" href="css/pattern.css?v=ce8e25">
+<link rel="stylesheet" href="css/song.css?v=ce8e25">
+<link rel="stylesheet" href="css/recipes.css?v=ce8e25">
 
 <script>
   Raven
@@ -91,7 +91,7 @@
                             <li recipe-blink="'menu_new_instrument'"><a href="" ng-click="openProject(); recipe.raise('menu_open_project_click')" translate="menu.open_project"></a>
                               <recipe-tooltip rt-id="'menu_new_instrument'"></recipe-tooltip>
                             </li>
-                            <li class="divider"></li>
+                            <li class="responsive-divider"></li>
                             <li><a href="" ng-click="openRecycleBin(); recipe.raise('menu_open_recycle')" translate="menu.recycle_bin"></a><li>
                          </ul>
                          <recipe-tooltip rt-id="'menu_new'"></recipe-tooltip>
@@ -117,7 +117,7 @@
                               <recipe-tooltip rt-id="'menu_file_import'"></recipe-tooltip>
                             </li>
 
-                            <li class="divider"></li>
+                            <li class="responsive-divider"></li>
                             <li recipe-blink="'menu_project_export_project'"><a href="" ng-click="exportProject(); recipe.raise('menu_project_export_project_click')" translate="menu.project_export_project"></a>
                               <recipe-tooltip rt-id="'menu_project_export_project'"></recipe-tooltip>
                             </li>
@@ -125,7 +125,7 @@
                               <recipe-tooltip rt-id="'menu_project_remove_project'"></recipe-tooltip>
                             </li>
 
-                            <li class="divider"></li>
+                            <li class="responsive-divider"></li>
                             <li recipe-blink="'menu_project_settings'"><a href="" ng-click="projectSettings(); recipe.raise('menu_project_settings_click')" translate="menu.project_settings"></a>
                               <recipe-tooltip rt-id="'menu_project_settings'"></recipe-tooltip>
                             </li>
@@ -161,7 +161,7 @@
                             <li><a href="" ng-click="contextualHelp = !contextualHelp" recipe-blink="'menu_help_contextual_switch'">{{'menu.help_contextual_help'|translate}}</a>
                               <recipe-tooltip rt-id="'menu_help_contextual_help'"></recipe-tooltip>
                             </li>
-                            <li class="divider"></li>
+                            <li class="responsive-divider"></li>
                             <li><a href="" ng-click="welcome()" recipe-blink="'menu_help_welcome'" translate="menu.help_welcome"></a>
                               <recipe-tooltip rt-id="'menu_help_welcome'"></recipe-tooltip>
                             </li>

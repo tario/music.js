@@ -566,3 +566,9 @@ input.width100p {
 .height-0 {
   min-height: 0;
 }
+
+.dropdown-menu .responsive-divider {
+  border-bottom: 1px solid #000;
+  min-height: 10px;
+  margin-bottom: 10px;
+}
